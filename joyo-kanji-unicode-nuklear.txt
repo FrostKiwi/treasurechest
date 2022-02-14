@@ -1,3 +1,26 @@
+/* This file defines all 2136 Japanese Jōyō kanji (常用漢字)
+   with the unicode codespoints formatted to fit Nuklear's font config.
+
+   #include it as part of the nk_runes definition as shown below.
+   Don't forget the 0 at the end of the array, as this file doesn't define it.
+*/
+
+/* Usage example, incased in #if 0 to allow comments inside comments */
+#if 0
+nk_rune ranges_japan[] = {
+    0x0020, 0x007E,
+    0x3001, 0x3003,    	/* 、。〃 */
+    0x3005, 0x301F,    	/* 々〆〇 and brackets */
+    0x3036, 0x3036,    	/* 〶 */
+    0x3041, 0x309F,    	/* Hiragana */
+    0x30A0, 0x30FF,    	/* Katakana */
+    /* 0x4E00, 0x9FFF, */	/* CJK Kanji block, without 𠮟, slow to load */
+    /* Joyo Kanji List */
+#include "joyo-unicode.txt"
+    0
+};
+#endif
+
 0x4E00, 0x4E00, /* 一 */
 0x4E01, 0x4E01, /* 丁 */
 0x4E03, 0x4E03, /* 七 */
