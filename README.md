@@ -17,5 +17,5 @@ As the name suggests, it's [just a minimal HTML](https://raw.githubusercontent.c
   * Several screen readers and translation tools like [YomiChan](https://github.com/FooSoft/yomichan) are browser based. As such it's convinient to copy paste something into a browser to interface with those readers and plugins.
 * Why not just use any textbox of any online translator like deepl.com? 
   * I sometimes want to get help with tough Japanese vocab from in a client's E-Mail. Pasting client information to an online translator, which phones home to offshore servers for their translations brakes privacy laws on so many levels, it's not even funny. All that just to get text into a textbox. Thus this simple textbox html ensures everything stays offline.
-  * 
+
 ![](https://raw.githubusercontent.com/FrostKiwi/treasurechest/main/readme-img/Textbox%2BYomichan.png)
