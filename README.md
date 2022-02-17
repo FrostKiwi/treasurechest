@@ -9,6 +9,8 @@ These files allow you to select or subset just the  2136 [Jōyō kanji](https://
 Finally, the usual applies if your are working with CJK fonts: Double, triple and quadruple check the font's intended region or in rare cases, how the font file organizes those regions internally. Eg. Google's Noto [offers their CJK fonts](https://github.com/googlefonts/noto-cjk) in 'CJK SC (Simplified Chinese)', 'CJK TC (Traditional Chinese)', 'CJK JP (Japanese)', etc. Thanks to Unicode's aweful decision of [Han unification](https://en.wikipedia.org/wiki/Han_unification), regional Sinograph variants are mapped to the same Unicode code point.
 
 When my smartphone didn't have Japanese set as an optional language, the OS assumed the chinese variants by default and I was suddenly confused as to why I could not read some "Japanese" words in some apps. Such presumed defaults create issues in many [other](https://community.wanikani.com/t/userscript-anime-context-sentences/54003/83?u=frostkiwi) circumstances as well.
+# Jo_MPEG converted to C
+jo_mpeg is a C++ [single header library](https://github.com/nothings/single_file_libs) written by [Jon Olick](https://www.jonolick.com/home/mpeg-video-writer), which creates MPEG videos (without audio). It is [listed as a C++ only library](https://github.com/nothings/single_file_libs#video) in stb's single header library collection. However, only the & reference format is what makes this library C++ only. Replacing those with simple pointers makes this compile with both C and C++: [jo_mpeg.h](https://github.com/FrostKiwi/treasurechest/blob/main/jo_mpeg.h)
 # Just-a-textbox
 ![](https://raw.githubusercontent.com/FrostKiwi/treasurechest/main/readme-img/hello-textbox.png)
 
