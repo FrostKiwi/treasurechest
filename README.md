@@ -12,7 +12,7 @@ When my smartphone didn't have Japanese set as an optional language, the OS assu
 # Jo_MPEG converted to C
 jo_mpeg is a C++ [single header library](https://github.com/nothings/single_file_libs) written by [Jon Olick](https://www.jonolick.com/home/mpeg-video-writer), which creates MPEG videos (without audio). It is [listed as a C++ only library](https://github.com/nothings/single_file_libs#video) in stb's single header library collection. However, only the & reference format is what makes this library C++ only. Replacing those with simple pointers makes this compile with both C and C++: [jo_mpeg.h](https://github.com/FrostKiwi/treasurechest/blob/main/jo_mpeg.h)
 
-( I also found this: https://github.com/yui0/slibs/blob/master/jo_mpeg.h , but it is out of date. )
+( I also found this: https://github.com/yui0/slibs/blob/master/jo_mpeg.h, but it is one version behind. )
 # Just-a-textbox
 ![](https://raw.githubusercontent.com/FrostKiwi/treasurechest/main/readme-img/hello-textbox.png)
 
