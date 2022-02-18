@@ -1,6 +1,6 @@
 /* public domain Simple, Minimalistic, No Allocations MPEG writer - http://jonolick.com
  *
- * "Converted" to C by FrostKiwi
+ * "Converted" to C by Wladislav Artsimovich
  * I just added a bunch of * and removed a bunch of & ¯\_(ツ)_/¯
  *
  * Latest revisions:
