@@ -16,19 +16,19 @@ https://user-images.githubusercontent.com/60887273/167257204-32647df3-6c05-4828-
 
 https://user-images.githubusercontent.com/60887273/167257205-b48096e7-be3e-459b-a358-e302c45f6bf6.mov
 ### Info and Structure
- - Since this is a mining deck, it carries words **I** did not know during in-game dialog. I finished the [Improved Core3k](https://ankiweb.net/shared/info/1060896809) deck. There are zero duplicates between this deck and Core3k. Besides that, I started the deck shortly before my N4 exam and am now N3. So unknown words are essentially N3 and up, with some easy ones sprinkled in. No in-universe words are saved, like モラ or 目狩り令.
+ - Since this is a mining *vocabulary* deck, it carries words \*I\* did not know during in-game dialog. I already finished the [Improved Core3k](https://ankiweb.net/shared/info/1060896809) deck, so there are zero duplicates between this deck and Core3k. Besides that, I started the deck shortly before my N4 exam and am now N3. Words in the deck are essentially N3 and up, with some easy ones sprinkled in. No in-universe words are saved, like モラ or 目狩り令.
  - The deck captures the main storyline and a few side-quests / story-quests from the beginning up to Inzuma's second chapter.
- - I always learn both Japanese -> English, as well as English -> Japanese. This point is hotly debated, whether or not it's useful or a massive waste of time. For me switching to both directions has been nothing but great, but it is not the default on Anki Web and not a popular opinion. (If I can name a synonym in the English -> Japanese direction, I still let it pass as HARD and as AGAIN if I can only name a synonym once the card returns) To fit with the default, I have disabled the English -> Japanese Card type.
+ - I always learn both Japanese -> English, as well as English -> Japanese. This point is hotly debated, whether or not it's useful or a massive waste of time. For me switching to learning both directions has been nothing but great, but it is not the default on Anki Web and not a popular opinion it seems. (If I can name a synonym in the English -> Japanese direction, I still let it pass as HARD and as AGAIN if I can only name a synonym once the card returns) To fit with the default, I have disabled the English -> Japanese Card type.
  - For the ingame subtitles OCR sometimes failed. I corrected small mistakes, but when it output complete garbage, I added a cropped version of just the text in the screenshot in the sentence section. I did not always double check the OCR output, so mistakes will come up occasionally. If something looks weird with the example sentences, check the in-game screenshot for the correct subtitle. 
  - To fit inside the AnkiWeb limit of 256 MB, all images were resized from the 1080p originals to fit a 1366x768 rectangle with aggressive 81% JPEG Quality and in-game dialog are mono MP3 files.
  - When I write "here: ..." I am refering to a word being used in a more specialized sense, like 物心 vs 物心がつく. In those cases two definitions are provided. This is to make the learning process a bit more compact and to prevent not being able to translate a sentence whilst having just half of the definiton.
 
-![hitome](https://user-images.githubusercontent.com/60887273/167292126-f0ea0815-4586-4cf1-85fe-a61f2269bee9.png)
+![hitome](https://user-images.githubusercontent.com/60887273/167301152-40a0d15a-20f1-40ab-93ab-b7d86a6e591e.png)
 
 https://user-images.githubusercontent.com/60887273/167292140-f3489c91-71b7-40d9-aedc-c630adc47da9.mov
 
 https://user-images.githubusercontent.com/60887273/167292143-10c8668d-da68-404a-9b93-aeec9fabedc8.mov
-- Characters speaking Kansai dialect have received there own tag "Kansaidialect"
+- Characters speaking Kansai dialect have received there own tag "Kansaidialect".
 
 ![meccha](https://user-images.githubusercontent.com/60887273/167292541-94b7a289-e5fd-4a07-a80a-6b3f70381af1.png)
 
@@ -42,7 +42,7 @@ https://user-images.githubusercontent.com/60887273/167289579-61ae0167-825f-45a9-
 
 https://user-images.githubusercontent.com/60887273/167289574-6af26096-7501-45bb-a5ae-8d6cd16d3eed.mov
 
-A big surpise to me was the [YomiChan](https://github.com/FooSoft/yomichan) dictionary ["KireiCake"](https://foosoft.net/projects/yomichan/#dictionaries) having URL-shortened links, like [waa.ai/v4YY](https://waa.ai/v4YY) in the above card from time to time. In this case it leads to an [in-depth discussion on Yahoo](https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q1317655948) about that grammar point. [(Archive Link, in case it goes down)](http://web.archive.org/web/20220508092155/https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q1317655948) The love and patience of the Japanese learning online community is truly magnificent. From /djt/ threads on imageboards to [user-scripts connecting Kanji learn services to a collection of example recordings from Anime.](https://community.wanikani.com/t/userscript-anime-context-sentences/54003?u=frostkiwi) Always has me in awe.
+A big surpise to me was the [YomiChan](https://github.com/FooSoft/yomichan) dictionary ["KireiCake"](https://foosoft.net/projects/yomichan/#dictionaries) having URL-shortened links from time to time, like [waa.ai/v4YY](https://waa.ai/v4YY) in the above card. In this case it leads to an [in-depth discussion on Yahoo](https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q1317655948) about that grammar point. [(Archive Link, in case it goes down)](http://web.archive.org/web/20220508092155/https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q1317655948) The love and patience of the Japanese learning online community is truly magnificent. From /djt/ threads on imageboards to [user-scripts connecting Kanji learn services to a collection of example recordings from Anime.](https://community.wanikani.com/t/userscript-anime-context-sentences/54003?u=frostkiwi) Stuff like that has me in awe.
 #### To translate or not to translate
 In the beginning I did toggle to English to screenshot the English translation for the card's back-side. However, on recommendation from members of the [English-Japanese Language Exchange discord server](https://discord.com/invite/japanese), I stopped doing so. Mainly, because of localization discrepancies between both versions. Differences got especially heavy, when more stylized dialogue got involved.
 ![image](https://user-images.githubusercontent.com/60887273/167288657-68cde527-88a7-480c-9aef-3f78191781b4.png)
@@ -51,7 +51,7 @@ https://user-images.githubusercontent.com/60887273/167288822-9bb1ab4d-de23-481f-
 
 https://user-images.githubusercontent.com/60887273/167288831-f7dbbb64-b75d-4245-a61c-6141a718eb23.mov
 ### Why Genshin Impact?
-Whilst not all, Genshin makes up a big chunk of my Mining deck.
+Whilst not all, Genshin makes up a big chunk of
 ### How it was captured
 The main
 #### Handling Audio
