@@ -17,11 +17,11 @@ https://user-images.githubusercontent.com/60887273/167257204-32647df3-6c05-4828-
 https://user-images.githubusercontent.com/60887273/167257205-b48096e7-be3e-459b-a358-e302c45f6bf6.mov
 ### Info and Structure
  - Since this is a mining vocabulary deck, it carries words \*I\* did not know during in-game dialog. I already finished the [Improved Core3k](https://ankiweb.net/shared/info/1060896809) deck, so there are zero duplicates between this deck and Core3k. Besides that, I started the deck shortly before my N4 exam and am now N3. Words in the deck are essentially N3 and up, with some easy ones sprinkled in. No in-universe words are saved, like モラ or 目狩り令.
- - The deck captures the main storyline and a few side-quests / story-quests from the beginning up to Inzuma's second chapter.
+ - The deck captures the main story-line and a few side-quests / story-quests from the beginning up to Inzuma's second chapter.
  - I always learn both Japanese -> English, as well as English -> Japanese. This point is hotly debated, whether or not it's useful or a massive waste of time. For me switching to learning both directions has been nothing but great, but it is not the default on Anki Web and not a popular opinion it seems. (If I can name a synonym in the English -> Japanese direction, I still let it pass as HARD and as AGAIN if I can only name a synonym once the card returns) To fit with the default, I have disabled the English -> Japanese Card type.
- - For the ingame subtitles OCR sometimes failed. I corrected small mistakes, but when it output complete garbage, I added a cropped version of just the text in the screenshot in the sentence section. I did not always double check the OCR output, so mistakes will come up occasionally. If something looks weird with the example sentences, check the in-game screenshot for the correct subtitle. 
+ - For the in-game subtitles OCR sometimes failed. I corrected small mistakes, but when it output complete garbage, I added a cropped version of just the text in the screenshot in the sentence section. I did not always double check the OCR output, so mistakes will come up occasionally. If something looks weird with the example sentences, check the in-game screenshot for the correct subtitle. 
  - To fit inside the AnkiWeb limit of 256 MB, all images were resized from the 1080p originals to fit a 1366x768 rectangle with aggressive 81% JPEG Quality and in-game dialog are mono MP3 files.
- - When I write "here: ..." I am refering to a word being used in a more specialized sense, like 物心 vs 物心がつく. In those cases two definitions are provided. This is to make the learning process a bit more compact and to prevent not being able to translate a sentence whilst having just half of the definiton.
+ - When I write "here: ..." I am referring to a word being used in a more specialized sense in the in-game dialog, like 物心 vs 物心がつく. In those cases two definitions are provided. This is to make the learning process a bit more compact and to prevent not being able to translate a sentence whilst having just half of the definition.
 
 ![hitome](https://user-images.githubusercontent.com/60887273/167301152-40a0d15a-20f1-40ab-93ab-b7d86a6e591e.png)
 
@@ -34,7 +34,7 @@ https://user-images.githubusercontent.com/60887273/167292143-10c8668d-da68-404a-
 
 https://user-images.githubusercontent.com/60887273/167292350-45546385-7418-4d26-867e-cc020047a027.mov
 #### Grammar
-I also have a bunch of grammar cards mixed in, when I encoutered new pieces of grammar and recognized it as such. For those I pasted the excellent [JLPT Sensei](https://jlptsensei.com/) summary images.
+I also have a bunch of grammar cards mixed in, when I encountered new pieces of grammar and recognized it as such. For those I pasted the excellent [JLPT Sensei](https://jlptsensei.com/) summary images.
 
 ![kireicake](https://user-images.githubusercontent.com/60887273/167289347-d798a637-fd49-46c7-a2fd-2a2170cce7ec.png)
 
@@ -42,7 +42,7 @@ https://user-images.githubusercontent.com/60887273/167289579-61ae0167-825f-45a9-
 
 https://user-images.githubusercontent.com/60887273/167289574-6af26096-7501-45bb-a5ae-8d6cd16d3eed.mov
 
-A big surpise to me was the [YomiChan](https://github.com/FooSoft/yomichan) dictionary ["KireiCake"](https://foosoft.net/projects/yomichan/#dictionaries) having URL-shortened links from time to time, like [waa.ai/v4YY](https://waa.ai/v4YY) in the above card. In this case it leads to an [in-depth discussion on Yahoo](https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q1317655948) about that grammar point. [(Archive Link, in case it goes down)](http://web.archive.org/web/20220508092155/https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q1317655948) The love and patience of the Japanese learning online community is truly magnificent. From /djt/ threads on imageboards to [user-scripts connecting Kanji learn services to a collection of example recordings from Anime.](https://community.wanikani.com/t/userscript-anime-context-sentences/54003?u=frostkiwi) Stuff like that has me in awe.
+A big surprise to me was the [YomiChan](https://github.com/FooSoft/yomichan) dictionary ["KireiCake"](https://foosoft.net/projects/yomichan/#dictionaries) having URL-shortened links from time to time, like [waa.ai/v4YY](https://waa.ai/v4YY) in the above card. In this case it leads to an [in-depth discussion on Yahoo](https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q1317655948) about that grammar point. [(Archive Link, in case it goes down)](http://web.archive.org/web/20220508092155/https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q1317655948) The love and patience of the Japanese learning online community is truly magnificent. From /djt/ threads on image-boards to [user-scripts connecting Kanji learn services to a collection of example recordings from Anime.](https://community.wanikani.com/t/userscript-anime-context-sentences/54003?u=frostkiwi) Stuff like that has me in awe.
 #### To translate or not to translate
 In the beginning I did toggle to English to screenshot the English translation for the card's back-side. However, on recommendation from members of the [English-Japanese Language Exchange discord server](https://discord.com/invite/japanese), I stopped doing so. Mainly, because of localization discrepancies between both versions. Differences got especially heavy, when more stylized dialogue got involved.
 ![image](https://user-images.githubusercontent.com/60887273/167288657-68cde527-88a7-480c-9aef-3f78191781b4.png)
