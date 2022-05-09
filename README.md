@@ -19,7 +19,7 @@ https://user-images.githubusercontent.com/60887273/167257205-b48096e7-be3e-459b-
  - Since this is a mining vocabulary deck, it carries words \*I\* did not know during in-game dialog. I already finished the [Improved Core3k](https://ankiweb.net/shared/info/1060896809) deck, so there are zero duplicates between this deck and Core3k. Besides that, I started the deck shortly before my N4 exam and am now N3. Words in the deck are essentially N3 and up, with some easy ones sprinkled in. No in-universe words are saved, like モラ or 目狩り令.
  - The deck captures the main story-line and a few side-quests / story-quests from the beginning up to Inzuma's second chapter.
  - I always learn both Japanese -> English, as well as English -> Japanese. This point is hotly debated, whether or not it's useful or a massive waste of time. For me switching to learning both directions has been nothing but great, but it is not the default on Anki Web and not a popular opinion it seems. (If I can name a synonym in the English -> Japanese direction, I still let it pass as HARD and as AGAIN if I can only name a synonym once the card returns) To fit with the default, I have disabled the English -> Japanese Card type.
- - For the in-game subtitles OCR sometimes failed. I corrected small mistakes, but when it output complete garbage, I added a cropped version of just the text in the screenshot in the sentence section. I did not always double check the OCR output, so mistakes will come up occasionally. If something looks weird with the example sentences, check the in-game screenshot for the correct subtitle. 
+ - For the in-game subtitles OCR sometimes failed. I corrected small mistakes, but when it output complete garbage, I added a cropped version of just the text in the screenshot in the sentence section. I did not always double check the OCR output, so mistakes will come up in the ingame dialog's transcript occasionally. If something looks weird with the example sentences, check the in-game screenshot for the correct subtitle. 
  - To fit inside the AnkiWeb limit of 256 MB, all images were resized from the 1080p originals to fit a 1366x768 rectangle with aggressive 81% JPEG Quality and in-game dialog are mono MP3 files.
  - When I write "here: ..." I am referring to a word being used in a more specialized sense in the in-game dialog, like 人目 vs 人目を忍ぶ. In those cases two definitions are provided. This is to make the learning process a bit more compact and to prevent not being able to translate a sentence whilst having just half of the definition.
 
@@ -53,11 +53,25 @@ https://user-images.githubusercontent.com/60887273/167288822-9bb1ab4d-de23-481f-
 
 https://user-images.githubusercontent.com/60887273/167288831-f7dbbb64-b75d-4245-a61c-6141a718eb23.mov
 ### Why Genshin Impact?
-Whilst not all, Genshin makes up a big chunk of
+A couple of thinks come together to make Genshin quite the enjoyable learning experience. Except minor side quests, all dialogs
+I'm constalty surprised how much the game has influenced my speech.
+#### The danger
+It's common knowledge that media uses artistic delivery in speech, has speech patterns rarely used in everyday life and uses a stylized way of writing. Basically all of it is [役割語](https://ja.wikipedia.org/wiki/%E5%BD%B9%E5%89%B2%E8%AA%9E). And yet, knowing that I still managed to trip up in minor ways. Case in point:
+![image](https://user-images.githubusercontent.com/60887273/167408083-1cce9a93-172b-4e2a-b7b7-6f8937bbce63.png)
+
+https://user-images.githubusercontent.com/60887273/167408470-6a448385-93c1-4f10-bbd5-a08939e577cd.mov
+
+https://user-images.githubusercontent.com/60887273/167408479-d7b7847b-7f40-4577-a74f-0e98a936a6c1.mov
+
+I used this expression instictivly from time to time and just recently someone noted, that this expression has a rather archaic, regal tone. It was quite the funny situation, but it goes to show, that even knowing what kind of media I was consuming still didn't save me from tripping up. Coming from outside the language it's unavoidable to misinterpret an expression's nuance I guess. Though in this case, the in-game dialog should have really tipped me off, as the character speaking Ninguang uses it to tell a joke with a somewhat sarcastic undertone.
 ### How it was captured
 The main
 #### Handling Audio
 Originally, I set all audio to be normalized based on setting the peak sample to -3db via Audacity. This turned out to be not quite optimal, as the amount of voice profiles is very broad. With peak sample normalization bright and dark voices did not end up playing back at the same loudness. I batch-reencoded every audio file to be normalized to -15LUFS loudness instead, the more modern approach. Although the difference was subtle, the dialogue sounded a bit more balanced from card to card after that.
+
+Finally, it would be optimal to have no music mixed in with the dialog for the sake of cleaner dialog files during review. However, the music is so incredibly good, that it would have not been even half as enjoyable to go through the game without the music. So often background music plays with the cards. Worst offender being Liyue Harbor's background music, which manages to drown out dialog [during its crescendo](https://youtu.be/t1O7LpOTBfM?t=318).
+
+This concludes my little write-up about the Genshin Impact part of my Anki mining deck.
 
 ## Jōyō kanji Unicodes lists
 These files allow you to select or subset just the  2136 [Jōyō kanji](https://en.wikipedia.org/wiki/J%C5%8Dy%C5%8D_kanji) Unicode codepoints for Japanese. It's a good middle ground between having only Kana and including the all 21000 characters of the complete [CJK block](https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_(Unicode_block)) for embedded use-cases. How to use these files and how to subset fonts is [covered here](https://github.com/Immediate-Mode-UI/Nuklear/wiki/Complete-font-guide#subsetting-compressing-appending-to-the-binary). Note, that not all HEX codes are 4 digit, the last one 𠮟 is HEX 20B9F. Eyes open, in case your program you use these HEX values in is picky about formatting. It's a late edition to the Unicode standard [because reasons (article “𠮟る” と “叱る” by @hydrocul)](https://hydrocul.github.io/wiki/blog/2014/1201-shikaru.html) and is thus the only 5 digit HEX Jōyō kanji. The variant 叱 53F1 is also listed, since it's usually the assumed default. ([Archive link in case that article goes down](https://web.archive.org/web/20210405065949/https://hydrocul.github.io/wiki/blog/2014/1201-shikaru.html)).
