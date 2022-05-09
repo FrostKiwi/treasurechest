@@ -53,9 +53,27 @@ https://user-images.githubusercontent.com/60887273/167288822-9bb1ab4d-de23-481f-
 
 https://user-images.githubusercontent.com/60887273/167288831-f7dbbb64-b75d-4245-a61c-6141a718eb23.mov
 ### Why Genshin Impact?
-A couple of thinks come together to make Genshin quite the enjoyable learning experience. Except minor side quests, all dialogs
-I'm constalty surprised how much the game has influenced my speech.
-#### The danger
+A couple of things come together to make Genshin quite the enjoyable learning experience. The obious first: Except minor side quests, all dialogs are voiced and progress sentence by sentence, click by click, as is common in JRPGs and visual novels. This gives enough time to grasp the dialog's content. Funnily enough, in game time does not stop during dialogs except in some quests, so sometimes multiple in-game days would pass by, as I grapsed the contents of a dialog.
+
+Another point is the writing style. A hotly debated topic in the player-base, is whether or not the addition of Paimon hurts the delivery of the story. The character constantly summarizes events happening and repeats commands or requests, that were given by another character just moments ago during dialog. The main criticism often brought up is that this makes the story-flow very child-like, which is a rather obvious design goal of the game, catering to a younger audience. What may be a sore in the eyes of many a player though, is a god-sent in the eyes of a language learner.
+Paimon often describes a situation, which is was just clearly wittnessed by the player, making the actual statement of a sentence trivial to understand.
+![image](https://user-images.githubusercontent.com/60887273/167426600-cea0b78e-a6a4-4a01-b88a-8e0392325046.png)
+
+https://user-images.githubusercontent.com/60887273/167430485-cb3aee2c-f7cc-4720-bb98-da153c34b39e.mov
+
+https://user-images.githubusercontent.com/60887273/167430493-4b8be3cd-5d7b-4fb9-b5aa-f854660d7510.mov
+
+And sometimes Paimon straight up becomes a dictionary herself and defines a word like a glossary text would.
+![image](https://user-images.githubusercontent.com/60887273/167430735-7d2e709e-df54-488a-a9c5-ee27df7d03ed.png)
+
+https://user-images.githubusercontent.com/60887273/167431180-673f5fad-4364-4d05-82cf-52a035669cfd.mov
+
+https://user-images.githubusercontent.com/60887273/167431189-61af2101-fc47-45ef-8731-ee1ac8d23289.mov
+
+There is a very dialog- and lore-heavy story-line in Dragonspine involving Albedo, which has some of the most information dense dialog of the game. Paimon often commented, how she completly lost the plot and didn't understand anything. During that story line I felt as if Paimon was sympathizing with me, as I battled my way to understanding that story-line. For me, Paimon really made this game shine as a learning tool.
+#### The good outcome
+I'm constalty surprised how much Genshin has propelled my speech forward. Similar to a movie you can quote decades later or video game moments being etched into memory, there is something about media we consume, that makes it stick. I found myself using and recalling vocabulary aquired via Genshin faster than from other sources.
+#### The dangerous outcome
 It's common knowledge that media uses artistic delivery in speech, has speech patterns rarely used in everyday life and uses a stylized way of writing. Basically all of it is [役割語](https://ja.wikipedia.org/wiki/%E5%BD%B9%E5%89%B2%E8%AA%9E). And yet, knowing that I still managed to trip up in minor ways. Case in point:
 ![image](https://user-images.githubusercontent.com/60887273/167408083-1cce9a93-172b-4e2a-b7b7-6f8937bbce63.png)
 
@@ -63,7 +81,7 @@ https://user-images.githubusercontent.com/60887273/167408470-6a448385-93c1-4f10-
 
 https://user-images.githubusercontent.com/60887273/167408479-d7b7847b-7f40-4577-a74f-0e98a936a6c1.mov
 
-I used this expression instictivly from time to time and just recently someone noted, that this expression has a rather archaic, regal tone. It was quite the funny situation, but it goes to show, that even knowing what kind of media I was consuming still didn't save me from tripping up. Coming from outside the language it's unavoidable to misinterpret an expression's nuance I guess. Though in this case, the in-game dialog should have really tipped me off, as the character speaking Ninguang uses it to tell a joke with a somewhat sarcastic undertone.
+I used the 誉れです expression instictivly from time to time and just recently someone noted, that this expression has a rather archaic, regal tone. It was quite the funny situation, but it goes to show, that even knowing what kind of media I was consuming still didn't save me from tripping up. Coming from outside the language it's unavoidable to misinterpret an expression's nuance I guess. Though in this case, the in-game dialog should have really tipped me off, as the character speaking Ninguang uses it to tell a joke with a somewhat sarcastic undertone.
 ### How it was captured
 The main
 #### Handling Audio
