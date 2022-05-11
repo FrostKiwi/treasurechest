@@ -1,7 +1,9 @@
 # FrostKiwi's treasure chest
 This is a collection of useful things I want to share with the world.
  - [Genshin Impact Anki deck](https://github.com/FrostKiwi/treasurechest#genshin-impact-anki-deck)
-   - subpoint
+   - [Info and Structure](https://github.com/FrostKiwi/treasurechest#info-and-structure)
+   - [Why Genshin Impact?](https://github.com/FrostKiwi/treasurechest#why-genshin-impact)
+   - [How it was captured](https://github.com/FrostKiwi/treasurechest#how-it-was-captured)
  - [Jōyō kanji Unicodes lists](https://github.com/FrostKiwi/treasurechest#j%C5%8Dy%C5%8D-kanji-unicodes-lists)
    - [Regional variants](https://github.com/FrostKiwi/treasurechest#regional-variants)
  - [Jo_MPEG converted to C](https://github.com/FrostKiwi/treasurechest#jo_mpeg-converted-to-c)
