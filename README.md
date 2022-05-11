@@ -21,7 +21,7 @@ https://user-images.githubusercontent.com/60887273/167257205-b48096e7-be3e-459b-
 A couple of things come together to make Genshin quite the enjoyable learning experience. The obvious first: Except minor side quests, all dialogs are voiced and progress sentence by sentence, click by click, as is common in JRPGs and visual novels. This gives enough time to grasp the dialog's content. Funnily enough, in game time does not stop during dialogs except in some quests, so sometimes multiple in-game days would pass by, as I grasped the contents of a dialog.
 
 Another point is the writing style. A hotly debated topic in the player-base, is whether or not the addition of Paimon hurts the delivery of the story. The character constantly summarizes events happening and repeats commands or requests, that were given by another character just moments ago during dialog. The main criticism often brought up is that this makes the story-flow very child-like, which is a rather obvious design goal of the game, catering to a younger audience. What may be a sore in the eyes of many a player though, is a god-sent in the eyes of a language learner.
-Paimon often describes a situation, which is was just clearly witnessed by the player, making the actual statement of a sentence trivial to understand.
+Paimon often describes a situation, which was witnessed by the player only moments ago, making the actual statement of a sentence trivial to understand.
 ![image](https://user-images.githubusercontent.com/60887273/167426600-cea0b78e-a6a4-4a01-b88a-8e0392325046.png)
 
 https://user-images.githubusercontent.com/60887273/167430485-cb3aee2c-f7cc-4720-bb98-da153c34b39e.mov
