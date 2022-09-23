@@ -7,6 +7,9 @@
 
 /* Usage example, incased in #if 0 to allow comments inside comments */
 #if 0
+/* Actually malloc() this array when giving it to Nuklear. Otherwise it will
+   go out of scope, when the actual rendering happens in another scope or
+   thread*/
 nk_rune ranges_japan[] = {
     0x0020, 0x007E,
     0x3001, 0x3003,    	/* 、。〃 */
