@@ -118,8 +118,9 @@ Finally, the usual applies if your are working with CJK fonts: Double, triple an
 When my smartphone didn't have Japanese set as an optional language, the OS assumed the chinese variants by default and I was suddenly confused as to why I could not read some "Japanese" words in some apps. Such presumed defaults create issues in many [other](https://community.wanikani.com/t/userscript-anime-context-sentences/54003/83?u=frostkiwi) circumstances as well. Here is the difference with my Anki decks.
 ![](https://raw.githubusercontent.com/FrostKiwi/treasurechest/main/readme-img/anki-regional-example.png)
 Ironically enough, even apple manages to screw this up!
-Their Apple calendar app displays chinese Hanzu, even though the keyboard writes in Japanese Kanji.
+Their Apple calendar app displays chinese Hanzu, even though the keyboard writes in Japanese Kanji and the system language has set Japanese as secondary.
 ![image](https://user-images.githubusercontent.com/60887273/203256955-823d3248-94a0-40f9-ad43-481fa78fdb0d.png)
+Also same deal with Microsoft teams. ![MicrosoftTeams-image (48)](https://user-images.githubusercontent.com/60887273/205535180-59406984-1492-4242-b2ec-9d0779744a57.png)
 # Jo_MPEG converted to C
 jo_mpeg is a C++ [single header library](https://github.com/nothings/single_file_libs) written by [Jon Olick](https://www.jonolick.com/home/mpeg-video-writer), which creates MPEG videos (without audio). It is [listed as a C++ only library](https://github.com/nothings/single_file_libs#video) in stb's single header library collection. However, only the & reference format is what makes this library C++ only. Replacing those with simple pointers makes this compile with both C and C++: [jo_mpeg.h](https://github.com/FrostKiwi/treasurechest/blob/main/jo_mpeg.h)
 
