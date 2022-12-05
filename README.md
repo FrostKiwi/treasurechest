@@ -118,7 +118,7 @@ Finally, the usual applies if your are working with CJK fonts: Double, triple an
 When my smartphone didn't have Japanese set as an optional language, the OS assumed the chinese variants by default and I was suddenly confused as to why I could not read some "Japanese" words in some apps. Such presumed defaults create issues in many [other](https://community.wanikani.com/t/userscript-anime-context-sentences/54003/83?u=frostkiwi) circumstances as well. Here is the difference with my Anki decks.
 ![](https://raw.githubusercontent.com/FrostKiwi/treasurechest/main/readme-img/anki-regional-example.png)
 Ironically enough, even apple manages to screw this up!
-Their Apple calendar app displays chinese Hanzu, even though the keyboard writes in Japanese Kanji and the system language has set Japanese as secondary.
+Their Apple calendar app displays chinese Hanzu, even though the keyboard writes in Japanese Kanji. iOS does not have a secondary language like Android, but both Region is set to Japan and the Keyboard types in Japanese. Having the thing you type change right in front of your eyes is very annoying.
 ![image](https://user-images.githubusercontent.com/60887273/203256955-823d3248-94a0-40f9-ad43-481fa78fdb0d.png)
 Also same deal with Microsoft teams. ![MicrosoftTeams-image (48)](https://user-images.githubusercontent.com/60887273/205535180-59406984-1492-4242-b2ec-9d0779744a57.png)
 # Jo_MPEG converted to C
