@@ -1,5 +1,6 @@
 # FrostKiwi's treasure chest
 This is a collection of useful things I want to share with the world.
+ - [GLSL Dithered Smooth Radial backdrop](https://github.com/FrostKiwi/treasurechest#genshin-impact-anki-deck)
  - [Genshin Impact Anki deck](https://github.com/FrostKiwi/treasurechest#genshin-impact-anki-deck)
    - [Why Genshin Impact?](https://github.com/FrostKiwi/treasurechest#why-genshin-impact)
    - [Info and Structure](https://github.com/FrostKiwi/treasurechest#info-and-structure)
@@ -9,6 +10,53 @@ This is a collection of useful things I want to share with the world.
  - [Jo_MPEG converted to C](https://github.com/FrostKiwi/treasurechest#jo_mpeg-converted-to-c)
  - [Just-a-textbox](https://github.com/FrostKiwi/treasurechest#just-a-textbox)
  - [WaniKani Japanese prompts - userscript](https://github.com/FrostKiwi/treasurechest#wanikani-japanese-prompts---userscript)
+## GLSL Radial background
+Using this for backgrounds when drawing smooth gradients when doing graphics programming. The point of the Shader is to get banding free gradient, using a single pass and without sampling or texture taps to achive banding free-ness. It involves the best noise-oneliner I have ever seen. It is not from me, but from  [Jorge Jimenez's presentation on how Gradient noise was implemented in Call of Duty Advanced Warfare](http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare). Here in the Bufferless variant, but can be rewritten to work with even the most basic OpenGL or WebGL standard.
+![image](https://github.com/FrostKiwi/treasurechest/assets/60887273/70e345f0-e57f-49df-a07e-bcd6cfde9189)
+### Vertex Shader
+```glsl
+#version 330
+out vec2 tex;
+
+const vec2 pos[3] = vec2[] (
+    vec2(-1.0, -1.0),
+    vec2( 3.0, -1.0),
+    vec2(-1.0,  3.0)
+);
+
+void main()
+{
+    tex = pos[gl_VertexID];
+    gl_Position = vec4(pos[gl_VertexID], 0.0, 1.0);
+}
+```
+### Fragment Shader
+```glsl
+#version 330
+in vec2 tex;
+out vec4 Out_Color;
+
+/* Gradient noise from Jorge Jimenez's presentation: */
+/* http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare */
+float gradientNoise(in vec2 uv)
+{
+    return fract(52.9829189 * fract(dot(uv, vec2(0.06711056, 0.00583715))));
+}
+
+vec3 outsidecolor = vec3(0.22, 0.23, 0.25);
+vec3 insidecolor = vec3(0.40, 0.41, 0.45);
+
+void main()
+{
+    vec3 bgcolor = mix(insidecolor, outsidecolor,
+                       sqrt(tex.x * tex.x + tex.y * tex.y));
+
+    /* Add gradient noise to reduce banding. */
+    bgcolor += (1.0 / 255.0) * gradientNoise(gl_FragCoord.xy) - (0.5 / 255.0);
+    Out_Color = vec4(bgcolor, 1.0);
+}
+```
+
 ## Genshin Impact Anki deck
 It's quite the tradition among Japanese learners to publish parts of their Anki [Mining](https://animecards.site/yomichansetup/#setting-up-yomichan) decks, so others may get inspired by them or straight up use them. This ~1000 note deck is an excerpt of my Mining deck, which was/is being created in-part from the video game [Genshin Impact](https://genshin.hoyoverse.com/en/home). This post will go into the thought process behind the deck, how it was created and has sound clips in this GitHub page below every screenshot for reference (muted by default on Github, gotta unmute before playing). Of course, using someone else's Mining deck doesn't carry nearly the same benefit as making one yourself, so this article is mainly to just document my workflow and to provide a jumping-off point for people setting up their own. [**Link to the deck on Ankiweb**](https://ankiweb.net/shared/info/870567459) (If AnkiWeb ends up pulling the deck due to copyright concerns, a copy is in the release section [here](https://github.com/FrostKiwi/treasurechest/releases/download/genshindeckv1/Genshin.Impact.Japanese.with.media.apkg))
 
