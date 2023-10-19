@@ -11,7 +11,10 @@ This is a collection of useful things I want to share with the world.
  - [Just-a-textbox](https://github.com/FrostKiwi/treasurechest#just-a-textbox)
  - [WaniKani Japanese prompts - userscript](https://github.com/FrostKiwi/treasurechest#wanikani-japanese-prompts---userscript)
 ## GLSL Radial background
-Using this for backgrounds when drawing smooth gradients when doing graphics programming. The point of the Shader is to get banding free gradient, using a single pass and without sampling or texture taps to achive banding free-ness. It involves the best noise-oneliner I have ever seen. That genius one-liner is not from me, but from  [Jorge Jimenez's presentation on how Gradient noise was implemented in Call of Duty Advanced Warfare](http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare). Here in the Bufferless variant, but can be rewritten to work with even the most basic OpenGL or WebGL standard.
+I'm using this for backgrounds when drawing smooth gradients when doing graphics programming. The point of the Shader is to get banding free gradients, using a single pass and without sampling or texture taps to achive banding free-ness. It involves the best noise-oneliner I have ever seen. That genius one-liner is not from me, but from  [Jorge Jimenez's presentation on how Gradient noise was implemented in Call of Duty Advanced Warfare](http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare). You can read it on the presentation's slide 123 onwards. It's described as:
+> [...] a noise function that we could classify as being half way between dithered and random, and that we called Interleaved Gradient Noise.
+
+Here in the Bufferless variant, but can be rewritten to work with even the most basic OpenGL or WebGL standard.
 ![image](https://github.com/FrostKiwi/treasurechest/assets/60887273/70e345f0-e57f-49df-a07e-bcd6cfde9189)
 ### Vertex Shader
 ```glsl
@@ -57,6 +60,18 @@ void main()
 }
 ```
 
+## Anti-Aliased drawing without Anti-Aliasing using Screen-Space Standard Derivatives [WIP]
+![4BBwT](https://github.com/FrostKiwi/treasurechest/assets/60887273/a021245d-9ea7-44ac-896e-9783bd03906b)
+
+This technique is built with either the use of GLSL's [`fwidth()`](https://docs.gl/sl4/fwidth) or a combination of [`length()`](https://docs.gl/sl4/length) + [`dFdx()`](https://docs.gl/sl4/dFdx) + [`dFdy()`](https://docs.gl/sl4/dFdy).
+This has been documented many times over, by many people in different forms. I use it so often, that I wanna write it down myself.
+
+### In 3D
+See my Stackoverflow question '[How to ensure screen space derivatives are present on triangle edges?](https://stackoverflow.com/questions/73903568/how-to-ensure-screen-space-derivatives-are-present-on-triangle-edges)' for more details around the case of using this under 3D perspectives, not just 2D.
+### OpenGL and WebGL compatibility
+This is compatible with all OpenGL and GLSL versions that use shaders. For OpenGL ES 2.0 and WebGL 1.0 you have to check for the existance of [OES_standard_derivatives](https://registry.khronos.org/OpenGL/extensions/OES/OES_standard_derivatives.txt) and perform `#extension GL_OES_standard_derivatives : enable` though. I have never seen a device OpenGL ES 2.0 device, that did not support screen space derivatives.
+
+Contrary to popular believe, `GL_EXT_blend_func_extended` isn't actually required to make this work well, even though some text rendering algorithms are implemented using `GL_EXT_blend_func_extended` and this technique.
 ## Genshin Impact Anki deck
 It's quite the tradition among Japanese learners to publish parts of their Anki [Mining](https://animecards.site/yomichansetup/#setting-up-yomichan) decks, so others may get inspired by them or straight up use them. This ~1000 note deck is an excerpt of my Mining deck, which was/is being created in-part from the video game [Genshin Impact](https://genshin.hoyoverse.com/en/home). This post will go into the thought process behind the deck, how it was created and has sound clips in this GitHub page below every screenshot for reference (muted by default on Github, gotta unmute before playing). Of course, using someone else's Mining deck doesn't carry nearly the same benefit as making one yourself, so this article is mainly to just document my workflow and to provide a jumping-off point for people setting up their own. [**Link to the deck on Ankiweb**](https://ankiweb.net/shared/info/870567459) (If AnkiWeb ends up pulling the deck due to copyright concerns, a copy is in the release section [here](https://github.com/FrostKiwi/treasurechest/releases/download/genshindeckv1/Genshin.Impact.Japanese.with.media.apkg))
 
