@@ -11,7 +11,7 @@ This is a collection of useful things I want to share with the world.
  - [Just-a-textbox](https://github.com/FrostKiwi/treasurechest#just-a-textbox)
  - [WaniKani Japanese prompts - userscript](https://github.com/FrostKiwi/treasurechest#wanikani-japanese-prompts---userscript)
 ## GLSL Radial background
-Using this for backgrounds when drawing smooth gradients when doing graphics programming. The point of the Shader is to get banding free gradient, using a single pass and without sampling or texture taps to achive banding free-ness. It involves the best noise-oneliner I have ever seen. It is not from me, but from  [Jorge Jimenez's presentation on how Gradient noise was implemented in Call of Duty Advanced Warfare](http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare). Here in the Bufferless variant, but can be rewritten to work with even the most basic OpenGL or WebGL standard.
+Using this for backgrounds when drawing smooth gradients when doing graphics programming. The point of the Shader is to get banding free gradient, using a single pass and without sampling or texture taps to achive banding free-ness. It involves the best noise-oneliner I have ever seen. That genius one-liner is not from me, but from  [Jorge Jimenez's presentation on how Gradient noise was implemented in Call of Duty Advanced Warfare](http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare). Here in the Bufferless variant, but can be rewritten to work with even the most basic OpenGL or WebGL standard.
 ![image](https://github.com/FrostKiwi/treasurechest/assets/60887273/70e345f0-e57f-49df-a07e-bcd6cfde9189)
 ### Vertex Shader
 ```glsl
