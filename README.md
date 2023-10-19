@@ -71,6 +71,12 @@ It's use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-f
 
 ### In 3D
 See my Stackoverflow question '[How to ensure screen space derivatives are present on triangle edges?](https://stackoverflow.com/questions/73903568/how-to-ensure-screen-space-derivatives-are-present-on-triangle-edges)' for more details around the case of using this under 3D perspectives, not just 2D.
+```glsl
+	float dist = length(vtx_fs) - 0.9;
+	float smoothedAlpha = dist / length(vec2(dFdx(dist), dFdy(dist)));
+	/* float smoothedAlpha = dist / fwidth(dist); */
+	gl_FragColor = vec4(color, alpha - smoothedAlpha);
+```
 ### OpenGL and WebGL compatibility
 This is compatible with all OpenGL and GLSL versions that use shaders. For OpenGL ES 2.0 and WebGL 1.0 you have to check for the existance of [OES_standard_derivatives](https://registry.khronos.org/OpenGL/extensions/OES/OES_standard_derivatives.txt) and perform `#extension GL_OES_standard_derivatives : enable` though. I have never seen a device OpenGL ES 2.0 device, that did not support screen space derivatives.
 
