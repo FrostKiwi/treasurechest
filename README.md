@@ -66,6 +66,8 @@ void main()
 This technique is built with either the use of GLSL's [`fwidth()`](https://docs.gl/sl4/fwidth) or a combination of [`length()`](https://docs.gl/sl4/length) + [`dFdx()`](https://docs.gl/sl4/dFdx) + [`dFdy()`](https://docs.gl/sl4/dFdy).
 This has been documented many times over, by many people in different forms. I use it so often, that I wanna write it down myself.
 
+## Stop using `Smoothstep()`, use my GLSL `saturate()` [WIP]
+
 ### In 3D
 See my Stackoverflow question '[How to ensure screen space derivatives are present on triangle edges?](https://stackoverflow.com/questions/73903568/how-to-ensure-screen-space-derivatives-are-present-on-triangle-edges)' for more details around the case of using this under 3D perspectives, not just 2D.
 ### OpenGL and WebGL compatibility
