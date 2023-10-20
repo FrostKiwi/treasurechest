@@ -59,28 +59,6 @@ void main()
     Out_Color = vec4(bgcolor, 1.0);
 }
 ```
-
-## Anti-Aliased drawing without Anti-Aliasing using Screen-Space Standard Derivatives [WIP]
-![4BBwT](https://github.com/FrostKiwi/treasurechest/assets/60887273/a021245d-9ea7-44ac-896e-9783bd03906b)
-
-This technique is built with either the use of GLSL's [`fwidth()`](https://docs.gl/sl4/fwidth) or a combination of [`length()`](https://docs.gl/sl4/length) + [`dFdx()`](https://docs.gl/sl4/dFdx) + [`dFdy()`](https://docs.gl/sl4/dFdy).
-This has been documented many times over, by many people in different forms. I use it so often, that I wanna write it down myself.
-
-### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
-It's use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliased in `GLSL`, but it's use doesn't make sense. It performs a hermite interpolation, but the we are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here. Though the slight performance difference doesn't particularly matter on modern graphics cards so wasting cycles on performing the hermite interpolation doesn't make sense to me.
-
-### In 3D
-See my Stackoverflow question '[How to ensure screen space derivatives are present on triangle edges?](https://stackoverflow.com/questions/73903568/how-to-ensure-screen-space-derivatives-are-present-on-triangle-edges)' for more details around the case of using this under 3D perspectives, not just 2D.
-```glsl
-	float dist = length(vtx_fs) - 0.9;
-	float smoothedAlpha = dist / length(vec2(dFdx(dist), dFdy(dist)));
-	/* float smoothedAlpha = dist / fwidth(dist); */
-	gl_FragColor = vec4(color, alpha - smoothedAlpha);
-```
-### OpenGL and WebGL compatibility
-This is compatible with all OpenGL and GLSL versions that use shaders. For OpenGL ES 2.0 and WebGL 1.0 you have to check for the existance of [OES_standard_derivatives](https://registry.khronos.org/OpenGL/extensions/OES/OES_standard_derivatives.txt) and perform `#extension GL_OES_standard_derivatives : enable` though. I have never seen a device OpenGL ES 2.0 device, that did not support screen space derivatives.
-
-Contrary to popular believe, `GL_EXT_blend_func_extended` isn't actually required to make this work well, even though some text rendering algorithms are implemented using `GL_EXT_blend_func_extended` and this technique.
 ## Genshin Impact Anki deck
 It's quite the tradition among Japanese learners to publish parts of their Anki [Mining](https://animecards.site/yomichansetup/#setting-up-yomichan) decks, so others may get inspired by them or straight up use them. This ~1000 note deck is an excerpt of my Mining deck, which was/is being created in-part from the video game [Genshin Impact](https://genshin.hoyoverse.com/en/home). This post will go into the thought process behind the deck, how it was created and has sound clips in this GitHub page below every screenshot for reference (muted by default on Github, gotta unmute before playing). Of course, using someone else's Mining deck doesn't carry nearly the same benefit as making one yourself, so this article is mainly to just document my workflow and to provide a jumping-off point for people setting up their own. [**Link to the deck on Ankiweb**](https://ankiweb.net/shared/info/870567459) (If AnkiWeb ends up pulling the deck due to copyright concerns, a copy is in the release section [here](https://github.com/FrostKiwi/treasurechest/releases/download/genshindeckv1/Genshin.Impact.Japanese.with.media.apkg))
 
