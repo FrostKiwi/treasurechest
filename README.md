@@ -1,6 +1,6 @@
 # FrostKiwi's treasure chest
 This is a collection of useful things I want to share with the world.
- - [GLSL Dithered Smooth Radial backdrop](https://github.com/FrostKiwi/treasurechest#genshin-impact-anki-deck)
+ - [GLSL Dithered Smooth Radial backdrop](https://github.com/FrostKiwi/treasurechest#glsl-radial-background)
  - [Genshin Impact Anki deck](https://github.com/FrostKiwi/treasurechest#genshin-impact-anki-deck)
    - [Why Genshin Impact?](https://github.com/FrostKiwi/treasurechest#why-genshin-impact)
    - [Info and Structure](https://github.com/FrostKiwi/treasurechest#info-and-structure)
