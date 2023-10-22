@@ -14,8 +14,11 @@ This is a collection of useful things I want to share with the world.
 I'm using this for backgrounds when drawing smooth gradients when doing graphics programming. The point of the Shader is to get banding free gradients, using a single pass and without sampling or texture taps to achive banding free-ness. It involves the best noise-oneliner I have ever seen. That genius one-liner is not from me, but from  [Jorge Jimenez's presentation on how Gradient noise was implemented in Call of Duty Advanced Warfare](http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare). You can read it on the presentation's slide 123 onwards. It's described as:
 > [...] a noise function that we could classify as being half way between dithered and random, and that we called Interleaved Gradient Noise.
 
-Here is the Bufferless variant, but can be rewritten to work with even the most basic OpenGL or WebGL standard.
+Thresholding the gradient image below, here is dither pattern, that is created:
+
+![image](https://github.com/FrostKiwi/treasurechest/assets/60887273/3c9b3bb9-d1d7-4906-9b53-02f4894b26c4)
 ![image](https://github.com/FrostKiwi/treasurechest/assets/60887273/70e345f0-e57f-49df-a07e-bcd6cfde9189)
+Here is the Bufferless variant, but can be rewritten to work with even the most basic OpenGL or WebGL standard.
 ### Vertex Shader
 ```glsl
 #version 330
