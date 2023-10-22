@@ -17,6 +17,9 @@ I'm using this for backgrounds when drawing smooth gradients when doing graphics
 Thresholding the gradient image below, here is dither pattern, that is created:
 
 ![image](https://github.com/FrostKiwi/treasurechest/assets/60887273/3c9b3bb9-d1d7-4906-9b53-02f4894b26c4)
+
+Resulting Gradient:
+
 ![image](https://github.com/FrostKiwi/treasurechest/assets/60887273/70e345f0-e57f-49df-a07e-bcd6cfde9189)
 Here is the Bufferless variant, but can be rewritten to work with even the most basic OpenGL or WebGL standard.
 ### Vertex Shader
