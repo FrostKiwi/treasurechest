@@ -21,8 +21,8 @@ Thresholding the gradient image below, here is dither pattern, that is created:
 Resulting Gradient:
 
 ![image](https://github.com/FrostKiwi/treasurechest/assets/60887273/70e345f0-e57f-49df-a07e-bcd6cfde9189)
-Here is the Bufferless variant, but can be rewritten to work with even the most basic OpenGL or WebGL standard.
 ### Vertex Shader
+Here is the Bufferless variant, but can be rewritten to work with even the most basic OpenGL or WebGL standard.
 ```glsl
 #version 330
 out vec2 tex;
