@@ -10,6 +10,29 @@ This is a collection of useful things I want to share with the world.
  - [Jo_MPEG converted to C](https://github.com/FrostKiwi/treasurechest#jo_mpeg-converted-to-c)
  - [Just-a-textbox](https://github.com/FrostKiwi/treasurechest#just-a-textbox)
  - [WaniKani Japanese prompts - userscript](https://github.com/FrostKiwi/treasurechest#wanikani-japanese-prompts---userscript)
+## Analytical Anti-Aliasing - WebGL 1.0 compatible
+![4BBwT](https://github.com/FrostKiwi/treasurechest/assets/60887273/a021245d-9ea7-44ac-896e-9783bd03906b)
+![image](https://github.com/FrostKiwi/treasurechest/assets/60887273/e96d759e-45f0-4b33-8427-4a58bf8e66dc)
+
+This technique is built with either the use of GLSL's [`fwidth()`](https://docs.gl/sl4/fwidth) or a combination of [`length()`](https://docs.gl/sl4/length) + [`dFdx()`](https://docs.gl/sl4/dFdx) + [`dFdy()`](https://docs.gl/sl4/dFdy).
+This has been documented many times over, by many people in different forms. I use it so often, that I wanna write it down myself.
+
+### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
+It's use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliased in `GLSL`, but it's use doesn't make sense. It performs a hermite interpolation, but the we are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here. Though the slight performance difference doesn't particularly matter on modern graphics cards so wasting cycles on performing the hermite interpolation doesn't make sense to me.
+
+### In 3D
+See my Stackoverflow question '[How to ensure screen space derivatives are present on triangle edges?](https://stackoverflow.com/questions/73903568/how-to-ensure-screen-space-derivatives-are-present-on-triangle-edges)' for more details around the case of using this under 3D perspectives, not just 2D.
+```glsl
+	float dist = length(vtx_fs) - 0.9;
+	float smoothedAlpha = dist / length(vec2(dFdx(dist), dFdy(dist)));
+	/* float smoothedAlpha = dist / fwidth(dist); */
+	gl_FragColor = vec4(color, alpha - smoothedAlpha);
+```
+### OpenGL and WebGL compatibility
+This is compatible with all OpenGL and GLSL versions that use shaders. For OpenGL ES 2.0 and WebGL 1.0 you have to check for the existance of [OES_standard_derivatives](https://registry.khronos.org/OpenGL/extensions/OES/OES_standard_derivatives.txt) and perform `#extension GL_OES_standard_derivatives : enable` though. I have never seen a device OpenGL ES 2.0 device, that did not support screen space derivatives.
+
+Contrary to popular believe, `GL_EXT_blend_func_extended` isn't actually required to make this work well, even though some text rendering algorithms are implemented using `GL_EXT_blend_func_extended` and this technique.
+
 ## GLSL Radial background
 I'm using this for backgrounds when drawing smooth gradients when doing graphics programming. The point of the Shader is to get banding free gradients, using a single pass and without sampling or texture taps to achive banding free-ness. It involves the best noise-oneliner I have ever seen. That genius one-liner is not from me, but from  [Jorge Jimenez's presentation on how Gradient noise was implemented in Call of Duty Advanced Warfare](http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare). You can read it on the presentation's slide 123 onwards. It's described as:
 > [...] a noise function that we could classify as being half way between dithered and random, and that we called Interleaved Gradient Noise.
