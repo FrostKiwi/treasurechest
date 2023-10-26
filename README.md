@@ -37,7 +37,6 @@ void main()
     gl_FragColor = vec4(color, alpha - smoothedAlpha);
 }
 ```
-```
 ```glsl
 void main()
 {
