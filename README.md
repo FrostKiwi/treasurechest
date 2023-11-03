@@ -17,6 +17,8 @@ This is a collection of useful things I want to share with the world.
 This technique is built with either the use of GLSL's [`fwidth()`](https://docs.gl/sl4/fwidth) or a combination of [`length()`](https://docs.gl/sl4/length) + [`dFdx()`](https://docs.gl/sl4/dFdx) + [`dFdy()`](https://docs.gl/sl4/dFdy).
 This has been documented many times over, by many people in different forms. I use it so often, that I wanna write it down myself.
 
+Mention connection to Freya the stray and https://acegikmo.com/shapes/
+
 ### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
 Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliased in `GLSL`, but its use doesn't make sense. It performs a hermite interpolation, but the we are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here. Though the slight performance difference doesn't particularly matter on modern graphics cards so wasting cycles on performing the hermite interpolation doesn't make sense to me.
 
