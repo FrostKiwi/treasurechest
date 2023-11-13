@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/FrostKiwi/treasurechest#readme",
   "devDependencies": {
-    "@11ty/eleventy": "^2.0.1"
+    "@11ty/eleventy": "^2.0.1",
+    "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.0"
   }
 }
