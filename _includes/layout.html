@@ -5,10 +5,15 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="TechBlog and secret sauce recipes of Wladislav Artsimovich">
-	<!-- Code block Syntax highlighting -->
-	<!-- From https://github.com/PrismJS/prism-themes/blob/master/themes/prism-gruvbox-dark.css -->
-	<link rel="stylesheet" href="/style/prism-gruvbox-dark.css">
 	<title>FrostKiwi's Secrets</title>
+
+	<!-- Concat CSS to minify it -->
+	{% capture css %}
+		{% include 'style/prism-gruvbox-dark.css' %}
+	{% endcapture %}
+	<style>
+		{{ css | cssmin }}
+	</style>
 </head>
 
 <body>
