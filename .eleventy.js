@@ -1,5 +1,6 @@
 const CleanCSS = require("clean-css");
 const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
+const eleventyPluginFilesMinifier = require("@sherby/eleventy-plugin-files-minifier");
 
 module.exports = function (eleventyConfig) {
 	/* Syntax Highlighting */
@@ -11,4 +12,6 @@ module.exports = function (eleventyConfig) {
 	eleventyConfig.addFilter("cssmin", function (code) {
 		return new CleanCSS({}).minify(code).styles;
 	});
+
+	eleventyConfig.addPlugin(eleventyPluginFilesMinifier);
 };
