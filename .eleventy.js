@@ -7,7 +7,7 @@ module.exports = function (eleventyConfig) {
 	/* Syntax Highlighting */
 	eleventyConfig.addPlugin(syntaxHighlight);
 	/* The required CSS for the PrimJS color theme */
-	eleventyConfig.addPassthroughCopy("style/prism-gruvbox-dark.css");
+	eleventyConfig.addPassthroughCopy("assets");
 
 	/* CSS minifier as per https://www.11ty.dev/docs/quicktips/inline-css/ */
 	eleventyConfig.addFilter("cssmin", function (code) {
