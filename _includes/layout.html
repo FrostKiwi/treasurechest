@@ -10,6 +10,8 @@
 
 	<!-- Concat CSS to minify it -->
 	{% capture css %}
+		{% include 'node_modules/sakura.css/css/normalize.css' %}
+		{% include 'node_modules/sakura.css/css/sakura-vader.css' %}
 		{% include 'style/prism-gruvbox-dark.css' %}
 	{% endcapture %}
 	<style>
