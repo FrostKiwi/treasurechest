@@ -13,6 +13,8 @@ module.exports = function (eleventyConfig) {
 	eleventyConfig.addFilter("cssmin", function (code) {
 		return new CleanCSS({}).minify(code).styles;
 	});
+	/* Reload on CSS changes, since 11ty doesn't see them */
+	eleventyConfig.addWatchTarget("style");
 
 	/* HTML minifier */
 	eleventyConfig.addPlugin(eleventyPluginFilesMinifier);
