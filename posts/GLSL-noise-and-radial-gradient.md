@@ -3,7 +3,7 @@ title: GLSL Radial background
 permalink: "/{{ page.fileSlug }}/"
 date: 2023-10-19
 last_modified: 2023.10.22
-publicTags: Language, Learning, Japanese
+publicTags: OpenGL, WebGL, Noise, GameDev
 ---
 I'm using this for backgrounds when drawing smooth gradients when doing graphics programming. The point of the Shader is to get banding free gradients, using a single pass and without sampling or texture taps to achive banding free-ness. It involves the best noise-oneliner I have ever seen. That genius one-liner is not from me, but from  [Jorge Jimenez's presentation on how Gradient noise was implemented in Call of Duty Advanced Warfare](http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare). You can read it on the presentation's slide 123 onwards. It's described as:
 > [...] a noise function that we could classify as being half way between dithered and random, and that we called Interleaved Gradient Noise.

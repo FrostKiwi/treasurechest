@@ -1,5 +1,6 @@
 const CleanCSS = require("clean-css");
 const faviconPlugin = require("eleventy-favicon");
+const pluginRss = require("@11ty/eleventy-plugin-rss");
 const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
 const eleventyPluginFilesMinifier = require("@sherby/eleventy-plugin-files-minifier");
 
@@ -22,4 +23,7 @@ module.exports = function (eleventyConfig) {
 	
 	/* SVG -> All Favicon variants packer */
 	eleventyConfig.addPlugin(faviconPlugin);
+
+	/* RSS Plugin */
+	eleventyConfig.addPlugin(pluginRss);
 };
