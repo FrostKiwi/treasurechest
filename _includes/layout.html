@@ -3,10 +3,19 @@
 
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="description" content="TechBlog and secret sauce recipes of Wladislav Artsimovich">
 	<title>FrostKiwi's Secrets</title>	
 	{% favicon 'img/favicon.svg' %}
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="TechBlog and secret sauce recipes of Wladislav Artsimovich">
+
+	<!-- Post tags become HTML keywords -->
+	{% assign post = collections.post | where: "url", page.url | first %}
+	{% if post.data.publicTags %}
+		{% assign keywords = post.data.publicTags | join: ', ' %}
+	{% else %}
+		{% assign keywords = "tech blog, programming, graphics" %}
+	{% endif %}
+	<meta name="keywords" content="{{ keywords }}">
 
 	<!-- Concat CSS to minify it -->
 	{% capture css %}
@@ -14,6 +23,7 @@
 		{% include 'node_modules/sakura.css/css/sakura-vader.css' %}
 		{% include 'style/prism-gruvbox-dark.css' %}
 		{% include 'style/base.css' %}
+		{% include 'style/card.css' %}
 	{% endcapture %}
 	<style>
 		{{ css | cssmin }}

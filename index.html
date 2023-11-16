@@ -1,8 +1,22 @@
 ---
 layout: layout.html
 ---
-<img src="/assets/traced_kiwi.svg">
 {% for post in collections.post reversed %}
-<h2><a href="{{ post.url }}">{{ post.data.title }}</a></h2>
-{{ post.date | date: "%Y.%m.%d" }}
+<a href="{{ post.url }}">
+	<div class="post-card">
+		<img src="{{ post.data.image }}" alt="{{ post.data.title }}" class="post-image">
+		<div class="post-content">
+			<h2>{{ post.data.title }}</h2>
+			<div>
+				<span class="post-date">{{ post.date | date: "%Y.%m.%d" }}</span>
+				{% if post.data.publicTags %}
+					{% for tag in post.data.publicTags %}
+						<span class="post-tag">{{ tag }}</span>
+					{% endfor %}
+				{% endif %}
+			</div>
+			<span class="post-description">{{ post.data.description }}</span>
+		</div>
+	</div>
+</a>
 {% endfor %}

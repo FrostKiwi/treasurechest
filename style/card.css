@@ -1,0 +1,69 @@
+.post-card {
+	display: flex;
+	align-items: center;
+	margin-bottom: 20px;
+	box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.5);
+	border-radius: 10px;
+	overflow: hidden;
+	color: #49002d;
+	background-color: #ffe4f5;
+	/* Solid background */
+	padding: 10px;
+	/* Added padding around the card content */
+}
+
+.post-card:hover {
+	background-color: #a4607d;
+}
+
+.post-card img {
+	margin-bottom: 0px;
+}
+
+.post-image {
+	width: 100px;
+	/* Fixed width for image */
+	height: 100px;
+	/* Fixed height for image */
+	object-fit: cover;
+	/* Ensure the image covers the area */
+	border-radius: 10px;
+	/* Rounded corners */
+}
+
+.post-content {
+	flex-grow: 1;
+	padding-left: 15px;
+	text-align: left;
+	/* Left-aligning the text */
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	/* Centering the content vertically */
+}
+
+.post-content h2 {
+	margin: 0;
+	margin-bottom: 4px;
+	color: #a9015e;
+}
+
+.post-date {
+	color: #666;
+	font-size: 0.9em;
+}
+
+.post-description {
+	color: #333;
+}
+
+.post-tag {
+	display: inline-block;
+	padding: 4px 8px;
+	margin-left: 4px;
+	background-color: #8e476e;
+	color: #ffe4f5;
+	border-radius: 15px;
+	/* Pill shape */
+	font-size: 0.8em;
+}
