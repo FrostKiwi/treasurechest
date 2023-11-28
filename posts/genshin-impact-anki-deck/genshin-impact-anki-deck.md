@@ -18,7 +18,7 @@ All cards have in-game sound + screenshot and almost all have additionally a dic
 
 | Dictionary Audio                                                                             | In-game audio                                                                                |
 | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| <audio controls><source src="/assets/genshin-audio/teki_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="/assets/genshin-audio/teki_game.mp3" type="audio/mpeg"></audio> |
+| <audio controls><source src="teki_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="teki_game.mp3" type="audio/mpeg"></audio> |
 
 ### Why Genshin Impact?
 
@@ -30,14 +30,14 @@ Paimon often describes a situation, which was witnessed by the player mere momen
 
 | Dictionary Audio                                                                                | In-game audio                                                                                   |
 | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| <audio controls><source src="/assets/genshin-audio/tsurusu_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="/assets/genshin-audio/tsurusu_game.mp3" type="audio/mpeg"></audio> |
+| <audio controls><source src="tsurusu_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="tsurusu_game.mp3" type="audio/mpeg"></audio> |
 
 And sometimes Paimon straight up becomes a dictionary herself and defines a word like a glossary text would.
 ![image](https://user-images.githubusercontent.com/60887273/167430735-7d2e709e-df54-488a-a9c5-ee27df7d03ed.png)
 
 | Dictionary Audio                                                                            | In-game audio                                                                               |
 | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| <audio controls><source src="/assets/genshin-audio/oru_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="/assets/genshin-audio/oru_game.mp3" type="audio/mpeg"></audio> |
+| <audio controls><source src="oru_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="oru_game.mp3" type="audio/mpeg"></audio> |
 
 There is a very dialog- and lore-heavy story-line in Dragonspine involving Albedo, which has some of the most information dense dialog of the game. Paimon often commented, how she completely lost the plot and didn't understand anything. During that story line I felt as if Paimon was sympathizing with me, as I battled my way to understanding that story-line. For me, Paimon really made this game shine as a learning tool.
 
@@ -52,7 +52,7 @@ It's common knowledge that media uses artistic delivery in speech, has speech pa
 
 | Dictionary Audio                                                                               | In-game audio                                                                                  |
 | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| <audio controls><source src="/assets/genshin-audio/homare_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="/assets/genshin-audio/homare_game.mp3" type="audio/mpeg"></audio> |
+| <audio controls><source src="homare_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="homare_game.mp3" type="audio/mpeg"></audio> |
 
 I used the 誉れです expression instinctively from time to time and just recently someone noted, that this expression has a rather archaic, regal tone. It was quite the funny situation, but it goes to show, that even knowing what kind of media I was consuming still didn't save me from tripping up. Coming from outside the language it's unavoidable to misinterpret an expression's nuance I guess. Though in this case, the in-game dialog should have really tipped me off, as the character speaking, Ninguang, uses it to tell a joke with a somewhat sarcastic undertone.
 
@@ -69,7 +69,7 @@ I used the 誉れです expression instinctively from time to time and just rece
 
 | Dictionary Audio                                                                               | In-game audio                                                                                  |
 | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| <audio controls><source src="/assets/genshin-audio/hitome_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="/assets/genshin-audio/hitome_game.mp3" type="audio/mpeg"></audio> |
+| <audio controls><source src="hitome_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="hitome_game.mp3" type="audio/mpeg"></audio> |
 
 - Characters speaking Kansai dialect have received there own tag "Kansaidialect".
 
@@ -77,7 +77,7 @@ I used the 誉れです expression instinctively from time to time and just rece
 
 | Dictionary Audio                                                                               | In-game audio                                                                                  |
 | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| <audio controls><source src="/assets/genshin-audio/meccha_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="/assets/genshin-audio/meccha_game.mp3" type="audio/mpeg"></audio> |
+| <audio controls><source src="meccha_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="meccha_game.mp3" type="audio/mpeg"></audio> |
 
 #### Grammar
 
@@ -87,7 +87,7 @@ I also have a bunch of grammar cards mixed in, when I encountered new pieces of 
 
 | Dictionary Audio                                                                               | In-game audio                                                                                  |
 | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| <audio controls><source src="/assets/genshin-audio/tohaie_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="/assets/genshin-audio/tohaie_game.mp3" type="audio/mpeg"></audio> |
+| <audio controls><source src="tohaie_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="tohaie_game.mp3" type="audio/mpeg"></audio> |
 
 A big surprise to me was the [YomiChan](https://github.com/FooSoft/yomichan) dictionary ["KireiCake"](https://foosoft.net/projects/yomichan/#dictionaries) having URL-shortened links from time to time, like [waa.ai/v4YY](https://waa.ai/v4YY) in the above card. In this case it leads to an [in-depth discussion on Yahoo](https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q1317655948) about that grammar point. [(Archive Link, in case it goes down)](http://web.archive.org/web/20220508092155/https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q1317655948) The love and patience of the Japanese learning online community is truly magnificent. From /djt/ threads on image-boards to [user-scripts connecting Kanji learn services to a collection of example recordings from Anime.](https://community.wanikani.com/t/userscript-anime-context-sentences/54003?u=frostkiwi) Stuff like that has me in awe.
 
@@ -101,7 +101,7 @@ In the beginning I did toggle to English to screenshot the English version for t
 
 | Dictionary Audio                                                                              | In-game audio                                                                                 |
 | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| <audio controls><source src="/assets/genshin-audio/unmei_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="/assets/genshin-audio/unmei_game.mp3" type="audio/mpeg"></audio> |
+| <audio controls><source src="unmei_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="unmei_game.mp3" type="audio/mpeg"></audio> |
 
 ### How it was captured
 

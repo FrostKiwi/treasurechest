@@ -1,3 +1,4 @@
+const { execSync } = require('child_process');
 const CleanCSS = require("clean-css");
 const faviconPlugin = require("eleventy-favicon");
 const pluginRss = require("@11ty/eleventy-plugin-rss");
@@ -9,6 +10,10 @@ module.exports = function (eleventyConfig) {
 	eleventyConfig.addPlugin(syntaxHighlight);
 	/* The required CSS for the PrimJS color theme */
 	eleventyConfig.addPassthroughCopy("assets");
+	eleventyConfig.on('beforeBuild', () => {
+		// Run the custom script before building the site
+		execSync('node moveAssets.js');
+	});
 
 	/* CSS minifier as per https://www.11ty.dev/docs/quicktips/inline-css/ */
 	eleventyConfig.addFilter("cssmin", function (code) {
