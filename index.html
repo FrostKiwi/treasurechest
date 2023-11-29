@@ -4,7 +4,7 @@ layout: layout.html
 {% for post in collections.post reversed %}
 <a href="{{ post.url }}">
 	<div class="post-card">
-		<img src="{{ post.data.image }}" alt="{{ post.data.title }}" class="post-image">
+		<img src="{{ post.url }}/{{ post.data.image }}" alt="{{ post.data.title }}" class="post-image">
 		<div class="post-content">
 			<h2>{{ post.data.title }}</h2>
 			<div>

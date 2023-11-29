@@ -8,13 +8,13 @@ publicTags:
   - Language
   - Learning
   - Japanese
-image: https://user-images.githubusercontent.com/60887273/167257089-8ebc1518-8e91-4b0d-b19b-e23da4e2fb74.png
+image: tekisetsu.png
 ---
 
 It's quite the tradition among Japanese learners to publish parts of their Anki [Mining](https://animecards.site/yomichansetup/#setting-up-yomichan) decks, so others may get inspired by them or straight up use them. This ~1000 note deck is an excerpt of my Mining deck, which was/is being created in-part from the video game [Genshin Impact](https://genshin.hoyoverse.com/en/home). This post will go into the thought process behind the deck, how it was created and has sound clips in this GitHub page below every screenshot for reference (muted by default on Github, gotta unmute before playing). Of course, using someone else's Mining deck doesn't carry nearly the same benefit as making one yourself, so this article is mainly to just document my workflow and to provide a jumping-off point for people setting up their own. [**Link to the deck on Ankiweb**](https://ankiweb.net/shared/info/870567459) (If AnkiWeb ends up pulling the deck due to copyright concerns, a copy is in the release section [here](https://github.com/FrostKiwi/treasurechest/releases/download/genshindeckv1/Genshin.Impact.Japanese.with.media.apkg))
 
 All cards have in-game sound + screenshot and almost all have additionally a dictionary sound file + pitch accent.
-![image](https://user-images.githubusercontent.com/60887273/167257089-8ebc1518-8e91-4b0d-b19b-e23da4e2fb74.png)
+![image](tekisetsu.png)
 
 | Dictionary Audio                                                                             | In-game audio                                                                                |
 | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -26,14 +26,14 @@ A couple of things come together to make Genshin quite the enjoyable learning ex
 
 Another point is the writing style. A hotly debated topic in the player-base, is whether or not the addition of Paimon hurts the delivery of the story. The character constantly summarizes events happening and repeats commands or requests, that were given by another character just moments ago during dialog. The main criticism often brought up is that this makes the story-flow very child-like, which is a rather obvious design goal of the game - catering to a younger audience. What may be a sore in the eyes of many a player though, is a godsend in the eyes of a language learner.
 Paimon often describes a situation, which was witnessed by the player mere moments ago, making the actual statement of a sentence trivial to understand.
-![image](https://user-images.githubusercontent.com/60887273/167426600-cea0b78e-a6a4-4a01-b88a-8e0392325046.png)
+![image](tsurusu.png)
 
 | Dictionary Audio                                                                                | In-game audio                                                                                   |
 | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | <audio controls><source src="tsurusu_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="tsurusu_game.mp3" type="audio/mpeg"></audio> |
 
 And sometimes Paimon straight up becomes a dictionary herself and defines a word like a glossary text would.
-![image](https://user-images.githubusercontent.com/60887273/167430735-7d2e709e-df54-488a-a9c5-ee27df7d03ed.png)
+![image](oru.png)
 
 | Dictionary Audio                                                                            | In-game audio                                                                               |
 | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
@@ -48,7 +48,7 @@ I'm constantly surprised how much Genshin has propelled my speech forward. Simil
 #### The dangerous outcome
 
 It's common knowledge that media uses artistic delivery in speech, has speech patterns rarely used in everyday life and uses a stylized way of writing. Basically all of it is [役割語](https://ja.wikipedia.org/wiki/%E5%BD%B9%E5%89%B2%E8%AA%9E). And yet, knowing that I still managed to trip up in minor ways. Case in point:
-![image](https://user-images.githubusercontent.com/60887273/167408083-1cce9a93-172b-4e2a-b7b7-6f8937bbce63.png)
+![image](homare.png)
 
 | Dictionary Audio                                                                               | In-game audio                                                                                  |
 | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
@@ -65,7 +65,7 @@ I used the 誉れです expression instinctively from time to time and just rece
 - To fit inside the AnkiWeb limit of 256 MB, all images were resized from the 1080p originals to fit a 1366x768 rectangle with aggressive 81% JPEG Quality and in-game dialog are mono MP3 files.
 - When I write "here: ..." I am referring to a word being used in a more specialized sense in the in-game dialog, like 人目 vs 人目を忍ぶ. In those cases two definitions are provided. This is to make the learning process a bit more compact and to prevent not being able to translate a sentence, whilst having just half of the definition.
 
-![hitome](https://user-images.githubusercontent.com/60887273/167301152-40a0d15a-20f1-40ab-93ab-b7d86a6e591e.png)
+![hitome](hitome.png)
 
 | Dictionary Audio                                                                               | In-game audio                                                                                  |
 | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
@@ -73,7 +73,7 @@ I used the 誉れです expression instinctively from time to time and just rece
 
 - Characters speaking Kansai dialect have received there own tag "Kansaidialect".
 
-![meccha](https://user-images.githubusercontent.com/60887273/167292541-94b7a289-e5fd-4a07-a80a-6b3f70381af1.png)
+![meccha](meccha.png)
 
 | Dictionary Audio                                                                               | In-game audio                                                                                  |
 | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
@@ -83,7 +83,7 @@ I used the 誉れです expression instinctively from time to time and just rece
 
 I also have a bunch of grammar cards mixed in, when I encountered new pieces of grammar and recognized it as such. For those I pasted the excellent [JLPT Sensei](https://jlptsensei.com/) summary images.
 
-![kireicake](https://user-images.githubusercontent.com/60887273/167289347-d798a637-fd49-46c7-a2fd-2a2170cce7ec.png)
+![kireicake](tohaie.png)
 
 | Dictionary Audio                                                                               | In-game audio                                                                                  |
 | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
@@ -97,7 +97,7 @@ In the beginning I did toggle to English to screenshot the English version for t
 
 > Don't use the field 'Sentence-English' in your mined cards. In fact, get rid of it once you have a solid understanding of Japanese. When you mine something you should already have understood the sentence using the additional information on your cards.
 
-![image](https://user-images.githubusercontent.com/60887273/167288657-68cde527-88a7-480c-9aef-3f78191781b4.png)
+![image](unmei.png)
 
 | Dictionary Audio                                                                              | In-game audio                                                                                 |
 | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
