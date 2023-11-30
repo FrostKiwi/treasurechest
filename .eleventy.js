@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const { execSync } = require('child_process');
 const CleanCSS = require("clean-css");
 const faviconPlugin = require("eleventy-favicon");
@@ -25,10 +27,15 @@ module.exports = function (eleventyConfig) {
 
 	/* HTML minifier */
 	eleventyConfig.addPlugin(eleventyPluginFilesMinifier);
-	
+
 	/* SVG -> All Favicon variants packer */
 	eleventyConfig.addPlugin(faviconPlugin);
 
 	/* RSS Plugin */
 	eleventyConfig.addPlugin(pluginRss);
+
+	eleventyConfig.addShortcode("rawFile", (filename) => {
+		const bytesOfFile = fs.readFileSync(filename);
+		return bytesOfFile.toString();
+	});
 };

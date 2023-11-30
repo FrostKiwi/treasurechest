@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<title>FrostKiwi's Secrets</title>	
-	{% favicon 'img/favicon.svg' %}
+	{% favicon 'assets/icons/favicon.svg' %}
 	<meta name="author" content="Wladislav Artsimovich">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="TechBlog and secret sauce recipes of Wladislav Artsimovich">
@@ -33,7 +33,11 @@
 
 <body>
 	<header>
-		<h1>{{ title | default: "FrostKiwi's Secrets"}}</h1>
+		<h1 class="title">{{ title | default: "FrostKiwi's Secrets"}}</h1>
+		<div class="social">
+			<a href="https://www.youtube.com/@FrostKiwi/"><img src="/assets/icons/youtube.svg"></a>
+			<a href="/feed.xml"><img src="/assets/icons/rss-solid.svg"></a>
+		</div>
 	</header>
 	<main>
 		{{ content }}
