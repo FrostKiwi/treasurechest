@@ -7,7 +7,7 @@ description: Codepoint files to process only the most used Japanese Kanji of a f
 publicTags:
   - unicode
   - i18n
-  - C
+  - Japanese
 image: thumbnail.png
 ---
 These files allow you to select or subset just the  2136 [Jōyō kanji](https://en.wikipedia.org/wiki/J%C5%8Dy%C5%8D_kanji) Unicode codepoints for Japanese. It's a good middle ground between having only Kana and including the all 21000 characters of the complete [CJK block](https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_(Unicode_block)) for embedded use-cases. How to use these files and how to subset fonts is [covered here](https://github.com/Immediate-Mode-UI/Nuklear/wiki/Complete-font-guide#subsetting-compressing-appending-to-the-binary). Note, that not all HEX codes are 4 digit / within 16-bit, the last one 𠮟 is HEX `20B9F`. Eyes open, in case your program you use these HEX values in is picky about formatting. It's a late edition to the Unicode standard [because reasons (article “𠮟る” と “叱る” by @hydrocul)](https://hydrocul.github.io/wiki/blog/2014/1201-shikaru.html) and is thus the only 5 digit HEX Jōyō kanji. The variant 叱 `53F1` is also listed, since it's usually the assumed default. ([Archive link in case that article goes down](https://web.archive.org/web/20210405065949/https://hydrocul.github.io/wiki/blog/2014/1201-shikaru.html)).
