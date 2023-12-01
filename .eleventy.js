@@ -1,5 +1,4 @@
 const fs = require("fs");
-const path = require("path");
 const { execSync } = require('child_process');
 const CleanCSS = require("clean-css");
 const faviconPlugin = require("eleventy-favicon");
