@@ -33,12 +33,35 @@
 
 <body>
 	<header>
-		<h1 class="title"><img class="kiwi" src="/assets/kiwis/detective.svg"> {{ title | default: "FrostKiwi's Secrets"}}</h1>
-		<div class="social">
-			<a href="https://www.youtube.com/@FrostKiwi/"><img class="youtube" src="/assets/icons/youtube.svg"></a>
-			<a href="https://github.com/FrostKiwi"><img class="rss" src="/assets/icons/github.svg"></a>
-			<a href="/feed.xml"><img class="rss" src="/assets/icons/rss.svg"></a>
+		<div class="top-bar">
+			<img class="kiwi" src="/assets/kiwis/detective.svg">
+			<script>
+				(() => {
+					var kiwis = [
+						'/assets/kiwis/detective.svg',
+						'/assets/kiwis/facepalm.svg',
+						'/assets/kiwis/happy.svg',
+						'/assets/kiwis/ice.svg',
+						'/assets/kiwis/love.svg',
+						'/assets/kiwis/miffed.svg',
+						'/assets/kiwis/party.svg',
+						'/assets/kiwis/sad.svg',
+						'/assets/kiwis/surprised.svg',
+						'/assets/kiwis/teach.svg',
+						'/assets/kiwis/think.svg'
+					];
+					document.querySelector('.kiwi').src = kiwis[Math.floor(Math.random() * kiwis.length)];
+				})();
+			</script>
+			<a href="/"><h1>FrostKiwi's Secrets</h1></a>
+			<a href="/about">About</a>
+			<div class="social">
+				<a href="https://www.youtube.com/@FrostKiwi/"><img class="social_icon" src="/assets/icons/youtube.svg"></a>
+				<a href="https://github.com/FrostKiwi"><img class="social_icon" src="/assets/icons/github.svg"></a>
+				<a href="/feed.xml"><img class="social_icon" src="/assets/icons/rss.svg"></a>
+			</div>
 		</div>
+		<h2>{{ title }}</h2>
 	</header>
 	<main>
 		{{ content }}

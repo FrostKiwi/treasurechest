@@ -10,14 +10,23 @@ main img {
 
 .kiwi {
 	height: 64px;
-	margin-bottom: 0px;
 }
 
-header {
+.top-bar {
 	display: flex;
 	justify-content: space-between;
-	align-items: end;
+	align-items: center;
 	text-shadow: 0px 0px 25px rgba(0, 0, 0, .5);
+	gap: 8px;
+}
+
+.top-bar img,
+.top-bar h1 {
+	margin: 0px;
+}
+
+.top-bar>*:hover {
+	border-bottom: 0px;
 }
 
 .social {
@@ -27,7 +36,6 @@ header {
 
 .social img {
 	height: 48px;
-	margin-bottom: 4px;
 }
 
 /* Little hack because end alligned elements jump with border bottom */
@@ -35,16 +43,12 @@ header {
 	border-bottom: 0px;
 }
 
-.youtube {
+.social_icon {
 	filter: drop-shadow(0px 0px 15px rgba(0, 0, 0, .25));
 }
 
-.youtube:hover {
-	filter: invert(49%) sepia(11%) saturate(1809%) hue-rotate(282deg) brightness(70%) contrast(88%) drop-shadow(0px 0px 15px rgba(0, 0, 0, .25));
-}
-
-.rss:hover {
-	filter: invert(49%) sepia(11%) saturate(1809%) hue-rotate(282deg) brightness(70%) contrast(88%) drop-shadow(0px 0px 15px rgba(0, 0, 0, .25));
+.social_icon:hover {
+	filter: brightness(5%) invert(37%) sepia(23%) saturate(6807%) hue-rotate(332deg) brightness(92%) contrast(84%) drop-shadow(0px 0px 15px rgba(0, 0, 0, .25));
 }
 
 .flag {
