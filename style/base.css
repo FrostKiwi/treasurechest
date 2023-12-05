@@ -8,6 +8,12 @@ main img {
 	margin-right: auto;
 }
 
+audio {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
 .kiwi {
 	height: 80px;
 	width: 80px;
