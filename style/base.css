@@ -9,15 +9,35 @@ main img {
 }
 
 .kiwi {
-	height: 64px;
+	height: 80px;
+	width: 80px;
 }
 
 .top-bar {
 	display: flex;
 	justify-content: space-between;
-	align-items: center;
+	align-items: end;
+	flex-direction: row;
 	text-shadow: 0px 0px 25px rgba(0, 0, 0, .5);
+	gap: 10px;
+}
+
+.left_group {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-direction: row;
 	gap: 8px;
+}
+
+.right_group {
+	font-size: larger;
+	letter-spacing: 0.5rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-direction: column;
+	gap: 2px;
 }
 
 .top-bar img,
@@ -25,13 +45,21 @@ main img {
 	margin: 0px;
 }
 
-.top-bar>*:hover {
+.top-bar a {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.no_border:hover {
 	border-bottom: 0px;
 }
 
 .social {
 	display: flex;
-	gap: 10px;
+	gap: 4px;
 }
 
 .social img {
@@ -59,6 +87,6 @@ main img {
 
 .profile {
 	float: left;
-	width: 25%;
+	width: 22%;
 	margin-right: 20px;
 }

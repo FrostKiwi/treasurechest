@@ -3,18 +3,19 @@
 
 <head>
 	<meta charset="utf-8">
-	<title>FrostKiwi's Secrets</title>	
+	<title>FrostKiwi's Secrets</title>
 	{% favicon 'assets/kiwis/happy.svg' %}
 	<meta name="author" content="Wladislav Artsimovich">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="TechBlog and secret sauce recipes of Wladislav Artsimovich">
 
+	<!-- beautify ignore:start -->
 	<!-- Post tags become HTML keywords -->
 	{% assign post = collections.post | where: "url", page.url | first %}
-	{% if post.data.publicTags %}
-		{% assign keywords = post.data.publicTags | join: ', ' %}
-	{% else %}
-		{% assign keywords = "tech blog, programming, graphics" %}
+		{% if post.data.publicTags %}
+			{% assign keywords = post.data.publicTags | join: ', ' %}
+		{% else %}
+			{% assign keywords = "tech blog, programming, graphics" %}
 	{% endif %}
 	<meta name="keywords" content="{{ keywords }}">
 
@@ -26,39 +27,52 @@
 		{% include 'style/base.css' %}
 		{% include 'style/card.css' %}
 	{% endcapture %}
+	
 	<style>
 		{{ css | cssmin }}
 	</style>
+	<!-- beautify ignore:end -->
 </head>
 
 <body>
 	<header>
 		<div class="top-bar">
-			<img class="kiwi" src="/assets/kiwis/detective.svg">
-			<script>
-				(() => {
-					var kiwis = [
-						'/assets/kiwis/detective.svg',
-						'/assets/kiwis/facepalm.svg',
-						'/assets/kiwis/happy.svg',
-						'/assets/kiwis/ice.svg',
-						'/assets/kiwis/love.svg',
-						'/assets/kiwis/miffed.svg',
-						'/assets/kiwis/party.svg',
-						'/assets/kiwis/sad.svg',
-						'/assets/kiwis/surprised.svg',
-						'/assets/kiwis/teach.svg',
-						'/assets/kiwis/think.svg'
-					];
-					document.querySelector('.kiwi').src = kiwis[Math.floor(Math.random() * kiwis.length)];
-				})();
-			</script>
-			<a href="/"><h1>FrostKiwi's Secrets</h1></a>
-			<a href="/about">About</a>
-			<div class="social">
-				<a href="https://www.youtube.com/@FrostKiwi/"><img class="social_icon" src="/assets/icons/youtube.svg"></a>
-				<a href="https://github.com/FrostKiwi"><img class="social_icon" src="/assets/icons/github.svg"></a>
-				<a href="/feed.xml"><img class="social_icon" src="/assets/icons/rss.svg"></a>
+			<div class="left_group">
+				<img class="kiwi" src="/assets/kiwis/detective.svg">
+				<script>
+					(() => {
+						const kiwis = [
+							'/assets/kiwis/detective.svg',
+							'/assets/kiwis/facepalm.svg',
+							'/assets/kiwis/happy.svg',
+							'/assets/kiwis/ice.svg',
+							'/assets/kiwis/love.svg',
+							'/assets/kiwis/miffed.svg',
+							'/assets/kiwis/party.svg',
+							'/assets/kiwis/sad.svg',
+							'/assets/kiwis/surprised.svg',
+							'/assets/kiwis/teach.svg',
+							'/assets/kiwis/think.svg'
+						];
+						const randomKiwi = () => document.querySelector('.kiwi').src = kiwis[Math.floor(Math.random() * kiwis.length)];
+						document.querySelector('.kiwi').onclick = randomKiwi;
+						randomKiwi();
+					})();
+				</script>
+				<a class="no_border" href="/">
+					<h1>FrostKiwi's<br>Secrets</h1>
+				</a>
+			</div>
+			<div class="right_group">
+				<a class="no_border" href="/about">
+					About
+				</a>
+				<div class="social">
+					<a href="https://www.youtube.com/@FrostKiwi/"><img class="social_icon"
+							src="/assets/icons/youtube.svg"></a>
+					<a href="https://github.com/FrostKiwi"><img class="social_icon" src="/assets/icons/github.svg"></a>
+					<a href="/feed.xml"><img class="social_icon" src="/assets/icons/rss.svg"></a>
+				</div>
 			</div>
 		</div>
 		<h2>{{ title }}</h2>
