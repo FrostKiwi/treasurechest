@@ -22,13 +22,10 @@
 
 .post-image {
 	width: 100px;
-	/* Fixed width for image */
 	height: 100px;
-	/* Fixed height for image */
+	aspect-ratio: 1;
 	object-fit: cover;
-	/* Ensure the image covers the area */
 	border-radius: 10px;
-	/* Rounded corners */
 }
 
 .post-content {
@@ -49,7 +46,8 @@
 }
 
 .post-date {
-	color: #666;
+	font-weight: 500;
+	color: rgba(0, 0, 0, 0.5);
 	font-size: 0.9em;
 }
 

@@ -108,3 +108,21 @@ audio {
 		letter-spacing: 0.1rem;
 	}
 }
+
+.dates {
+	padding-top: 2px;
+	font-weight: 500;
+	display: flex;
+	justify-content: start;
+	flex-direction: row;
+	font-size: small;
+	gap: 8px;
+}
+
+.created{
+	color: rgba(255, 255, 255, 0.445);
+}
+
+.last_modified{
+	color: rgba(255, 255, 255, 0.253);
+}

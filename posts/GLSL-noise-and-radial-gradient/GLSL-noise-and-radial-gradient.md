@@ -2,7 +2,7 @@
 title: GLSL banding-free gradients
 permalink: "/{{ page.fileSlug }}/"
 date: 2023-10-19
-last_modified: 2023.10.22
+last_modified: 2023-10-22
 description: Smooth gradients with a clever Noise one-liner by SLEDGEHAMMER Games
 publicTags:
   - OpenGL

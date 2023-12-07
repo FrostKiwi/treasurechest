@@ -75,7 +75,16 @@
 				</div>
 			</div>
 		</div>
-		<h2>{{ title }}</h2>
+		<h2>{{ title }}
+			{% if date %}
+			<div class="dates">
+				<div class="created">Created: {{ date | date: "%Y.%m.%d" }}</div>
+				{% if last_modified %}
+				<div class="last_modified">Last edit: {{ last_modified | date: "%Y.%m.%d" }}</div>
+				{% endif %}
+			</div>
+			{% endif %}
+		</h2>
 	</header>
 	<main>
 		{{ content }}
