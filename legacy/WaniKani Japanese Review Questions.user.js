@@ -13,14 +13,33 @@
 // Version 0.5.0 applies to Reviews, Lesson Quizzes and extra studies
 
 (function () {
-	var container = document.querySelector('.quiz-input__question-type-container');
-	var categorySpan = document.querySelector('.quiz-input__question-category');
-	var typeSpan = document.querySelector('.quiz-input__question-type');
+	const translations = {
+		'vocabulary': '単語の',
+		'radical': '部首の',
+		'kanji': '漢字の',
+		'reading': '読み',
+		'onyomi': '音読み',
+		'kunyomi': '訓読み',
+		'meaning': '意味',
+		'name': '名'
+	};
 
-	function replaceText(element, text) {
-		element.innerText = text;
+	let reading_type = null;
+
+	const container = document.querySelector('.quiz-input__question-type-container');
+	const categorySpan = document.querySelector('.quiz-input__question-category');
+	const typeSpan = document.querySelector('.quiz-input__question-type');
+
+	function replaceText(element) {
+		const text = element.innerText.toLowerCase();
+		if (translations[text]) {
+			element.innerText = translations[text];
+			if (reading_type && text == 'reading') {
+				element.innerText = translations[reading_type];
+			}
+		}
 	}
-	/* Strip Whitespace without messing with he styling */
+
 	function clearWhitespace() {
 		Array.from(container.childNodes).forEach(node => {
 			if (node.nodeType === Node.TEXT_NODE && !node.textContent.trim()) {
@@ -28,37 +47,22 @@
 			}
 		});
 	}
-	var observer = new MutationObserver(function (mutations) {
-		mutations.forEach(function (mutation) {
-			if (mutation.type === 'childList') {
-				switch (categorySpan.innerText) {
-					case 'Vocabulary':
-						replaceText(categorySpan, '単語の');
-						break;
-					case 'Radical':
-						replaceText(categorySpan, '部首の');
-						break;
-					case 'Kanji':
-						replaceText(categorySpan, '漢字の');
-						break;
-				}
 
-				switch (typeSpan.innerText) {
-					case 'Reading':
-						replaceText(typeSpan, '読み');
-						break;
-					case 'Meaning':
-						replaceText(typeSpan, '意味');
-						break;
-				}
-			}
-		});
+	const newQuestion = function (e) {
+		if (e.detail.subject.type == 'Kanji' && e.detail.questionType == "reading") {
+			reading_type = e.detail.subject.primary_reading_type;
+		} else {
+			reading_type = null;
+		}
+	}
 
+	const observer = new MutationObserver(function () {
 		clearWhitespace();
+		replaceText(categorySpan);
+		replaceText(typeSpan);
 	});
 
-	var config = { childList: true };
-
-	observer.observe(categorySpan, config);
-	observer.observe(typeSpan, config);
+	window.addEventListener('willShowNextQuestion', newQuestion);
+	observer.observe(categorySpan, { childList: true });
+	observer.observe(typeSpan, { childList: true });
 })();
