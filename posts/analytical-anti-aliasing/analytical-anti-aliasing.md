@@ -8,7 +8,7 @@ publicTags:
   - OpenGL
   - WebGL
   - GameDev
-image:
+image: thumbnail.png
 ---
 ![image](compare.png)
 <audio controls><source src="tf2-dev-commentary.mp3" type="audio/mpeg"></audio>
