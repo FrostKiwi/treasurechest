@@ -20,7 +20,7 @@ The point of the Shader is to get banding free gradients, using a single pass an
 Resulting Gradient: (Click image to view in 1:1 pixel scaling to properly judge the banding-freeness)
 [![image](radial.png)](radial.png)
 Technically the proper way to achieve this is to perform [error diffusion dithering](https://en.wikipedia.org/wiki/Error_diffusion), since that would breakup just the quantized steps of the gradient, without touching the color between the steps. But other than [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering), there is no GPU friendly way to do this and [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering) doesn't look nice. Adding noise in the context of gradients works just fine though, even though it's not proper error diffusion. Simply applying noise with the strength of one 8-bit grayscale value `(1.0 / 255.0) * gradientNoise(gl_FragCoord.xy)` side-steps a bunch of issues and the code footprint is tiny to boot.
-### Vertex Shader
+## Vertex Shader
 Here is the Bufferless variant, but can be rewritten to work with even the most basic OpenGL or WebGL standard.
 ```glsl
 #version 330
@@ -38,7 +38,7 @@ void main()
     gl_Position = vec4(pos[gl_VertexID], 0.0, 1.0);
 }
 ```
-### Fragment Shader
+## Fragment Shader
 ```glsl
 #version 330
 in vec2 tex;

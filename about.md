@@ -12,12 +12,12 @@ Born in Belarus <img class="flag" src="/assets/icons/by.svg">, raised in Germany
 
 I run the tech-focused YouTube Channel [FrostKiwi](https://www.youtube.com/@FrostKiwi).
 
-### Stuff that I'm really good at
+## Stuff that I'm really good at
 * Low level & C programming
 * GLSL & Graphics programming
 * Medical imaging
 * Video production
 
 
-#### Disclaimer
+## Disclaimer
 Views and opinions expressed on this blog are solely my own and do not reflect those of my employers.

@@ -24,5 +24,5 @@ As the name suggests, it's [just a minimal HTML](just-a-textbox.html) file servi
 ```
 </details>
 
-### Usage example
+## Usage example
 ![](hello-textbox.png)

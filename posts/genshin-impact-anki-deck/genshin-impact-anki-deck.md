@@ -20,7 +20,7 @@ All cards have in-game sound + screenshot and almost all have additionally a dic
 | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | <audio controls><source src="teki_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="teki_game.mp3" type="audio/mpeg"></audio> |
 
-### Why Genshin Impact?
+## Why Genshin Impact?
 
 A couple of things come together to make Genshin quite the enjoyable learning experience. The obvious first: Except minor side quests, all dialogs are voiced and progress sentence by sentence, click by click, as is common in JRPGs and visual novels. This gives enough time to grasp the dialog's content. Funnily enough, in-game time does not stop during dialogs except in some quests, so sometimes multiple in-game days would pass by, as I grasped the contents of a dialog.
 
@@ -41,11 +41,11 @@ And sometimes Paimon straight up becomes a dictionary herself and defines a word
 
 There is a very dialog- and lore-heavy story-line in Dragonspine involving Albedo, which has some of the most information dense dialog of the game. Paimon often commented, how she completely lost the plot and didn't understand anything. During that story line I felt as if Paimon was sympathizing with me, as I battled my way to understanding that story-line. For me, Paimon really made this game shine as a learning tool.
 
-#### The good outcome
+### The good outcome
 
 I'm constantly surprised how much Genshin has propelled my speech forward. Similar to a movie you can quote decades later or video game moments being etched into memory, there is something about the media we consume, that makes it stick. I found myself using and recalling vocabulary acquired via Genshin faster than from other sources. Or maybe it's just that video games make you engage with their world and characters for far longer and with much more intensity, than other forms of indirect-study could.
 
-#### The dangerous outcome
+### The dangerous outcome
 
 It's common knowledge that media uses artistic delivery in speech, has speech patterns rarely used in everyday life and uses a stylized way of writing. Basically all of it is [役割語](https://ja.wikipedia.org/wiki/%E5%BD%B9%E5%89%B2%E8%AA%9E). And yet, knowing that I still managed to trip up in minor ways. Case in point:
 ![image](homare.png)
@@ -56,7 +56,7 @@ It's common knowledge that media uses artistic delivery in speech, has speech pa
 
 I used the 誉れです expression instinctively from time to time and just recently someone noted, that this expression has a rather archaic, regal tone. It was quite the funny situation, but it goes to show, that even knowing what kind of media I was consuming still didn't save me from tripping up. Coming from outside the language it's unavoidable to misinterpret an expression's nuance I guess. Though in this case, the in-game dialog should have really tipped me off, as the character speaking, Ninguang, uses it to tell a joke with a somewhat sarcastic undertone.
 
-### Info and Structure
+## Info and Structure
 
 - Since this is a mining vocabulary deck, it carries words \*I\* did not know during in-game dialog. I already finished the [Improved Core3k](https://ankiweb.net/shared/info/1060896809) deck, so there are zero duplicates between this deck and Core3k. Besides that, I started the deck shortly before my N4 exam and am now ~~N3~~ N2. Words in the deck are essentially N3 and up, with some easy ones sprinkled in. No in-universe words are saved, like モラ or 目狩り令.
 - The deck captures the main story-line and a few side-quests / story-quests from the beginning up to Inzuma's second chapter.
@@ -79,7 +79,7 @@ I used the 誉れです expression instinctively from time to time and just rece
 | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | <audio controls><source src="meccha_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="meccha_game.mp3" type="audio/mpeg"></audio> |
 
-#### Grammar
+### Grammar
 
 I also have a bunch of grammar cards mixed in, when I encountered new pieces of grammar and recognized it as such. For those I pasted the excellent [JLPT Sensei](https://jlptsensei.com/) summary images.
 
@@ -91,7 +91,7 @@ I also have a bunch of grammar cards mixed in, when I encountered new pieces of 
 
 A big surprise to me was the [YomiChan](https://github.com/FooSoft/yomichan) dictionary ["KireiCake"](https://foosoft.net/projects/yomichan/#dictionaries) having URL-shortened links from time to time, like [waa.ai/v4YY](https://waa.ai/v4YY) in the above card. In this case it leads to an [in-depth discussion on Yahoo](https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q1317655948) about that grammar point. [(Archive Link, in case it goes down)](http://web.archive.org/web/20220508092155/https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q1317655948) The love and patience of the Japanese learning online community is truly magnificent. From /djt/ threads on image-boards to [user-scripts connecting Kanji learn services to a collection of example recordings from Anime.](https://community.wanikani.com/t/userscript-anime-context-sentences/54003?u=frostkiwi) Stuff like that has me in awe.
 
-#### To translate or not to translate
+### To translate or not to translate
 
 In the beginning I did toggle to English to screenshot the English version for the card's back-side, see the example card below. However, on recommendation from members of the [English-Japanese Language Exchange discord server](https://discord.com/invite/japanese), I stopped doing so. Mainly, because of localization discrepancies between both versions. Differences got especially heavy, when more stylized dialogue got involved. But also in part, because this is not recommended for mining in general. Quoting from the Core3k description:
 
@@ -103,7 +103,7 @@ In the beginning I did toggle to English to screenshot the English version for t
 | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | <audio controls><source src="unmei_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="unmei_game.mp3" type="audio/mpeg"></audio> |
 
-### How it was captured
+## How it was captured
 
 If you are completly new to the Mining workflow, check out [AnimeCards.site](https://animecards.site/) before jumping into my specific workflow.
 
@@ -115,7 +115,7 @@ Genshin fails to get captured by the browser, unless it is in window mode. There
 
 If Game2Text has a hook-script for the game in question, then it can hook into the game's memory and read out the dialog strings, forgoing the sometimes imprecise OCR. No such hook-script exists for Genshin Impact (to my knowledge). I tried to create one by poking around with CheatEngine ( https://github.com/cheat-engine/cheat-engine ), but there was no obvious strings-block in memory. I decided to drop that approach due to the worry of having my account banned. If OCR is imprecise, there is always the onscreen dialog box to check against.
 
-#### Handling Audio
+### Handling Audio
 
 Across multiple systems, Game2Text fails to create a card with sound for me though. It successfully captures sound in .wav files, but transcodes them to fully silent .mp3 files, which it attaches to the cards. So instead of working with the .wav files, I simply let Audacity ( https://github.com/audacity/audacity ) capture the sound output via its "Windows WASAPI" mode and the thus unlocked speaker loopback record method in a non-stop recording. On dialog I would select the needed passage and via a macro bound to a hot-key, perform the conversion to mono, normalization and export to an mp3 file.
 
@@ -123,7 +123,7 @@ Originally, I set all audio to be normalized based on setting the peak sample to
 
 It would be optimal to have no music mixed in with the dialog for the sake of cleaner dialog sound during card reviews. However, the music is so incredibly good, that it would have not been even half as enjoyable to go through the game without the music. So often background music plays with the cards. Worst offender being Liyue Harbor's background track, which manages to drown out dialog [during its crescendo](https://youtu.be/t1O7LpOTBfM?t=318).
 
-#### The actual workflow
+### The actual workflow
 
 When I did not recognize a word, I would tab out of the game, select the rectangle in Game2Text to get the transcript. I would then use YomiChan to aid me in understanding the sentence. When the "logs" screen of Game2Text properly recognized the phrase in question, I would then use it to create the card. When not, I would use YomiChan and manually post the screenshot. Also, I screenshot YomiChan's PitchAccent display and paste it into the reading field. Finally, I would tab into audacity, select the needed passage, press the hotkey to export the sound as an mp3 into a folder I had open and Drag&Drop to the current Anki card.
 

@@ -2,18 +2,18 @@
 <html lang="en">
 
 <head>
+	<!-- beautify ignore:start -->
 	<meta charset="utf-8">
 	{% if title %}
-	<title>FrostKiwi - {{ title }}</title>
+		<title>FrostKiwi - {{ title }}</title>
 	{% else %}
-	<title>FrostKiwi's Secrets</title>
+		<title>FrostKiwi's Secrets</title>
 	{% endif %}
 	{% favicon 'assets/kiwis/happy.svg' %}
 	<meta name="author" content="Wladislav Artsimovich">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="description" content="TechBlog and secret sauce recipes of Wladislav Artsimovich">
+	<meta name="description" content="{{ description | default: "TechBlog and secret sauce recipes of Wladislav Artsimovich" }}">
 
-	<!-- beautify ignore:start -->
 	<!-- Post tags become HTML keywords -->
 	{% assign post = collections.post | where: "url", page.url | first %}
 		{% if post.data.publicTags %}

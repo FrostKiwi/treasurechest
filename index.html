@@ -1,12 +1,13 @@
 ---
 layout: layout.html
 ---
+<h1 style="display: none;">FrostKiwi's Blog</h1>
 {% for post in collections.post reversed %}
 <a href="{{ post.url }}">
 	<div class="post-card">
 		<img src="{{ post.data.image }}" alt="{{ post.data.title }}" class="post-image">
 		<div class="post-content">
-			<h1>{{ post.data.title }}</h1>
+			<h2>{{ post.data.title }}</h2>
 			<div>
 				<span class="post-date">{{ post.date | date: "%Y.%m.%d" }}</span>
 				{% if post.data.publicTags %}
