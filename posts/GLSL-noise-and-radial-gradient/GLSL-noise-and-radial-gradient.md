@@ -10,15 +10,16 @@ publicTags:
   - GameDev
 image: threshold.png
 ---
-I'm using this for backgrounds when drawing smooth gradients when doing graphics programming. The point of the Shader is to get banding free gradients, using a single pass and without sampling or texture taps to achieve banding free-ness. It involves the best noise-oneliner I have ever seen. That genius one-liner is not from me, but from  [Jorge Jimenez's presentation on how Gradient noise was implemented in Call of Duty Advanced Warfare](http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare). You can read it on the presentation's slide 123 onwards. It's described as:
+The point of the Shader is to get banding free gradients, using a single pass and without sampling or texture taps to achieve banding free-ness. I'm using this for backgrounds with smooth gradients when doing graphics programming. It involves the best noise one-liner I have ever seen. That genius one-liner is not from me, but from  [Jorge Jimenez's presentation on how Gradient noise was implemented in Call of Duty Advanced Warfare](http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare). You can read it on the presentation's slide 123 onwards. It's described as:
 > [...] a noise function that we could classify as being half way between dithered and random, and that we called Interleaved Gradient Noise.
 
-Thresholding the gradient image below, here is dither pattern, that is created:
+| Gradient of Threshold (zoomed) | Raw Noise (1:1 pixel size) |
+| ----------------- | ------------------- |
+|[![image](threshold.png)](threshold.png)|[![image](raw_noise.png)](raw_noise.png)|
 
-[![image](threshold.png)](threshold.png)
-
-Resulting Gradient: (View in 1:1 pixel scaling to properly judge the banding-freeness)
+Resulting Gradient: (Click image to view in 1:1 pixel scaling to properly judge the banding-freeness)
 [![image](radial.png)](radial.png)
+Technically the proper way to achieve this is to perform [error diffusion dithering](https://en.wikipedia.org/wiki/Error_diffusion), since that would breakup just the quantized steps of the gradient, without touching the color between the steps. But other than [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering), there is no GPU friendly way to do this and [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering) doesn't look nice. Adding noise in the context of gradients works just fine though, even though it's not proper error diffusion. Simply applying noise with the strength of one 8-bit grayscale value `(1.0 / 255.0) * gradientNoise(gl_FragCoord.xy)` side-steps a bunch of issues and the code footprint is tiny to boot.
 ### Vertex Shader
 Here is the Bufferless variant, but can be rewritten to work with even the most basic OpenGL or WebGL standard.
 ```glsl

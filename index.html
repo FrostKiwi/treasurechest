@@ -6,7 +6,7 @@ layout: layout.html
 	<div class="post-card">
 		<img src="{{ post.data.image }}" alt="{{ post.data.title }}" class="post-image">
 		<div class="post-content">
-			<h2>{{ post.data.title }}</h2>
+			<h1>{{ post.data.title }}</h1>
 			<div>
 				<span class="post-date">{{ post.date | date: "%Y.%m.%d" }}</span>
 				{% if post.data.publicTags %}
