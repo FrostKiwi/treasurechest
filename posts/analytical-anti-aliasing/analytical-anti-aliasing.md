@@ -10,6 +10,11 @@ publicTags:
   - GameDev
 image: thumbnail.png
 ---
+In graphics programming, getting rid of the aliasing jaggies is an art form with decades upon decades of maths, techniques and 
+
+<canvas style="width: 100%; height: 200px;"></canvas>
+<script src="canvas_1.js"></script>
+
 ![image](compare.png)
 <audio controls><source src="tf2-dev-commentary.mp3" type="audio/mpeg"></audio>
 > **Alden Kroll:** Two-dimensional HUD elements present a particular art problem, because they have to look good and sharp no matter what resolution the user is running their game at. Given today's availability of high resolution wide-screen displays, this can require a lot of texture memory and a lot of work anticipating different display resolutions. The problem for Team Fortress 2 was even more daunting because of our desire to include a lot of smooth curved elements in our HUD. We developed a new shader system for drawing 'line art' images. The system allows us to create images at a fixed resolution that produced smooth silhouettes even when scaled up to a very high resolution. This shader system also handles outlining and drop-shadows, and can be applied in the 3D space to world elements such as signs.
@@ -20,7 +25,7 @@ This has been documented many times over, by many people in different forms. I u
 Mention connection to Freya the stray and https://acegikmo.com/shapes/
 
 ### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
-Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliased in `GLSL`, but its use doesn't make sense. It performs a hermite interpolation, but the we are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here. Though the slight performance difference doesn't particularly matter on modern graphics cards so wasting cycles on performing the hermite interpolation doesn't make sense to me.
+Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliasing in `GLSL`, but its use doesn't make sense. It performs a hermite interpolation, but the we are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here. Though the slight performance difference doesn't particularly matter on modern graphics cards so wasting cycles on performing the hermite interpolation doesn't make sense to me.
 
 
 
