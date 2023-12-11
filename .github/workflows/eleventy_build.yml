@@ -3,9 +3,10 @@ on: [push]
 
 jobs:
   build_deploy:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Build
         uses: TartanLlama/actions-eleventy@master
       - name: Deploy
@@ -14,3 +15,6 @@ jobs:
           publish_dir: _site 
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
+          runs-on: ubuntu-latest
