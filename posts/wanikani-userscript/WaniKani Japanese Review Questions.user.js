@@ -4,7 +4,7 @@
 // @description Changes the text of the Review or Lesson Quiz question. Original created by hoovard, with extra thanks going to previous authors Rui Pinheiro (LordGravewish) and Ethan.
 // @author    FrostKiwi
 // @match     *://www.wanikani.com/subjects/review*
-// @match     *://www.wanikani.com/subjects/extra_study*
+// @match     *://www.wanikani.com/recent-mistakes*
 // @match     *://www.wanikani.com/subject-lessons*
 // @version     0.5.0
 // @license     Do what you want with it (Preferably improve it).
@@ -25,10 +25,22 @@
 	};
 
 	let reading_type = null;
+	let container = null;
+	let categorySpan = null;
+	let typeSpan = null;
 
-	const container = document.querySelector('.quiz-input__question-type-container');
-	const categorySpan = document.querySelector('.quiz-input__question-category');
-	const typeSpan = document.querySelector('.quiz-input__question-type');
+	/* Predefine the observers to ensure we don't accidentally create more than
+	   two in some unknown edge case */
+	const observerType = new MutationObserver(() => replaceText(typeSpan));
+	const observerCategory = new MutationObserver(() => replaceText(categorySpan));
+
+	function initElements() {
+		container = document.querySelector('.quiz-input__question-type-container');
+		categorySpan = document.querySelector('.quiz-input__question-category');
+		typeSpan = document.querySelector('.quiz-input__question-type');
+		observerType.observe(categorySpan, { childList: true });
+		observerCategory.observe(typeSpan, { childList: true });
+	}
 
 	function replaceText(element) {
 		const text = element.innerText.toLowerCase();
@@ -54,15 +66,11 @@
 		} else {
 			reading_type = null;
 		}
+		if (!container || !categorySpan || !typeSpan) {
+			initElements();
+		}
+		clearWhitespace();
 	}
 
-	const observer = new MutationObserver(function () {
-		clearWhitespace();
-		replaceText(categorySpan);
-		replaceText(typeSpan);
-	});
-
 	window.addEventListener('willShowNextQuestion', newQuestion);
-	observer.observe(categorySpan, { childList: true });
-	observer.observe(typeSpan, { childList: true });
 })();
