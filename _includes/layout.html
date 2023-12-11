@@ -95,6 +95,14 @@
 	</header>
 	<main>
 		{{ content }}
+		{% if tags contains 'post' %}
+		<br>
+		<hr>
+		<h2>Comment via GitHub</h2>
+		<script src="https://utteranc.es/client.js" repo="FrostKiwi/treasurechest" issue-term="pathname"
+			theme="gruvbox-dark" crossorigin="anonymous" async>
+			</script>
+		{% endif %}
 	</main>
 </body>
 
