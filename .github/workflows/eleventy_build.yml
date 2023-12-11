@@ -22,20 +22,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build_deploy:
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@master
-      - name: Build
-        uses: TartanLlama/actions-eleventy@master
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          publish_dir: _site 
-          publish_branch: gh-pages
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-jobs:
   # Single deploy job
   deploy:
     environment:
