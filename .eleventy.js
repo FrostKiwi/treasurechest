@@ -24,6 +24,7 @@ module.exports = function (eleventyConfig) {
 	/* Reload on CSS changes, since 11ty doesn't see them */
 	eleventyConfig.addWatchTarget("style");
 	eleventyConfig.addWatchTarget("assets");
+	eleventyConfig.addWatchTarget("posts");
 
 	/* HTML minifier */
 	eleventyConfig.addPlugin(eleventyPluginFilesMinifier);
