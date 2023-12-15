@@ -21,7 +21,7 @@ Resulting Gradient: (Click image to view in 1:1 pixel scaling to properly judge 
 [![image](radial.png)](radial.png)
 Technically the proper way to achieve this is to perform [error diffusion dithering](https://en.wikipedia.org/wiki/Error_diffusion), since that would breakup just the quantized steps of the gradient, without touching the color between the steps. But other than [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering), there is no GPU friendly way to do this and [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering) doesn't look nice. Adding noise in the context of gradients works just fine though, even though it's not proper error diffusion. Simply applying noise with the strength of one 8-bit grayscale value `(1.0 / 255.0) * gradientNoise(gl_FragCoord.xy)` side-steps a bunch of issues and the code footprint is tiny to boot.
 
-<canvas id="canvas_1" style="width: 100%; height: 200px;"></canvas>
+<canvas id="canvas_1"></canvas>
 <script src="canvas_1.js"></script>
 
 ## Vertex Shader

@@ -155,3 +155,9 @@ h1 {
 .last_modified {
 	color: rgba(255, 255, 255, 0.253);
 }
+
+canvas {
+	width: 50vw;
+	height: 300px;
+	margin-left: calc(50% - 25vw);
+}
