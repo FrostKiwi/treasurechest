@@ -3,7 +3,7 @@ title: Genshin Impact Anki deck
 permalink: "/{{ page.fileSlug }}/"
 date: 2022-05-03
 last_modified: 2023-03-13
-description: 1000 Notes Japanese vocab Anki deck and the workflow on how I made it playing video games
+description: 1000 Note Japanese vocab Anki deck and the workflow on how I made it playing video games
 publicTags:
   - Language
   - Learning
@@ -11,14 +11,24 @@ publicTags:
 image: tekisetsu.png
 ---
 
-It's quite the tradition among Japanese learners to publish parts of their Anki [Mining](https://animecards.site/yomichansetup/#setting-up-yomichan) decks, so others may get inspired by them or straight up use them. This ~1000 note deck is an excerpt of my Mining deck, which was/is being created in-part from the video game [Genshin Impact](https://genshin.hoyoverse.com/en/home). This post will go into the thought process behind the deck, how it was created and has sound clips in this GitHub page below every screenshot for reference (muted by default on Github, gotta unmute before playing). Of course, using someone else's Mining deck doesn't carry nearly the same benefit as making one yourself, so this article is mainly to just document my workflow and to provide a jumping-off point for people setting up their own. [**Link to the deck on Ankiweb**](https://ankiweb.net/shared/info/870567459) (If AnkiWeb ends up pulling the deck due to copyright concerns, a copy is in the release section [here](https://github.com/FrostKiwi/treasurechest/releases/download/genshindeckv1/Genshin.Impact.Japanese.with.media.apkg))
+It's quite the tradition among Japanese learners to publish parts of their [Anki](https://apps.ankiweb.net/) [Mining](https://animecards.site/yomichansetup/#setting-up-yomichan) decks, so others may get inspired by them or straight up use them. This ~1000 note deck is an excerpt of my Mining deck, which was/is being created in-part from the video game [Genshin Impact](https://genshin.hoyoverse.com/en/home). This post will go into the thought process behind the deck, how it was created and has sound clips below every screenshot for reference. Of course, using someone else's Mining deck doesn't carry nearly the same benefit as making one yourself, so this article is mainly to just document my workflow and to provide a jumping-off point for people setting up their own. [**Link to the deck on Ankiweb**](https://ankiweb.net/shared/info/870567459) (If AnkiWeb ends up pulling the deck due to copyright concerns, a copy is in the release section [here](https://github.com/FrostKiwi/treasurechest/releases/download/genshindeckv1/Genshin.Impact.Japanese.with.media.apkg))
 
 All cards have in-game sound + screenshot and almost all have additionally a dictionary sound file + pitch accent.
 ![image](tekisetsu.png)
-
-| Dictionary Audio                                                                             | In-game audio                                                                                |
-| -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| <audio controls><source src="teki_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="teki_game.mp3" type="audio/mpeg"></audio> |
+<div class="audio-container">
+    <div>
+        Dictionary Audio
+        <audio controls>
+            <source src="teki_dict.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+    <div>
+        In-game Audio
+        <audio controls>
+            <source src="teki_game.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+</div>
 
 ## Why Genshin Impact?
 
@@ -27,17 +37,37 @@ A couple of things come together to make Genshin quite the enjoyable learning ex
 Another point is the writing style. A hotly debated topic in the player-base, is whether or not the addition of Paimon hurts the delivery of the story. The character constantly summarizes events happening and repeats commands or requests, that were given by another character just moments ago during dialog. The main criticism often brought up is that this makes the story-flow very child-like, which is a rather obvious design goal of the game - catering to a younger audience. What may be a sore in the eyes of many a player though, is a godsend in the eyes of a language learner.
 Paimon often describes a situation, which was witnessed by the player mere moments ago, making the actual statement of a sentence trivial to understand.
 ![image](tsurusu.png)
-
-| Dictionary Audio                                                                                | In-game audio                                                                                   |
-| ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| <audio controls><source src="tsurusu_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="tsurusu_game.mp3" type="audio/mpeg"></audio> |
+<div class="audio-container">
+    <div>
+        Dictionary Audio
+        <audio controls>
+            <source src="tsurusu_dict.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+    <div>
+        In-game Audio
+        <audio controls>
+            <source src="tsurusu_game.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+</div>
 
 And sometimes Paimon straight up becomes a dictionary herself and defines a word like a glossary text would.
 ![image](oru.png)
-
-| Dictionary Audio                                                                            | In-game audio                                                                               |
-| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| <audio controls><source src="oru_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="oru_game.mp3" type="audio/mpeg"></audio> |
+<div class="audio-container">
+    <div>
+        Dictionary Audio
+        <audio controls>
+            <source src="oru_dict.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+    <div>
+        In-game Audio
+        <audio controls>
+            <source src="oru_game.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+</div>
 
 There is a very dialog- and lore-heavy story-line in Dragonspine involving Albedo, which has some of the most information dense dialog of the game. Paimon often commented, how she completely lost the plot and didn't understand anything. During that story line I felt as if Paimon was sympathizing with me, as I battled my way to understanding that story-line. For me, Paimon really made this game shine as a learning tool.
 
@@ -49,10 +79,20 @@ I'm constantly surprised how much Genshin has propelled my speech forward. Simil
 
 It's common knowledge that media uses artistic delivery in speech, has speech patterns rarely used in everyday life and uses a stylized way of writing. Basically all of it is [役割語](https://ja.wikipedia.org/wiki/%E5%BD%B9%E5%89%B2%E8%AA%9E). And yet, knowing that I still managed to trip up in minor ways. Case in point:
 ![image](homare.png)
-
-| Dictionary Audio                                                                               | In-game audio                                                                                  |
-| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| <audio controls><source src="homare_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="homare_game.mp3" type="audio/mpeg"></audio> |
+<div class="audio-container">
+    <div>
+        Dictionary Audio
+        <audio controls>
+            <source src="homare_dict.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+    <div>
+        In-game Audio
+        <audio controls>
+            <source src="homare_game.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+</div>
 
 I used the 誉れです expression instinctively from time to time and just recently someone noted, that this expression has a rather archaic, regal tone. It was quite the funny situation, but it goes to show, that even knowing what kind of media I was consuming still didn't save me from tripping up. Coming from outside the language it's unavoidable to misinterpret an expression's nuance I guess. Though in this case, the in-game dialog should have really tipped me off, as the character speaking, Ninguang, uses it to tell a joke with a somewhat sarcastic undertone.
 
@@ -66,28 +106,58 @@ I used the 誉れです expression instinctively from time to time and just rece
 - When I write "here: ..." I am referring to a word being used in a more specialized sense in the in-game dialog, like 人目 vs 人目を忍ぶ. In those cases two definitions are provided. This is to make the learning process a bit more compact and to prevent not being able to translate a sentence, whilst having just half of the definition.
 
 ![hitome](hitome.png)
-
-| Dictionary Audio                                                                               | In-game audio                                                                                  |
-| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| <audio controls><source src="hitome_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="hitome_game.mp3" type="audio/mpeg"></audio> |
+<div class="audio-container">
+    <div>
+        Dictionary Audio
+        <audio controls>
+            <source src="hitome_dict.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+    <div>
+        In-game Audio
+        <audio controls>
+            <source src="hitome_game.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+</div>
 
 - Characters speaking Kansai dialect have received there own tag "Kansaidialect".
 
 ![meccha](meccha.png)
-
-| Dictionary Audio                                                                               | In-game audio                                                                                  |
-| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| <audio controls><source src="meccha_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="meccha_game.mp3" type="audio/mpeg"></audio> |
+<div class="audio-container">
+    <div>
+        Dictionary Audio
+        <audio controls>
+            <source src="meccha_dict.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+    <div>
+        In-game Audio
+        <audio controls>
+            <source src="meccha_game.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+</div>
 
 ### Grammar
 
 I also have a bunch of grammar cards mixed in, when I encountered new pieces of grammar and recognized it as such. For those I pasted the excellent [JLPT Sensei](https://jlptsensei.com/) summary images.
 
 ![kireicake](tohaie.png)
-
-| Dictionary Audio                                                                               | In-game audio                                                                                  |
-| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| <audio controls><source src="tohaie_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="tohaie_game.mp3" type="audio/mpeg"></audio> |
+<div class="audio-container">
+    <div>
+        Dictionary Audio
+        <audio controls>
+            <source src="tohaie_dict.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+    <div>
+        In-game Audio
+        <audio controls>
+            <source src="tohaie_game.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+</div>
 
 A big surprise to me was the [YomiChan](https://github.com/FooSoft/yomichan) dictionary ["KireiCake"](https://foosoft.net/projects/yomichan/#dictionaries) having URL-shortened links from time to time, like [waa.ai/v4YY](https://waa.ai/v4YY) in the above card. In this case it leads to an [in-depth discussion on Yahoo](https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q1317655948) about that grammar point. [(Archive Link, in case it goes down)](http://web.archive.org/web/20220508092155/https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q1317655948) The love and patience of the Japanese learning online community is truly magnificent. From /djt/ threads on image-boards to [user-scripts connecting Kanji learn services to a collection of example recordings from Anime.](https://community.wanikani.com/t/userscript-anime-context-sentences/54003?u=frostkiwi) Stuff like that has me in awe.
 
@@ -98,10 +168,20 @@ In the beginning I did toggle to English to screenshot the English version for t
 > Don't use the field 'Sentence-English' in your mined cards. In fact, get rid of it once you have a solid understanding of Japanese. When you mine something you should already have understood the sentence using the additional information on your cards.
 
 ![image](unmei.png)
-
-| Dictionary Audio                                                                              | In-game audio                                                                                 |
-| --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| <audio controls><source src="unmei_dict.mp3" type="audio/mpeg"></audio> | <audio controls><source src="unmei_game.mp3" type="audio/mpeg"></audio> |
+<div class="audio-container">
+    <div>
+        Dictionary Audio
+        <audio controls>
+            <source src="unmei_dict.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+    <div>
+        In-game Audio
+        <audio controls>
+            <source src="unmei_game.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+</div>
 
 ## How it was captured
 

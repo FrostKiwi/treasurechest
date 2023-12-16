@@ -57,6 +57,17 @@ h1 {
 	flex-shrink: 0;
 }
 
+.comment_group {
+	display: flex;
+	justify-content: start;
+	align-items: center;
+	flex-direction: row;
+	gap: 8px;
+}
+.comment_group .kiwi{
+	margin: unset;
+}
+
 .right_group {
 	font-size: larger;
 	letter-spacing: 0.5rem;
@@ -123,10 +134,6 @@ h1 {
 	padding-bottom: 1.5rem;
 }
 
-.post_title h1 {
-	margin: 0;
-}
-
 @media (max-width: 382px) {
 	.kiwi {
 		height: 60px;
@@ -135,6 +142,29 @@ h1 {
 
 	.right_group {
 		letter-spacing: 0.1rem;
+	}
+
+	.right_group img {
+		height: 32px;
+	}
+
+	.site_title {
+		font-size: 2em;
+	}
+}
+
+@media (max-width: 320px) {
+	.kiwi {
+		height: 40px;
+		width: 40px;
+	}
+
+	.right_group img {
+		height: 24px;
+	}
+
+	.site_title {
+		font-size: 1.5em;
 	}
 }
 
@@ -154,4 +184,13 @@ h1 {
 
 .last_modified {
 	color: rgba(255, 255, 255, 0.253);
+}
+
+.audio-container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-around;
+	align-items: center;
+	text-align: center;
+	margin-bottom: 1rem;
 }
