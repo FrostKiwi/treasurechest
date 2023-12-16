@@ -1,10 +1,10 @@
 /* Init */
-const canvas = document.getElementById("canvas_1");
+const canvas = document.getElementById("canvas_2");
 const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false });
 
 /* Shaders */
-const vertexShader = createAndCompileShader(gl.VERTEX_SHADER, "vertex_1");
-const fragmentShader = createAndCompileShader(gl.FRAGMENT_SHADER, "fragment_1");
+const vertexShader = createAndCompileShader(gl.VERTEX_SHADER, "vertex_2");
+const fragmentShader = createAndCompileShader(gl.FRAGMENT_SHADER, "fragment_2");
 
 const shaderProgram = gl.createProgram();
 gl.attachShader(shaderProgram, vertexShader);

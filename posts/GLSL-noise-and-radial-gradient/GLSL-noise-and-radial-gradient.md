@@ -23,10 +23,16 @@ Resulting Gradient: (Click image to view in 1:1 pixel scaling to properly judge 
 [![image](radial.png)](radial.png)
 Technically the proper way to achieve this is to perform [error diffusion dithering](https://en.wikipedia.org/wiki/Error_diffusion), since that would breakup just the quantized steps of the gradient, without touching the color between the steps. But other than [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering), there is no GPU friendly way to do this and [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering) doesn't look nice. Adding noise in the context of gradients works just fine though, even though it's not proper error diffusion. Simply applying noise with the strength of one 8-bit grayscale value `(1.0 / 255.0) * gradientNoise(gl_FragCoord.xy)` side-steps a bunch of issues and the code footprint is tiny to boot.
 
-<script  id="vertex_1" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/circle.vs" %}</script>
-<script  id="fragment_1" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/circle.fs" %}</script>
+<!-- Gotta fix redeclaration -->
+<!-- <script  id="vertex_1" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/noise.vs" %}</script>
+<script  id="fragment_1" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/noise.fs" %}</script>
 <canvas id="canvas_1"></canvas>
-<script src="canvas_1.js"></script>
+<script src="canvas_1.js"></script> -->
+
+<script  id="vertex_2" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/gradient.vs" %}</script>
+<script  id="fragment_2" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/gradient.fs" %}</script>
+<canvas id="canvas_2"></canvas>
+<script src="canvas_2.js"></script>
 
 ## Vertex Shader
 
