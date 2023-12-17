@@ -1,3 +1,4 @@
+(function () {
 /* Init */
 const canvas = document.getElementById("canvas_2");
 const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false });
@@ -56,3 +57,4 @@ function onResize() {
 }
 window.addEventListener('resize', onResize, true);
 onResize();
+})();
