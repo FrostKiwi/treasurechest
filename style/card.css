@@ -7,9 +7,13 @@
 	overflow: hidden;
 	color: #49002d;
 	background-color: #ffe4f5;
-	/* Solid background */
 	padding: 10px;
-	/* Added padding around the card content */
+}
+
+@media (max-width: 320px) {
+	.post-card {
+		flex-direction: column;
+	}
 }
 
 .post-card:hover {
