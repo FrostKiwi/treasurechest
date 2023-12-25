@@ -1,5 +1,8 @@
 name: Eleventy Build
-on: [push]
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]
 
 jobs:
   build_deploy:
