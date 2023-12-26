@@ -1,4 +1,4 @@
-precision mediump float;
+precision highp float;
 
 /* Gradient noise from Jorge Jimenez's presentation: */
 /* http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare */

@@ -1,4 +1,4 @@
-precision mediump float;
+precision highp float;
 varying vec2 tex;
 
 /* Gradient noise from Jorge Jimenez's presentation: */
