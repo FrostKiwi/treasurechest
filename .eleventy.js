@@ -7,6 +7,24 @@ const pluginRss = require("@11ty/eleventy-plugin-rss");
 const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
 const eleventyPluginFilesMinifier = require("@sherby/eleventy-plugin-files-minifier");
 
+/* Navigation */
+const markdownIt = require('markdown-it')
+const pluginTOC = require('eleventy-plugin-toc')
+const markdownItAnchor = require('markdown-it-anchor');
+
+const mdOptions = {
+	html: true,
+	breaks: true,
+	linkify: true,
+	typographer: true
+}
+const mdAnchorOpts = {
+	permalink: true,
+	permalinkClass: 'anchor-link',
+	permalinkSymbol: '#',
+	level: [1, 2, 3, 4]
+}
+
 module.exports = function (eleventyConfig) {
 	/* Syntax Highlighting */
 	eleventyConfig.addPlugin(syntaxHighlight);
@@ -15,6 +33,28 @@ module.exports = function (eleventyConfig) {
 	eleventyConfig.on('beforeBuild', () => {
 		// Run the custom script before building the site
 		execSync('node moveAssets.js');
+	});
+
+	eleventyConfig.setLibrary(
+		'md',
+		markdownIt(mdOptions)
+			.use(markdownItAnchor, mdAnchorOpts)
+	);
+
+	eleventyConfig.addPlugin(pluginTOC);
+
+	eleventyConfig.addFilter("modifyTOC", function (tocHtml, postTitle) {
+		if (tocHtml) {
+			/* Clear whitespace before string matching */
+			tocHtml = tocHtml.replace(/>\s+</g, '><');
+
+			/* Header */
+			tocHtml = tocHtml.replace('<ul>', `<ul><li><a href="#${postTitle}">${postTitle}</a><ul>`);
+
+			/* Comments */
+			tocHtml = tocHtml.replace('</ul></nav>', '</ul></li><li><a href="#comments">Comments</a></li></ul></nav>');
+		}
+		return tocHtml;
 	});
 
 	/* CSS minifier as per https://www.11ty.dev/docs/quicktips/inline-css/ */

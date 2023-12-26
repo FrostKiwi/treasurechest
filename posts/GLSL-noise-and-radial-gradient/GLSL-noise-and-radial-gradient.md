@@ -1,5 +1,5 @@
 ---
-title: How to fix color banding
+title: How to (and how not to) fix color banding
 permalink: "/{{ page.fileSlug }}/"
 date: 2023-10-19
 last_modified: 2023-12-25
@@ -10,8 +10,7 @@ publicTags:
   - GameDev
 image: threshold.png
 ---
-
-I **love** to use soft gradients as backdrops when doing graphic programming. But they are quite horrible from a design standpoint, since they produce awful [color banding](https://en.wikipedia.org/wiki/Colour_banding), also referred to as [posterization](https://en.wikipedia.org/wiki/Posterization). Depending on things like screen type, gradient colors, gradient type, etc., the effect can be sometimes not present at all, yet sometimes painfully obvious. Let's take a look at what I mean. The following is a WebGL Canvas drawing a black & white, dark and soft half-circle gradient.
+I **love** to use soft gradients as backdrops when doing graphic programming, a love started by a [Corona Renderer](https://corona-renderer.com/) product shot [sample scene](https://forum.corona-renderer.com/index.php?topic=11345) shared by user [romullus](https://forum.corona-renderer.com/index.php?action=profile;u=9510) and its use of radial gradients to highlight the product. But they are quite horrible from a design standpoint, since they produce awful [color banding](https://en.wikipedia.org/wiki/Colour_banding), also referred to as [posterization](https://en.wikipedia.org/wiki/Posterization). Depending on things like screen type, gradient colors, viewing environment, etc., the effect can be sometimes not present at all, yet sometimes painfully obvious. Let's take a look at what I mean. The following is a WebGL Canvas drawing a black & white, dark and soft half-circle gradient.
 
 <script src="fullscreen-tri.js"></script>
 <script  id="vertex_2" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}</script>
@@ -20,7 +19,7 @@ I **love** to use soft gradients as backdrops when doing graphic programming. Bu
 <canvas height="200px" id="canvas_2"></canvas>
 
 <script>setupTri("canvas_2", "vertex_2", "fragment_2");</script>
-<blockquote cite="http://www.worldwildlife.org/who/index.html">
+<blockquote>
 <details><summary><a href="screenshot_gradient.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
 ![](screenshot_gradient.png)
@@ -58,7 +57,7 @@ This produces a 24-bit (8-bits per channel) image with clearly visible banding s
   <figcaption>Photo: WebGL color banding, on a 8-bit panel, contrast and brightness boosted</figcaption>
 </figure>
 
-Many Laptop screens are in-fact 6-bit panels performing dithering to fake an 8-bit output. This includes even high-priced workstations replacements, like the [HP Zbook Fury 15 G7](https://support.hp.com/us-en/document/c06909298#AbT5) and its [6-bit LCD panel](https://www.panelook.com/N156HCA-GA3__15.6__overview_33518.html), that I sit in front of right now. What you can see are *some* banding steps being a clean uniform color and *some* of them being dithered via the panel's integrated look-up table to achieve a perceived 8-bit output via [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering). Though note, how the dithering does **not** result in the banding steps being broken up, it just dithers the color itself. Capturing this via a photo is a bit difficult, since there is also the pattern of the individual pixels messing with the capture and introducing [moiré ](https://en.wikipedia.org/wiki/Moir%C3%A9_pattern) and interference patterns. The dither pattern is distinctly visible when looking closely with the naked eye though.
+Many Laptop screens are in-fact 6-bit panels performing dithering to fake an 8-bit output. This includes even high-priced workstations replacements, like the [HP Zbook Fury 15 G7](https://support.hp.com/us-en/document/c06909298#AbT5) and its [6-bit LCD panel](https://www.panelook.com/N156HCA-GA3__15.6__overview_33518.html), that I sit in front of right now. What you can see are *some* banding steps being a clean uniform color and *some* of them being dithered via the panel's integrated look-up table to achieve a perceived 8-bit output via [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering). Though note, how the dithering does **not** result in the banding steps being broken up, it just dithers the color step itself. Capturing this via a photo is a bit difficult, since there is also the pattern of individual pixels messing with the capture and introducing [moiré ](https://en.wikipedia.org/wiki/Moir%C3%A9_pattern) and interference patterns. The dither pattern is distinctly visible when looking closely with the naked eye though.
 
 <figure>
 	<img src="Dithering.jpg" alt="Photo: Above WebGL color banding sample, on a 6-bit panel, contrast and brightness boosted" />
@@ -68,23 +67,17 @@ Many Laptop screens are in-fact 6-bit panels performing dithering to fake an 8-b
 
 ## Magic GLSL One-liner
 
-Let's tackle this. The point of this article is to get banding free gradients in one GLSL fragment shader, rendering in a single pass and without sampling or texture taps to achieve banding free-ness. It involves the best noise one-liner I have ever seen. That genius one-liner is not from me, but from [Jorge Jimenez's presentation on how Gradient noise was implemented in Call of Duty Advanced Warfare](http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare). You can read it on the presentation's slide 123 onwards. It's described as:
+Let's fix this. The main point of this article is to share how I get banding free gradients in one GLSL fragment shader, rendering in a single pass and without sampling or texture taps to achieve banding free-ness. It involves the best noise one-liner I have ever seen. That genius one-liner is not from me, but from [Jorge Jimenez's presentation on how Gradient noise was implemented in Call of Duty Advanced Warfare](http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare). You can read it on the presentation's slide 123 onwards. It's described as:
 
 > [...] a noise function that we could classify as being half way between dithered and random, and that we called **_Interleaved Gradient Noise_**.
 
-| Threshold of gradient (zoomed)           | Raw Noise (1:1 pixel size)               |
-| ---------------------------------------- | ---------------------------------------- |
-| [![image](threshold.png)](threshold.png) | [![image](raw_noise.png)](raw_noise.png) |
-
-Resulting Gradient: (Click image to view in 1:1 pixel scaling to properly judge the banding-freeness)
-[![image](radial.png)](radial.png)
-Technically the proper way to achieve banding free-ness is to perform [error diffusion dithering](https://en.wikipedia.org/wiki/Error_diffusion), since that would breakup just the quantized steps of the gradient, without touching the color between the steps. But other than [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering), there is no GPU friendly way to do this and [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering) doesn't look nice. When talking about gradients, adding noise works just fine though, even though it's not proper error diffusion. Simply applying noise with the strength of one 8-bit grayscale value `(1.0 / 255.0) * gradientNoise(gl_FragCoord.xy)` side-steps a bunch of issues and the code footprint is tiny to boot. Additionally it subtracts the average added brightness of `(0.5 / 255.0)` to keep the brightness the same since we are introducing the noise via addition, though the difference is barely noticeable.
+Here is what the raw noise looks like. The following WebGL Canvas is set to render at the same pixel density as your screen. (Though some Screen DPI and Browser zoom levels will result in it being one pixel off and there being a tiny bit of interpolation)
 
 <canvas id="canvas_noise"></canvas>
 <script id="vertex_noise" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/noise.vs" %}</script>
 <script id="fragment_noise" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/noise.fs" %}</script>
 <script>setupTri("canvas_noise", "vertex_noise", "fragment_noise");</script>
-<blockquote cite="http://www.worldwildlife.org/who/index.html">
+<blockquote>
 <details><summary><a href="raw_noise.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
 ![image](raw_noise.png)
@@ -115,11 +108,19 @@ Technically the proper way to achieve banding free-ness is to perform [error dif
 </details>
 </blockquote>
 
+| Threshold of gradient (zoomed)           | Raw Noise (1:1 pixel size)               |
+| ---------------------------------------- | ---------------------------------------- |
+| [![image](threshold.png)](threshold.png) | [![image](raw_noise.png)](raw_noise.png) |
+
+Resulting Gradient: (Click image to view in 1:1 pixel scaling to properly judge the banding-freeness)
+[![image](radial.png)](radial.png)
+Technically the proper way to achieve banding free-ness is to perform [error diffusion dithering](https://en.wikipedia.org/wiki/Error_diffusion), since that would breakup just the quantized steps of the gradient, without touching the color between the steps. But other than [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering), there is no GPU friendly way to do this and [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering) doesn't look nice. When talking about gradients, adding noise works just fine though, even though it's not proper error diffusion. Simply applying noise with the strength of one 8-bit grayscale value `(1.0 / 255.0) * gradientNoise(gl_FragCoord.xy)` side-steps a bunch of issues and the code footprint is tiny to boot. Additionally it subtracts the average added brightness of `(0.5 / 255.0)` to keep the brightness the same since we are introducing the noise via addition, though the difference is barely noticeable.
+
 <canvas height="200px" id="canvas_banding_free"></canvas>
 <script  id="vertex_banding_free" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}</script>
 <script  id="fragment_banding_free" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/gradient.fs" %}</script>
 <script>setupTri("canvas_banding_free", "vertex_banding_free", "fragment_banding_free");</script>
-<blockquote cite="http://www.worldwildlife.org/who/index.html">
+<blockquote>
 <details><summary><a href="screenshot_gradient.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
 ![](screenshot_gradient.png)
@@ -155,9 +156,6 @@ Technically the proper way to achieve banding free-ness is to perform [error dif
 ## Bufferless Version
 
 Here is what the shaders look like if you use OpenGL 3.3, OpenGL 2.1 with the [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) extension (`#version` would have to change) or WebGL2 and want to skip the Vertex Buffer setup by putting the fullscreen triangle into the vertex shader. If you get an error around `gl_VertexID` missing, you don't have [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) enabled.
-
-<details>	
-<summary>Bufferless version</summary>
 
 ### Vertex Shader
 
@@ -208,13 +206,21 @@ void main()
 }
 ```
 
-</details>
-
 ## What are the big-boys doing?
-
+asdf
 ### Alien Isolation SweetFX
 Deband.fx Shader
-Deep Color not working when reenabling
+Deep Color does not work with Anti-Aliasing
+deep color sends a higher signal Monitor, switches automatically!
+
+<details>	
+<summary><a href="https://reshade.me">ReShade</a>'s <a href="https://github.com/crosire/reshade-shaders/blob/slim/Shaders/Deband.fx">Deband.fx</a></summary>
+
+```hlsl
+{% rawFile "posts/GLSL-noise-and-radial-gradient/Deband.fx" %}
+```
+
+</details>
 
 Adobe After Effects Gradient Error Diffusion
 Perforamnce crap

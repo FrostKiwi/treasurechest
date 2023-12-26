@@ -1,12 +1,16 @@
 body {
 	background-color: #2d292a;
-	background-image: url("/assets/bg.png")
+	background-image: url("/assets/bg.png");
 }
 
 main img {
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
+}
+
+main {
+	text-align: justify;
 }
 
 audio {
@@ -126,12 +130,8 @@ table img {
 	margin-right: 20px;
 }
 
-.post_title {
-	padding-top: 2rem;
-	padding-bottom: 1.5rem;
-}
-
 .post_title h1 {
+	margin-top: 2rem;
 	margin-bottom: 0px;
 	font-size: 2.2em;
 }
@@ -221,4 +221,24 @@ figcaption {
 	width: 90%;
 	text-align: center;
 	font-size: smaller;
+}
+
+aside {
+	line-height: 2.5rem;
+}
+
+aside blockquote {
+	margin-bottom: 1rem;
+}
+
+aside a {
+	font-size: smaller;
+}
+
+aside ul {
+	margin-bottom: unset;
+}
+
+aside li {
+	margin-bottom: unset;
 }

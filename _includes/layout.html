@@ -81,7 +81,7 @@
 		</div>
 		<div class="post_title">
 			{% if title %}
-			<h1>{{ title }}</h1>
+			<h1 id="{{ title }}">{{ title }} <a href="#{{ title }}" class="anchor-link">#</a></h1>
 			{% if date %}
 			<div class="dates">
 				<div class="created">Created: {{ date | date: "%Y.%m.%d" }}</div>
@@ -93,13 +93,25 @@
 			{% endif %}
 		</div>
 	</header>
+	{% if tags contains 'post' %}
+	<aside>
+		<blockquote>
+			<details open>
+				<summary>Table of Contents</summary>
+				{{ content | toc: '{"tags":["h1","h2","h3","h4"],"ul":"true"}' | modifyTOC: title }}
+			</details>
+		</blockquote>
+	</aside>
+	{% else %}
+	<br>
+	{% endif %}
 	<main>
 		{{ content }}
 		{% if tags contains 'post' %}
 		<br>
 		<hr>
 		<div class="comment_group">
-			<h2 class="site_title">Comment via GitHub</h2>
+			<h2 id="comments" class="site_title">Comment via GitHub <a href="#comments" class="anchor-link">#</a></h2>
 			<img class="kiwi" src="/assets/kiwis/speak.svg">
 		</div>
 		<script src="https://utteranc.es/client.js" repo="FrostKiwi/treasurechest" issue-term="pathname"
