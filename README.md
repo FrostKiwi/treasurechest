@@ -4,7 +4,7 @@ This is the repo for my [blog](https://blog.frost.kiwi), with a collection of us
 The blog generated from this repo is here: [blog.frost.kiwi](https://blog.frost.kiwi)
  
 # Redirects for old links:
-This Readme used to be a kind of blog, but now it has become a proper site. There were many places my articles were linked, so to not break them, here is a are redirects to pre-existing articles.
+This Readme used to be a kind of blog, but now it has become a proper site. There were many places my articles were linked, so to not break them, here are redirects to pre-existing articles:
 ## GLSL Radial background
 Article moved to the blog: [blog.frost.kiwi/GLSL-noise-and-radial-gradient](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient)
 ## Genshin Impact Anki deck
