@@ -44,16 +44,14 @@ module.exports = function (eleventyConfig) {
 	eleventyConfig.addPlugin(pluginTOC);
 
 	eleventyConfig.addFilter("modifyTOC", function (tocHtml, postTitle) {
-		if (tocHtml) {
-			/* Clear whitespace before string matching */
-			tocHtml = tocHtml.replace(/>\s+</g, '><');
-
-			/* Header */
-			tocHtml = tocHtml.replace('<ul>', `<ul><li><a href="#${postTitle}">${postTitle}</a><ul>`);
-
-			/* Comments */
-			tocHtml = tocHtml.replace('</ul></nav>', '</ul></li><li><a href="#comments">Comments</a></li></ul></nav>');
-		}
+		if (!tocHtml)
+			tocHtml = `<nav class="toc"><ul></ul></nav>`;
+		/* Clear whitespace before string matching */
+		tocHtml = tocHtml.replace(/>\s+</g, '><');
+		/* Header */
+		tocHtml = tocHtml.replace('<ul>', `<ul><li><a href="#${postTitle}">${postTitle}</a><ul>`);
+		/* Comments */
+		tocHtml = tocHtml.replace('</ul></nav>', '</ul></li><li><a href="#comments">Comments</a></li></ul></nav>');
 		return tocHtml;
 	});
 

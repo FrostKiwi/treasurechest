@@ -11,6 +11,7 @@ publicTags:
 image: modified.png
 ---
 [WaniKani](https://www.wanikani.com/) is a Japanese [Kanji](https://en.wikipedia.org/wiki/Kanji) study service, with strong community support [extending the service creating all kinds of features](https://community.wanikani.com/t/the-new-and-improved-list-of-api-and-third-party-apps/7694?u=frostkiwi). One of my favorites being a [connection to a huge Anime sentences database](https://community.wanikani.com/t/userscript-anime-context-sentences/54003?u=frostkiwi), which allows to hear the vocabulary you learn in a short snippet from Ghibli movies, among others.
+
 ![](userscript-example.jpeg)
 
 The Question prompts of WaniKani are in English though, which I always found kind of ironic. A Userscript was created to fix this, which Greasyfork user [hoovard](https://greasyfork.org/en/users/9284-hoovard) updated to become ["WK Custom Review Question (KunOn+)"](https://greasyfork.org/en/scripts/8193-wk-custom-review-question-kunon). However, the script didn't properly function, which [I fixed](https://community.wanikani.com/t/the-new-and-improved-list-of-api-and-third-party-apps/7694/568) by modifying the script. The script was broken again by a big WaniKani update. Now I have rewritten the script from scratch to work with the current (see post modification date) version of WaniKani.

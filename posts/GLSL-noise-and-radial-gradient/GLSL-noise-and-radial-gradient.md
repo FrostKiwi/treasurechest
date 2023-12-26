@@ -108,22 +108,17 @@ Here is what the raw noise looks like. The following WebGL Canvas is set to rend
 </details>
 </blockquote>
 
-| Threshold of gradient (zoomed)           | Raw Noise (1:1 pixel size)               |
-| ---------------------------------------- | ---------------------------------------- |
-| [![image](threshold.png)](threshold.png) | [![image](raw_noise.png)](raw_noise.png) |
-
-Resulting Gradient: (Click image to view in 1:1 pixel scaling to properly judge the banding-freeness)
-[![image](radial.png)](radial.png)
-Technically the proper way to achieve banding free-ness is to perform [error diffusion dithering](https://en.wikipedia.org/wiki/Error_diffusion), since that would breakup just the quantized steps of the gradient, without touching the color between the steps. But other than [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering), there is no GPU friendly way to do this and [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering) doesn't look nice. When talking about gradients, adding noise works just fine though, even though it's not proper error diffusion. Simply applying noise with the strength of one 8-bit grayscale value `(1.0 / 255.0) * gradientNoise(gl_FragCoord.xy)` side-steps a bunch of issues and the code footprint is tiny to boot. Additionally it subtracts the average added brightness of `(0.5 / 255.0)` to keep the brightness the same since we are introducing the noise via addition, though the difference is barely noticeable.
+Now let's combine both previous WebGL examples to clear the color banding and get a smooth half-circle gradient.
 
 <canvas height="200px" id="canvas_banding_free"></canvas>
 <script  id="vertex_banding_free" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}</script>
 <script  id="fragment_banding_free" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/gradient.fs" %}</script>
 <script>setupTri("canvas_banding_free", "vertex_banding_free", "fragment_banding_free");</script>
 <blockquote>
-<details><summary><a href="screenshot_gradient.png">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a href="screenshot_gradient_dither.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
-![](screenshot_gradient.png)
+You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will counteract the pixel sized dither and re-introduce color banding!
+![](screenshot_gradient_dither.png)
 
 </details>
 <details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
@@ -151,15 +146,82 @@ Technically the proper way to achieve banding free-ness is to perform [error dif
 </details>
 </blockquote>
 
-![](6-bit_banding_8-bit_noise.jpg)
-![](6-bit_banding_6-bit_noise.jpg)
-## Bufferless Version
+Technically the proper way to achieve banding free-ness is to perform [error diffusion dithering](https://en.wikipedia.org/wiki/Error_diffusion), since that would breakup just the quantized steps of the gradient, without touching the color between the steps. But other than [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering), there is no GPU friendly way to do this and [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering) doesn't look nice. When talking about gradients, adding noise works just fine though, even though it's not proper error diffusion. Simply applying noise with the strength of one 8-bit grayscale value `(1.0 / 255.0) * gradientNoise(gl_FragCoord.xy)` side-steps a bunch of issues and the code footprint is tiny to boot. Additionally it subtracts the average added brightness of `(0.5 / 255.0)` to keep the brightness the same since we are introducing the noise via addition, though the difference is barely noticeable. Here is a part of the gradient with a threshold applied and zoomed in, to see how both gradient and noise interact.
 
+<figure>
+	<img src="threshold.png" alt="Above WebGL gradient thresholded and zoomed in" />
+  <figcaption>Above WebGL gradient thresholded and zoomed in</figcaption>
+</figure>
+
+Here is how I usually use this Shader setup to draw a background for objects and scenes to live on.
+
+<canvas height="200px" id="canvas_bg_example"></canvas>
+<script  id="vertex_bg_example" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}</script>
+<script  id="fragment_bg_example" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/full_example.fs" %}</script>
+<script>setupTri("canvas_bg_example", "vertex_bg_example", "fragment_bg_example");</script>
+<blockquote>
+<details><summary><a href="radial.png">Screenshot</a>, in case WebGL doesn't work</summary>
+
+You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will counteract the pixel sized dither and re-introduce color banding!
+![](radial.png)
+
+</details>
+<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+
+```glsl
+{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a href="full_example.fs">full_example.fs</a></summary>
+
+```glsl
+{% rawFile "posts/GLSL-noise-and-radial-gradient/full_example.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+
+```javascript
+{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.js" %}
+```
+
+</details>
+</blockquote>
+
+### Don't Double Dither
+But what about that 6-bit laptop screen? Let's take a look, by photographing the dithered gradient like in the beginning of the article...
+
+<figure>
+	<img src="6-bit_banding_8-bit_noise.jpg" alt="Interference patterns from both forms of dither interfering" />
+  <figcaption>Interference patterns from both forms of dither interfering
+  <br>
+  Arrows to show the interference following the gradient direction</figcaption>
+</figure>
+
+<blockquote class="reaction"><div class="reaction_text">...ohh you gotta be kidding me</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
+
+Both the 6-bit screen's dithering pattern and our Interleaved Gradient Noise interfere with each other. Exactly the color bands where the panel performs the dithering, we can see the the interference appearing in the form of saw-tooth ridges. Maybe by increasing the noise strength to correspond to 6-bit values? `(1.0 / 64.0) * gradientNoise(gl_FragCoord.xy) - (0.5 / 64.0)` By dividing by 64 instead of 255, we get 6-bit noise. Let's see...
+
+<figure>
+	<img src="6-bit_banding_6-bit_noise.jpg" alt="Interference patterns from both forms of dither interfering" />
+  <figcaption>Interference patterns from both forms of dither interfering with 6-bit noise
+  <br>
+  Arrows to show the interference direction</figcaption>
+</figure>
+
+<blockquote class="reaction"><div class="reaction_text">...it's worse!</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
+
+Yeah, 6-bit panels are a travesty. Especially on a product of this caliber. I mean the old [Thinkpad T500 & X200 I hardware modded](https://www.youtube.com/watch?v=Fs4GjDiOie8) have 6-bit panels, but those are multiple tech generations old. We could tweak the noise algorithm, but it's just not worth to drop our denominator so low. It's 2024 in a couple days and every human being deserves at least 256 different shades in each color channel.
+
+### Bufferless Version
 Here is what the shaders look like if you use OpenGL 3.3, OpenGL 2.1 with the [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) extension (`#version` would have to change) or WebGL2 and want to skip the Vertex Buffer setup by putting the fullscreen triangle into the vertex shader. If you get an error around `gl_VertexID` missing, you don't have [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) enabled.
 
-### Vertex Shader
+These can be rewritten to work with even the most basic OpenGL or WebGL standard by uploading the vertex buffer prior, as done in all the WebGL examples up till now. The fragment shader stays the basically the same.
 
-Here is the Bufferless variant, but can be rewritten to work with even the most basic OpenGL or WebGL standard.
+<details><summary>Bufferless Vertex Shader</summary>
 
 ```glsl
 #version 330
@@ -177,8 +239,9 @@ void main()
     gl_Position = vec4(pos[gl_VertexID], 0.0, 1.0);
 }
 ```
+</details>
 
-### Fragment Shader
+<details><summary>Bufferless Fragment Shader</summary>
 
 ```glsl
 #version 330
@@ -205,13 +268,32 @@ void main()
     Out_Color = vec4(bgcolor, 1.0);
 }
 ```
+</details>
 
 ## What are the big-boys doing?
-asdf
-### Alien Isolation SweetFX
-Deband.fx Shader
+To finish off, let's take a look how color banding is solved in other pieces of software. Not *just* in the context of gradients, but also beyond.
+
+### Alien: Isolation
+I consider [Alien: Isolation](https://en.wikipedia.org/wiki/Alien:_Isolation) to be a technical master piece in terms of lighting, especially considering the time it was released. They faked realtime global illumination in a really interesting fashion, with the flashlight lighting up the area when shining directly at a wall fairly close and casting a redish ambiance when shining at a deep red door. It's mostly a hardcoded fake effect working with specific surfaces, but I digress...
+
+Horror games like Alien: Isolation have a lot of dark scenes with lights creating gradient like falloffs. These are very prone to color banding. The programmers over at [creative assembly](https://www.creative-assembly.com/) show multiple ways of tackling this. Let's take a look at how by dissecting this scene.
+
+<figure>
+	<img src="mission5.jpg" alt="Stage 5 of Alien: Isolation" />
+  <figcaption>Stage 5 of <a href="https://en.wikipedia.org/wiki/Alien:_Isolation">Alien: Isolation</a></figcaption>
+</figure>
+
+Here
+
+#### Film grain
+There is of course the easy way of just slapping a lot of film grain everywhere and Alien: Isolation is definitely guilty of this. In fact, more aggregous than other games, with the VHS asthetic of huge blobs.
+ 
+#### Deep-Color
 Deep Color does not work with Anti-Aliasing
 deep color sends a higher signal Monitor, switches automatically!
+
+#### Reshade's Deband Effect
+Deband.fx Shader
 
 <details>	
 <summary><a href="https://reshade.me">ReShade</a>'s <a href="https://github.com/crosire/reshade-shaders/blob/slim/Shaders/Deband.fx">Deband.fx</a></summary>
@@ -226,4 +308,12 @@ Adobe After Effects Gradient Error Diffusion
 Perforamnce crap
 ### After Effects
 ### Windows Terminal
+<figure>
+	<img src="terminal.png" alt="Microsoft Terminal's use of Blur and Noise" />
+  <figcaption>Microsoft Terminal's use of Blur and Noise, boosted contrast in circle</figcaption>
+</figure>
+
 ### KDE Blur
+
+[Dual Kawase](https://github.com/JujuAdams/Kawase)
+https://phabricator.kde.org/source/kwin/browse/master/effects/blur/

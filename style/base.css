@@ -242,3 +242,23 @@ aside ul {
 aside li {
 	margin-bottom: unset;
 }
+
+.reaction {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 1rem;
+	margin-bottom: 1rem;
+	margin-top: 1rem;
+}
+
+.reaction img {
+	margin: 0px;
+}
+
+.reaction_text{
+	width: 100%;
+	text-align: center;
+	font-style: italic;
+}
