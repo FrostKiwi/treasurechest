@@ -262,3 +262,7 @@ aside li {
 	text-align: center;
 	font-style: italic;
 }
+
+code {
+	white-space: unset;
+}
