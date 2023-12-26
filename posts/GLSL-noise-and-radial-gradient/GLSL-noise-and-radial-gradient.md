@@ -1,9 +1,9 @@
 ---
-title: GLSL banding-free gradients
+title: How to fix color banding
 permalink: "/{{ page.fileSlug }}/"
 date: 2023-10-19
 last_modified: 2023-12-25
-description: Smooth gradients with a clever Noise one-liner by SLEDGEHAMMER Games
+description: Discovering color banding solutions & Smooth gradients with a clever Noise one-liner by SLEDGEHAMMER Games
 publicTags:
   - OpenGL
   - WebGL
@@ -54,7 +54,7 @@ I **love** to use soft gradients as backdrops when doing graphic programming. Bu
 This produces a 24-bit (8-bits per channel) image with clearly visible banding steps. If you don't see the banding due to being a bright environment or having the screen brightness set to very low, reference the pictures below. Here is what it should look like on an 8-bit panel, specifically the [HP Z24n G2](https://jp.ext.hp.com/monitors/business/z_z24n_g2/) monitor that is connected to my laptop. It should also look the same on a high-end 10-bit or 12-bit panel, since WebGL doesn't allow high bit-depth output. The image is brightness and contrast boosted, to make the steps obvious.
 
 <figure>
-	<img src="Banding.png" alt="Photo: WebGL color banding, on an 8-bit panel, contrast and brightness boosted" />
+	<img src="Banding.jpg" alt="Photo: WebGL color banding, on an 8-bit panel, contrast and brightness boosted" />
   <figcaption>Photo: WebGL color banding, on a 8-bit panel, contrast and brightness boosted</figcaption>
 </figure>
 
@@ -212,5 +212,9 @@ void main()
 
 ## What are the big-boys doing?
 
-Alien Isolation SweetFX
+### Alien Isolation SweetFX
+Deband.fx Shader
+Deep Color not working when reenabling
+
 Adobe After Effects Gradient Error Diffusion
+Perforamnce crap
