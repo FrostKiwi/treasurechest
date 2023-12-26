@@ -44,10 +44,6 @@ table img {
 	font-size: 2.35em;
 }
 
-h1 {
-	font-size: 2.2em;
-}
-
 .left_group {
 	display: flex;
 	justify-content: space-between;
@@ -64,7 +60,8 @@ h1 {
 	flex-direction: row;
 	gap: 8px;
 }
-.comment_group .kiwi{
+
+.comment_group .kiwi {
 	margin: unset;
 }
 
@@ -132,6 +129,11 @@ h1 {
 .post_title {
 	padding-top: 2rem;
 	padding-bottom: 1.5rem;
+}
+
+.post_title h1 {
+	margin-bottom: 0px;
+	font-size: 2.2em;
 }
 
 @media (max-width: 382px) {
