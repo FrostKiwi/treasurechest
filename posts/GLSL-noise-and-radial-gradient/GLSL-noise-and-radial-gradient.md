@@ -283,20 +283,65 @@ Horror games like Alien: Isolation have a lot of dark scenes with lights creatin
   <figcaption>Stage 5 of <a href="https://en.wikipedia.org/wiki/Alien:_Isolation">Alien: Isolation</a></figcaption>
 </figure>
 
-Here
+I photographed the middle of the scene, as viewed on my [Alienware AW3423DW](https://www.dell.com/en-us/shop/alienware-34-curved-qd-oled-gaming-monitor-aw3423dw/apd/210-bcye/monitors-monitor-accessories). In this first example, without any color banding mitigation and again with brightness & contrast boosted for clarity within this article. In real-life the color banding is obviously visible when gaming in a dark environment. These are actual photos and not screenshots, which will matter a little later.
+
+<figure>
+	<img src="DeepNo-DebandNo.png" alt="Photo: Strong Color-Banding under the light, contrast & brightness boosted" />
+  <figcaption>Photo: Strong Color-Banding under the light, contrast & brightness boosted</figcaption>
+</figure>
 
 #### Film grain
-There is of course the easy way of just slapping a lot of film grain everywhere and Alien: Isolation is definitely guilty of this. In fact, more aggregous than other games, with the VHS asthetic of huge blobs.
- 
+There is of course the easy way of just slapping a lot of film grain everywhere and Alien: Isolation is definitely guilty of this. In fact way more egregious than other games, with the VHS aesthetic of huge dark blobs.
+
+<figure>
+	<img src="filmgrain.png" alt="Use of Filmgrain, right side brightness & contrast boosted" />
+  <figcaption>Screenshot: Use of Filmgrain, right side brightness & contrast boosted</figcaption>
+</figure>
+
+It's not quite as bad when turned down to lower settings and during gameplay it's animated, but I'm still not a fan. Let's see if we can do one better...
+
 #### Deep-Color
-Deep Color does not work with Anti-Aliasing
-deep color sends a higher signal Monitor, switches automatically!
+<figure>
+	<img src="DeepColor On.jpg" alt="Deep Color setting in Alien: Isolation" />
+  <figcaption>Deep Color setting in Alien: Isolation</figcaption>
+</figure>
+
+_Deep Color_ is what Alien: Isolation calls rendering and outputting at 10-bits per channel. The way this setting works is absolutely not obvious though. You can turn it on, but it will only be actually active under a certain set of circumstances:
+ * Anti-Aliasing **has** to be disabled.
+   * That's a serious bummer. None of the Anti-Aliasing shaders handle the 10-bit signal and just crush the result back down to 8-bit. It's as if you didn't turn it on at all :[
+ * Your monitor needs to accept a 10 or 12-bit signal. Otherwise, the game won't switch into that higher bit-depth mode.
+   * Interestingly enough, the monitor doesn't need to be in that mode, but that mode just has to be _available_ and the switching happens automatically, which I did not expect. In the case of my monitor, this entails switching from 175hz to 144hz, to unlock the 10-bit color option.
+   ![](NvidiaControl.png)
+
+<figure>
+	<img src="DeepYes-DebandNo.png" alt="Photo: No Color-banding thanks to 10-bit output (contrast & brightness boosted)" />
+  <figcaption>Photo: No Color-banding thanks to deep-color (contrast & brightness boosted)</figcaption>
+</figure>
+
+What an excellent result! All the banding banished to the shadow realm. No tricks with different processing of the photo either. The camera captured the exact same exposure and the brightness was boosted in the same way. I suspect, that it's not just the output being 10-bit, that is giving such a good result, but also some passes being merged at a higher bit-depth and thus reducing color banding further. The result is just way too good for being a mere bump from 256 -> 1024 steps per channel. Please note, that this is in no way shape or form related to **the standard** of HDR. In fact, HDR is explicitly disabled in Windows.
+
+Of course, you need to have a rather expensive screen, being able to run 10-bits per channel or higher. And even if, sometimes the graphics card you have doesn't have the right generation of connector, leading you to have to drop color-resolution and/or refresh-rate in order to do so. What else is there?
 
 #### Reshade's Deband Effect
-Deband.fx Shader
+[ReShade](https://reshade.me) (sometimes mistakenly referred to as [SweetFx](github.com/CeeJayDK/SweetFX), a shader collection that used to be part of it) is a popular graphics hook, that applies various effects on top of many games, with many presets custom tuned by the community. ReShade's versatility and maturity has proven itself over many years of releases and broad palette of supported games.
+
+Among the effects you can apply is "Deband" (Simply called "Dither" in the past). 
+<figure>
+	<img src="SweeFX_Deband.fx.png" alt="ReShade's Deband effect menu" />
+  <figcaption>ReShade's Deband effect menu</figcaption>
+</figure>
+
+The `Deband.fx` Shader (Source code below, for reference) applies dithering to areas, that it detects as affected by color banding, based on the ["Weber Ratio"](https://en.wikipedia.org/wiki/Contrast_(vision)#Weber_contrast).
+
+<figure>
+	<img src="DeepNo-DebandYes.png" alt="Photo: Reshade's Deband.fx reducing color banding (contrast & brightness boosted)" />
+  <figcaption>Photo: Reshade's Deband reducing color banding (contrast & brightness boosted)</figcaption>
+</figure>
+
+In the brightness boosted photo, it may look like the effect only did half the job. Whilst technically true, to the naked eye it's surprisingly effective. It takes the edge off the visible color bands and makes it essentially invisible to even my pixel-peeping eyes. Quite the recommendation, if you have a game where such color banding annoys you. It also works with Anti-Aliasing, as it's a mere post-processing shader applied on top.
 
 <details>	
-<summary><a href="https://reshade.me">ReShade</a>'s <a href="https://github.com/crosire/reshade-shaders/blob/slim/Shaders/Deband.fx">Deband.fx</a></summary>
+<summary><a href="https://reshade.me">ReShade</a>'s <a href="https://github.com/crosire/reshade-shaders/blob/slim/Shaders/Deband.fx">Deband.fx</a> source code, for reference</summary>
 
 ```hlsl
 {% rawFile "posts/GLSL-noise-and-radial-gradient/Deband.fx" %}
@@ -304,16 +349,35 @@ Deband.fx Shader
 
 </details>
 
-Adobe After Effects Gradient Error Diffusion
-Perforamnce crap
 ### After Effects
-### Windows Terminal
+The **Gradient ramp** "generator" in [Adobe After Effects](https://en.wikipedia.org/wiki/Adobe_After_Effects) is used to generate gradients. It has an interesting "Ramp Scatter" slider, that diffuses the color bands with noise. It does it in a way, that defuses just the color bands though. Here is what the [official documentation](https://helpx.adobe.com/after-effects/using/generate-effects.html) has to say about it:
+> **Note:** Ramps often don’t broadcast well; severe banding occurs because the broadcast chrominance signal doesn’t contain sufficient resolution to reproduce the ramp smoothly. The Ramp Scatter control dithers the ramp colors, eliminating the banding apparent to the human eye. 
+
+<figure>
+	<img src="after_effects.png" alt="After Effects gradient ramp's ramp scatter" />
+  <figcaption>After Effects gradient ramp's ramp scatter</figcaption>
+</figure>
+
+When cranked to the max, you can see streaks running through the noise. Surprisingly, the performance is quite bad. To do a 4k frame of this at max ramp scatter takes my high-end [AMD Ryzen 9 7900x](https://www.amd.com/en/products/cpu/amd-ryzen-9-7900x) a quarter second. 4fps playback with nothing, but a mere gradient. Both facts lead me to believe, that there is some kind iterative algorithm at play here, though I can only guess. To be fair, as long as none of the effect's properties are animated, it caches just one frame and that's it. After effects is pretty smart about it. But it's also known to still carry a legacy set of single-threaded slowness across a lot of its features.
+
+### KDE Kwin Blur
+Finally, let's talk blur. Blur produces smooth gradients, which quickly suffer from color banding. The [KDE Plasma Desktop](https://kde.org/plasma-desktop/), one of the most popular Desktop Environments for Linux and FreeBSD, uses one of my favorite pieces of graphics programming wizardry, the [Dual Kawase Blur](https://github.com/JujuAdams/Kawase), to blur the backdrops of windows, as [implemented a while back](https://phabricator.kde.org/source/kwin/browse/master/effects/blur/). To defuse said color banding, a noise can be applied on top. The source code for the implementation [can be found here](https://phabricator.kde.org/source/kwin/browse/master/effects/blur/).
+<figure>
+	<img src="kde.png" alt="KDE Plasma's Blur and Noise settings" />
+  <figcaption>KDE Plasma's Blur with noise at max strength (<a href="https://phabricator.kde.org/R108:cc0325af41528b4f68e9f376c4d2d27ed1e28f11">Source</a>)<br>Zoomed and contrast boosted in circle</figcaption>
+</figure>
+
+### Microsoft Windows Acrylic
+To finish off, here is how Windows 11 and it's ["Acrylic"](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic#how-we-designed-acrylic) does it. It applies both blur and noise to achieve the same.
+<figure>
+	<img src="acrylic-recipe-diagram.png" alt="Microsoft Acrylic implementation diagram" />
+  <figcaption>Microsoft Acrylic implementation diagram (<a href="https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic#how-we-designed-acrylic">Source</a>)</figcaption>
+</figure>
+
+Here is how it looks in the [Microsoft New Windows Terminal](https://github.com/microsoft/terminal). The circle has again brightness and contrast boosted to see the effect more clearly in the context of the article. Even though new Windows terminal is open source, the implementation of acrylic is within the source code of Windows itself, so we cannot take a look as to the specific implementation.
 <figure>
 	<img src="terminal.png" alt="Microsoft Terminal's use of Blur and Noise" />
   <figcaption>Microsoft Terminal's use of Blur and Noise, boosted contrast in circle</figcaption>
 </figure>
 
-### KDE Blur
-
-[Dual Kawase](https://github.com/JujuAdams/Kawase)
-https://phabricator.kde.org/source/kwin/browse/master/effects/blur/
+And that warps up our little journey through all things color and hopefully none things banding.
