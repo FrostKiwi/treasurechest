@@ -224,3 +224,6 @@ deep color sends a higher signal Monitor, switches automatically!
 
 Adobe After Effects Gradient Error Diffusion
 Perforamnce crap
+### After Effects
+### Windows Terminal
+### KDE Blur
