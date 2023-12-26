@@ -2,7 +2,7 @@
 title: How to (and how not to) fix color banding
 permalink: "/{{ page.fileSlug }}/"
 date: 2023-10-19
-last_modified: 2023-12-25
+last_modified: 2023-12-27
 description: Discovering color banding solutions & Smooth gradients with a clever Noise one-liner by SLEDGEHAMMER Games
 publicTags:
   - OpenGL
