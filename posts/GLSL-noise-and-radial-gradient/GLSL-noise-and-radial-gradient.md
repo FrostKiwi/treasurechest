@@ -358,7 +358,7 @@ The **Gradient ramp** "generator" in [Adobe After Effects](https://en.wikipedia.
   <figcaption>After Effects gradient ramp's ramp scatter</figcaption>
 </figure>
 
-When cranked to the max, you can see streaks running through the noise. Surprisingly, the performance is quite bad. To do a 4k frame of this at max ramp scatter takes my high-end [AMD Ryzen 9 7900x](https://www.amd.com/en/products/cpu/amd-ryzen-9-7900x) a quarter second. 4fps playback with nothing, but a mere gradient. Both facts lead me to believe, that there is some kind iterative algorithm at play here, though I can only guess. To be fair, as long as none of the effect's properties are animated, it caches just one frame and that's it. After effects is pretty smart about it. But it's also known to still carry a legacy set of single-threaded slowness across a lot of its features.
+When cranked to the max, you can see streaks running through the noise. Surprisingly, the performance is quite bad. At 0 ramp scatter, the gradient renders instantly, regardless of resolution. To do a 4k frame of this at max ramp scatter takes my high-end [AMD Ryzen 9 7900x](https://www.amd.com/en/products/cpu/amd-ryzen-9-7900x) a quarter second though. 4fps playback with nothing, but a mere gradient. Both facts lead me to believe, that there is some kind iterative algorithm at play here, though I can only guess. To be fair, as long as none of the effect's properties are animated, it caches just one frame and that's it. After effects is pretty smart about it. But it's also known to still carry a legacy set of single-threaded slowness across a lot of its features.
 
 ### KDE Kwin Blur
 Finally, let's talk blur. Blur produces smooth gradients, which quickly suffer from color banding. The [KDE Plasma Desktop](https://kde.org/plasma-desktop/), one of the most popular Desktop Environments for Linux and FreeBSD, uses one of my favorite pieces of graphics programming wizardry, the [Dual Kawase Blur](https://github.com/JujuAdams/Kawase), to blur the backdrops of windows, as [implemented a while back](https://phabricator.kde.org/source/kwin/browse/master/effects/blur/). To defuse said color banding, a noise can be applied on top. The source code for the implementation [can be found here](https://phabricator.kde.org/source/kwin/browse/master/effects/blur/).
@@ -368,13 +368,13 @@ Finally, let's talk blur. Blur produces smooth gradients, which quickly suffer f
 </figure>
 
 ### Microsoft Windows Acrylic
-To finish off, here is how Windows 11 and it's ["Acrylic"](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic#how-we-designed-acrylic) does it. It applies both blur and noise to achieve the same.
+To finish off, here is how Windows 11 and its ["Acrylic"](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic#how-we-designed-acrylic) does it. It applies both blur and noise to achieve the same.
 <figure>
 	<img src="acrylic-recipe-diagram.png" alt="Microsoft Acrylic implementation diagram" />
   <figcaption>Microsoft Acrylic implementation diagram (<a href="https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic#how-we-designed-acrylic">Source</a>)</figcaption>
 </figure>
 
-Here is how it looks in the [Microsoft New Windows Terminal](https://github.com/microsoft/terminal). The circle has again brightness and contrast boosted to see the effect more clearly in the context of the article. Even though new Windows terminal is open source, the implementation of acrylic is within the source code of Windows itself, so we cannot take a look as to the specific implementation.
+Here is how it looks in the [Microsoft's "New Windows Terminal"](https://github.com/microsoft/terminal). The circle has again brightness and contrast boosted to see the effect more clearly in the context of the article. Even though new Windows terminal is open source, the implementation of acrylic is within the source code of Windows itself, so we cannot take a look as to the specific implementation.
 <figure>
 	<img src="terminal.png" alt="Microsoft Terminal's use of Blur and Noise" />
   <figcaption>Microsoft Terminal's use of Blur and Noise, boosted contrast in circle</figcaption>
