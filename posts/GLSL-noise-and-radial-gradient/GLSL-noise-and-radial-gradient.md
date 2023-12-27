@@ -395,3 +395,34 @@ Here is how it looks in the [Microsoft's "New Windows Terminal"](https://github.
 </figure>
 
 And that warps up our little journey through all things color and hopefully none things banding.
+
+## Addendum
+[Lobste.rs](https://lobste.rs/) User [luchs](https://lobste.rs/~luchs) asked [here](https://lobste.rs/s/qxkfhl/how_how_not_fix_color_banding#c_ldjp2e) for a way to determine the bit-depth of the current image, if one does not trust the software stack.
+> Do you have any good test images for determining a monitor’s color depth? Between applications, compositors, graphics drivers and monitors, it looks like a lot of things can go wrong. Monitors that accept 8 or 10 bit and then use dithering don’t help either.
+
+This is indeed an interesting test-case, so I quickly whipped up a [16-bit PNG](bitdepth_test.png) of a dark, grayscale gradient, with no dithering.
+<figure>
+	<img src="bitdepth_test.png" alt="16-bit Test image" />
+  <figcaption>16-bit Test image</figcaption>
+</figure>
+Here is how the test works. Load up the image, point a camera at it and put it into long exposure mode. The camera does not have to be anything special, an 8pp jpeg is more than enough. Depending on how many color bands you see, you can determine the true result of the bit-depth-ness hitting your hopefully better than 8-bit eyes.
+
+<figure>
+	<img src="8bit-test.jpg" alt="16-bit Test image on an 8-bit monitor" />
+  <figcaption>16-bit Test image on an 8-bit monitor, 3 distinct stripes</figcaption>
+</figure>
+
+On an 8-bit monitor, you should see 3 distinct stripes. If your monitor is in sRGB color space, then the stripes should be as per the image, more or less even.
+
+<figure>
+	<img src="10bit-test.jpg" alt="16-bit Test image on an 10-bit monitor" />
+  <figcaption>16-bit Test image on an 10-bit monitor, 9 distinct stripes</figcaption>
+</figure>
+
+On a 10-bit monitor, you should see 9 distinct stripes. If you see more than that, then your monitor and software are in 12-bit mode.
+If the stripes are not even, or you are seeing more or less than the number above, then something is going on in terms of color space during decoding. Microsoft Edge applies the color management on top of the image, which skews the gradient to one side. Firefox does not. My Monitor is in sRGB + Gamma 2.2 mode, but there is a higher color gamut standard mode, with a manufacturer supplied color profile. Depending on the settings, the software in question may or may not apply said profile to get into sRGB space.
+
+<figure>
+	<img src="8-bit-skewed.jpg" alt="16-bit Test image on an 8-bit monitor, 3 distinct stripes. Skewed result due to extra color management applied during decoding." />
+  <figcaption>16-bit Test image on an 8-bit monitor, 3 distinct stripes. Skewed result due to extra color management applied during decoding.</figcaption>
+</figure>
