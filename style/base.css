@@ -297,16 +297,26 @@ h6 .anchor-link:hover {
 	display: inline;
 }
 
-.contact {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 8px;
+table.contact tr:last-child td {
+	border-bottom: none;
 }
 
-.contact a {
-	display: flex;
-	align-items: center;
-	gap: 8px;
+table.contact td {
+	text-align: center;
+	vertical-align: middle;
+}
+
+table.contact td[colspan="2"] {
+	border-bottom: none;
+}
+
+table.contact a {
 	border-bottom: 0px;
+	display: flex;
+	justify-content: center;
+	gap: 20px
+}
+
+table.contact h3 {
+	margin: 0px;
 }
