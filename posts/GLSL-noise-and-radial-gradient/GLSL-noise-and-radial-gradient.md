@@ -414,7 +414,7 @@ Here is how the test works. Load up the image, point a camera at it and take a p
   <figcaption>Photo: 16-bit Test image on an 8-bit monitor, 3 distinct stripes. Image shadow brightness boosted.</figcaption>
 </figure>
 
-On an 8-bit monitor, you should see 3 distinct stripes. If **the file** is properly decoded with the sRGB gamma curve, then the stripes should be as per the photo above: First and Last stripe exactly half the size of the middle one. (Due to the gradient starting and ending on integer boundaries and color bands forming in even sizes in-between)
+On an 8-bit monitor, you should see 3 distinct stripes. If **the file** is properly decoded with the sRGB gamma curve, then the stripes should be as per the photo above: first and last stripe exactly half the size of the middle one. (Due to the gradient starting and ending on integer boundaries and color bands forming in even sizes in-between)
 <figure>
 	<img src="10bit-test.jpg" alt="16-bit Test image on an 10-bit monitor" />
   <figcaption>Photo: 16-bit Test image on a 10-bit monitor, 9 distinct stripes. Image shadow brightness boosted.</figcaption>
