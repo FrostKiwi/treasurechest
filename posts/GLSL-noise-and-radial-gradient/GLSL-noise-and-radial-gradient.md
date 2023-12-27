@@ -397,7 +397,7 @@ Here is how it looks in the [Microsoft's "New Windows Terminal"](https://github.
 And that warps up our little journey through all things color and hopefully none things banding.
 
 ## Addendum
-[Lobste.rs](https://lobste.rs/) User [luchs](https://lobste.rs/~luchs) asked [here](https://lobste.rs/s/qxkfhl/how_how_not_fix_color_banding#c_ldjp2e) for a way to determine the bit-depth of the current output, if one does not trust the software stack to do so correctly.
+[Lobste.rs](https://lobste.rs/) user [luchs](https://lobste.rs/~luchs) asked [here](https://lobste.rs/s/qxkfhl/how_how_not_fix_color_banding#c_ldjp2e) for a way to determine the bit-depth of the current output, if one does not trust the software stack to do so correctly.
 > Do you have any good test images for determining a monitor’s color depth? Between applications, compositors, graphics drivers and monitors, it looks like a lot of things can go wrong. Monitors that accept 8 or 10 bit and then use dithering don’t help either.
 
 This is indeed an interesting test-case, so I quickly whipped up a [16-bit PNG](bitdepth_test.png) of a dark, grayscale gradient, with no dithering. The Gradient goes from 0 to 2 in 8-bit, 0 to 8 in 10-bit and 0 to 257 in 16-bit. (Final pixel in 16-bit is 257, not 256, not sure why)
