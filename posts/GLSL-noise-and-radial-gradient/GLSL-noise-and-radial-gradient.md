@@ -226,7 +226,7 @@ Yeah, 6-bit panels are a travesty. Especially on a product of this caliber. I me
 ### Bufferless Version
 Here is what the shaders look like if you use OpenGL 3.3, OpenGL 2.1 with the [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) extension (`#version` would have to change) or WebGL2 and want to skip the Vertex Buffer setup by putting the fullscreen triangle into the vertex shader. If you get an error around `gl_VertexID` missing, you don't have [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) enabled.
 
-These can be rewritten to work with even the most basic OpenGL or WebGL standard by uploading the vertex buffer prior, as done in all the WebGL examples up till now. The fragment shader stays the basically the same.
+These can be rewritten to work with even the most basic OpenGL or WebGL standard by uploading the vertex buffer prior, as done in all the WebGL examples up till now. The fragment shader stays basically the same.
 
 <details><summary>Bufferless Vertex Shader</summary>
 
