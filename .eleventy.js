@@ -90,7 +90,7 @@ module.exports = function (eleventyConfig) {
 					formats: ['jpeg'],
 					outputDir: './_site/' + post.url
 				});
-				post.data.image = post.url + '/' + image.jpeg[0].filename;
+				post.data.image = post.url + image.jpeg[0].filename;
 			}
 		}
 
