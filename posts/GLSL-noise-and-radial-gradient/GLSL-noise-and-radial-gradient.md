@@ -356,13 +356,13 @@ In the brightness boosted photo, it may look like the effect only did half the j
 
 </details>
 
-### After Effects
+### Adobe After Effects
 The **Gradient ramp** "generator" in [Adobe After Effects](https://en.wikipedia.org/wiki/Adobe_After_Effects) is used to generate gradients. It has an interesting "Ramp Scatter" slider, that diffuses the color bands with noise. It does it in a way, that defuses just the color bands though. Here is what the [official documentation](https://helpx.adobe.com/after-effects/using/generate-effects.html) has to say about it:
 > **Note:** Ramps often don’t broadcast well; severe banding occurs because the broadcast chrominance signal doesn’t contain sufficient resolution to reproduce the ramp smoothly. The Ramp Scatter control dithers the ramp colors, eliminating the banding apparent to the human eye. 
 
 <figure>
 	<img src="after_effects.png" alt="After Effects gradient ramp's ramp scatter" />
-  <figcaption>After Effects gradient ramp's ramp scatter</figcaption>
+  <figcaption>After Effects gradient ramp's ramp scatter. Right side brightness and contrast boosted, with circles showing a zoomed section.</figcaption>
 </figure>
 
 When cranked to the max, you can see streaks running through the noise. Surprisingly, the performance is quite bad. At 0 ramp scatter, the gradient renders instantly, regardless of resolution. To do a 4k frame of this at max ramp scatter takes my high-end [AMD Ryzen 9 7900x](https://www.amd.com/en/products/cpu/amd-ryzen-9-7900x) a quarter second though. 4fps playback with nothing, but a mere gradient. Both facts lead me to believe, that there is some kind iterative algorithm at play here, though I can only guess. To be fair, as long as none of the effect's properties are animated, it caches just one frame and that's it. After effects is pretty smart about it. But it's also known to still carry a legacy set of single-threaded slowness across a lot of its features.
