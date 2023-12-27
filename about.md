@@ -26,10 +26,10 @@ layout: layout.html
 ## Stuff that I'm really good at
 <blockquote class="reaction"><div class="reaction_text">In the context of tech, I worked in a lot of projects with many programming languages, but these 4 points are my core (tech) strengths</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 
-* GLSL & Graphics programming
-* Low level & C programming
-* Video production
 * Medical imaging
+* Video production
+* Low level & C programming
+* GLSL & Graphics programming
 ## Contact
 <blockquote class="reaction"><div class="reaction_text">Feel free to reach out. I'm chronically online, so even a small social media comment will ping me instantly.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
