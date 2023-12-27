@@ -412,11 +412,10 @@ Here is how the test works. Load up the image, point a camera at it and put it i
   <figcaption>Photo: 16-bit Test image on an 8-bit monitor, 3 distinct stripes. Image shadows brightness boosted.</figcaption>
 </figure>
 
-On an 8-bit monitor, you should see 3 distinct stripes. If **the file** is decoded with the sRGB gamma curve, then the stripes should be as per the image, more or less even.
-
+On an 8-bit monitor, you should see 3 distinct stripes. If **the file** is decoded with the sRGB gamma curve, then the stripes should be as per the image, more or less even in size, with the first stripe being half the size of the second. (Due to the gradient starting at 0 and color bands forming in even sizes after that)
 <figure>
 	<img src="10bit-test.jpg" alt="16-bit Test image on an 10-bit monitor" />
-  <figcaption>Photo: 16-bit Test image on an 10-bit monitor, 9 distinct stripes. Image shadows brightness boosted.</figcaption>
+  <figcaption>Photo: 16-bit Test image on a 10-bit monitor, 9 distinct stripes. Image shadows brightness boosted.</figcaption>
 </figure>
 
 On a 10-bit monitor, you should see 9 distinct stripes. If you see more than that, then your monitor and software are in 12-bit mode.
