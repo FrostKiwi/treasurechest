@@ -400,7 +400,7 @@ And that warps up our little journey through all things color and hopefully none
 [Lobste.rs](https://lobste.rs/) User [luchs](https://lobste.rs/~luchs) asked [here](https://lobste.rs/s/qxkfhl/how_how_not_fix_color_banding#c_ldjp2e) for a way to determine the bit-depth of the current image, if one does not trust the software stack.
 > Do you have any good test images for determining a monitor’s color depth? Between applications, compositors, graphics drivers and monitors, it looks like a lot of things can go wrong. Monitors that accept 8 or 10 bit and then use dithering don’t help either.
 
-This is indeed an interesting test-case, so I quickly whipped up a [16-bit PNG](bitdepth_test.png) of a dark, grayscale gradient, with no dithering.
+This is indeed an interesting test-case, so I quickly whipped up a [16-bit PNG](bitdepth_test.png) of a dark, grayscale gradient, with no dithering. The Gradient goes from 0 to 2 in 8-bit, 0 to 8 in 10-bit and 0 to 257 in 16-bit. (Final pixel in 16-bit is 257, not 256, not sure why)
 <figure>
 	<img src="bitdepth_test.png" alt="16-bit Test image" />
   <figcaption>16-bit Test image</figcaption>
@@ -412,14 +412,14 @@ Here is how the test works. Load up the image, point a camera at it and take a p
   <figcaption>Photo: 16-bit Test image on an 8-bit monitor, 3 distinct stripes. Image shadow brightness boosted.</figcaption>
 </figure>
 
-On an 8-bit monitor, you should see 3 distinct stripes. If **the file** is decoded with the sRGB gamma curve, then the stripes should be as per the image, more or less even in size, with the first stripe being half the size of the second. (Due to the gradient starting at 0 and color bands forming in even sizes after that)
+On an 8-bit monitor, you should see 3 distinct stripes. If **the file** is properly decoded with the sRGB gamma curve, then the stripes should be as per the photo above: First and Last stripe exactly half the size of the middle one. (Due to the gradient starting and ending on integer boundaries and color bands forming in even sizes after that)
 <figure>
 	<img src="10bit-test.jpg" alt="16-bit Test image on an 10-bit monitor" />
   <figcaption>Photo: 16-bit Test image on a 10-bit monitor, 9 distinct stripes. Image shadow brightness boosted.</figcaption>
 </figure>
 
-On a 10-bit monitor, you should see 9 distinct stripes. If you see more than that, then your monitor and software are in 12-bit mode.
-If the stripes are not even or you are seeing 1 more or 1 less than the numbers above, then something is going on in terms of color space during image decoding.
+On a 10-bit monitor with proper software support, you should see 9 distinct stripes. All stripes the same size, except the first and last one, which should be half sized. If you see way more than that, then your monitor and software are in 12-bit mode.
+If the stripes are not even or you are seeing more or less than the numbers above, then something is going on in terms of color space during image decoding.
 
 <figure>
 	<img src="8-bit-skewed.jpg" alt="16-bit Test image on an 8-bit monitor, 3 distinct stripes. Skewed result due to extra color management applied during decoding." />
