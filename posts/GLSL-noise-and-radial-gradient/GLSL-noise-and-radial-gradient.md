@@ -337,7 +337,7 @@ No tricks with different processing of the photo either. The camera captured the
 Of course, you need to have a rather expensive screen, being able to run 10-bits per channel or higher. And even if, sometimes the graphics card you have doesn't have the right generation of connector, leading you to have to drop color-resolution and/or refresh-rate in order to do so. What else is there?
 
 #### Reshade's Deband Effect
-[ReShade](https://reshade.me) (sometimes mistakenly referred to as [SweetFx](github.com/CeeJayDK/SweetFX), a shader collection that used to be part of it) is a popular graphics hook, that applies various effects on top of many games, with many presets custom tuned by the community. ReShade's versatility and maturity has proven itself over many years of releases and broad palette of supported games. Among the effects you can apply is "Deband" (Simply called "Dither" in the past). 
+[ReShade](https://reshade.me) (sometimes mistakenly referred to as [SweetFx](https://github.com/CeeJayDK/SweetFX), a shader collection that used to be part of it) is a popular graphics hook, that applies various effects on top of many games, with many presets custom tuned by the community. ReShade's versatility and maturity has proven itself over many years of releases and broad palette of supported games. Among the effects you can apply is "Deband" (Simply called "Dither" in the past). 
 <figure>
 	<img src="SweeFX_Deband.fx.png" alt="ReShade's Deband effect menu" />
   <figcaption>ReShade's Deband effect menu</figcaption>
