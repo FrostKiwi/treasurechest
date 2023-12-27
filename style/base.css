@@ -290,3 +290,23 @@ h6:hover .anchor-link,
 h6 .anchor-link:hover {
 	visibility: visible;
 }
+
+.contact img {
+	height: 48px;
+	margin: 0px;
+	display: inline;
+}
+
+.contact {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.contact a {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	border-bottom: 0px;
+}
