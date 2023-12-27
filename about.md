@@ -52,6 +52,18 @@ I run the math & tech-focused YouTube Channel [FrostKiwi](https://www.youtube.co
 	</tr>
 	<tr>
 		<td>
+			<a href="https://github.com/FrostKiwi">
+				<img class="social_icon" src="/assets/icons/github.svg">
+			</a>
+		</td>
+		<td>
+			<a href="https://github.com/FrostKiwi">
+				<b>GitHub</b>
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<td>
 			<a href="https://twitter.com/FrostKiwiOne">
 				<img class="social_icon" src="/assets/icons/twitter.svg">
 				<img class="social_icon" src="/assets/icons/x.svg">
