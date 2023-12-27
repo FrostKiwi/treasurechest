@@ -266,3 +266,27 @@ aside li {
 code {
 	white-space: unset;
 }
+
+h1 .anchor-link,
+h2 .anchor-link,
+h3 .anchor-link,
+h4 .anchor-link,
+h5 .anchor-link,
+h6 .anchor-link {
+	visibility: hidden;
+}
+
+h1:hover .anchor-link,
+h1 .anchor-link:hover,
+h2:hover .anchor-link,
+h2 .anchor-link:hover,
+h3:hover .anchor-link,
+h3 .anchor-link:hover,
+h4:hover .anchor-link,
+h4 .anchor-link:hover,
+h5:hover .anchor-link,
+h5 .anchor-link:hover,
+h6:hover .anchor-link,
+h6 .anchor-link:hover {
+	visibility: visible;
+}
