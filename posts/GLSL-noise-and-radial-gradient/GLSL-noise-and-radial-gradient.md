@@ -330,7 +330,9 @@ _Deep Color_ is what Alien: Isolation calls rendering and outputting at 10-bits 
   <figcaption>Photo: No Color-banding thanks to deep-color (contrast & brightness boosted)</figcaption>
 </figure>
 
-What an excellent result! All the banding banished to the shadow realm. No tricks with different processing of the photo either. The camera captured the exact same exposure and the brightness was boosted in the same way. I suspect, that it's not just the output being 10-bit, that is giving such a good result, but also some passes being merged at a higher bit-depth and thus reducing color banding further. The result is just way too good for being a mere bump from 256 -> 1024 steps per channel. Please note, that this is in no way shape or form related to **the standard** of HDR. In fact, HDR is explicitly disabled in Windows.
+<blockquote class="reaction"><div class="reaction_text">What an excellent result! All banding banished to the shadow realm.</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
+
+No tricks with different processing of the photo either. The camera captured the exact same exposure and the brightness was boosted in the same way. I suspect, that it's not just the output being 10-bit, that is giving such a good result, but also some passes being merged at a higher bit-depth and thus reducing color banding further. The result is just way too good for being a mere bump from 256 -> 1024 steps per channel. Please note, that this is in no way shape or form related to **the standard** of HDR. In fact, HDR is explicitly disabled in Windows.
 
 Of course, you need to have a rather expensive screen, being able to run 10-bits per channel or higher. And even if, sometimes the graphics card you have doesn't have the right generation of connector, leading you to have to drop color-resolution and/or refresh-rate in order to do so. What else is there?
 
