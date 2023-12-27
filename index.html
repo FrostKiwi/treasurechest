@@ -8,12 +8,14 @@ layout: layout.html
 		<img src="{{ post.data.image }}" alt="{{ post.data.title }}" class="post-image">
 		<div class="post-content">
 			<h2>{{ post.data.title }}</h2>
-			<div>
+			<div class="subinfo">
 				<span class="post-date">{{ post.date | date: "%Y.%m.%d" }}</span>
 				{% if post.data.publicTags %}
+				<div>
 					{% for tag in post.data.publicTags %}
 						<span class="post-tag">{{ tag }}</span>
 					{% endfor %}
+				</div>
 				{% endif %}
 			</div>
 			<span class="post-description">{{ post.data.description }}</span>
