@@ -57,13 +57,16 @@ This produces a 24-bit (8-bits per channel) image with clearly visible banding s
   <figcaption>Photo: WebGL color banding, on a 8-bit panel, contrast and brightness boosted</figcaption>
 </figure>
 
-Many Laptop screens are in fact 6-bit panels performing dithering to fake an 8-bit output. This includes even high-priced workstations replacements, like the [HP Zbook Fury 15 G7](https://support.hp.com/us-en/document/c06909298#AbT5) and its [6-bit LCD panel](https://www.panelook.com/N156HCA-GA3__15.6__overview_33518.html), that I sit in front of right now. What you can see are *some* banding steps being a clean uniform color and *some* of them being dithered via the panel's integrated look-up table to achieve a perceived 8-bit output via [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering). Though note, how the dithering does **not** result in the banding steps being broken up, it just dithers the color step itself. Capturing this via a photo is a bit difficult, since there is also the pattern of individual pixels messing with the capture and introducing [moiré ](https://en.wikipedia.org/wiki/Moir%C3%A9_pattern) and interference patterns. The dither pattern is distinctly visible when looking closely with the naked eye though.
+Many Laptop screens are in fact 6-bit panels performing dithering to fake an 8-bit output. This includes even high-priced workstations replacements, like the [HP Zbook Fury 15 G7](https://support.hp.com/us-en/document/c06909298#AbT5) and its [6-bit LCD panel](https://www.panelook.com/N156HCA-GA3__15.6__overview_33518.html), that I sit in front of right now. What you can see are *some* banding steps being a clean uniform color and *some* of them being dithered via the panel's integrated look-up table to achieve a perceived 8-bit output via [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering). Though note, how the dithering does **not** result in the banding steps being broken up, it just dithers the color step itself. Capturing this via a photo is a bit difficult, since there is also the pattern of individual pixels messing with the capture and introducing [moiré ](https://en.wikipedia.org/wiki/Moir%C3%A9_pattern) and interference patterns.
+
 
 <figure>
 	<img src="Dithering.jpg" alt="Photo: Above WebGL color banding sample, on a 6-bit panel, contrast and brightness boosted" />
   <figcaption>Photo: WebGL color banding, on a 6-bit panel, contrast and brightness boosted.
 	<br>Panel's built-in dithering visualized.</figcaption>
 </figure>
+
+<blockquote class="reaction"><div class="reaction_text">It's not obvious from the photo, but the dither pattern is distinctly visible when looking closely with the naked eye.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 ## Magic GLSL One-liner
 
@@ -151,7 +154,9 @@ You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will co
   <figcaption>Photo: Above WebGL Gradient with Interleaved Gradient Noise applied, on an 8-bit panel. Brightness & contrast boosted</figcaption>
 </figure>
 
-And just like that, it's perfectly smooth on my monitor with the 8-bit panel! 🎉 Same monitor and photo setup as the color-banded mess from the beginning of the article. No trickery with different zoom levels or filters. The noise is essentially invisible. It's my own article and still I'm surprised myself at the effectiveness of that simple one-liner.
+<blockquote class="reaction"><div class="reaction_text">Perfectly smooth on my monitor with the 8-bit panel! </div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
+
+Same monitor and photo setup as the color-banded mess from the beginning of the article. No trickery with different zoom levels or filters. The noise is essentially invisible. It's my own article and still I'm surprised myself at the effectiveness of that simple one-liner.
 
 Technically, the proper way to achieve banding free-ness is to perform [error diffusion dithering](https://en.wikipedia.org/wiki/Error_diffusion), since that would breakup just the quantized steps of the gradient, without touching the color between the steps. But other than [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering), there is no GPU friendly way to do this and even very faint [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering) is detectable by human vision, since it applies a fixed pattern. When talking about gradients, adding noise works just fine though, even though it's not proper error diffusion. Simply applying noise with the strength of one 8-bit grayscale value `(1.0 / 255.0) * gradientNoise(gl_FragCoord.xy)` side-steps a bunch of issues and the code footprint is tiny to boot. Additionally we subtract the average added brightness of `(0.5 / 255.0)` to keep the brightness the same, since we are introducing the noise via addition, though the difference is barely noticeable. Here is a part of the gradient with a threshold applied and zoomed in, to see how both gradient and noise interact.
 
