@@ -418,12 +418,12 @@ On an 8-bit monitor, you should see 3 distinct stripes. If **the file** is prope
   <figcaption>Photo: 16-bit Test image on a 10-bit monitor, 9 distinct stripes. Image shadow brightness boosted.</figcaption>
 </figure>
 
-On a 10-bit monitor with proper software support, you should see 9 distinct stripes. All stripes the same size, except the first and last one, which should be half sized. If you see way more than that, then your monitor and software are in 12-bit mode.
+On a 10-bit monitor with proper software support, you should see 9 distinct stripes. All stripes should be the same size, except the first and last one, which should be half sized. If you see 33, then your monitor and software are in 12-bit mode.
 If the stripes are not even or you are seeing more or less than the numbers above, then something is going on in terms of color space during image decoding.
 
 <figure>
-	<img src="8-bit-skewed.jpg" alt="16-bit Test image on an 8-bit monitor, 3 distinct stripes. Skewed result due to extra color management applied during decoding." />
-  <figcaption>Photo: 16-bit Test image on an 8-bit monitor, 3 distinct stripes. Skewed result due to extra color management applied during decoding. Image shadow brightness boosted.</figcaption>
+	<img src="8-bit-skewed.jpg" alt="16-bit Test image on an 8-bit monitor, 3 distinct stripes. Skewed result due to improper decoding." />
+  <figcaption>Photo: 16-bit Test image on an 8-bit monitor, 3 distinct stripes. Skewed result due to improper decoding. Image shadow brightness boosted.</figcaption>
 </figure>
 
- On Windows, Microsoft Edge skews the gradient to one side, whilst Firefox does not. It's either to do with Microsoft Edge applying extra color management or the brightness response curve being approximated [as Gamma 2.2, instead of the piece-wise curve](https://www.colour-science.org/posts/srgb-eotf-pure-gamma-22-or-piece-wise-function/) that it is, leading to a slight shift in how the 16-bit gradient is being displayed on the 8-bit output. Your monitor's color gamut and gamma settings should have no effect on the number and distribution of stripes, just the decoding step.
+ On Windows, Microsoft Edge skews the gradient to one side, whilst Firefox does not. It has either to do with Microsoft Edge applying extra color management or the brightness response curve being approximated [as Gamma 2.2, instead of the piece-wise curve](https://www.colour-science.org/posts/srgb-eotf-pure-gamma-22-or-piece-wise-function/) that it is, leading to a slight shift in how the 16-bit gradient is being displayed on the 8-bit output. Your monitor's color gamut and gamma settings should have zero effect on the number and distribution of stripes, just the decoding and any added conversions applied after.
