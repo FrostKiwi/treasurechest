@@ -13,7 +13,7 @@ Born in Belarus <img class="flag" src="/assets/icons/by.svg">, raised in Germany
 I run the math & tech-focused YouTube Channel [FrostKiwi](https://www.youtube.com/@FrostKiwi).
 
 ## Stuff that I'm really good at
-<blockquote class="reaction"><div class="reaction_text">In the context of tech, I worked in a lot of project with many programming languages, but these 4 points are my core (tech) strengths</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">In the context of tech, I worked in a lot of projects with many programming languages, but these 4 points are my core (tech) strengths</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 
 * GLSL & Graphics programming
 * Low level & C programming
