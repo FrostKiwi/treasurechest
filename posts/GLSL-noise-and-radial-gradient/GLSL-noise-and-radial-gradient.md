@@ -224,9 +224,9 @@ Both the 6-bit screen's dithering pattern and our Interleaved Gradient Noise int
   Arrows to show the interference direction</figcaption>
 </figure>
 
-<blockquote class="reaction"><div class="reaction_text">...it's worse!</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">...it's worse!</div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
 
-Yeah, 6-bit panels are a travesty. Especially on a product of this caliber. I mean the old [Thinkpad T500 & X200 I hardware modded](https://www.youtube.com/watch?v=Fs4GjDiOie8) have 6-bit panels, but those are multiple tech generations old. We could tweak the noise algorithm, but it's just not worth to drop our denominator so low. It's 2024 in a couple days and every human being deserves at least 256 different shades in each color channel.
+Clearly obvious diagonal stripes throughout the whole gradient. Yeah, 6-bit panels are a travesty. Especially on a product of this caliber. I mean the old [Thinkpad T500 & X200 I hardware modded](https://www.youtube.com/watch?v=Fs4GjDiOie8) have 6-bit panels, but those are multiple tech generations old. We could tweak the noise algorithm, but it's just not worth to drop our denominator so low. It's 2024 in a couple days and every human being deserves at least 256 different shades in each color channel.
 
 ### Bufferless Version
 Here is what the shaders look like if you use OpenGL 3.3, OpenGL 2.1 with the [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) extension (`#version` would have to change) or WebGL2 and want to skip the Vertex Buffer setup by putting the fullscreen triangle into the vertex shader. If you get an error around `gl_VertexID` missing, you don't have [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) enabled.
@@ -335,22 +335,13 @@ What an excellent result! All the banding banished to the shadow realm. No trick
 Of course, you need to have a rather expensive screen, being able to run 10-bits per channel or higher. And even if, sometimes the graphics card you have doesn't have the right generation of connector, leading you to have to drop color-resolution and/or refresh-rate in order to do so. What else is there?
 
 #### Reshade's Deband Effect
-[ReShade](https://reshade.me) (sometimes mistakenly referred to as [SweetFx](github.com/CeeJayDK/SweetFX), a shader collection that used to be part of it) is a popular graphics hook, that applies various effects on top of many games, with many presets custom tuned by the community. ReShade's versatility and maturity has proven itself over many years of releases and broad palette of supported games.
-
-Among the effects you can apply is "Deband" (Simply called "Dither" in the past). 
+[ReShade](https://reshade.me) (sometimes mistakenly referred to as [SweetFx](github.com/CeeJayDK/SweetFX), a shader collection that used to be part of it) is a popular graphics hook, that applies various effects on top of many games, with many presets custom tuned by the community. ReShade's versatility and maturity has proven itself over many years of releases and broad palette of supported games. Among the effects you can apply is "Deband" (Simply called "Dither" in the past). 
 <figure>
 	<img src="SweeFX_Deband.fx.png" alt="ReShade's Deband effect menu" />
   <figcaption>ReShade's Deband effect menu</figcaption>
 </figure>
 
 The `Deband.fx` Shader (Source code below, for reference) applies dithering to areas, that it detects as affected by color banding, based on the ["Weber Ratio"](https://en.wikipedia.org/wiki/Contrast_(vision)#Weber_contrast).
-
-<figure>
-	<img src="DeepNo-DebandYes.png" alt="Photo: Reshade's Deband.fx reducing color banding (contrast & brightness boosted)" />
-  <figcaption>Photo: Reshade's Deband reducing color banding (contrast & brightness boosted)</figcaption>
-</figure>
-
-In the brightness boosted photo, it may look like the effect only did half the job. Whilst technically true, to the naked eye it's surprisingly effective. It takes the edge off the visible color bands and makes it essentially invisible to even my pixel-peeping eyes. Quite the recommendation, if you have a game where such color banding annoys you. It also works with Anti-Aliasing, as it's a mere post-processing shader applied on top.
 
 <details>	
 <summary><a href="https://reshade.me">ReShade</a>'s <a href="https://github.com/crosire/reshade-shaders/blob/slim/Shaders/Deband.fx">Deband.fx</a> source code, for reference</summary>
@@ -359,7 +350,16 @@ In the brightness boosted photo, it may look like the effect only did half the j
 {% rawFile "posts/GLSL-noise-and-radial-gradient/Deband.fx" %}
 ```
 
-</details>
+</details><br>
+
+<figure>
+	<img src="DeepNo-DebandYes.png" alt="Photo: Reshade's Deband.fx reducing color banding (contrast & brightness boosted)" />
+  <figcaption>Photo: Reshade's Deband reducing color banding (contrast & brightness boosted)</figcaption>
+</figure>
+
+In the brightness boosted photo, it may look like the effect only did half the job. Whilst technically true, to the naked eye it's surprisingly effective. It takes the edge off the visible color bands and makes it essentially invisible to even my pixel-peeping eyes. It also works with Anti-Aliasing, as it's a mere post-processing shader applied on top.
+
+<blockquote class="reaction"><div class="reaction_text">I seriously recommend injecting this effect, if you have a game where such color banding annoys you.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 ### Adobe After Effects
 The **Gradient ramp** "generator" in [Adobe After Effects](https://en.wikipedia.org/wiki/Adobe_After_Effects) is used to generate gradients. It has an interesting "Ramp Scatter" slider, that diffuses the color bands with noise. It does it in a way, that defuses just the color bands though. Here is what the [official documentation](https://helpx.adobe.com/after-effects/using/generate-effects.html) has to say about it:

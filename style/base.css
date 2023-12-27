@@ -59,7 +59,7 @@ table img {
 
 .comment_group {
 	display: flex;
-	justify-content: start;
+	justify-content: space-between;
 	align-items: center;
 	flex-direction: row;
 	gap: 8px;
@@ -257,7 +257,7 @@ aside li {
 	margin: 0px;
 }
 
-.reaction_text{
+.reaction_text {
 	width: 100%;
 	text-align: center;
 	font-style: italic;

@@ -107,18 +107,21 @@
 	{% endif %}
 	<main>
 		{{ content }}
-		{% if tags contains 'post' %}
+	</main>
+	{% if tags contains 'post' %}
+	<footer>
 		<br>
 		<hr>
 		<div class="comment_group">
-			<h2 id="comments" class="site_title">Comment via GitHub <a href="#comments" class="anchor-link">#</a></h2>
+			<h2 id="comments" class="site_title">Comment via GitHub <a href="#comments"
+					class="anchor-link">#</a></h2>
 			<img class="kiwi" src="/assets/kiwis/speak.svg">
 		</div>
 		<script src="https://utteranc.es/client.js" repo="FrostKiwi/treasurechest" issue-term="pathname"
 			theme="gruvbox-dark" crossorigin="anonymous" async>
 			</script>
-		{% endif %}
-	</main>
+	</footer>
+	{% endif %}
 </body>
 
 </html>
