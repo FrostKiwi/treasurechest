@@ -401,7 +401,8 @@ And that warps up our little journey through all things color and hopefully none
 > Do you have any good test images for determining a monitor’s color depth? Between applications, compositors, graphics drivers and monitors, it looks like a lot of things can go wrong. Monitors that accept 8 or 10 bit and then use dithering don’t help either.
 
 This is indeed an interesting test-case, so I quickly whipped up a [16-bit PNG](bitdepth_test.png) of a dark, grayscale gradient, with no dithering. In terms of grayscale value, the gradient goes from `0-2` in **8**-bit, `0-8` in **10**-bit and `0-256` in **16**-bit. The file is 1024px wide, so there is a new grayscale value every 4 pixels.
-	<img src="bitdepth_test.png" alt="16-bit Test image" />
+<figure>
+	<img src="bitdepth_test.png" alt="16-bit Test image"/>
   <figcaption>16-bit Test image</figcaption>
 </figure>
 Here is how the test works. Load up the image, point a camera at it and take a photo with a long enough exposure to distinguish the color bands. The camera does not have to be anything special, an 8bpp jpeg is more than enough. Depending on how many color bands you see, you can determine the true result of the bit-depth-ness hitting your hopefully better than 8-bit eyes.
