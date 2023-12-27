@@ -420,7 +420,7 @@ On an 8-bit monitor, you should see 3 distinct stripes. If **the file** is prope
   <figcaption>Photo: 16-bit Test image on a 10-bit monitor, 9 distinct stripes. Image shadow brightness boosted.</figcaption>
 </figure>
 
-On a 10-bit monitor with proper software support, you should see 9 distinct stripes. All stripes should be the same size, except the first and last one, which should be half sized. If you see 33, then your monitor and software are in 12-bit mode.
+On a 10-bit monitor with proper software support, you should see 9 distinct stripes. All stripes should be the same size, except the first and last one, which should be half-sized. If you see 33, then your monitor and software are in 12-bit mode.
 If the stripes are not even or you are seeing more or less than the numbers above, then something is going on in terms of color space during image decoding.
 
 <figure>
