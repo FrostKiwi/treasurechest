@@ -405,7 +405,7 @@ This is indeed an interesting test-case, so I quickly whipped up a [16-bit PNG](
 	<img src="bitdepth_test.png" alt="16-bit Test image" />
   <figcaption>16-bit Test image</figcaption>
 </figure>
-Here is how the test works. Load up the image, point a camera at it and put take a photo with a long enough exposure to distinguish the color bands. The camera does not have to be anything special, an 8bpp jpeg is more than enough. Depending on how many color bands you see, you can determine the true result of the bit-depth-ness hitting your hopefully better than 8-bit eyes.
+Here is how the test works. Load up the image, point a camera at it and take a photo with a long enough exposure to distinguish the color bands. The camera does not have to be anything special, an 8bpp jpeg is more than enough. Depending on how many color bands you see, you can determine the true result of the bit-depth-ness hitting your hopefully better than 8-bit eyes.
 
 <figure>
 	<img src="8bit-test.jpg" alt="16-bit Test image on an 8-bit monitor" />
