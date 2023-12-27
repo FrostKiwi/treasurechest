@@ -388,7 +388,7 @@ To finish off, here is how Windows 11 and its ["Acrylic"](https://learn.microsof
   <figcaption>Microsoft Acrylic implementation diagram (<a href="https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic#how-we-designed-acrylic">Source</a>)</figcaption>
 </figure>
 
-Here is how it looks in the [Microsoft's "New Windows Terminal"](https://github.com/microsoft/terminal). The circle has again brightness and contrast boosted to see the effect more clearly in the context of the article. Even though new Windows terminal is open source, the implementation of acrylic is within the source code of Windows itself, so we cannot take a look at the specific implementation.
+Here is how it looks in [Microsoft's "New Windows Terminal"](https://github.com/microsoft/terminal). The circle has again brightness and contrast boosted to see the effect more clearly in the context of the article. Even though new Windows terminal is open source, the implementation of acrylic is within the source code of Windows itself, so we cannot take a look at the specific implementation.
 <figure>
 	<img src="terminal.png" alt="Microsoft Terminal's use of Blur and Noise" />
   <figcaption>Microsoft Terminal's use of Blur and Noise, boosted contrast in circle</figcaption>
