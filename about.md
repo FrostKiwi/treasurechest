@@ -2,15 +2,26 @@
 title:
 layout: layout.html
 ---
-<img class="profile" src="/assets/profile.jpg">
-Hello ヽ(*・ω・)ﾉ 
-
-**Wladislav Artsimovich** here, welcoming you to my blog.\
-I speak <img class="flag" src="/assets/icons/gb.svg"> <img class="flag" src="/assets/icons/de.svg"> <img class="flag" src="/assets/icons/ru.svg"> <img class="flag" src="/assets/icons/jp.svg"> and do computer stuff.
-
-Born in Belarus <img class="flag" src="/assets/icons/by.svg">, raised in Germany <img class="flag" src="/assets/icons/de.svg">, I now live and work in Japan <img class="flag" src="/assets/icons/jp.svg">.
-
-I run the math & tech-focused YouTube Channel [FrostKiwi](https://www.youtube.com/@FrostKiwi).
+<blockquote class="profile_wrapper">
+	<div class="img_wrapper">
+		<img class="profile" src="/assets/profile.jpg">
+	</div>
+	<div class="text_wrapper">
+		<p>
+			Hello! ヽ(*・ω・)ﾉ 
+		</p>
+		<p>
+			<b>Wladislav Artsimovich</b> here, welcoming you to my blog.
+			I speak <img class="flag" src="/assets/icons/gb.svg"> <img class="flag" src="/assets/icons/de.svg"> <img class="flag" src="/assets/icons/ru.svg"> <img class="flag" src="/assets/icons/jp.svg"> and do computer stuff.
+		</p>
+		<p>
+			Born in Belarus <img class="flag" src="/assets/icons/by.svg">, raised in Germany <img class="flag" src="/assets/icons/de.svg">, I now live and work in Japan <img class="flag" src="/assets/icons/jp.svg">.
+		</p>
+		<p>
+			I run the math & tech-focused YouTube Channel <a href="https://www.youtube.com/@FrostKiwi">FrostKiwi</a>
+		</p>
+	</div>
+</blockquote>
 
 ## Stuff that I'm really good at
 <blockquote class="reaction"><div class="reaction_text">In the context of tech, I worked in a lot of projects with many programming languages, but these 4 points are my core (tech) strengths</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>

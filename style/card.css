@@ -73,6 +73,13 @@
 	vertical-align: middle;
 }
 
+.subinfo {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0px 8px;
+}
+
 @media (max-width: 382px) {
 	.post-tag {
 		font-size: x-small;
@@ -81,11 +88,4 @@
 	.post-content h2 {
 		margin: 0;
 	}
-}
-
-.subinfo {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 0px 8px;
 }
