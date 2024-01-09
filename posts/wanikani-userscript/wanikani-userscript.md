@@ -3,7 +3,7 @@ title: Userscript - Japanese prompts for WaniKani
 permalink: "/{{ page.fileSlug }}/"
 date: 2022-05-11
 last_modified: 2023-12-07
-description: A Userscript to replace the the Quiz prompts on WaniKani with Japanese ones
+description: A Userscript to replace the Quiz prompts on WaniKani with Japanese ones
 publicTags:
   - Language
   - Learning
