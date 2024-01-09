@@ -50,7 +50,7 @@ I **love** to use soft gradients as backdrops when doing graphics programming, a
 </details>
 </blockquote>
 
-This produces a 24-bit (8-bits per channel) image with clearly visible banding steps. If you don't see the banding due to being a bright environment or having the screen brightness set to very low, reference the pictures below. Here is what it should look like on an 8-bit panel, specifically the [HP Z24n G2](https://jp.ext.hp.com/monitors/business/z_z24n_g2/) monitor that is connected to my laptop. It should also look the same on a high-end 10-bit or 12-bit panel, since WebGL doesn't allow high bit-depth output. The image is brightness and contrast boosted, to make the steps obvious.
+This produces a 24-bit (8-bits per channel) image with clearly visible banding steps. If you don't see the banding due to being in a bright environment or having the screen brightness set to very low, reference the pictures below. Here is what it should look like on an 8-bit panel, specifically the [HP Z24n G2](https://jp.ext.hp.com/monitors/business/z_z24n_g2/) monitor that is connected to my laptop. It should also look the same on a high-end 10-bit or 12-bit panel, since WebGL doesn't allow high bit-depth output. The image is brightness and contrast boosted, to make the steps obvious.
 
 <figure>
 	<img src="Banding.jpg" alt="Photo: WebGL color banding, on an 8-bit panel, contrast and brightness boosted" />
