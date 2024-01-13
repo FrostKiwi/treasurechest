@@ -25,7 +25,6 @@ function setupTri(canvasId, vertexId, fragmentId) {
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(unitTri), gl.STATIC_DRAW);
 
-	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
 	const vtx = gl.getAttribLocation(shaderProgram, "vtx");
 	gl.enableVertexAttribArray(vtx);
 	gl.vertexAttribPointer(vtx, 2, gl.FLOAT, false, 0, 0);

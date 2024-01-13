@@ -70,7 +70,7 @@ Many Laptop screens are in fact 6-bit panels performing dithering to fake an 8-b
  What you can see are *some* banding steps being a clean uniform color and *some* of them being dithered via the panel's integrated look-up table to achieve a perceived 8-bit output via [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering). Though note, how the dithering does **not** result in the banding steps being broken up, it just dithers the color step itself. Capturing this via a photo is a bit difficult, since there is also the pattern of individual pixels messing with the capture and introducing [moiré ](https://en.wikipedia.org/wiki/Moir%C3%A9_pattern) and interference patterns.
 ## Magic GLSL One-liner
 
-Let's fix this. The main point of this article is to share how I get banding free gradients in one GLSL fragment shader, rendering in a single pass and without sampling or texture taps to achieve banding free-ness. It involves the best noise one-liner I have ever seen. That genius one-liner is not from me, but from [Jorge Jimenez's presentation on how Gradient noise was implemented in Call of Duty Advanced Warfare](http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare). You can read it on the presentation's slide 123 onwards. It's described as:
+Let's fix this. The main point of this article is to share how I get banding free gradients in one GLSL fragment shader, rendering in a single pass and without sampling or texture taps to achieve banding free-ness. It involves the best noise one-liner I have ever seen. That genius one-liner is not from me, but from [Jorge Jimenez](https://www.iryoku.com/) in his [**presentation**]((http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare)) on how Gradient noise was implemented in [Call of Duty: Advanced Warfare](https://en.wikipedia.org/wiki/Call_of_Duty:_Advanced_Warfare). You can read it on the presentation's slide 123 onwards. It's described as:
 
 > [...] a noise function that we could classify as being half way between dithered and random, and that we called **_Interleaved Gradient Noise_**.
 
@@ -215,7 +215,7 @@ But what about that 6-bit laptop screen? Let's take a look, by photographing the
 
 <blockquote class="reaction"><div class="reaction_text">...ohh you gotta be kidding me</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
-Both the 6-bit screen's dithering pattern and our Interleaved Gradient Noise interfere with each other. Exactly the color bands where the panel performs the dithering, we can see the the interference appearing in the form of saw-tooth ridges. Maybe by increasing the noise strength to correspond to 6-bit values? `(1.0 / 64.0) * gradientNoise(gl_FragCoord.xy) - (0.5 / 64.0)` By dividing by 64 instead of 255, we get 6-bit noise. Let's see...
+Both the 6-bit screen's dithering pattern and our Interleaved Gradient Noise interfere with each other. Exactly the color bands where the panel performs the dithering, we can see the the interference appearing in the form of saw-tooth ridges. Maybe by increasing the noise strength to correspond to 6-bit values? `(1.0 / 63.0) * gradientNoise(gl_FragCoord.xy) - (0.5 / 63.0)` By dividing by 63 (2⁶-1) instead of 255, we get 6-bit noise. Let's see...
 
 <figure>
 	<img src="6-bit_banding_6-bit_noise.jpg" alt="Interference patterns from both forms of dither interfering" />
@@ -226,10 +226,10 @@ Both the 6-bit screen's dithering pattern and our Interleaved Gradient Noise int
 
 <blockquote class="reaction"><div class="reaction_text">...it's worse!</div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
 
-Clearly obvious diagonal stripes throughout the whole gradient. Yeah, 6-bit panels are a travesty. Especially on a product of this caliber. I mean the old [Thinkpad T500 & X200 I hardware modded](https://www.youtube.com/watch?v=Fs4GjDiOie8) have 6-bit panels, but those are multiple tech generations old. We could tweak the noise algorithm, but it's just not worth to drop our denominator so low. It's 2024 in a couple days and every human being deserves at least 256 different shades in each color channel.
+Clearly obvious diagonal stripes throughout the whole gradient. Yeah, 6-bit panels are a travesty. Especially on a product of this caliber. I mean the old [Thinkpad T500 & X200 I hardware modded](https://www.youtube.com/watch?v=Fs4GjDiOie8) have 6-bit panels, but those are multiple tech generations old. We could tweak the noise algorithm, but it's just not worth to drop our lowest common denominator so low. It's 2024 in a couple days and every human being deserves at least 256 different shades in each color channel.
 
 ### Bufferless Version
-Here is what the shaders look like if you use OpenGL 3.3, OpenGL 2.1 with the [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) extension (`#version` would have to change) or WebGL2 and want to skip the Vertex Buffer setup by putting the fullscreen triangle into the vertex shader. If you get an error around `gl_VertexID` missing, you don't have [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) enabled.
+Here is what the shaders look like if you use OpenGL 3.3+, OpenGL 2.1 with the [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) extension (`#version` would have to change) or WebGL2 and want to skip the Vertex Buffer setup by putting the fullscreen triangle into the vertex shader. If you get an error around `gl_VertexID` missing, you don't have [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) enabled.
 
 These can be rewritten to work with even the most basic OpenGL or WebGL standard by uploading the vertex buffer prior, as done in all the WebGL examples up till now. The fragment shader stays basically the same.
 
@@ -318,7 +318,7 @@ It's not quite as bad when turned down to lower settings and during gameplay it'
   <figcaption>Deep Color setting in Alien: Isolation</figcaption>
 </figure>
 
-_Deep Color_ is what Alien: Isolation calls rendering and outputting at 10-bits per channel. The way this setting works is absolutely not obvious though. You can turn it on, but it will only be actually active under a certain set of circumstances:
+_[Deep Color](https://en.wikipedia.org/wiki/Color_depth#Deep_color_(30-bit))_ is what outputting at 10-bits per channel is called, just like 8bpp is "[True Color](https://en.wikipedia.org/wiki/Color_depth#True_color_(24-bit))". It's also a setting in Alien: Isolation to enable 10bpp rendering. The way this setting works is absolutely not obvious though. You can turn it on, but it will only be actually active under a certain set of circumstances:
  * Anti-Aliasing **has** to be disabled.
    * That's a serious bummer. None of the Anti-Aliasing shaders handle the 10-bit signal and just crush the result back down to 8-bit. It's as if you didn't turn it on at all :[
  * Your monitor needs to accept a 10 or 12-bit signal. Otherwise, the game won't switch into that higher bit-depth mode.
@@ -365,7 +365,7 @@ In the brightness boosted photo, it may look like the effect only did half the j
 
 ### Adobe After Effects
 The **Gradient ramp** "generator" in [Adobe After Effects](https://en.wikipedia.org/wiki/Adobe_After_Effects) is used to generate gradients. It has an interesting "Ramp Scatter" slider, that diffuses the color bands with noise. It does it in a way, that defuses just the color bands though. Here is what the [official documentation](https://helpx.adobe.com/after-effects/using/generate-effects.html) has to say about it:
-> **Note:** Ramps often don’t broadcast well; severe banding occurs because the broadcast chrominance signal doesn’t contain sufficient resolution to reproduce the ramp smoothly. The Ramp Scatter control dithers the ramp colors, eliminating the banding apparent to the human eye. 
+> Ramps often don’t broadcast well; severe banding occurs because the broadcast chrominance signal doesn’t contain sufficient resolution to reproduce the ramp smoothly. The Ramp Scatter control dithers the ramp colors, eliminating the banding apparent to the human eye.
 
 <figure>
 	<img src="after_effects.png" alt="After Effects gradient ramp's ramp scatter" />
