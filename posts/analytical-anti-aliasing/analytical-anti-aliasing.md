@@ -3,14 +3,16 @@ title: Analytical Anti-Aliasing
 permalink: "/{{ page.fileSlug }}/"
 date:
 last_modified:
-description:
+description: How to fix jaggies the analytical way with some juicy secrets
 publicTags:
   - OpenGL
   - WebGL
   - GameDev
 image: thumbnail.png
 ---
-In graphics programming, getting rid of the aliasing jaggies is an art form with decades upon decades of maths, techniques and 
+In graphics programming, getting rid of the [aliasing jaggies](https://en.wikipedia.org/wiki/Jaggies) is an art form with decades upon decades of maths, creative techniques and non-stop innovation. From the simple yet performance intensive rendering at a higher resolution an down-sampling "[supersampling anti-aliasing (SSAA)](https://en.wikipedia.org/wiki/Supersampling)", to the 
+
+What this article talks about is a set of techniques with the same goal, but vastly different approach - using the make-up of the geometry itself to draw anti-aliased shapes in one single sample.
 
 <canvas style="width: 100%; height: 200px;"></canvas>
 <script src="canvas_1.js"></script>
