@@ -17,9 +17,26 @@ What this article talks about is a set of techniques with the same goal, but vas
 <canvas style="width: 100%; height: 200px;"></canvas>
 <script src="canvas_1.js"></script>
 
+## Analytical Anti-Aliasing
+### What makes it analytical?
+
 ![image](compare.png)
+
+## Signed distance field rendering
+[Signed distance functions](https://en.wikipedia.org/wiki/Signed_distance_function#Applications)
+### [Valve Software](https://www.valvesoftware.com/)'s implementation
+Valve introduced extensive use of signed distance field rendering to the [Source engine](https://en.wikipedia.org/wiki/Source_(game_engine)) during the development of the [Orange Box](https://en.wikipedia.org/wiki/The_Orange_Box). Most prominently in [Team Fortress 2](https://www.teamfortress.com/), where it was used to create smooth yet sharp UI elements on the HUD and decals in the game world. It received even its own [Developer Commentary](https://wiki.teamfortress.com/wiki/Developer_commentary) entry.
+
 <audio controls><source src="tf2-dev-commentary.mp3" type="audio/mpeg"></audio>
 > **Alden Kroll:** Two-dimensional HUD elements present a particular art problem, because they have to look good and sharp no matter what resolution the user is running their game at. Given today's availability of high resolution wide-screen displays, this can require a lot of texture memory and a lot of work anticipating different display resolutions. The problem for Team Fortress 2 was even more daunting because of our desire to include a lot of smooth curved elements in our HUD. We developed a new shader system for drawing 'line art' images. The system allows us to create images at a fixed resolution that produced smooth silhouettes even when scaled up to a very high resolution. This shader system also handles outlining and drop-shadows, and can be applied in the 3D space to world elements such as signs.
+
+They also released [a paper](https://steamcdn-a.akamaihd.net/apps/valve/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf) describing the specific implementation.
+
+Added as a mere footnote to the paper, was described a way to do perform this 
+### The future of all things font?
+Picking up on that foot note and bringing the technique to its logical conclusion was the most thorough and well composed Master Thesis I ever read: "[Shape Decomposition for Multi-channel
+Distance Fields](https://github.com/Chlumsky/msdfgen/files/3050967/thesis.pdf)" by [Viktor Chlumský](https://github.com/Chlumsky).
+
 
 This technique is built with either the use of GLSL's [`fwidth()`](https://docs.gl/sl4/fwidth) or a combination of [`length()`](https://docs.gl/sl4/length) + [`dFdx()`](https://docs.gl/sl4/dFdx) + [`dFdy()`](https://docs.gl/sl4/dFdy).
 This has been documented many times over, by many people in different forms. I use it so often, that I wanna write it down myself.
