@@ -30,6 +30,7 @@
 	aspect-ratio: 1;
 	object-fit: cover;
 	border-radius: 10px;
+	filter: drop-shadow(0 0 10px #351f2944);
 }
 
 .post-content {

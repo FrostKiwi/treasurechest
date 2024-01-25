@@ -140,6 +140,7 @@ table img {
 .profile {
 	align-self: center;
 	margin: 0px;
+	filter: drop-shadow(0 0 15px #351f29);
 }
 
 .img_wrapper {
