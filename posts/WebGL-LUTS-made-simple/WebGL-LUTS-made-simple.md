@@ -26,7 +26,7 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 
 <video width="680" height="480" controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video>
 
-**手動で上の動画をスタートしてください！**私は`Autoplay`をできません、スクロールの時にエネルギーの節約のために`Autoplay`の場合、普段動画がストップされます。
+**手動で上の動画をスタートしてください！** 私は`Autoplay`をできません、スクロールの時にエネルギーの節約のために`Autoplay`の場合、普段動画がストップされます。あの動画の由来： https://arxiv.org/abs/2308.10991
 
 <script>
     function changeVideo(input) {
