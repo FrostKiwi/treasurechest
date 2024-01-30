@@ -24,7 +24,7 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 
 <button onclick="document.getElementById('fileInput').click();">動画を変更</button>
 
-<video width="680" height="480" controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video>
+<video width="680" height="480" style="width: 680px; height: 480px;" controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video>
 
 **手動で上の動画をスタートしてください！** 私は`Autoplay`をできません、スクロールの時にエネルギーの節約のために`Autoplay`の場合、普段動画がストップされます。あの動画の由来： https://arxiv.org/abs/2308.10991
 
@@ -45,7 +45,7 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 <script  id="vertex_2" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_2" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-simple.fs" %}</script>
 
-<canvas width="680" height="480" id="canvas_2"></canvas>
+<canvas width="680" height="480" style="width: 680px; height: 480px;" id="canvas_2"></canvas>
 
 <script>setupTri("canvas_2", "vertex_2", "fragment_2");</script>
 <blockquote>
@@ -83,7 +83,7 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 <script  id="vertex_3" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_3" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}</script>
 
-<canvas width="680" height="480" id="canvas_3"></canvas>
+<canvas width="680" height="480" style="width: 680px; height: 480px;" id="canvas_3"></canvas>
 
 <script>setupTri("canvas_3", "vertex_3", "fragment_3");</script>
 <blockquote>
@@ -134,7 +134,7 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 <script  id="vertex_4" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_4" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
-<canvas width="680" height="480" id="canvas_4"></canvas>
+<canvas width="680" height="480" style="width: 680px; height: 480px;" id="canvas_4"></canvas>
 
 <script>setupTri("canvas_4", "vertex_4", "fragment_4");</script>
 <blockquote>
@@ -176,7 +176,7 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 <script  id="vertex_5" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_5" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
-<canvas width="680" height="480" id="canvas_5"></canvas>
+<canvas width="680" height="480" style="width: 680px; height: 480px;" id="canvas_5"></canvas>
 
 <script>setupTri("canvas_5", "vertex_5", "fragment_5");</script>
 <blockquote>
