@@ -166,3 +166,41 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 動画のグレイの輝度ををX軸として使う。そのX軸でLUTの画像に見えます。黒、0、左はLUTの左のカラーになります。白、1、右はLUTの右のカラーになります。その方法でどこでも、何デバイスでもパーフォーマンスの無料の方法で画像をカラーリングします。
 
 <blockquote class="reaction"><div class="reaction_text">カラーリングをできました！</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
+
+### カラーリングのおすすめ
+科学の世界は具体的なカラーリングのマップを定義した。「[Viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html)」というカラー。そのカラーを使うべきです。理由が多い、一番大切：色覚異常の人が温度が高いと温度が低いの場所をわかります。そして、虹のマップを黒白プリンターで印刷すると、温度が低いと温度が高いは黒と白として印刷されません。「Viridis」なら、黒白プリンターで印刷すると、温度が低い場所はいつもくらい、温度が高い場所はいつも眩しい。
+
+<img src="viridis.png" id="viridis" style="width: 256px; height: 64px;">
+
+<script src="fullscreen-tri-viridis.js"></script>
+<script  id="vertex_5" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
+<script  id="fragment_5" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
+
+<canvas width="680" height="480" id="canvas_5"></canvas>
+
+<script>setupTri("canvas_5", "vertex_5", "fragment_5");</script>
+<blockquote>
+<details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment シェーダー <a href="video-lut.fs">video-lut.fs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="fullscreen-tri-viridis.js">fullscreen-tri-viridis.js</a></summary>
+
+```javascript
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri-viridis.js" %}
+```
+
+</details>
+</blockquote>
