@@ -3,6 +3,9 @@ layout: layout.html
 ---
 <h1 style="display: none;">FrostKiwi's Blog</h1>
 {% for post in collections.post reversed %}
+	{% if post.data.wip %}
+		{% continue %}
+	{% endif %}
 <a href="{{ post.url }}">
 	<div class="post-card">
 		<img src="{{ post.data.image }}" alt="{{ post.data.title }}" class="post-image">

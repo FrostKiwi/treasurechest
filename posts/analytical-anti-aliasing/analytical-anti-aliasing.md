@@ -1,4 +1,5 @@
 ---
+wip: true
 title: Analytical Anti-Aliasing
 permalink: "/{{ page.fileSlug }}/"
 date:

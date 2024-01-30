@@ -1,4 +1,5 @@
 ---
+wip: true
 title: Why I quit arts and went into tech
 permalink: "/{{ page.fileSlug }}/"
 date:
