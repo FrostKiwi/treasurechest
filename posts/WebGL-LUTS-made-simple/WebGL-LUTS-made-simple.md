@@ -31,6 +31,11 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 再生されない場合、**手動で上の動画をスタートしてください！** 私は`Autoplay`すると、スクロールの時にエネルギーの節約のために`Autoplay`の場合、デバイスによって、動画がストップされてしまう。
 
 <script>
+	const videoPlayer = document.getElementById('videoPlayer');
+	videoPlayer.setAttribute("playsinline", true);
+	videoPlayer.setAttribute("muted", true);
+	videoPlayer.setAttribute("loop", true);
+
     function changeVideo(input) {
         var file = input.files[0];
         var url = URL.createObjectURL(file);
