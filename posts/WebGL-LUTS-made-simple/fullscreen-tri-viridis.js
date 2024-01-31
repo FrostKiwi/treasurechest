@@ -14,7 +14,7 @@ function setupTri(canvasId, vertexId, fragmentId) {
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, lutImg);
 
 	/* Video Setup */
-	const video = document.querySelector('video'); // Assuming the video tag is already in the DOM
+	const video = document.querySelector('video');
 	const videoTexture = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, videoTexture);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -79,20 +79,6 @@ function setupTri(canvasId, vertexId, fragmentId) {
 		}
 		return shader;
 	}
-
-	/* 1:1 Pixel Mapping */
-	function onResize() {
-		const width = Math.round(canvas.clientWidth * window.devicePixelRatio);
-		const height = Math.round(canvas.clientHeight * window.devicePixelRatio);
-
-		if (canvas.width !== width || canvas.height !== height) {
-			canvas.width = width;
-			canvas.height = height;
-			redraw();
-		}
-	}
-	window.addEventListener('resize', onResize, true);
-	onResize();
 
 	function renderLoop() {
 		redraw();
