@@ -46,7 +46,6 @@ function setupTri(canvasId, vertexId, fragmentId) {
 	function updateVideoTexture() {
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, videoTexture);
-		gl.uniform1i(videoTextureLocation, 0);
 
 		if (video.readyState >= video.HAVE_CURRENT_DATA) {
 			if (!videoTextureInitialized || video.videoWidth !== canvas.width || video.videoHeight !== canvas.height) {

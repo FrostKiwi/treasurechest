@@ -22,7 +22,7 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 
 <input type="file" id="fileInput" accept="video/*" style="display: none;" onchange="changeVideo(this)">
 
-<button onclick="document.getElementById('fileInput').click();">動画を変更</button>
+<div style="width: 100%; display: flex; justify-content: space-around; padding-bottom: 8px"><button onclick="document.getElementById('fileInput').click();">動画を変更</button><button onclick="startWebcam();">ウェブカメラを接続する</button></div>
 
 <video width="680" height="480" style="width: unset; max-width: 100%" controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video>
 
@@ -37,6 +37,22 @@ PC、スマホ、Oculus、このページをどこでも有効です。
         var videoPlayer = document.getElementById('videoPlayer');
         videoPlayer.src = url;
         videoPlayer.play();
+    }
+
+	function startWebcam() {
+        var videoPlayer = document.getElementById('videoPlayer');
+        if (navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    videoPlayer.srcObject = stream;
+                    videoPlayer.play();
+                })
+                .catch(function(error) {
+                    console.error("Error accessing webcam:", error);
+                });
+        } else {
+            alert('Your browser does not support accessing the webcam.');
+        }
     }
 </script>
 
