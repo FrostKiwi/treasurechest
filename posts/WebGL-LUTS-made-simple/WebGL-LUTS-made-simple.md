@@ -46,8 +46,9 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 
 	function startWebcam() {
         var videoPlayer = document.getElementById('videoPlayer');
+		videoPlayer.setAttribute("autoplay", true);
         if (navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: true })
+            navigator.mediaDevices.getUserMedia({ audio: false, video: true })
                 .then(function(stream) {
                     videoPlayer.srcObject = stream;
                     videoPlayer.play();
