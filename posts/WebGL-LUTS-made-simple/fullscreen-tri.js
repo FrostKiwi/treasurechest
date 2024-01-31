@@ -20,11 +20,21 @@ function setupTri(canvasId, vertexId, fragmentId) {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-	// Update the video texture each frame
+	/* Video Texture Update */
+	let videoTextureInitialized = false;
+
 	function updateVideoTexture() {
+		gl.bindTexture(gl.TEXTURE_2D, videoTexture);
+
 		if (video.readyState >= video.HAVE_CURRENT_DATA) {
-			gl.bindTexture(gl.TEXTURE_2D, videoTexture);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, video);
+			if (!videoTextureInitialized || video.videoWidth !== canvas.width || video.videoHeight !== canvas.height) {
+				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, video.videoWidth, video.videoHeight, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+				canvas.width = video.videoWidth;
+				canvas.height = video.videoHeight;
+				videoTextureInitialized = true;
+			}
+			/* Update without recreation */
+			gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGB, gl.UNSIGNED_BYTE, video);
 		}
 	}
 

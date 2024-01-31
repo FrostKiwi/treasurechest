@@ -40,13 +40,23 @@ function setupTri(canvasId, vertexId, fragmentId) {
 	const videoTextureLocation = gl.getUniformLocation(shaderProgram, "video");
 	const lutTextureLocation = gl.getUniformLocation(shaderProgram, "lut");
 
-	// Update the video texture each frame
+	/* Video Texture Update */
+	let videoTextureInitialized = false;
+
 	function updateVideoTexture() {
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D, videoTexture);
+		gl.uniform1i(videoTextureLocation, 0);
+
 		if (video.readyState >= video.HAVE_CURRENT_DATA) {
-			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture(gl.TEXTURE_2D, videoTexture);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, video);
-			gl.uniform1i(videoTextureLocation, 0);
+			if (!videoTextureInitialized || video.videoWidth !== canvas.width || video.videoHeight !== canvas.height) {
+				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, video.videoWidth, video.videoHeight, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+				canvas.width = video.videoWidth;
+				canvas.height = video.videoHeight;
+				videoTextureInitialized = true;
+			}
+			/* Update without recreation */
+			gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGB, gl.UNSIGNED_BYTE, video);
 
 			gl.activeTexture(gl.TEXTURE1);
 			gl.bindTexture(gl.TEXTURE_2D, lutTexture);
