@@ -3,7 +3,7 @@ wip: true
 title: LUTSを簡単に
 permalink: "/{{ page.fileSlug }}/"
 date: 2024-01-30
-last_modified:
+last_modified: 2024-01-31
 description:
 publicTags:
   - OpenGL
