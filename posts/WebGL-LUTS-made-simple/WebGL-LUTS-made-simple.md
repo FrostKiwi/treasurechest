@@ -52,9 +52,12 @@ PC、スマホ、Oculus、このページをどこでも有効です。
                 .then(function(stream) {
                     videoPlayer.srcObject = stream;
                     videoPlayer.play();
+					videoPlayer.onloadedmetadata = function(e) {
+            			videoPlayer.play()
+        			}
                 })
                 .catch(function(error) {
-                    console.error("Error accessing webcam:", error);
+                    alert(error);
                 });
         } else {
             alert('Your browser does not support accessing the webcam.');
