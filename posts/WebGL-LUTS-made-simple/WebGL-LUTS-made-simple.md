@@ -18,7 +18,7 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 ### 入力ファイル
 使っているファイルは黒白のサーマルカメラの信号です。あの動画の設定は自動的に一番温かい温度白になって、一番温度が低い温度が黒になる。その範囲の最低限は各瞬間です。このファイルは下のシェーダーの入力ですので、ポーズしないでください。自分の動画を使いたい場合、下のボタンで動画を変更することができます。
 
-<blockquote class="reaction"><div class="reaction_text"><b>再生を自分でスタートしてください</b>。色々なブラウザーがスクロールの時に動画をストップするから、手動でスタートしなければいけません。</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">再生されない場合、<b>再生を自分でスタートしてください</b>。色々なブラウザーがスクロールの時に動画をストップするから、手動でスタートしなければいけません。</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 <input type="file" id="fileInput" accept="video/*" style="display: none;" onchange="changeVideo(this)">
 
@@ -26,7 +26,9 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 
 <video width="680" height="480" style="width: unset; max-width: 100%" controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video>
 
-**手動で上の動画をスタートしてください！** 私は`Autoplay`をできません、スクロールの時にエネルギーの節約のために`Autoplay`の場合、普段動画がストップされます。あの動画の由来： https://arxiv.org/abs/2308.10991
+動画の由来： https://arxiv.org/abs/2308.10991
+
+再生されない場合、**手動で上の動画をスタートしてください！** 私は`Autoplay`すると、スクロールの時にエネルギーの節約のために`Autoplay`の場合、デバイスによって、動画がストップされてしまう。
 
 <script>
     function changeVideo(input) {

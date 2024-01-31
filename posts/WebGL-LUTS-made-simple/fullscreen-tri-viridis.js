@@ -15,6 +15,13 @@ function setupTri(canvasId, vertexId, fragmentId) {
 
 	/* Video Setup */
 	const video = document.querySelector('video');
+
+	if (video.paused) {
+		video.loop = true;
+		video.muted = true;
+		video.play();
+	}
+
 	const videoTexture = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, videoTexture);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
