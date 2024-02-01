@@ -24,7 +24,7 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 
 <div style="width: 100%; display: flex; justify-content: space-around; padding-bottom: 8px"><button onclick="document.getElementById('fileInput').click();">動画を変更</button><button onclick="startWebcam();">ウェブカメラを接続する</button></div>
 
-<video width="680" height="480" style="width: unset; max-width: 100%" controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video>
+<div style="width: 100%; display: flex; justify-content: center"><video width="680" height="480" style="width: unset; max-width: 100%" controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video></div>
 
 動画の由来： https://arxiv.org/abs/2308.10991
 
@@ -72,7 +72,7 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 <script  id="vertex_2" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_2" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-simple.fs" %}</script>
 
-<canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_2"></canvas>
+<div style="width: 100%; display: flex; justify-content: center"><canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_2"></canvas></div>
 
 <script>setupTri("canvas_2", "vertex_2", "fragment_2", null);</script>
 <blockquote>
@@ -110,7 +110,7 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 <script  id="vertex_3" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_3" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}</script>
 
-<canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_3"></canvas>
+<div style="width: 100%; display: flex; justify-content: center"><canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_3"></canvas></div>
 
 <script>setupTri("canvas_3", "vertex_3", "fragment_3", null);</script>
 <blockquote>
@@ -161,7 +161,7 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 <script  id="vertex_4" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_4" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
-<canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_4"></canvas>
+<div style="width: 100%; display: flex; justify-content: center"><canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_4"></canvas></div>
 
 <script>setupTri("canvas_4", "vertex_4", "fragment_4", "lut");</script>
 <blockquote>
@@ -203,7 +203,7 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 <script  id="vertex_5" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_5" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
-<canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_5"></canvas>
+<div style="width: 100%; display: flex; justify-content: center"><canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_5"></canvas></div>
 
 <script>setupTri("canvas_5", "vertex_5", "fragment_5", "viridis");</script>
 <blockquote>
