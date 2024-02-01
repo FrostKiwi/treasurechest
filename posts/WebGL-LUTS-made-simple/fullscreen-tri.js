@@ -5,7 +5,7 @@ function setupTri(canvasId, vertexId, fragmentId, lut) {
 	const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false });
 	const lutImg = document.getElementById(lut);
 	const lutTexture = gl.createTexture();
-	
+
 	if (lut) {
 		gl.bindTexture(gl.TEXTURE_2D, lutTexture);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -69,10 +69,11 @@ function setupTri(canvasId, vertexId, fragmentId, lut) {
 	gl.useProgram(shaderProgram);
 
 	/* Vertex Buffer with a Fullscreen Triangle */
+	/* Position and UV coordinates */
 	const unitTri = new Float32Array([
-		-1.0, 3.0,
-		-1.0, -1.0,
-		3.0, -1.0
+		-1.0, 3.0, 0.0, -1.0,
+		-1.0, -1.0, 0.0, 1.0,
+		3.0, -1.0, 2.0, 1.0
 	]);
 
 	const vertex_buffer = gl.createBuffer();
@@ -81,7 +82,11 @@ function setupTri(canvasId, vertexId, fragmentId, lut) {
 
 	const vtx = gl.getAttribLocation(shaderProgram, "vtx");
 	gl.enableVertexAttribArray(vtx);
-	gl.vertexAttribPointer(vtx, 2, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(vtx, 2, gl.FLOAT, false, 4 * Float32Array.BYTES_PER_ELEMENT, 0);
+
+	const texCoord = gl.getAttribLocation(shaderProgram, "UVs");
+	gl.enableVertexAttribArray(texCoord);
+	gl.vertexAttribPointer(texCoord, 2, gl.FLOAT, false, 4 * Float32Array.BYTES_PER_ELEMENT, 2 * Float32Array.BYTES_PER_ELEMENT);
 
 	function redraw() {
 		updateVideoTexture();
