@@ -1,8 +1,19 @@
 "use strict";
-function setupTri(canvasId, vertexId, fragmentId) {
+function setupTri(canvasId, vertexId, fragmentId, lut) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false });
+	const lutImg = document.getElementById(lut);
+	const lutTexture = gl.createTexture();
+	
+	if (lut) {
+		gl.bindTexture(gl.TEXTURE_2D, lutTexture);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, lutImg);
+	}
 
 	/* Video Setup */
 	const video = document.querySelector('video');
@@ -20,10 +31,21 @@ function setupTri(canvasId, vertexId, fragmentId) {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
+	/* Shaders */
+	const vertexShader = createAndCompileShader(gl.VERTEX_SHADER, vertexId);
+	const fragmentShader = createAndCompileShader(gl.FRAGMENT_SHADER, fragmentId);
+
+	const shaderProgram = gl.createProgram();
+	gl.attachShader(shaderProgram, vertexShader);
+	gl.attachShader(shaderProgram, fragmentShader);
+	gl.linkProgram(shaderProgram);
+	const lutTextureLocation = gl.getUniformLocation(shaderProgram, "lut");
+
 	/* Video Texture Update */
 	let videoTextureInitialized = false;
 
 	function updateVideoTexture() {
+		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, videoTexture);
 
 		if (video.readyState >= video.HAVE_CURRENT_DATA) {
@@ -35,21 +57,16 @@ function setupTri(canvasId, vertexId, fragmentId) {
 			}
 			/* Update without recreation */
 			gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGB, gl.UNSIGNED_BYTE, video);
+
+			if (lut) {
+				gl.activeTexture(gl.TEXTURE1);
+				gl.bindTexture(gl.TEXTURE_2D, lutTexture);
+				gl.uniform1i(lutTextureLocation, 1);
+			}
 		}
 	}
 
-	/* Shaders */
-	const vertexShader = createAndCompileShader(gl.VERTEX_SHADER, vertexId);
-	const fragmentShader = createAndCompileShader(gl.FRAGMENT_SHADER, fragmentId);
-
-	const shaderProgram = gl.createProgram();
-	gl.attachShader(shaderProgram, vertexShader);
-	gl.attachShader(shaderProgram, fragmentShader);
-	gl.linkProgram(shaderProgram);
-	const videoTextureLocation = gl.getUniformLocation(shaderProgram, "video");
-	
 	gl.useProgram(shaderProgram);
-	gl.uniform1i(videoTextureLocation, 0);
 
 	/* Vertex Buffer with a Fullscreen Triangle */
 	const unitTri = new Float32Array([
@@ -82,9 +99,28 @@ function setupTri(canvasId, vertexId, fragmentId) {
 		return shader;
 	}
 
+	let isRendering = false;
+
 	function renderLoop() {
 		redraw();
-		requestAnimationFrame(renderLoop);
+		if (isRendering) {
+			requestAnimationFrame(renderLoop);
+		}
 	}
-	renderLoop();
+
+	function handleIntersection(entries) {
+		entries.forEach(entry => {
+			if (entry.isIntersecting) {
+				if (!isRendering) {
+					isRendering = true;
+					renderLoop();
+				}
+			} else {
+				isRendering = false;
+			}
+		});
+	}
+
+	let observer = new IntersectionObserver(handleIntersection);
+	observer.observe(canvas);
 };

@@ -74,7 +74,7 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 
 <canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_2"></canvas>
 
-<script>setupTri("canvas_2", "vertex_2", "fragment_2");</script>
+<script>setupTri("canvas_2", "vertex_2", "fragment_2", null);</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -112,7 +112,7 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 
 <canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_3"></canvas>
 
-<script>setupTri("canvas_3", "vertex_3", "fragment_3");</script>
+<script>setupTri("canvas_3", "vertex_3", "fragment_3", null);</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -157,13 +157,13 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 
 ほしいカラーはをあの画像によって見せます。左は黒、右は白。黒は青になります、白は赤になります。
 
-<script src="fullscreen-tri-lut.js"></script>
+<script src="fullscreen-tri.js"></script>
 <script  id="vertex_4" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_4" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
 <canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_4"></canvas>
 
-<script>setupTri("canvas_4", "vertex_4", "fragment_4");</script>
+<script>setupTri("canvas_4", "vertex_4", "fragment_4", "lut");</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -181,10 +181,10 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="fullscreen-tri-lut.js">fullscreen-tri-lut.js</a></summary>
+<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
-{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri-lut.js" %}
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
 ```
 
 </details>
@@ -199,13 +199,13 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 
 <img src="viridis.png" id="viridis" style="width: 256px; height: 64px;">
 
-<script src="fullscreen-tri-viridis.js"></script>
+<script src="fullscreen-tri.js"></script>
 <script  id="vertex_5" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_5" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
 <canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_5"></canvas>
 
-<script>setupTri("canvas_5", "vertex_5", "fragment_5");</script>
+<script>setupTri("canvas_5", "vertex_5", "fragment_5", "viridis");</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -223,10 +223,10 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="fullscreen-tri-viridis.js">fullscreen-tri-viridis.js</a></summary>
+<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
-{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri-viridis.js" %}
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
 ```
 
 </details>
