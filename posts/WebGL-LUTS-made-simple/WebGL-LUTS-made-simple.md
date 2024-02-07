@@ -158,7 +158,7 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 ### サーマルカラー
 ですが、オレンジは比較的つまらんですので、「[LUT](https://ja.wikipedia.org/wiki/%E3%83%AB%E3%83%83%E3%82%AF%E3%82%A2%E3%83%83%E3%83%97%E3%83%86%E3%83%BC%E3%83%96%E3%83%AB)」という画像または表を使います。その画像は1次元の行です。あの画像の高さは1pxです。見えるように、下の画像が1pxの高さから64pxの高さにストレッチされます。
 
-<img src="infernoLut.png" id="lut" style="width: 256px; height: 64px;">
+<img src="infernoLut.png" id="lut" style="width: 100%; height: 64px;">
 
 ほしいカラーはをあの画像によって見せます。左は黒、右は白。黒は青になります、白は赤になります。
 
@@ -202,7 +202,9 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 ### カラーリングのおすすめ
 科学の世界は具体的なカラーリングのマップを定義した。「[Viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html)」というカラー。そのカラーを使うべきです。理由が多い、一番大切：色覚異常の人が温度が高いと温度が低いの場所をわかります。そして、虹のマップを黒白プリンターで印刷すると、温度が低いと温度が高いは黒と白として印刷されません。「Viridis」なら、黒白プリンターで印刷すると、温度が低い場所はいつもくらい、温度が高い場所はいつも眩しい。
 
-<img src="viridis.png" id="viridis" style="width: 256px; height: 64px;">
+cividis developed it further: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0199239#pone.0199239.ref001
+
+<img src="viridis.png" id="viridis" style="width: 100%; height: 64px;">
 
 <script src="fullscreen-tri.js"></script>
 <script  id="vertex_5" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>

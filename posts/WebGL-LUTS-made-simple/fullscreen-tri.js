@@ -1,18 +1,45 @@
 "use strict";
+/* Helpers */
+
+function createAndCompileShader(gl, type, source) {
+	const shader = gl.createShader(type);
+	gl.shaderSource(shader, document.getElementById(source).text);
+	gl.compileShader(shader);
+	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+		console.error(gl.getShaderInfoLog(shader));
+	}
+	return shader;
+}
+
 function setupTri(canvasId, vertexId, fragmentId, lut) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false });
 	const lutImg = document.getElementById(lut);
 	const lutTexture = gl.createTexture();
+	let videoTexture = gl.createTexture();
+
+	/* Shaders */
+	const vertexShader = createAndCompileShader(gl, gl.VERTEX_SHADER, vertexId);
+	const fragmentShader = createAndCompileShader(gl, gl.FRAGMENT_SHADER, fragmentId);
+
+	const shaderProgram = gl.createProgram();
+	gl.attachShader(shaderProgram, vertexShader);
+	gl.attachShader(shaderProgram, fragmentShader);
+	gl.linkProgram(shaderProgram);
+	gl.useProgram(shaderProgram);
+
+	const lutTextureLocation = gl.getUniformLocation(shaderProgram, "lut");
 
 	if (lut) {
-		gl.bindTexture(gl.TEXTURE_2D, lutTexture);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, lutImg);
+		lutImg.addEventListener('load', function () {
+			gl.bindTexture(gl.TEXTURE_2D, lutTexture);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, lutImg);
+		});
 	}
 
 	/* Video Setup */
@@ -24,38 +51,28 @@ function setupTri(canvasId, vertexId, fragmentId, lut) {
 		video.play();
 	}
 
-	const videoTexture = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, videoTexture);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-	/* Shaders */
-	const vertexShader = createAndCompileShader(gl.VERTEX_SHADER, vertexId);
-	const fragmentShader = createAndCompileShader(gl.FRAGMENT_SHADER, fragmentId);
-
-	const shaderProgram = gl.createProgram();
-	gl.attachShader(shaderProgram, vertexShader);
-	gl.attachShader(shaderProgram, fragmentShader);
-	gl.linkProgram(shaderProgram);
-	const lutTextureLocation = gl.getUniformLocation(shaderProgram, "lut");
-
 	/* Video Texture Update */
 	let videoTextureInitialized = false;
 
 	function updateVideoTexture() {
 		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, videoTexture);
 
 		if (video.readyState >= video.HAVE_CURRENT_DATA) {
 			if (!videoTextureInitialized || video.videoWidth !== canvas.width || video.videoHeight !== canvas.height) {
+				gl.deleteTexture(videoTexture);
+				videoTexture = gl.createTexture();
+				gl.bindTexture(gl.TEXTURE_2D, videoTexture);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, video.videoWidth, video.videoHeight, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
 				canvas.width = video.videoWidth;
 				canvas.height = video.videoHeight;
 				videoTextureInitialized = true;
 			}
 			/* Update without recreation */
+			gl.bindTexture(gl.TEXTURE_2D, videoTexture);
 			gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGB, gl.UNSIGNED_BYTE, video);
 
 			if (lut) {
@@ -65,8 +82,6 @@ function setupTri(canvasId, vertexId, fragmentId, lut) {
 			}
 		}
 	}
-
-	gl.useProgram(shaderProgram);
 
 	/* Vertex Buffer with a Fullscreen Triangle */
 	/* Position and UV coordinates */
@@ -94,16 +109,6 @@ function setupTri(canvasId, vertexId, fragmentId, lut) {
 		gl.drawArrays(gl.TRIANGLES, 0, 3);
 	}
 
-	function createAndCompileShader(type, source) {
-		const shader = gl.createShader(type);
-		gl.shaderSource(shader, document.getElementById(source).text);
-		gl.compileShader(shader);
-		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-			console.error(gl.getShaderInfoLog(shader));
-		}
-		return shader;
-	}
-
 	let isRendering = false;
 
 	function renderLoop() {
@@ -122,6 +127,8 @@ function setupTri(canvasId, vertexId, fragmentId, lut) {
 				}
 			} else {
 				isRendering = false;
+				videoTextureInitialized = false;
+				gl.deleteTexture(videoTexture);
 			}
 		});
 	}
