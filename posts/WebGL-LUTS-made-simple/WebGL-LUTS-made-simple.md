@@ -150,11 +150,18 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 
 <blockquote class="reaction"><div class="reaction_text">「無料」という単語はちょっと違うかも。計算時間は同じから、「測定ができない」はもっといいだろう。ですが、固定なグラフィックスパイプラインの計算時間から見ると、色々な計算が文脈のよって、計算時間に影響しない。だから、この文脈で、無料。</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
-<!-- 
-#### Valve Software's genius in optimizing
+
+<!-- #### Valve Software's genius in optimizing
 <audio controls><source src="Tristan-Reidford.mp3" type="audio/mpeg"></audio>
 > **Tristan Reidford:** Usually each model in the game has its own unique texture maps painted specifically for that model, which give the object its surface colors and detail. To have a convincing variety of cars using this method would have required as many textures as varieties of car, plus multiple duplicates of the textures in different colors, which would have been far out of our allotted texture memory budget. So we had to find a more efficient way to bring about that same result. For example, the texture on this car is shared with 3 different car models distributed throughout the environment. In addition to this one color texture, there is also a 'mask' texture that allows each instance of the car's painted surfaces to be tinted a different color, without having to author a separate texture. So for the cost of two textures you can get four different car models in an unlimited variety of colors.
- -->
+
+<figure>
+	<img src="Left4Dead.jpg" alt="Screenshot: Left4Dead and its use tinting cars the same material to get achieve new looks." />
+  <figcaption>Screenshot: Left4Dead and its use tinting cars the same material to get achieve new looks.</figcaption>
+</figure>
+
+Note, that it's not just cars. Essentially everything in the [Source Engine](https://en.wikipedia.org/wiki/Source_(game_engine)) can be tinted. -->
+
 ### サーマルカラー
 ですが、オレンジは比較的つまらんですので、「[LUT](https://ja.wikipedia.org/wiki/%E3%83%AB%E3%83%83%E3%82%AF%E3%82%A2%E3%83%83%E3%83%97%E3%83%86%E3%83%BC%E3%83%96%E3%83%AB)」という画像または表を使います。その画像は1次元の行です。あの画像の高さは1pxです。見えるように、下の画像が1pxの高さから64pxの高さにストレッチされます。
 
