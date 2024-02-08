@@ -1,6 +1,6 @@
 "use strict";
-/* Helpers */
 
+/* Helpers */
 function createAndCompileShader(gl, type, source) {
 	const shader = gl.createShader(type);
 	gl.shaderSource(shader, document.getElementById(source).text);
@@ -11,13 +11,26 @@ function createAndCompileShader(gl, type, source) {
 	return shader;
 }
 
+function setupTexture(gl, target, source){
+	gl.deleteTexture(target);
+	target = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, target);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	/* Technically we can prepare the Black and White video as mono H.264 and
+	   upload just one channel, but keep it simple for the blog post */
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, source);
+	return target;
+}
+
 function setupTri(canvasId, vertexId, fragmentId, lut) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false });
 	const lutImg = document.getElementById(lut);
-	const lutTexture = gl.createTexture();
-	let videoTexture = gl.createTexture();
+	let lutTexture, videoTexture;
 
 	/* Shaders */
 	const vertexShader = createAndCompileShader(gl, gl.VERTEX_SHADER, vertexId);
@@ -31,17 +44,6 @@ function setupTri(canvasId, vertexId, fragmentId, lut) {
 
 	const lutTextureLocation = gl.getUniformLocation(shaderProgram, "lut");
 
-	if (lut) {
-		lutImg.addEventListener('load', function () {
-			gl.bindTexture(gl.TEXTURE_2D, lutTexture);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, lutImg);
-		});
-	}
-
 	/* Video Setup */
 	const video = document.querySelector('video');
 
@@ -51,22 +53,19 @@ function setupTri(canvasId, vertexId, fragmentId, lut) {
 		video.play();
 	}
 
-	/* Video Texture Update */
-	let videoTextureInitialized = false;
+	let videoTextureInitialized = false;	
+	let lutTextureInitialized = false;
 
-	function updateVideoTexture() {
+	function updateTextures() {
+		if (lut && lutImg.naturalWidth && !lutTextureInitialized) {
+			lutTexture = setupTexture(gl, lutTexture, lutImg);
+			lutTextureInitialized = true;
+		}
+
 		gl.activeTexture(gl.TEXTURE0);
-
 		if (video.readyState >= video.HAVE_CURRENT_DATA) {
 			if (!videoTextureInitialized || video.videoWidth !== canvas.width || video.videoHeight !== canvas.height) {
-				gl.deleteTexture(videoTexture);
-				videoTexture = gl.createTexture();
-				gl.bindTexture(gl.TEXTURE_2D, videoTexture);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, video.videoWidth, video.videoHeight, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+				videoTexture = setupTexture(gl, videoTexture, video);
 				canvas.width = video.videoWidth;
 				canvas.height = video.videoHeight;
 				videoTextureInitialized = true;
@@ -104,7 +103,7 @@ function setupTri(canvasId, vertexId, fragmentId, lut) {
 	gl.vertexAttribPointer(texCoord, 2, gl.FLOAT, false, 4 * Float32Array.BYTES_PER_ELEMENT, 2 * Float32Array.BYTES_PER_ELEMENT);
 
 	function redraw() {
-		updateVideoTexture();
+		updateTextures();
 		gl.viewport(0, 0, canvas.width, canvas.height);
 		gl.drawArrays(gl.TRIANGLES, 0, 3);
 	}
