@@ -11,7 +11,7 @@ function createAndCompileShader(gl, type, source) {
 	return shader;
 }
 
-function setupTexture(gl, target, source){
+function setupTexture(gl, target, source) {
 	gl.deleteTexture(target);
 	target = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, target);
@@ -53,7 +53,7 @@ function setupTri(canvasId, vertexId, fragmentId, lut) {
 		video.play();
 	}
 
-	let videoTextureInitialized = false;	
+	let videoTextureInitialized = false;
 	let lutTextureInitialized = false;
 
 	function updateTextures() {
@@ -110,12 +110,42 @@ function setupTri(canvasId, vertexId, fragmentId, lut) {
 
 	let isRendering = false;
 
+	let error;
+	while ((error = gl.getError()) !== gl.NO_ERROR) {
+		let errorMessage = "WebGL Error: ";
+		switch (error) {
+			case gl.INVALID_ENUM:
+				errorMessage += "INVALID_ENUM";
+				break;
+			case gl.INVALID_VALUE:
+				errorMessage += "INVALID_VALUE";
+				break;
+			case gl.INVALID_OPERATION:
+				errorMessage += "INVALID_OPERATION";
+				break;
+			case gl.INVALID_FRAMEBUFFER_OPERATION:
+				errorMessage += "INVALID_FRAMEBUFFER_OPERATION";
+				break;
+			case gl.OUT_OF_MEMORY:
+				errorMessage += "OUT_OF_MEMORY";
+				break;
+			case gl.CONTEXT_LOST_WEBGL:
+				errorMessage += "CONTEXT_LOST_WEBGL";
+				break;
+			default:
+				errorMessage += `Unknown Error (${error})`;
+				break;
+		}
+		console.error(errorMessage);
+	}
+
 	function renderLoop() {
 		redraw();
 		if (isRendering) {
 			requestAnimationFrame(renderLoop);
 		}
 	}
+
 
 	function handleIntersection(entries) {
 		entries.forEach(entry => {

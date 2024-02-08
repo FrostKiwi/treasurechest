@@ -78,7 +78,7 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 
 <div style="width: 100%; display: flex; justify-content: center"><canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_2"></canvas></div>
 
-<script>setupTri("canvas_2", "vertex_2", "fragment_2", null);</script>
+<script>setTimeout(function() {setupTri("canvas_2", "vertex_2", "fragment_2", null);}, 20000);</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -116,7 +116,7 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 
 <div style="width: 100%; display: flex; justify-content: center"><canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_3"></canvas></div>
 
-<script>setupTri("canvas_3", "vertex_3", "fragment_3", null);</script>
+<script>setTimeout(function() {	setupTri("canvas_3", "vertex_3", "fragment_3", null);}, 20000);</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -172,7 +172,7 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 
 <div style="width: 100%; display: flex; justify-content: center"><canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_4"></canvas></div>
 
-<script>setupTri("canvas_4", "vertex_4", "fragment_4", "lut");</script>
+<script>setTimeout(function() {setupTri("canvas_4", "vertex_4", "fragment_4", "lut");}, 20000);</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -216,7 +216,7 @@ cividis developed it further: https://journals.plos.org/plosone/article?id=10.13
 
 <div style="width: 100%; display: flex; justify-content: center"><canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_5"></canvas></div>
 
-<script>setupTri("canvas_5", "vertex_5", "fragment_5", "viridis");</script>
+<script>setTimeout(function() {setupTri("canvas_5", "vertex_5", "fragment_5", "viridis");}, 20000);</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
