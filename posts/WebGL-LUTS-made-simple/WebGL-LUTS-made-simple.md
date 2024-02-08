@@ -11,6 +11,10 @@ publicTags:
   - GameDev
 image:
 ---
+
+<script src="//cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
+
 インターネットの[WebGL](https://ja.wikipedia.org/wiki/WebGL)でも、Unityというゲームエンジンでも灰色からカラーにするのことを説明します。
 情報はWebGLに対するけど、生のDirect X、Unityゲームエンジン、現代的なPC、10年間の古来スマホ、情報と実装仕方は同じです。
 PC、スマホ、Oculus、このページをどこでも有効です。
