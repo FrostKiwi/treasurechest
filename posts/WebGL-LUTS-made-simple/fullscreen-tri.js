@@ -31,21 +31,21 @@ function setupTri(canvasId, vertexId, fragmentId, lut) {
 	const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false });
 	const lutImg = document.getElementById(lut);
 	let lutTexture, videoTexture;
-
+	
 	/* Shaders */
 	const vertexShader = createAndCompileShader(gl, gl.VERTEX_SHADER, vertexId);
 	const fragmentShader = createAndCompileShader(gl, gl.FRAGMENT_SHADER, fragmentId);
-
+	
 	const shaderProgram = gl.createProgram();
 	gl.attachShader(shaderProgram, vertexShader);
 	gl.attachShader(shaderProgram, fragmentShader);
 	gl.linkProgram(shaderProgram);
 	gl.useProgram(shaderProgram);
-
+	
 	const lutTextureLocation = gl.getUniformLocation(shaderProgram, "lut");
-
+	
 	/* Video Setup */
-	const video = document.querySelector('video');
+	const video = document.getElementById('videoPlayer');
 
 	if (video.paused) {
 		video.loop = true;

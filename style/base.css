@@ -252,7 +252,7 @@ figure {
 	margin-bottom: 2rem;
 }
 
-figure img {
+figure img, video {
 	margin-bottom: 1rem;
 }
 
