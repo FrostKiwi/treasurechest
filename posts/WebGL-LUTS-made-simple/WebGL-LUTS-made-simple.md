@@ -1,17 +1,17 @@
 ---
-wip: true
-title: LUTSを簡単に
+title: Unreasonably effective - How video games use LUTs and how you can too
 permalink: "/{{ page.fileSlug }}/"
-date: 2024-01-30
-last_modified: 2024-01-31
-description:
+date:
+last_modified:
+description: How to implement 1D LUTs to color grayscale thermal vision videos, 3D LUTs for color correct and smart hacks from the video game industry
 publicTags:
   - OpenGL
   - WebGL
   - GameDev
-image:
+image: thumb.jpg
 ---
 
+Look-up-tables
 インターネットの[WebGL](https://ja.wikipedia.org/wiki/WebGL)でも、Unity というゲームエンジンでも灰色からカラーにするのことを説明します。
 情報は WebGL に対するけど、生の Direct X、Unity ゲームエンジン、現代的な PC、10 年間の古来スマホ、情報と実装仕方は同じです。
 PC、スマホ、Oculus、このページをどこでも有効です。
@@ -155,7 +155,7 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 
 <blockquote class="reaction"><div class="reaction_text">「無料」という単語はちょっと違うかも。計算時間は同じから、「測定ができない」はもっといいだろう。ですが、固定なグラフィックスパイプラインの計算時間から見ると、色々な計算が文脈のよって、計算時間に影響しない。だから、この文脈で、無料。</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
-<!-- #### Valve Software's genius in optimizing
+#### Valve Software's genius in optimizing
 
 <audio controls><source src="Tristan-Reidford.mp3" type="audio/mpeg"></audio>
 
@@ -174,7 +174,7 @@ Note, that it's not just cars. Essentially everything in the [Source Engine](<ht
 	<br>
 	Source: Excerpt from <a href="https://www.gdcvault.com/play/1012264/Shading-a-Bigger-Better-Sequel">"Shading a Bigger, Better Sequel: Techniques in Left 4 Dead 2"</a>, GDC 2010 talk by [Bronwen Grimes](http://www.bronwengrimes.com)
 	</figcaption>
-</figure> -->
+</figure>
 
 ### サーマルカラー
 
