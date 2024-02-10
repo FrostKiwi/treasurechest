@@ -26,46 +26,12 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 
 <div style="width: 100%; display: flex; justify-content: space-around; padding-bottom: 8px"><button onclick="document.getElementById('fileInput').click();">動画を変更</button><button onclick="startWebcam();">ウェブカメラを接続する</button></div>
 
-<div style="width: 100%; display: flex; justify-content: center"><video width="680" height="480" style="width: unset; max-width: 100%" controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video></div>
+<div style="width: 100%; display: flex; justify-content: center"><video width="680" height="480" style="width: unset; max-width: 100%" playsinline muted controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video></div>
+<script src="videoSource.js"></script>
 
 動画の由来： https://arxiv.org/abs/2308.10991
 
 再生されない場合、**手動で上の動画をスタートしてください！** 私は`Autoplay`すると、スクロールの時にエネルギーの節約のために`Autoplay`の場合、デバイスによって、動画がストップされてしまう。
-
-<script>
-	const videoPlayer = document.getElementById('videoPlayer');
-	videoPlayer.setAttribute("playsinline", true);
-	videoPlayer.setAttribute("muted", true);
-	videoPlayer.setAttribute("loop", true);
-
-    function changeVideo(input) {
-        var file = input.files[0];
-        var url = URL.createObjectURL(file);
-        var videoPlayer = document.getElementById('videoPlayer');
-        videoPlayer.src = url;
-        videoPlayer.play();
-    }
-
-	function startWebcam() {
-        var videoPlayer = document.getElementById('videoPlayer');
-		videoPlayer.setAttribute("autoplay", true);
-        if (navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ audio: false, video: true })
-                .then(function(stream) {
-                    videoPlayer.srcObject = stream;
-                    videoPlayer.play();
-					videoPlayer.onloadedmetadata = function(e) {
-            			videoPlayer.play()
-        			}
-                })
-                .catch(function(error) {
-                    alert(error);
-                });
-        } else {
-            alert('Your browser does not support accessing the webcam.');
-        }
-    }
-</script>
 
 ### グラフィクスカードへ！
 

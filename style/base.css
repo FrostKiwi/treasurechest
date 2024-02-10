@@ -129,6 +129,7 @@ table img {
 	margin-top: 2rem;
 	margin-bottom: 0px;
 	font-size: 2.2em;
+	text-align: justify;
 }
 
 .profile_wrapper {
@@ -320,17 +321,11 @@ h6 .anchor-link {
 }
 
 h1:hover .anchor-link,
-h1 .anchor-link:hover,
 h2:hover .anchor-link,
-h2 .anchor-link:hover,
 h3:hover .anchor-link,
-h3 .anchor-link:hover,
 h4:hover .anchor-link,
-h4 .anchor-link:hover,
 h5:hover .anchor-link,
-h5 .anchor-link:hover,
-h6:hover .anchor-link,
-h6 .anchor-link:hover {
+h6:hover .anchor-link{
 	visibility: visible;
 }
 
