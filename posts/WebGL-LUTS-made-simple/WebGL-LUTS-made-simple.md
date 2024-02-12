@@ -1,5 +1,5 @@
 ---
-title: Unreasonably effective - How video games use LUTs and how you can too
+title: Unreasonably effective - How video games use LUTs and how you can too in WebGL
 permalink: "/{{ page.fileSlug }}/"
 date:
 last_modified:
@@ -10,11 +10,20 @@ publicTags:
   - GameDev
 image: thumb.jpg
 ---
+[Look-up-tables](https://en.wikipedia.org/wiki/Lookup_table) or more commonly referred to as LUTs are as old as Mathematics. 
 
-Look-up-tables
 インターネットの[WebGL](https://ja.wikipedia.org/wiki/WebGL)でも、Unity というゲームエンジンでも灰色からカラーにするのことを説明します。
 情報は WebGL に対するけど、生の Direct X、Unity ゲームエンジン、現代的な PC、10 年間の古来スマホ、情報と実装仕方は同じです。
 PC、スマホ、Oculus、このページをどこでも有効です。
+
+### Camera 3D LUTs
+
+Some of them are even bought.
+
+### Redshift
+Tinting the monitor orange during night time to prevent eye-strain, performed by Software like [Redshift](http://jonls.dk/redshift/) works by changing the Gamma Ramp, a 1-D LUT each for the Red, Green and Blue channel of the monitor. To do so it precalculates the Kelvin Warmth -> RGB and additional Gamma calculations by generating 3 LUTs, as seen in the code here: https://github.com/jonls/redshift/blob/490ba2aae9cfee097a88b6e2be98aeb1ce990050/src/colorramp.c#L289 
+
+This approach is pretty awesome with its has zero performance impact, as the calculations are done by the monitor, not the graphics card. Though support for this hardware interface is pretty horrible across the board and more often than not broken or unimplemented, with graphics stacks like the one of the Raspberry Pi working backwards and losing support.
 
 ### 入力ファイル
 
@@ -141,6 +150,10 @@ Note, that it's not just cars. Essentially everything in the [Source Engine](<ht
 	Source: Excerpt from <a href="https://www.gdcvault.com/play/1012264/Shading-a-Bigger-Better-Sequel">"Shading a Bigger, Better Sequel: Techniques in Left 4 Dead 2"</a>, GDC 2010 talk by [Bronwen Grimes](http://www.bronwengrimes.com)
 	</figcaption>
 </figure>
+
+[OpenLara DIV](https://github.com/XProger/OpenLara/commit/e9ba3a278499fd61768a6ab148b72d9f7d5d5828)
+
+<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube.com/embed/_GVSLcqGP7g?si=NST1tXJb7_oB3acl&amp;start=303" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ### サーマルカラー
 
