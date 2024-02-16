@@ -27,13 +27,15 @@
     <email>{{ metadata.author.email }}</email>
   </author>
   {%- for post in collections.post | reverse %}
-  {%- set absolutePostUrl = post.url | absoluteUrl(metadata.url) %}
-  <entry>
-    <title>{{ post.data.title }}</title>
-    <link href="{{ absolutePostUrl }}"/>
-    <updated>{{ post.date | dateToRfc3339 }}</updated>
-    <id>{{ absolutePostUrl }}</id>
-	<summary>{{ post.data.description }}</summary>
-  </entry>
+    {%- if not post.data.wip %}
+      {%- set absolutePostUrl = post.url | absoluteUrl(metadata.url) %}
+      <entry>
+        <title>{{ post.data.title }}</title>
+        <link href="{{ absolutePostUrl }}"/>
+        <updated>{{ post.date | dateToRfc3339 }}</updated>
+        <id>{{ absolutePostUrl }}</id>
+        <summary>{{ post.data.description }}</summary>
+      </entry>
+    {%- endif %}
   {%- endfor %}
 </feed>
