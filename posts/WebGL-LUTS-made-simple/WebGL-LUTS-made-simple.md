@@ -16,9 +16,93 @@ image: thumb.jpg
 情報は WebGL に対するけど、生の Direct X、Unity ゲームエンジン、現代的な PC、10 年間の古来スマホ、情報と実装仕方は同じです。
 PC、スマホ、Oculus、このページをどこでも有効です。
 
+<figure>
+	<video width="1400" height="480" style="width: unset; max-width: 100%" autoplay playsinline muted controls loop><source src="preview.mp4" type="video/mp4"></video>
+	<figcaption>Cold ice cream and hot tea. Left: Panasonic GH6, Right: TESTO 890 + 15°x11° Lens</figcaption>
+</figure>
+
+
 ### Camera 3D LUTs
 
 Some of them are even bought.
+
+<figure>
+	<video width="684" height="480" style="width: unset; max-width: 100%" autoplay playsinline muted controls loop id="gh6footage"><source src="Panasonic-Vlog.mp4" type="video/mp4"></video>
+	<figcaption>Panasonic GH6 with "V-Log" logarithmic profile</figcaption>
+</figure>
+
+<img src="3DLut.png" id="3dlut" style="width: 100%">
+
+<script src="fullscreen-tri.js"></script>
+<script  id="vertex_6" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
+<script  id="fragment_6" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}</script>
+
+<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_6"></canvas>
+
+<script>setupTri("canvas_6", "vertex_6", "fragment_6", "gh6footage", "3dlut");</script>
+<blockquote>
+<details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment シェーダー <a href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
+
+```glsls
+{% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+
+```javascript
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
+```
+
+</details>
+</blockquote>
+
+You may actually notice an issue with a blue shift, due to Z Slice precision
+
+<img src="3DLutDavinci.png" id="3dlutDavinci" style="width: 100%">
+
+<script src="fullscreen-tri.js"></script>
+<script  id="vertex_7" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
+<script  id="fragment_7" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}</script>
+
+<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_7"></canvas>
+
+<script>setupTri("canvas_7", "vertex_7", "fragment_7", "gh6footage", "3dlutDavinci");</script>
+<blockquote>
+<details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment シェーダー <a href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
+
+```glsls
+{% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+
+```javascript
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
+```
+
+</details>
+</blockquote>
+
 
 ### Redshift
 Tinting the monitor orange during night time to prevent eye-strain, performed by Software like [Redshift](http://jonls.dk/redshift/) works by changing the Gamma Ramp, a 1-D LUT each for the Red, Green and Blue channel of the monitor. To do so it precalculates the Kelvin Warmth -> RGB and additional Gamma calculations by generating 3 LUTs, as seen in the code here: https://github.com/jonls/redshift/blob/490ba2aae9cfee097a88b6e2be98aeb1ce990050/src/colorramp.c#L289 
@@ -35,7 +119,7 @@ This approach is pretty awesome with its has zero performance impact, as the cal
 
 <div style="width: 100%; display: flex; justify-content: space-around; padding-bottom: 8px"><button onclick="document.getElementById('fileInput').click();">動画を変更</button><button onclick="startWebcam();">ウェブカメラを接続する</button></div>
 
-<div style="width: 100%; display: flex; justify-content: center"><video width="680" height="480" style="width: unset; max-width: 100%" playsinline muted controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video></div>
+<video width="684" height="480" style="width: unset; max-width: 100%" playsinline muted controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video></div>
 <script src="videoSource.js"></script>
 
 動画の由来： https://arxiv.org/abs/2308.10991
@@ -50,9 +134,9 @@ This approach is pretty awesome with its has zero performance impact, as the cal
 <script  id="vertex_2" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_2" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-simple.fs" %}</script>
 
-<div style="width: 100%; display: flex; justify-content: center"><canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_2"></canvas></div>
+<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_2"></canvas>
 
-<script>setupTri("canvas_2", "vertex_2", "fragment_2", null);</script>
+<script>setupTri("canvas_2", "vertex_2", "fragment_2", "videoPlayer", null);</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -89,9 +173,9 @@ This approach is pretty awesome with its has zero performance impact, as the cal
 <script  id="vertex_3" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_3" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}</script>
 
-<div style="width: 100%; display: flex; justify-content: center"><canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_3"></canvas></div>
+<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_3"></canvas>
 
-<script>setupTri("canvas_3", "vertex_3", "fragment_3", null);</script>
+<script>setupTri("canvas_3", "vertex_3", "fragment_3", "videoPlayer", null);</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -167,9 +251,9 @@ Note, that it's not just cars. Essentially everything in the [Source Engine](<ht
 <script  id="vertex_4" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_4" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
-<div style="width: 100%; display: flex; justify-content: center"><canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_4"></canvas></div>
+<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_4"></canvas>
 
-<script>setupTri("canvas_4", "vertex_4", "fragment_4", "lut");</script>
+<script>setupTri("canvas_4", "vertex_4", "fragment_4", "videoPlayer", "lut");</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -212,9 +296,9 @@ cividis developed it further: https://journals.plos.org/plosone/article?id=10.13
 <script  id="vertex_5" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_5" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
-<div style="width: 100%; display: flex; justify-content: center"><canvas width="680" height="480" style="width: unset; max-width: 100%" id="canvas_5"></canvas></div>
+<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_5"></canvas>
 
-<script>setupTri("canvas_5", "vertex_5", "fragment_5", "viridis");</script>
+<script>setupTri("canvas_5", "vertex_5", "fragment_5", "videoPlayer", "viridis");</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 

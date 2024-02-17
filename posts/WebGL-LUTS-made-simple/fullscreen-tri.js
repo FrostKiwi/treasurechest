@@ -25,7 +25,7 @@ function setupTexture(gl, target, source){
 	return target;
 }
 
-function setupTri(canvasId, vertexId, fragmentId, lut) {
+function setupTri(canvasId, vertexId, fragmentId, videoID, lut) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false });
@@ -45,7 +45,7 @@ function setupTri(canvasId, vertexId, fragmentId, lut) {
 	const lutTextureLocation = gl.getUniformLocation(shaderProgram, "lut");
 	
 	/* Video Setup */
-	const video = document.getElementById('videoPlayer');
+	const video = document.getElementById(videoID);
 
 	if (video.paused) {
 		video.loop = true;
