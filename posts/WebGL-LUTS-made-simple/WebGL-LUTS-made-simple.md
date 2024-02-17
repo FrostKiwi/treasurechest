@@ -67,6 +67,8 @@ Some of them are even bought.
 </blockquote>
 
 You may actually notice an issue with a blue shift, due to Z Slice precision
+https://webglfundamentals.org/webgl/lessons/webgl-qna-how-to-simulate-a-3d-texture-in-webgl.html
+version is wrong
 
 <img src="3DLutDavinci.png" id="3dlutDavinci" style="width: 100%">
 
