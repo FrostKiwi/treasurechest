@@ -73,7 +73,6 @@ version is wrong
 
 <img src="3DLutDavinci.png" id="3dlutDavinci" style="width: 100%">
 
-<script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_7" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}</script>
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_7"></canvas>
@@ -107,7 +106,6 @@ version is wrong
 
 <img src="3DLutDavinci_Film.png" id="3dlutDavinci_Film" style="width: 100%">
 
-<script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_8" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}</script>
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_8"></canvas>
@@ -166,7 +164,6 @@ This approach is pretty awesome with its has zero performance impact, as the cal
 
 今は、WebGL で一番シンプルなシェーダーで動画をグラフィクスチップにアップロードして、映っています。動画の内容はまだ同じですけど。下の部分で全部のコードを見えます。私達には大切なやつは「Fragment シェーダー」です。そのシェーダーはカラーに影響をする。
 
-<script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_2" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-simple.fs" %}</script>
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_2"></canvas>
@@ -204,7 +201,6 @@ This approach is pretty awesome with its has zero performance impact, as the cal
 
 私達は画面に見せるの前出力するピクセルを`1.0, 0.5, 0.0`というカラーと掛け算すると、動画はオレンジになります。
 
-<script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_3" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}</script>
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_3"></canvas>
@@ -281,7 +277,6 @@ Note, that it's not just cars. Essentially everything in the [Source Engine](<ht
 
 ほしいカラーはをあの画像によって見せます。左は黒、右は白。黒は青になります、白は赤になります。
 
-<script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_4" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_4"></canvas>
@@ -325,7 +320,6 @@ cividis developed it further: https://journals.plos.org/plosone/article?id=10.13
 
 <img src="viridis.png" id="viridis" style="width: 100%; height: 64px;">
 
-<script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_5" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_5"></canvas>
@@ -344,6 +338,42 @@ cividis developed it further: https://journals.plos.org/plosone/article?id=10.13
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+
+```javascript
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
+```
+
+</details>
+</blockquote>
+
+### Still performance free?
+
+https://www.shadertoy.com/view/WlfXRN
+
+<script  id="fragment_9" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut_viridis.fs" %}</script>
+
+<img src="viridis.png" style="width: 100%; height: 64px;">
+<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_9"></canvas>
+
+<script>setupTri("canvas_9", "vertex", "fragment_9", "videoPlayer", null);</script>
+<blockquote>
+<details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment シェーダー <a href="video-lut_viridis.fs">video-lut_viridis.fs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/video-lut_viridis.fs" %}
 ```
 
 </details>
