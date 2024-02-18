@@ -1,15 +1,18 @@
 ---
-title: Unreasonably effective - How video games use LUTs and how you can too in WebGL
+title: Unreasonably effective - How video games use LUTs and how you can too
 permalink: "/{{ page.fileSlug }}/"
 date:
 last_modified:
-description: How to implement 1D LUTs to color grayscale thermal vision videos, 3D LUTs for color correct and smart hacks from the video game industry
+description: How to implement 1D LUTs to color grayscale thermal vision videos, 3D LUTs for color correct and smart hacks from video games
 publicTags:
   - OpenGL
   - WebGL
   - GameDev
 image: thumb.jpg
 ---
+<script src="fullscreen-tri.js"></script>
+<script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
+
 [Look-up-tables](https://en.wikipedia.org/wiki/Lookup_table) or more commonly referred to as LUTs are as old as Mathematics. 
 
 インターネットの[WebGL](https://ja.wikipedia.org/wiki/WebGL)でも、Unity というゲームエンジンでも灰色からカラーにするのことを説明します。
@@ -23,7 +26,7 @@ PC、スマホ、Oculus、このページをどこでも有効です。
 
 
 ### Camera 3D LUTs
-
+RGB Cube, where the cube X is Red, Y is Green, Blue is Z.
 Some of them are even bought.
 
 <figure>
@@ -33,13 +36,11 @@ Some of them are even bought.
 
 <img src="3DLut.png" id="3dlut" style="width: 100%">
 
-<script src="fullscreen-tri.js"></script>
-<script  id="vertex_6" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_6" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}</script>
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_6"></canvas>
 
-<script>setupTri("canvas_6", "vertex_6", "fragment_6", "gh6footage", "3dlut");</script>
+<script>setupTri("canvas_6", "vertex", "fragment_6", "gh6footage", "3dlut");</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -51,7 +52,7 @@ Some of them are even bought.
 <details>	
 <summary>WebGL Fragment シェーダー <a href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
 
-```glsls
+```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}
 ```
 
@@ -72,13 +73,12 @@ version is wrong
 
 <img src="3DLutDavinci.png" id="3dlutDavinci" style="width: 100%">
 
-<script src="fullscreen-tri.js"></script>
-<script  id="vertex_7" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
+<script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_7" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}</script>
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_7"></canvas>
 
-<script>setupTri("canvas_7", "vertex_7", "fragment_7", "gh6footage", "3dlutDavinci");</script>
+<script>setupTri("canvas_7", "vertex", "fragment_7", "gh6footage", "3dlutDavinci");</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -90,7 +90,41 @@ version is wrong
 <details>	
 <summary>WebGL Fragment シェーダー <a href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
 
-```glsls
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+
+```javascript
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
+```
+
+</details>
+</blockquote>
+
+<img src="3DLutDavinci_Film.png" id="3dlutDavinci_Film" style="width: 100%">
+
+<script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
+<script  id="fragment_8" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}</script>
+
+<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_8"></canvas>
+
+<script>setupTri("canvas_8", "vertex", "fragment_8", "gh6footage", "3dlutDavinci_Film");</script>
+<blockquote>
+<details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment シェーダー <a href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
+
+```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}
 ```
 
@@ -132,13 +166,12 @@ This approach is pretty awesome with its has zero performance impact, as the cal
 
 今は、WebGL で一番シンプルなシェーダーで動画をグラフィクスチップにアップロードして、映っています。動画の内容はまだ同じですけど。下の部分で全部のコードを見えます。私達には大切なやつは「Fragment シェーダー」です。そのシェーダーはカラーに影響をする。
 
-<script src="fullscreen-tri.js"></script>
-<script  id="vertex_2" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
+<script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_2" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-simple.fs" %}</script>
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_2"></canvas>
 
-<script>setupTri("canvas_2", "vertex_2", "fragment_2", "videoPlayer", null);</script>
+<script>setupTri("canvas_2", "vertex", "fragment_2", "videoPlayer", null);</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -171,13 +204,12 @@ This approach is pretty awesome with its has zero performance impact, as the cal
 
 私達は画面に見せるの前出力するピクセルを`1.0, 0.5, 0.0`というカラーと掛け算すると、動画はオレンジになります。
 
-<script src="fullscreen-tri.js"></script>
-<script  id="vertex_3" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
+<script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_3" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}</script>
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_3"></canvas>
 
-<script>setupTri("canvas_3", "vertex_3", "fragment_3", "videoPlayer", null);</script>
+<script>setupTri("canvas_3", "vertex", "fragment_3", "videoPlayer", null);</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -249,13 +281,12 @@ Note, that it's not just cars. Essentially everything in the [Source Engine](<ht
 
 ほしいカラーはをあの画像によって見せます。左は黒、右は白。黒は青になります、白は赤になります。
 
-<script src="fullscreen-tri.js"></script>
-<script  id="vertex_4" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
+<script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_4" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_4"></canvas>
 
-<script>setupTri("canvas_4", "vertex_4", "fragment_4", "videoPlayer", "lut");</script>
+<script>setupTri("canvas_4", "vertex", "fragment_4", "videoPlayer", "lut");</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -294,13 +325,12 @@ cividis developed it further: https://journals.plos.org/plosone/article?id=10.13
 
 <img src="viridis.png" id="viridis" style="width: 100%; height: 64px;">
 
-<script src="fullscreen-tri.js"></script>
-<script  id="vertex_5" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
+<script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 <script  id="fragment_5" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_5"></canvas>
 
-<script>setupTri("canvas_5", "vertex_5", "fragment_5", "videoPlayer", "viridis");</script>
+<script>setupTri("canvas_5", "vertex", "fragment_5", "videoPlayer", "viridis");</script>
 <blockquote>
 <details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
