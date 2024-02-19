@@ -13,16 +13,21 @@ image: thumb.jpg
 <script src="fullscreen-tri.js"></script>
 <script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 
-[Look-up-tables](https://en.wikipedia.org/wiki/Lookup_table) or more commonly referred to as LUTs are as old as Mathematics. 
+[Look-up-tables](https://en.wikipedia.org/wiki/Lookup_table), more commonly referred to as LUTs, are as old as Mathematics itself. The act of precalculating things into a row or table is nothing new. But in the realm of graphics programming, this simple act unlocks some incredibly creative techniques, which both artists and programmers found when faced with tough technical hurdles. It also just so happens, that these techniques map incredibly well to how GPUs work, with some ending up having zero performance impact.
 
-インターネットの[WebGL](https://ja.wikipedia.org/wiki/WebGL)でも、Unity というゲームエンジンでも灰色からカラーにするのことを説明します。
-情報は WebGL に対するけど、生の Direct X、Unity ゲームエンジン、現代的な PC、10 年間の古来スマホ、情報と実装仕方は同じです。
-PC、スマホ、Oculus、このページをどこでも有効です。
+We'll embark on a small journey, which will take us from simple things like turning grayscale footage into color, to creating limitless variations of blood-lusting zombies, with many examples illustrated in WebGL along the way, which you can try out with your own videos or webcam. Though this article uses [WebGL](https://en.wikipedia.org/wiki/WebGL), the techniques shown apply to any other graphics programming context, be it [DirectX](https://en.wikipedia.org/wiki/DirectX), [OpenGL](https://en.wikipedia.org/wiki/OpenGL), [Vulkan](https://en.wikipedia.org/wiki/Vulkan), game engines like [Unity](https://en.wikipedia.org/wiki/Unity_(game_engine)), or plain scientific data visualization.
 
 <figure>
 	<video width="1400" height="480" style="width: unset; max-width: 100%" autoplay playsinline muted controls loop><source src="preview.mp4" type="video/mp4"></video>
 	<figcaption>Cold ice cream and hot tea. Left: Panasonic GH6, Right: TESTO 890 + 15°x11° Lens</figcaption>
 </figure>
+
+First, let's nail down the basics. We'll be creating and modifying the video above, though you may substitute the footage with your own at any point in the article. The video is a capture of two cameras, a [Panasonic GH6](https://www.dpreview.com/reviews/panasonic-lumix-dc-gh6-review) and a [TESTO 890](https://www.testo.com/en/testo-890/p/0563-0890-X1) thermal camera. I'm eating cold ice cream and drinking hot tea to stretch the temperatures on display.
+
+## The humble 1D LUT
+インターネットの[WebGL](https://ja.wikipedia.org/wiki/WebGL)でも、Unity というゲームエンジンでも灰色からカラーにするのことを説明します。
+情報は WebGL に対するけど、生の Direct X、Unity ゲームエンジン、現代的な PC、10 年間の古来スマホ、情報と実装仕方は同じです。
+PC、スマホ、Oculus、このページをどこでも有効です。
 
 
 ### Camera 3D LUTs
@@ -243,6 +248,10 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 ```
 
 <blockquote class="reaction"><div class="reaction_text">「無料」という単語はちょっと違うかも。計算時間は同じから、「測定ができない」はもっといいだろう。ですが、固定なグラフィックスパイプラインの計算時間から見ると、色々な計算が文脈のよって、計算時間に影響しない。だから、この文脈で、無料。</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
+
+
+Mention https://rosenzweig.io/blog/conformant-gl46-on-the-m1.html
+> The difference should be small percentage-wise, as arithmetic is faster than memory. With thousands of threads running in parallel, the arithmetic cost may even be hidden by the load’s latency.
 
 #### Valve Software's genius in optimizing
 
