@@ -17,11 +17,11 @@ void main(void)
 
 	/* Here is where the tinting happens. We multiply with (1.0, 0.5, 0.0),
 	   which is orange (100% Red, 50% Green, 0% Blue). White becomes Orange,
-	   since muplitplying 1 with X gives you X. Black stays black, since 0 times
-	   X is 0. Try out different things! */
+	   since muplitplying 1 with X gives you X. Black stays black, since 0
+	   times X is 0. Try out different things! */
 	vec3 finalColor = videoColor * vec3(1.0, 0.5, 0.0);
 
-	/* Our final color. In WebGL 1.0 this output is always RGBA and always named
-	   "gl_FragColor" */
+	/* Our final color. In WebGL 1.0 this output is always RGBA and always
+	   named "gl_FragColor" */
 	gl_FragColor = vec4(finalColor, 1.0);
 }

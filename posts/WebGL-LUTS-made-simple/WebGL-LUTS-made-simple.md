@@ -10,20 +10,25 @@ publicTags:
   - GameDev
 image: thumb.jpg
 ---
+
 <script src="fullscreen-tri.js"></script>
 <script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 
 [Look-up-tables](https://en.wikipedia.org/wiki/Lookup_table), more commonly referred to as LUTs, are as old as Mathematics itself. The act of precalculating things into a row or table is nothing new. But in the realm of graphics programming, this simple act unlocks some incredibly creative techniques, which both artists and programmers found when faced with tough technical hurdles. It also just so happens, that these techniques map incredibly well to how GPUs work, with some ending up having zero performance impact.
 
-We'll embark on a small journey, which will take us from simple things like turning grayscale footage into color, to creating limitless variations of blood-lusting zombies, with many interactive examples illustrated in WebGL along the way, that you can try out with your own videos or webcam. Though this article uses [WebGL](https://en.wikipedia.org/wiki/WebGL), the techniques shown apply to any other graphics programming context, be it [DirectX](https://en.wikipedia.org/wiki/DirectX), [OpenGL](https://en.wikipedia.org/wiki/OpenGL), [Vulkan](https://en.wikipedia.org/wiki/Vulkan), game engines like [Unity](https://en.wikipedia.org/wiki/Unity_(game_engine)), or plain scientific data visualization.
+We'll embark on a small journey, which will take us from simple things like turning grayscale footage into color, to creating limitless variations of blood-lusting zombies, with many interactive examples illustrated in WebGL along the way, that you can try out with your own videos or webcam. Though this article uses [WebGL](https://en.wikipedia.org/wiki/WebGL), the techniques shown apply to any other graphics programming context, be it [DirectX](https://en.wikipedia.org/wiki/DirectX), [OpenGL](https://en.wikipedia.org/wiki/OpenGL), [Vulkan](https://en.wikipedia.org/wiki/Vulkan), game engines like [Unity](<https://en.wikipedia.org/wiki/Unity_(game_engine)>), or plain scientific data visualization.
+
 ## Humble yet powerful - the LUT
+
 <figure>
 	<video width="1400" height="480" style="width: unset; max-width: 100%" autoplay playsinline muted controls loop><source src="preview.mp4" type="video/mp4"></video>
 	<figcaption>Cold ice cream and hot tea. Left: Panasonic GH6, Right: TESTO 890 + 15°x11° Lens</figcaption>
 </figure>
 
 First, let's nail down the basics. We'll be creating and modifying the video above, though you may substitute the footage with your own at any point in the article. The video is a capture of two cameras, a [Panasonic GH6](https://www.dpreview.com/reviews/panasonic-lumix-dc-gh6-review) and a [TESTO 890](https://www.testo.com/en/testo-890/p/0563-0890-X1) thermal camera. I'm eating cold ice cream and drinking hot tea to stretch the temperatures on display.
+
 ### The Setup
+
 We'll first start with the thermal camera footage. The output of the [thermal camera](https://en.wikipedia.org/wiki/Thermographic_camera) is a grayscale signal. Instead of this video, you may upload your own or activate the WebCam, which allows you to live stream from a thermal camera using OBS's various input methods and output a virtual camera. If you input a normal color signal, then just the red channel will be used.
 
 <input type="file" id="fileInput" accept="video/*" style="display: none;" onchange="changeVideo(this)">
@@ -31,6 +36,7 @@ We'll first start with the thermal camera footage. The output of the [thermal ca
 <div style="width: 100%; display: flex; justify-content: space-around; padding-bottom: 8px"><button onclick="document.getElementById('fileInput').click();">Change Video</button><button onclick="startWebcam();">Connect Webcam</button></div>
 
 <video width="684" height="480" style="width: unset; max-width: 100%" playsinline muted controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video></div>
+
 <script src="videoSource.js"></script>
 
 Next we upload this footage to the graphics card using WebGL and redisplay it using a shader, which leaves the footage untouched. Each frame is transferred as a 2D texture to the GPU.
@@ -38,6 +44,7 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 <script  id="fragment_2" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-simple.fs" %}</script>
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_2"></canvas>
+
 <script>setupTri("canvas_2", "vertex", "fragment_2", "videoPlayer", null);</script>
 
 <blockquote>
@@ -77,7 +84,27 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 
 私達は画面に見せるの前出力するピクセルを`1.0, 0.5, 0.0`というカラーと掛け算すると、動画はオレンジになります。
 
-<script  id="fragment_3" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}</script>
+<pre id="editor">{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}</pre>
+<script src="/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/gruvbox_dark_hard");
+    editor.session.setMode("ace/mode/glsl");
+	editor.session.setOptions({
+        useWorker: false
+    });
+	editor.renderer.setOptions({
+		showFoldWidgets: false,
+        fontSize: "smaller",
+        fontFamily: "Consolas, Monaco, \"Andale Mono\", monospace;",
+		showPrintMargin: false,
+		maxLines: 50
+    })
+</script>
+
+<script id="fragment_3" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}</script>
+
+<div style="width: 100%; display: flex; justify-content: space-around; padding-bottom: 8px"><button onclick='document.getElementById("fragment_3").textContent = ace.edit("editor").getValue(); setupTri("canvas_3", "vertex", "fragment_3", "videoPlayer", null);'>Reload Shader</button></div>
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_3"></canvas>
 
@@ -90,15 +117,7 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 ```
 
 </details>
-<details>	
-<summary>WebGL Fragment Shader <a href="video-orange.fs">video-orange.fs</a></summary>
-
-```glsl
-{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}
-```
-
-</details>
-<details>	
+<details>
 <summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
@@ -124,9 +143,11 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 Note, that it's not just cars. Essentially everything in the [Source Engine](<https://en.wikipedia.org/wiki/Source_(game_engine)>) can be tinted.
 
 ### The humble 1D LUT
+
 A 1D LUT is a simple array of numbers. In the context of graphics programming, this gets uploaded as a texture to the graphics.
 
 ### Camera 3D LUTs
+
 RGB Cube, where the cube X is Red, Y is Green, Blue is Z.
 Some of them are even bought.
 
@@ -238,9 +259,9 @@ version is wrong
 </details>
 </blockquote>
 
-
 ### Redshift
-Tinting the monitor orange during night time to prevent eye-strain, performed by Software like [Redshift](http://jonls.dk/redshift/) works by changing the Gamma Ramp, a 1-D LUT each for the Red, Green and Blue channel of the monitor. To do so it precalculates the Kelvin Warmth -> RGB and additional Gamma calculations by generating 3 LUTs, as seen in the code here: https://github.com/jonls/redshift/blob/490ba2aae9cfee097a88b6e2be98aeb1ce990050/src/colorramp.c#L289 
+
+Tinting the monitor orange during night time to prevent eye-strain, performed by Software like [Redshift](http://jonls.dk/redshift/) works by changing the Gamma Ramp, a 1-D LUT each for the Red, Green and Blue channel of the monitor. To do so it precalculates the Kelvin Warmth -> RGB and additional Gamma calculations by generating 3 LUTs, as seen in the code here: https://github.com/jonls/redshift/blob/490ba2aae9cfee097a88b6e2be98aeb1ce990050/src/colorramp.c#L289
 
 This approach is pretty awesome with its has zero performance impact, as the calculations are done by the monitor, not the graphics card. Though support for this hardware interface is pretty horrible across the board and more often than not broken or unimplemented, with graphics stacks like the one of the Raspberry Pi working backwards and losing support.
 
@@ -268,8 +289,8 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 
 <blockquote class="reaction"><div class="reaction_text">「無料」という単語はちょっと違うかも。計算時間は同じから、「測定ができない」はもっといいだろう。ですが、固定なグラフィックスパイプラインの計算時間から見ると、色々な計算が文脈のよって、計算時間に影響しない。だから、この文脈で、無料。</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
-
 Mention https://rosenzweig.io/blog/conformant-gl46-on-the-m1.html
+
 > The difference should be small percentage-wise, as arithmetic is faster than memory. With thousands of threads running in parallel, the arithmetic cost may even be hidden by the load’s latency.
 
 #### Valve Software's genius in optimizing

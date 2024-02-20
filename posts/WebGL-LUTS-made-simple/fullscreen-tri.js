@@ -1,17 +1,40 @@
 "use strict";
 
 /* Helpers */
-function createAndCompileShader(gl, type, source) {
+function createAndCompileShader(gl, type, source, canvas) {
 	const shader = gl.createShader(type);
 	gl.shaderSource(shader, document.getElementById(source).text);
 	gl.compileShader(shader);
-	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		console.error(gl.getShaderInfoLog(shader));
-	}
+	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
+		displayErrorMessage(canvas, gl.getShaderInfoLog(shader));
+	else
+		displayErrorMessage(canvas, "");
 	return shader;
 }
 
-function setupTexture(gl, target, source){
+
+function displayErrorMessage(canvas, message) {
+	let errorElement = canvas.nextSibling;
+	const hasErrorElement = errorElement && errorElement.tagName === 'PRE';
+
+	if (message) {
+		if (!hasErrorElement) {
+			errorElement = document.createElement('pre');
+			errorElement.style.color = 'red';
+			canvas.parentNode.insertBefore(errorElement, canvas.nextSibling);
+		}
+		errorElement.textContent = `Shader Compilation Error: ${message}`;
+		canvas.style.display = 'none';
+		errorElement.style.display = 'block';
+	} else {
+		if (hasErrorElement)
+			errorElement.style.display = 'none';
+		canvas.style.display = 'block';
+	}
+}
+
+
+function setupTexture(gl, target, source) {
 	gl.deleteTexture(target);
 	target = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, target);
@@ -31,19 +54,19 @@ function setupTri(canvasId, vertexId, fragmentId, videoID, lut) {
 	const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false });
 	const lutImg = document.getElementById(lut);
 	let lutTexture, videoTexture;
-	
+
 	/* Shaders */
-	const vertexShader = createAndCompileShader(gl, gl.VERTEX_SHADER, vertexId);
-	const fragmentShader = createAndCompileShader(gl, gl.FRAGMENT_SHADER, fragmentId);
-	
+	const vertexShader = createAndCompileShader(gl, gl.VERTEX_SHADER, vertexId, canvas);
+	const fragmentShader = createAndCompileShader(gl, gl.FRAGMENT_SHADER, fragmentId, canvas);
+
 	const shaderProgram = gl.createProgram();
 	gl.attachShader(shaderProgram, vertexShader);
 	gl.attachShader(shaderProgram, fragmentShader);
 	gl.linkProgram(shaderProgram);
 	gl.useProgram(shaderProgram);
-	
+
 	const lutTextureLocation = gl.getUniformLocation(shaderProgram, "lut");
-	
+
 	/* Video Setup */
 	const video = document.getElementById(videoID);
 
