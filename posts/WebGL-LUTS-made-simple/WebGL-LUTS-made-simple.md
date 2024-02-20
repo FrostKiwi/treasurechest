@@ -15,20 +15,116 @@ image: thumb.jpg
 
 [Look-up-tables](https://en.wikipedia.org/wiki/Lookup_table), more commonly referred to as LUTs, are as old as Mathematics itself. The act of precalculating things into a row or table is nothing new. But in the realm of graphics programming, this simple act unlocks some incredibly creative techniques, which both artists and programmers found when faced with tough technical hurdles. It also just so happens, that these techniques map incredibly well to how GPUs work, with some ending up having zero performance impact.
 
-We'll embark on a small journey, which will take us from simple things like turning grayscale footage into color, to creating limitless variations of blood-lusting zombies, with many examples illustrated in WebGL along the way, which you can try out with your own videos or webcam. Though this article uses [WebGL](https://en.wikipedia.org/wiki/WebGL), the techniques shown apply to any other graphics programming context, be it [DirectX](https://en.wikipedia.org/wiki/DirectX), [OpenGL](https://en.wikipedia.org/wiki/OpenGL), [Vulkan](https://en.wikipedia.org/wiki/Vulkan), game engines like [Unity](https://en.wikipedia.org/wiki/Unity_(game_engine)), or plain scientific data visualization.
-
+We'll embark on a small journey, which will take us from simple things like turning grayscale footage into color, to creating limitless variations of blood-lusting zombies, with many interactive examples illustrated in WebGL along the way, that you can try out with your own videos or webcam. Though this article uses [WebGL](https://en.wikipedia.org/wiki/WebGL), the techniques shown apply to any other graphics programming context, be it [DirectX](https://en.wikipedia.org/wiki/DirectX), [OpenGL](https://en.wikipedia.org/wiki/OpenGL), [Vulkan](https://en.wikipedia.org/wiki/Vulkan), game engines like [Unity](https://en.wikipedia.org/wiki/Unity_(game_engine)), or plain scientific data visualization.
+## Humble yet powerful - the LUT
 <figure>
 	<video width="1400" height="480" style="width: unset; max-width: 100%" autoplay playsinline muted controls loop><source src="preview.mp4" type="video/mp4"></video>
 	<figcaption>Cold ice cream and hot tea. Left: Panasonic GH6, Right: TESTO 890 + 15°x11° Lens</figcaption>
 </figure>
 
 First, let's nail down the basics. We'll be creating and modifying the video above, though you may substitute the footage with your own at any point in the article. The video is a capture of two cameras, a [Panasonic GH6](https://www.dpreview.com/reviews/panasonic-lumix-dc-gh6-review) and a [TESTO 890](https://www.testo.com/en/testo-890/p/0563-0890-X1) thermal camera. I'm eating cold ice cream and drinking hot tea to stretch the temperatures on display.
+### The Setup
+We'll first start with the thermal camera footage. The output of the [thermal camera](https://en.wikipedia.org/wiki/Thermographic_camera) is a grayscale signal. Instead of this video, you may upload your own or activate the WebCam, which allows you to live stream from a thermal camera using OBS's various input methods and output a virtual camera. If you input a normal color signal, then just the red channel will be used.
 
-## The humble 1D LUT
-インターネットの[WebGL](https://ja.wikipedia.org/wiki/WebGL)でも、Unity というゲームエンジンでも灰色からカラーにするのことを説明します。
-情報は WebGL に対するけど、生の Direct X、Unity ゲームエンジン、現代的な PC、10 年間の古来スマホ、情報と実装仕方は同じです。
-PC、スマホ、Oculus、このページをどこでも有効です。
+<input type="file" id="fileInput" accept="video/*" style="display: none;" onchange="changeVideo(this)">
 
+<div style="width: 100%; display: flex; justify-content: space-around; padding-bottom: 8px"><button onclick="document.getElementById('fileInput').click();">Change Video</button><button onclick="startWebcam();">Connect Webcam</button></div>
+
+<video width="684" height="480" style="width: unset; max-width: 100%" playsinline muted controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video></div>
+<script src="videoSource.js"></script>
+
+Next we upload this footage to the graphics card using WebGL and redisplay it using a shader, which leaves the footage untouched. Each frame is transferred as a 2D texture to the GPU.
+
+<script  id="fragment_2" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-simple.fs" %}</script>
+
+<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_2"></canvas>
+<script>setupTri("canvas_2", "vertex", "fragment_2", "videoPlayer", null);</script>
+
+<blockquote>
+<details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+
+![image](screenshot_passthrough.jpg)
+
+</details>
+<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a href="video-simple.fs">video-simple.fs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/video-simple.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+
+```javascript
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
+```
+
+</details>
+</blockquote>
+
+<blockquote class="reaction"><div class="reaction_text">電子レンジのドアを開けた瞬間に、他の動画の部分が暗くなるね？</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+### Tinting
+
+私達は画面に見せるの前出力するピクセルを`1.0, 0.5, 0.0`というカラーと掛け算すると、動画はオレンジになります。
+
+<script  id="fragment_3" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}</script>
+
+<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_3"></canvas>
+
+<script>setupTri("canvas_3", "vertex", "fragment_3", "videoPlayer", null);</script>
+<blockquote>
+<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a href="video-orange.fs">video-orange.fs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+
+```javascript
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
+```
+
+</details>
+</blockquote>
+
+<blockquote class="reaction"><div class="reaction_text">忘れないで、それは<b>リアルタイム。</b></div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
+
+#### Valve Software's use of tinting
+
+<audio controls><source src="Tristan-Reidford.mp3" type="audio/mpeg"></audio>
+
+> **Tristan Reidford:** Usually each model in the game has its own unique texture maps painted specifically for that model, which give the object its surface colors and detail. To have a convincing variety of cars using this method would have required as many textures as varieties of car, plus multiple duplicates of the textures in different colors, which would have been far out of our allotted texture memory budget. So we had to find a more efficient way to bring about that same result. For example, the texture on this car is shared with 3 different car models distributed throughout the environment. In addition to this one color texture, there is also a 'mask' texture that allows each instance of the car's painted surfaces to be tinted a different color, without having to author a separate texture. So for the cost of two textures you can get four different car models in an unlimited variety of colors.
+
+<figure>
+	<img src="Left4Dead.jpg" alt="Screenshot: Left 4 Dead and its use of tinting the same car to get achieve new looks." />
+	<figcaption>Screenshot: Left 4 Dead and its use of tinting the same car to get achieve new looks.</figcaption>
+</figure>
+
+Note, that it's not just cars. Essentially everything in the [Source Engine](<https://en.wikipedia.org/wiki/Source_(game_engine)>) can be tinted.
+
+### The humble 1D LUT
+A 1D LUT is a simple array of numbers. In the context of graphics programming, this gets uploaded as a texture to the graphics.
 
 ### Camera 3D LUTs
 RGB Cube, where the cube X is Red, Y is Green, Blue is Z.
@@ -47,7 +143,7 @@ Some of them are even bought.
 
 <script>setupTri("canvas_6", "vertex", "fragment_6", "gh6footage", "3dlut");</script>
 <blockquote>
-<details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
@@ -55,7 +151,7 @@ Some of them are even bought.
 
 </details>
 <details>	
-<summary>WebGL Fragment シェーダー <a href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
+<summary>WebGL Fragment Shader <a href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}
@@ -84,7 +180,7 @@ version is wrong
 
 <script>setupTri("canvas_7", "vertex", "fragment_7", "gh6footage", "3dlutDavinci");</script>
 <blockquote>
-<details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
@@ -92,7 +188,7 @@ version is wrong
 
 </details>
 <details>	
-<summary>WebGL Fragment シェーダー <a href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
+<summary>WebGL Fragment Shader <a href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}
@@ -117,7 +213,7 @@ version is wrong
 
 <script>setupTri("canvas_8", "vertex", "fragment_8", "gh6footage", "3dlutDavinci_Film");</script>
 <blockquote>
-<details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
@@ -125,7 +221,7 @@ version is wrong
 
 </details>
 <details>	
-<summary>WebGL Fragment シェーダー <a href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
+<summary>WebGL Fragment Shader <a href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}
@@ -154,13 +250,6 @@ This approach is pretty awesome with its has zero performance impact, as the cal
 
 <blockquote class="reaction"><div class="reaction_text">再生されない場合、<b>再生を自分でスタートしてください</b>。色々なブラウザーがスクロールの時に動画をストップするから、手動でスタートしなければいけません。</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
-<input type="file" id="fileInput" accept="video/*" style="display: none;" onchange="changeVideo(this)">
-
-<div style="width: 100%; display: flex; justify-content: space-around; padding-bottom: 8px"><button onclick="document.getElementById('fileInput').click();">動画を変更</button><button onclick="startWebcam();">ウェブカメラを接続する</button></div>
-
-<video width="684" height="480" style="width: unset; max-width: 100%" playsinline muted controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video></div>
-<script src="videoSource.js"></script>
-
 動画の由来： https://arxiv.org/abs/2308.10991
 
 再生されない場合、**手動で上の動画をスタートしてください！** 私は`Autoplay`すると、スクロールの時にエネルギーの節約のために`Autoplay`の場合、デバイスによって、動画がストップされてしまう。
@@ -168,76 +257,6 @@ This approach is pretty awesome with its has zero performance impact, as the cal
 ### グラフィクスカードへ！
 
 今は、WebGL で一番シンプルなシェーダーで動画をグラフィクスチップにアップロードして、映っています。動画の内容はまだ同じですけど。下の部分で全部のコードを見えます。私達には大切なやつは「Fragment シェーダー」です。そのシェーダーはカラーに影響をする。
-
-<script  id="fragment_2" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-simple.fs" %}</script>
-
-<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_2"></canvas>
-
-<script>setupTri("canvas_2", "vertex", "fragment_2", "videoPlayer", null);</script>
-<blockquote>
-<details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
-
-```glsl
-{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
-```
-
-</details>
-<details>	
-<summary>WebGL Fragment シェーダー <a href="video-simple.fs">video-simple.fs</a></summary>
-
-```glsl
-{% rawFile "posts/WebGL-LUTS-made-simple/video-simple.fs" %}
-```
-
-</details>
-<details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
-
-```javascript
-{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
-```
-
-</details>
-</blockquote>
-
-<blockquote class="reaction"><div class="reaction_text">電子レンジのドアを開けた瞬間に、他の動画の部分が暗くなるね？</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
-
-### 動画を改造しましょう
-
-私達は画面に見せるの前出力するピクセルを`1.0, 0.5, 0.0`というカラーと掛け算すると、動画はオレンジになります。
-
-<script  id="fragment_3" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}</script>
-
-<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_3"></canvas>
-
-<script>setupTri("canvas_3", "vertex", "fragment_3", "videoPlayer", null);</script>
-<blockquote>
-<details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
-
-```glsl
-{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
-```
-
-</details>
-<details>	
-<summary>WebGL Fragment シェーダー <a href="video-orange.fs">video-orange.fs</a></summary>
-
-```glsl
-{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}
-```
-
-</details>
-<details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
-
-```javascript
-{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
-```
-
-</details>
-</blockquote>
-
-<blockquote class="reaction"><div class="reaction_text">忘れないで、それは<b>リアルタイム。</b></div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
 ### パーフォーマンス
 
@@ -292,7 +311,7 @@ Note, that it's not just cars. Essentially everything in the [Source Engine](<ht
 
 <script>setupTri("canvas_4", "vertex", "fragment_4", "videoPlayer", "lut");</script>
 <blockquote>
-<details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
@@ -300,7 +319,7 @@ Note, that it's not just cars. Essentially everything in the [Source Engine](<ht
 
 </details>
 <details>	
-<summary>WebGL Fragment シェーダー <a href="video-lut.fs">video-lut.fs</a></summary>
+<summary>WebGL Fragment Shader <a href="video-lut.fs">video-lut.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}
@@ -335,7 +354,7 @@ cividis developed it further: https://journals.plos.org/plosone/article?id=10.13
 
 <script>setupTri("canvas_5", "vertex", "fragment_5", "videoPlayer", "viridis");</script>
 <blockquote>
-<details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
@@ -343,7 +362,7 @@ cividis developed it further: https://journals.plos.org/plosone/article?id=10.13
 
 </details>
 <details>	
-<summary>WebGL Fragment シェーダー <a href="video-lut.fs">video-lut.fs</a></summary>
+<summary>WebGL Fragment Shader <a href="video-lut.fs">video-lut.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}
@@ -371,7 +390,7 @@ https://www.shadertoy.com/view/WlfXRN
 
 <script>setupTri("canvas_9", "vertex", "fragment_9", "videoPlayer", null);</script>
 <blockquote>
-<details><summary>WebGL Vertex シェーダー <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
@@ -379,7 +398,7 @@ https://www.shadertoy.com/view/WlfXRN
 
 </details>
 <details>	
-<summary>WebGL Fragment シェーダー <a href="video-lut_viridis.fs">video-lut_viridis.fs</a></summary>
+<summary>WebGL Fragment Shader <a href="video-lut_viridis.fs">video-lut_viridis.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-lut_viridis.fs" %}
