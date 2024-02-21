@@ -98,8 +98,10 @@ function setupTri(canvasId, vertexId, fragmentId, videoId, lut, buttonId) {
 	const video = document.getElementById(videoId);
 
 	if (video.paused) {
+		/* Fighting battery optimizations */
 		video.loop = true;
 		video.muted = true;
+		video.playsinline = true;
 		video.play();
 	}
 

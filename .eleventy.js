@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require('path');
 const CleanCSS = require("clean-css");
 const Image = require("@11ty/eleventy-img");
 const { execSync } = require('child_process');
@@ -77,6 +78,12 @@ module.exports = function (eleventyConfig) {
 	eleventyConfig.addShortcode("rawFile", (filename) => {
 		const bytesOfFile = fs.readFileSync(filename);
 		return bytesOfFile.toString();
+	});
+
+	eleventyConfig.addShortcode("listFilesInDirectory", (directoryPath) => {
+		const fullPath = path.join(__dirname, directoryPath);
+		const files = fs.readdirSync(fullPath);
+		return files.join("\n");
 	});
 
 	/* Thumbnail maker */

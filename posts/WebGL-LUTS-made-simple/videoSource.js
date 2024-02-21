@@ -1,8 +1,6 @@
 const videoPlayer = document.getElementById('videoPlayer');
 
-function changeVideo(input) {
-	var file = input.files[0];
-	var url = URL.createObjectURL(file);
+function changeVideoURL(url) {
 	var videoPlayer = document.getElementById('videoPlayer');
 
 	if (videoPlayer.srcObject) {
@@ -17,7 +15,16 @@ function changeVideo(input) {
 	}
 
 	videoPlayer.src = url;
+	videoPlayer.loop = true;
+	videoPlayer.muted = true;
+	videoPlayer.playsinline = true;
 	videoPlayer.play();
+}
+
+function changeVideo(input) {
+	var file = input.files[0];
+	var url = URL.createObjectURL(file);
+	changeVideoURL(url);
 }
 
 function startWebcam() {

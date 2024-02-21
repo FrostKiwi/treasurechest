@@ -138,7 +138,7 @@ Before we jump into how LUTs can help us, let's take a look a how we can manipul
 
 <blockquote class="reaction"><div class="reaction_text">This is about the difference tinting makes, not overall performance. Lot's left on the optimization table, like asynchronously loading the frames to a single-channel texture or processing on every frame, not display refresh</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-A similar vein, this was also talked about in the [recent blog post](https://rosenzweig.io/blog/conformant-gl46-on-the-m1.html) by [Alyssa Rosenzweig](https://rosenzweig.io) about her GPU reverse engineering project achieving proper standard conformant OpenGL Drivers on the Apple M1. About the performance implications of a specific additional operation she noted:
+A similar vein, it was also talked about in the [recent blog post](https://rosenzweig.io/blog/conformant-gl46-on-the-m1.html) by [Alyssa Rosenzweig](https://rosenzweig.io), about her GPU reverse engineering project achieving proper standard conformant OpenGL Drivers on the Apple M1. Regarding performance implications of a specific additional operation she noted:
 
 > **Alyssa Rosenzweig**: The difference should be small percentage-wise, as arithmetic is faster than memory. With thousands of threads running in parallel, the arithmetic cost may even be hidden by the load’s latency.
 
@@ -157,11 +157,23 @@ Let's take a look how this is used in the wild. As an example, we have [Valve So
 Note, that it's not just cars. Essentially everything in the [Source Engine](<https://en.wikipedia.org/wiki/Source_(game_engine)>) can be tinted.
 
 ## The LUT - Simple, yet powerful
-Now that we have gotten an idea of how we can interact and manipulate color in a graphics programming context, let's dive into how the LUT can elevate that. There core of the idea is this: Instead of defining how the colors are changed across their entire range, let's define what color range changes in what way.
+Now that we have gotten an idea of how we can interact and manipulate color in a graphics programming context, let's dive into how the LUT can elevate that. There core of the idea is this: Instead of defining how the colors are changed across their entire range, let's define what color range changes in what way. If you have replaced the above thermal image with an RGB video of your own, then just the red channel will be used going forward.
+
+The following examples make more sense in context of thermal camera footage, so you can click the following button to revert to it, if you wish.
+<div style="width: 100%; display: flex; justify-content: space-around; padding-bottom: 8px">
+<button onclick='changeVideoURL("bwvid.mp4")'>Reload thermal camera footage</button></div>
+
 ### The humble 1D LUT
 A 1D LUT is a simple array of numbers. According that array, we will color our gray video according to that array. In the context of graphics programming, this gets uploaded as a 1D-texture to the graphics card, where it is used to color the grayscale video.
 
-<img src="infernoLut.png" id="lut" style="width: 100%; height: 64px;">
+<img src="LUTs/inferno.png" id="lut" style="width: 100%; height: 64px;">
+
+<pre>{% listFilesInDirectory "posts/WebGL-LUTS-made-simple/LUTs" %}</pre>
+
+{% assign rawFilesList = listFilesInDirectory "posts/WebGL-LUTS-made-simple/LUTs" %}
+<pre>{{ rawFilesList }}</pre>
+
+{% assign files = listFilesInDirectory "posts/WebGL-LUTS-made-simple/LUTs" %}
 
 <script  id="fragment_4" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
@@ -212,7 +224,7 @@ RGB Cube, where the cube X is Red, Y is Green, Blue is Z.
 Some of them are even bought.
 
 <figure>
-	<video width="684" height="480" style="width: unset; max-width: 100%" autoplay playsinline muted controls loop id="gh6footage"><source src="Panasonic-Vlog.mp4" type="video/mp4"></video>
+	<video width="100%" height="480" autoplay playsinline muted controls loop id="gh6footage"><source src="Panasonic-Vlog.mp4" type="video/mp4"></video>
 	<figcaption>Panasonic GH6 with "V-Log" logarithmic profile</figcaption>
 </figure>
 
@@ -220,7 +232,7 @@ Some of them are even bought.
 
 <script  id="fragment_6" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}</script>
 
-<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_6"></canvas>
+<canvas width="100%" height="480" id="canvas_6"></canvas>
 
 <script>setupTri("canvas_6", "vertex", "fragment_6", "gh6footage", "3dlut");</script>
 <blockquote>
