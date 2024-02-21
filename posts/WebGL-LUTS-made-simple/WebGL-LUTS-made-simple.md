@@ -193,7 +193,7 @@ A 1D LUT is a simple array of numbers. According that array, we will color our g
 
 <canvas width="100%" height="480" id="canvas_4"></canvas>
 
-<script>setupTri("canvas_4", "vertex", "fragment_4", "videoPlayer", "lut", "lutSelector	");</script>
+<script>setupTri("canvas_4", "vertex", "fragment_4", "videoPlayer", "lut", "lutSelector")</script>
 <blockquote>
 <details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
@@ -555,7 +555,7 @@ https://www.shadertoy.com/view/WlfXRN
 
 <script  id="fragment_9" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut_viridis.fs" %}</script>
 
-<img src="viridis.png" style="width: 100%; height: 64px;">
+<img src="viridis_from_function.png" style="width: 100%; height: 64px;">
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_9"></canvas>
 
 <script>setupTri("canvas_9", "vertex", "fragment_9", "videoPlayer", null);</script>

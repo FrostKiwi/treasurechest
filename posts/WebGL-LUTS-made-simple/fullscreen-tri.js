@@ -139,10 +139,9 @@ function setupTri(canvasId, vertexId, fragmentId, videoId, lut, lutselect, butto
 			lutSelectElement.addEventListener('change', function () {
 				const newPath = lutSelectElement.value;
 				lutImg.onload = function () {
-					// This code will run after the image has finished loading
-					lutTextureInitialized = false; // Now we're sure the image is ready, update the texture
+					lutTextureInitialized = false;
 				};
-				lutImg.src = newPath; // Start loading the new image
+				lutImg.src = newPath;
 			});
 		}
 	}
