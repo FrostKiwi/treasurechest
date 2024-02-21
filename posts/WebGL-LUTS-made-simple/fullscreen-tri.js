@@ -3,7 +3,15 @@
 /* Helpers */
 function createAndCompileShader(gl, type, source, canvas) {
 	const shader = gl.createShader(type);
-	gl.shaderSource(shader, document.getElementById(source).text);
+	const element = document.getElementById(source);
+	let shaderSource;
+
+	if (element.tagName === 'SCRIPT')
+		shaderSource = element.text;
+	else
+		shaderSource = ace.edit(source).getValue();
+
+	gl.shaderSource(shader, shaderSource);
 	gl.compileShader(shader);
 	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
 		displayErrorMessage(canvas, gl.getShaderInfoLog(shader));
@@ -11,7 +19,6 @@ function createAndCompileShader(gl, type, source, canvas) {
 		displayErrorMessage(canvas, "");
 	return shader;
 }
-
 
 function displayErrorMessage(canvas, message) {
 	let errorElement = canvas.nextSibling;
@@ -48,27 +55,47 @@ function setupTexture(gl, target, source) {
 	return target;
 }
 
-function setupTri(canvasId, vertexId, fragmentId, videoID, lut) {
+function setupTri(canvasId, vertexId, fragmentId, videoId, lut, buttonId) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false });
 	const lutImg = document.getElementById(lut);
-	let lutTexture, videoTexture;
+	let lutTexture, videoTexture, shaderProgram;
 
 	/* Shaders */
-	const vertexShader = createAndCompileShader(gl, gl.VERTEX_SHADER, vertexId, canvas);
-	const fragmentShader = createAndCompileShader(gl, gl.FRAGMENT_SHADER, fragmentId, canvas);
+	function initializeShaders() {
+		const vertexShader = createAndCompileShader(gl, gl.VERTEX_SHADER, vertexId, canvas);
+		const fragmentShader = createAndCompileShader(gl, gl.FRAGMENT_SHADER, fragmentId, canvas);
 
-	const shaderProgram = gl.createProgram();
-	gl.attachShader(shaderProgram, vertexShader);
-	gl.attachShader(shaderProgram, fragmentShader);
-	gl.linkProgram(shaderProgram);
-	gl.useProgram(shaderProgram);
+		shaderProgram = gl.createProgram();
+		gl.attachShader(shaderProgram, vertexShader);
+		gl.attachShader(shaderProgram, fragmentShader);
+		gl.linkProgram(shaderProgram);
+
+		/* Clean-up */
+		gl.detachShader(shaderProgram, vertexShader);
+		gl.detachShader(shaderProgram, fragmentShader);
+		gl.deleteShader(vertexShader);
+		gl.deleteShader(fragmentShader);
+
+		gl.useProgram(shaderProgram);
+	}
+
+	initializeShaders();
 
 	const lutTextureLocation = gl.getUniformLocation(shaderProgram, "lut");
 
+	if (buttonId) {
+		const button = document.getElementById(buttonId);
+		button.addEventListener('click', function () {
+			if (shaderProgram)
+				gl.deleteProgram(shaderProgram);
+			initializeShaders();
+		});
+	}
+
 	/* Video Setup */
-	const video = document.getElementById(videoID);
+	const video = document.getElementById(videoId);
 
 	if (video.paused) {
 		video.loop = true;

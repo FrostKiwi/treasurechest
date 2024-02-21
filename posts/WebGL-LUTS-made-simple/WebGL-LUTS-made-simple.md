@@ -84,10 +84,10 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 
 私達は画面に見せるの前出力するピクセルを`1.0, 0.5, 0.0`というカラーと掛け算すると、動画はオレンジになります。
 
-<pre id="editor">{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}</pre>
+<pre id="tintingShader">{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}</pre>
 <script src="/ace/ace.js" type="text/javascript" charset="utf-8"></script>
 <script>
-    var editor = ace.edit("editor");
+    var editor = ace.edit("tintingShader");
     editor.setTheme("ace/theme/gruvbox_dark_hard");
     editor.session.setMode("ace/mode/glsl");
 	editor.session.setOptions({
@@ -102,13 +102,11 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
     })
 </script>
 
-<script id="fragment_3" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}</script>
-
-<div style="width: 100%; display: flex; justify-content: space-around; padding-bottom: 8px"><button onclick='document.getElementById("fragment_3").textContent = ace.edit("editor").getValue(); setupTri("canvas_3", "vertex", "fragment_3", "videoPlayer", null);'>Reload Shader</button></div>
+<div style="width: 100%; display: flex; justify-content: space-around; padding-bottom: 8px"><button id="shaderReload_3">Reload Shader</button></div>
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_3"></canvas>
 
-<script>setupTri("canvas_3", "vertex", "fragment_3", "videoPlayer", null);</script>
+<script>setupTri("canvas_3", "vertex", "tintingShader", "videoPlayer", null, "shaderReload_3");</script>
 <blockquote>
 <details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
