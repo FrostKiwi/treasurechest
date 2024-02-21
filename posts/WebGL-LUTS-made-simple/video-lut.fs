@@ -7,6 +7,6 @@ void main(void)
 {
 	/* We'll just take the red channel .r */
     float videoColor = texture2D(video, tex).r;
-    vec4 lutColor = texture2D(lut, vec2(videoColor, 0.5));
-    gl_FragColor = lutColor;
+    vec4 finalColor = texture2D(lut, vec2(videoColor, 0.5));
+    gl_FragColor = finalColor;
 }

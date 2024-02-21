@@ -29,7 +29,7 @@ First, let's nail down the basics. We'll be creating and modifying the video abo
 
 We'll first start with the thermal camera footage. The output of the [thermal camera](https://en.wikipedia.org/wiki/Thermographic_camera) is a grayscale video. Instead of this video, you may upload your own or activate the WebCam, which allows you to live stream from a thermal camera using OBS's various input methods and output a virtual camera.
 
-<blockquote class="reaction"><div class="reaction_text">No data leaves your device, all processing happens on the GPU. Feel free to use videos exposing your most intimate secrets.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">No data leaves your device, all processing happens on your GPU. Feel free to use videos exposing your most intimate secrets.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
 <input type="file" id="fileInput" accept="video/*" style="display: none;" onchange="changeVideo(this)">
 
@@ -80,6 +80,7 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 </details>
 </blockquote>
 
+Both the video and its WebGL rendition should be identical and playing in sync.
 ## Tinting
 Before we jump into how LUTs can help us, let's take a look a how we can manipulate this footage. The Fragment Shader below colors the image orange by multiplying the image with the color orange in line `21`. Coloring a texture that way is referred to as "tinting".
 
@@ -127,9 +128,9 @@ Before we jump into how LUTs can help us, let's take a look a how we can manipul
 </blockquote>
 
 ### Performance is free
-***Depending on the context***, the multiplication introduced by the tinting has zero performance impact. On a theoretical level, the multiplication has a cost associated with it, since the chip has to perform this multiplication at some point. But you will probably not be able to measure it, as the multiplication is affected by "[latency hiding](https://www2.eecs.berkeley.edu/Pubs/TechRpts/2016/EECS-2016-143.pdf)". The act, cost and latency of pushing the video though the graphics pipeline unlocks a lot of manipulations we get for free. We can rationalize this from multiple levels:
+***Depending on the context***, the multiplication introduced by the tinting has zero performance impact. On a theoretical level, the multiplication has a cost associated with it, since the chip has to perform this multiplication at some point. But you will probably not be able to measure it, as the multiplication is affected by "[latency hiding](https://www2.eecs.berkeley.edu/Pubs/TechRpts/2016/EECS-2016-143.pdf)". The act, cost and latency of pushing the video though the graphics pipeline unlocks a lot of manipulations we get for free this way. We can rationalize this from multiple levels:
 - Fetching the texture from memory takes way more time than a multiplication
-  - Even though the result depends on the texture tap, with multiple threads the multiplication can performed while waiting on the texture tap of the next one
+  - Even though the result depends on the texture tap, with multiple threads the multiplication can performed while waiting on the texture tap of another pixel
 - Depending on implementation of video decoding, the CPU has to upload each frame to the GPU
   - Transfers between CPU and GPU are very costly and take time
 - We are locked to the display's refresh rate
@@ -137,7 +138,7 @@ Before we jump into how LUTs can help us, let's take a look a how we can manipul
 
 <blockquote class="reaction"><div class="reaction_text">This is about the difference tinting makes, not overall performance. Lot's left on the optimization table, like asynchronously loading the frames to a single-channel texture or processing on every frame, not display refresh</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-A variation of this was also talked about in the [recent blog post](https://rosenzweig.io/blog/conformant-gl46-on-the-m1.html) by [Alyssa Rosenzweig](https://rosenzweig.io) about her GPU reverse engineering project getting proper standard conformant OpenGL Drivers on the Apple M1. About the performance implications of a specific additional operation she noted:
+A similar vein, this was also talked about in the [recent blog post](https://rosenzweig.io/blog/conformant-gl46-on-the-m1.html) by [Alyssa Rosenzweig](https://rosenzweig.io) about her GPU reverse engineering project achieving proper standard conformant OpenGL Drivers on the Apple M1. About the performance implications of a specific additional operation she noted:
 
 > **Alyssa Rosenzweig**: The difference should be small percentage-wise, as arithmetic is faster than memory. With thousands of threads running in parallel, the arithmetic cost may even be hidden by the load’s latency.
 
@@ -156,10 +157,56 @@ Let's take a look how this is used in the wild. As an example, we have [Valve So
 Note, that it's not just cars. Essentially everything in the [Source Engine](<https://en.wikipedia.org/wiki/Source_(game_engine)>) can be tinted.
 
 ## The LUT - Simple, yet powerful
-Now that we have gotten an idea how we can interact and manipulate color in a graphics programming context, let's dive into how the LUT can elevate that.
+Now that we have gotten an idea of how we can interact and manipulate color in a graphics programming context, let's dive into how the LUT can elevate that. There core of the idea is this: Instead of defining how the colors are changed across their entire range, let's define what color range changes in what way.
 ### The humble 1D LUT
-A 1D LUT is a simple array of numbers. In the context of graphics programming, this gets uploaded as a texture to the graphics.
+A 1D LUT is a simple array of numbers. According that array, we will color our gray video according to that array. In the context of graphics programming, this gets uploaded as a 1D-texture to the graphics card, where it is used to color the grayscale video.
+
+<img src="infernoLut.png" id="lut" style="width: 100%; height: 64px;">
+
+<script  id="fragment_4" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
+
+<canvas width="100%" height="480" id="canvas_4"></canvas>
+
+<script>setupTri("canvas_4", "vertex", "fragment_4", "videoPlayer", "lut");</script>
+<blockquote>
+<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a href="video-lut.fs">video-lut.fs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+
+```javascript
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
+```
+
+</details>
+</blockquote>
+
+ An here comes the neat part, looking at the fragment shader, we use the brightness of the video, which goes from `[0.0 - 1.0]` to index into the X-Axis of our 1D LUT, which also has texture coordinates corresponding to`[0.0 - 1.0]`, resulting in the expression `vec4 finalcolor = texture(lut, videoColor);`. In WebGL 1.0, we don't have 1D-Textures, so we use a 2D-Texture of 1px height. `vec4 finalColor = texture2D(lut, vec2(videoColor, 0.5));` Thus the resulting code actually needs the Y coordinate as well, neither of which particularly matters.
+
+The `0.0` black in the video is mapped to the color on the left and `1.0` white in the video is mapped to the color on the right, with all colors in between being assigned to their corresponding values.
+
+### Still performance free?
+The main concern comes from us creating something called a "dependant texture read". We are triggering one texture read based on the result of another. In graphics programming, a performance sin, as we eliminate a whole class of possible optimized paths, that graphics drivers consider.
+
+### Precalculating calculations
+Another use is in accelerating calculations. One such example is [Gamma](https://en.wikipedia.org/wiki/Gamma_correction). It contains [as Gamma 2.2, instead of the piece-wise curve](https://www.colour-science.org/posts/srgb-eotf-pure-gamma-22-or-piece-wise-function/)
+Especially older GPUs 
+
 ### Camera 3D LUTs
+As with the previous example, we can have three 1D LUTs for each color channel, so why would we even need a whole RGB cube?
 
 RGB Cube, where the cube X is Red, Y is Green, Blue is Z.
 Some of them are even bought.
@@ -331,45 +378,6 @@ Note, that it's not just cars. Essentially everything in the [Source Engine](<ht
 
 ですが、オレンジは比較的つまらんですので、「[LUT](https://ja.wikipedia.org/wiki/%E3%83%AB%E3%83%83%E3%82%AF%E3%82%A2%E3%83%83%E3%83%97%E3%83%86%E3%83%BC%E3%83%96%E3%83%AB)」という画像または表を使います。その画像は 1 次元の行です。あの画像の高さは 1px です。見えるように、下の画像が 1px の高さから 64px の高さにストレッチされます。
 
-<img src="infernoLut.png" id="lut" style="width: 100%; height: 64px;">
-
-ほしいカラーはをあの画像によって見せます。左は黒、右は白。黒は青になります、白は赤になります。
-
-<script  id="fragment_4" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
-
-<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_4"></canvas>
-
-<script>setupTri("canvas_4", "vertex", "fragment_4", "videoPlayer", "lut");</script>
-<blockquote>
-<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
-
-```glsl
-{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
-```
-
-</details>
-<details>	
-<summary>WebGL Fragment Shader <a href="video-lut.fs">video-lut.fs</a></summary>
-
-```glsl
-{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}
-```
-
-</details>
-<details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
-
-```javascript
-{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
-```
-
-</details>
-</blockquote>
-
-動画のグレイの輝度をを X 軸として使う。その X 軸で LUT の画像に見えます。黒、0、左は LUT の左のカラーになります。白、1、右は LUT の右のカラーになります。その方法でどこでも、何デバイスでもパーフォーマンスの無料の方法で画像をカラーリングします。
-
-<blockquote class="reaction"><div class="reaction_text">カラーリングをできました！</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
-
 ### カラーリングのおすすめ
 
 科学の世界は具体的なカラーリングのマップを定義した。「[Viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html)」というカラー。そのカラーを使うべきです。理由が多い、一番大切：色覚異常の人が温度が高いと温度が低いの場所をわかります。そして、虹のマップを黒白プリンターで印刷すると、温度が低いと温度が高いは黒と白として印刷されません。「Viridis」なら、黒白プリンターで印刷すると、温度が低い場所はいつもくらい、温度が高い場所はいつも眩しい。
@@ -410,6 +418,8 @@ cividis developed it further: https://journals.plos.org/plosone/article?id=10.13
 </blockquote>
 
 ### Still performance free?
+Matt Zucker
+https://mzucker.github.io/
 
 https://www.shadertoy.com/view/WlfXRN
 
