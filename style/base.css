@@ -358,3 +358,10 @@ table.contact a {
 table.contact h3 {
 	margin: 0px;
 }
+
+.center-child {
+	width: 100%;
+	display: flex;
+	justify-content: space-around;
+	padding-bottom: 8px;
+}

@@ -80,12 +80,6 @@ module.exports = function (eleventyConfig) {
 		return bytesOfFile.toString();
 	});
 
-	eleventyConfig.addShortcode("listFilesInDirectory", (directoryPath) => {
-		const fullPath = path.join(__dirname, directoryPath);
-		const files = fs.readdirSync(fullPath);
-		return files.join("\n");
-	});
-
 	/* Thumbnail maker */
 	eleventyConfig.addCollection("thumbnail", async function (collectionApi) {
 		// Get all posts

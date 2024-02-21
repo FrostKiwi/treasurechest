@@ -40,7 +40,6 @@ function displayErrorMessage(canvas, message) {
 	}
 }
 
-
 function setupTexture(gl, target, source) {
 	gl.deleteTexture(target);
 	target = gl.createTexture();
@@ -55,7 +54,7 @@ function setupTexture(gl, target, source) {
 	return target;
 }
 
-function setupTri(canvasId, vertexId, fragmentId, videoId, lut, buttonId) {
+function setupTri(canvasId, vertexId, fragmentId, videoId, lut, lutselect, buttonId) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false });
@@ -131,6 +130,20 @@ function setupTri(canvasId, vertexId, fragmentId, videoId, lut, buttonId) {
 				gl.bindTexture(gl.TEXTURE_2D, lutTexture);
 				gl.uniform1i(lutTextureLocation, 1);
 			}
+		}
+	}
+
+	if (lutselect) {
+		const lutSelectElement = document.getElementById(lutselect);
+		if (lutSelectElement) {
+			lutSelectElement.addEventListener('change', function () {
+				const newPath = lutSelectElement.value;
+				lutImg.onload = function () {
+					// This code will run after the image has finished loading
+					lutTextureInitialized = false; // Now we're sure the image is ready, update the texture
+				};
+				lutImg.src = newPath; // Start loading the new image
+			});
 		}
 	}
 
