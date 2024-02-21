@@ -18,8 +18,6 @@ image: thumb.jpg
 
 We'll embark on a small journey, which will take us from simple things like turning grayscale footage into color, to creating limitless variations of blood-lusting zombies, with many interactive examples illustrated in WebGL along the way, that you can try out with your own videos or webcam. Though this article uses [WebGL](https://en.wikipedia.org/wiki/WebGL), the techniques shown apply to any other graphics programming context, be it [DirectX](https://en.wikipedia.org/wiki/DirectX), [OpenGL](https://en.wikipedia.org/wiki/OpenGL), [Vulkan](https://en.wikipedia.org/wiki/Vulkan), game engines like [Unity](<https://en.wikipedia.org/wiki/Unity_(game_engine)>), or plain scientific data visualization.
 
-## Humble yet powerful - the LUT
-
 <figure>
 	<video width="1400" height="480" style="width: unset; max-width: 100%" autoplay playsinline muted controls loop><source src="preview.mp4" type="video/mp4"></video>
 	<figcaption>Cold ice cream and hot tea. Left: Panasonic GH6, Right: TESTO 890 + 15°x11° Lens</figcaption>
@@ -27,23 +25,27 @@ We'll embark on a small journey, which will take us from simple things like turn
 
 First, let's nail down the basics. We'll be creating and modifying the video above, though you may substitute the footage with your own at any point in the article. The video is a capture of two cameras, a [Panasonic GH6](https://www.dpreview.com/reviews/panasonic-lumix-dc-gh6-review) and a [TESTO 890](https://www.testo.com/en/testo-890/p/0563-0890-X1) thermal camera. I'm eating cold ice cream and drinking hot tea to stretch the temperatures on display.
 
-### The Setup
+## The Setup
 
-We'll first start with the thermal camera footage. The output of the [thermal camera](https://en.wikipedia.org/wiki/Thermographic_camera) is a grayscale signal. Instead of this video, you may upload your own or activate the WebCam, which allows you to live stream from a thermal camera using OBS's various input methods and output a virtual camera. If you input a normal color signal, then just the red channel will be used.
+We'll first start with the thermal camera footage. The output of the [thermal camera](https://en.wikipedia.org/wiki/Thermographic_camera) is a grayscale video. Instead of this video, you may upload your own or activate the WebCam, which allows you to live stream from a thermal camera using OBS's various input methods and output a virtual camera.
+
+<blockquote class="reaction"><div class="reaction_text">No data leaves your device, all processing happens on the GPU. Feel free to use videos exposing your most intimate secrets.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
 <input type="file" id="fileInput" accept="video/*" style="display: none;" onchange="changeVideo(this)">
 
-<div style="width: 100%; display: flex; justify-content: space-around; padding-bottom: 8px"><button onclick="document.getElementById('fileInput').click();">Change Video</button><button onclick="startWebcam();">Connect Webcam</button></div>
+<div style="width: 100%; display: flex; justify-content: space-around; padding-bottom: 8px"><button onclick="document.getElementById('fileInput').click();">Upload Video</button><button onclick="startWebcam();">Connect Webcam</button></div>
 
-<video width="684" height="480" style="width: unset; max-width: 100%" playsinline muted controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video></div>
+<video width="100%" height="480" playsinline muted controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video></div>
 
 <script src="videoSource.js"></script>
 
-Next we upload this footage to the graphics card using WebGL and redisplay it using a shader, which leaves the footage untouched. Each frame is transferred as a 2D texture to the GPU.
+Next we upload this footage to the graphics card using WebGL and redisplay it using a [shader](https://learnopengl.com/Getting-started/Hello-Triangle), which leaves the footage untouched. Each frame is transferred as a 2D [texture](https://learnopengl.com/Getting-started/Textures) to the GPU. We haven't actually done anything visual yet, but now a have graphics pipeline, which allows us to manipulate the video data in realtime. From here on out, we are mainly interested in the "[Fragment Shader](https://learnopengl.com/Getting-started/Hello-Triangle)". This is the piece of code that runs per pixel of the video to determine its final color.
+
+<blockquote class="reaction"><div class="reaction_text">I'm hardcore simplifying here. Technically there are many shader stages, the fragment shader runs per <a href="https://www.khronos.org/opengl/wiki/Fragment">fragment</a> of the output resolution not per pixel of the input, etc.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
 <script  id="fragment_2" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-simple.fs" %}</script>
 
-<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_2"></canvas>
+<canvas width="100%" height="480" id="canvas_2"></canvas>
 
 <script>setupTri("canvas_2", "vertex", "fragment_2", "videoPlayer", null);</script>
 
@@ -78,11 +80,10 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 </details>
 </blockquote>
 
-<blockquote class="reaction"><div class="reaction_text">電子レンジのドアを開けた瞬間に、他の動画の部分が暗くなるね？</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+## Tinting
+Before we jump into how LUTs can help us, let's take a look a how we can manipulate this footage. The Fragment Shader below colors the image orange by multiplying the image with the color orange in line `21`. Coloring a texture that way is referred to as "tinting".
 
-### Tinting
-
-私達は画面に見せるの前出力するピクセルを`1.0, 0.5, 0.0`というカラーと掛け算すると、動画はオレンジになります。
+`vec3 finalColor = videoColor * vec3(1.0, 0.5, 0.0);` is the line that performs this transformation. `vec3(1.0, 0.5, 0.0)` is the color orange in RGB. Try changing this line and clicking "**Reload Shader**" to get a feel for how this works. Also try out different operations, like addition `+`, division `/` etc.
 
 <pre id="tintingShader">{% rawFile "posts/WebGL-LUTS-made-simple/video-orange.fs" %}</pre>
 <script src="/ace/ace.js" type="text/javascript" charset="utf-8"></script>
@@ -104,7 +105,7 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 
 <div style="width: 100%; display: flex; justify-content: space-around; padding-bottom: 8px"><button id="shaderReload_3">Reload Shader</button></div>
 
-<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_3"></canvas>
+<canvas width="100%" height="480" id="canvas_3"></canvas>
 
 <script>setupTri("canvas_3", "vertex", "tintingShader", "videoPlayer", null, "shaderReload_3");</script>
 <blockquote>
@@ -125,9 +126,23 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 </details>
 </blockquote>
 
-<blockquote class="reaction"><div class="reaction_text">忘れないで、それは<b>リアルタイム。</b></div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
+### Performance is free
+***Depending on the context***, the multiplication introduced by the tinting has zero performance impact. On a theoretical level, the multiplication has a cost associated with it, since the chip has to perform this multiplication at some point. But you will probably not be able to measure it, as the multiplication is affected by "[latency hiding](https://www2.eecs.berkeley.edu/Pubs/TechRpts/2016/EECS-2016-143.pdf)". The act, cost and latency of pushing the video though the graphics pipeline unlocks a lot of manipulations we get for free. We can rationalize this from multiple levels:
+- Fetching the texture from memory takes way more time than a multiplication
+  - Even though the result depends on the texture tap, with multiple threads the multiplication can performed while waiting on the texture tap of the next one
+- Depending on implementation of video decoding, the CPU has to upload each frame to the GPU
+  - Transfers between CPU and GPU are very costly and take time
+- We are locked to the display's refresh rate
+  - It's a bit mental gymnastics, but considering that, anything is "free" as long as we are faster than the display
 
-#### Valve Software's use of tinting
+<blockquote class="reaction"><div class="reaction_text">This is about the difference tinting makes, not overall performance. Lot's left on the optimization table, like asynchronously loading the frames to a single-channel texture or processing on every frame, not display refresh</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+A variation of this was also talked about in the [recent blog post](https://rosenzweig.io/blog/conformant-gl46-on-the-m1.html) by [Alyssa Rosenzweig](https://rosenzweig.io) about her GPU reverse engineering project getting proper standard conformant OpenGL Drivers on the Apple M1. About the performance implications of a specific additional operation she noted:
+
+> **Alyssa Rosenzweig**: The difference should be small percentage-wise, as arithmetic is faster than memory. With thousands of threads running in parallel, the arithmetic cost may even be hidden by the load’s latency.
+
+### Valve Software's use of tinting
+Let's take a look how this is used in the wild. As an example, we have [Valve Software](https://www.valvesoftware.com/)'s [Left 4 Dead](https://en.wikipedia.org/wiki/Left_4_Dead). The in-game developer commentary feature unlocks much shared wisdom form artists and programmers alike. Here is the audio log of developer [Tristan Reidford](https://www.linkedin.com/in/tristan-reidford-b8474a2/) explaining how they utilized tinting to create car variations. In particular they use one extra texture channel to determine extra tinting regions, allowing one to use 2 colors to tint certain regions of the 3D model in a different color.
 
 <audio controls><source src="Tristan-Reidford.mp3" type="audio/mpeg"></audio>
 
@@ -140,10 +155,10 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 
 Note, that it's not just cars. Essentially everything in the [Source Engine](<https://en.wikipedia.org/wiki/Source_(game_engine)>) can be tinted.
 
+## The LUT - Simple, yet powerful
+Now that we have gotten an idea how we can interact and manipulate color in a graphics programming context, let's dive into how the LUT can elevate that.
 ### The humble 1D LUT
-
 A 1D LUT is a simple array of numbers. In the context of graphics programming, this gets uploaded as a texture to the graphics.
-
 ### Camera 3D LUTs
 
 RGB Cube, where the cube X is Red, Y is Green, Blue is Z.
@@ -286,10 +301,6 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 ```
 
 <blockquote class="reaction"><div class="reaction_text">「無料」という単語はちょっと違うかも。計算時間は同じから、「測定ができない」はもっといいだろう。ですが、固定なグラフィックスパイプラインの計算時間から見ると、色々な計算が文脈のよって、計算時間に影響しない。だから、この文脈で、無料。</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
-
-Mention https://rosenzweig.io/blog/conformant-gl46-on-the-m1.html
-
-> The difference should be small percentage-wise, as arithmetic is faster than memory. With thousands of threads running in parallel, the arithmetic cost may even be hidden by the load’s latency.
 
 #### Valve Software's genius in optimizing
 

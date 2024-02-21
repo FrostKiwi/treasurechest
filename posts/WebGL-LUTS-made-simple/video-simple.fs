@@ -10,11 +10,10 @@ uniform sampler2D video;
 
 void main(void)
 {
-	/* We'll just take the red channel, so map .rrr to .rgb. The output of a
-	   frament shader in WebGL 1.0 is always RGBA, so the mapping is needed.
-	   Specifically this is called "Swizzling". */
-	vec3 videoColor = texture2D(video, tex).rrr;
-	/* Our final color. In WebGL 1.0 this output is always RGBA and always named
-	   "gl_FragColor" */
+	/* The texture read, also called "Texture Tap" with the coordinate for
+	   the current pixel. */
+	vec3 videoColor = texture2D(video, tex).rgb;
+	/* Our final color. In WebGL 1.0 this output is always RGBA and always
+	   named "gl_FragColor" */
 	gl_FragColor = vec4(videoColor, 1.0);
 }

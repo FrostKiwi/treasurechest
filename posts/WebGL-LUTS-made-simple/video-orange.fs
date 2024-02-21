@@ -10,10 +10,9 @@ uniform sampler2D video;
 
 void main(void)
 {
-	/* We'll just take the red channel, so map .rrr to .rgb. The output of a
-	   frament shader in WebGL 1.0 is always RGBA, so the mapping is needed.
-	   Specifically this is called "Swizzling". */
-	vec3 videoColor = texture2D(video, tex).rrr;
+	/* The texture read, also called "Texture Tap" with the coordinate for
+	   the current pixel. */
+	vec3 videoColor = texture2D(video, tex).rgb;
 
 	/* Here is where the tinting happens. We multiply with (1.0, 0.5, 0.0),
 	   which is orange (100% Red, 50% Green, 0% Blue). White becomes Orange,
