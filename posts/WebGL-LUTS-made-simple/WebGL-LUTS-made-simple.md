@@ -263,7 +263,7 @@ cividis developed it further: https://journals.plos.org/plosone/article?id=10.13
 </details>
 </blockquote>
 
-### Still performance free?
+#### Still performance free?
 
 The main concern comes from us creating something called a "dependant texture read". We are triggering one texture read based on the result of another. In graphics programming, a performance sin, as we eliminate a whole class of possible optimized paths, that graphics drivers consider.
 
@@ -304,7 +304,7 @@ https://www.shadertoy.com/view/WlfXRN
 </details>
 </blockquote>
 
-### Precalculating calculations
+#### Precalculating calculations
 
 Another use is in accelerating calculations. One such example is [Gamma](https://en.wikipedia.org/wiki/Gamma_correction). It contains [as Gamma 2.2, instead of the piece-wise curve](https://www.colour-science.org/posts/srgb-eotf-pure-gamma-22-or-piece-wise-function/)
 Especially older GPUs
