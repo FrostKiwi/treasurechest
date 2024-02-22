@@ -176,14 +176,14 @@ A 1D LUT is a simple array of numbers. According that array, we will color our g
 
 <div class="center-child">
 <select id="lutSelector">
-    <option value="/assets/LUTs/PerceptuallyUniform/inferno.png">Inferno - 256 wide</option>
-    <option value="/assets/LUTs/InfernoSizes/inferno128.png">Inferno - 128 wide</option>
-    <option value="/assets/LUTs/InfernoSizes/inferno64.png">Inferno - 64 wide</option>
-    <option value="/assets/LUTs/InfernoSizes/inferno32.png">Inferno - 32 wide</option>
-    <option value="/assets/LUTs/InfernoSizes/inferno16.png">Inferno - 16 wide</option>
-    <option value="/assets/LUTs/InfernoSizes/inferno8.png">Inferno - 8 wide</option>
-    <option value="/assets/LUTs/InfernoSizes/inferno4.png">Inferno - 4 wide</option>
-    <option value="/assets/LUTs/InfernoSizes/inferno2.png">Inferno - 2 wide</option>
+    <option value="/assets/LUTs/PerceptuallyUniform/inferno.png">Inferno - 256px wide</option>
+    <option value="/assets/LUTs/InfernoSizes/inferno128.png">Inferno - 128px wide</option>
+    <option value="/assets/LUTs/InfernoSizes/inferno64.png">Inferno - 64px wide</option>
+    <option value="/assets/LUTs/InfernoSizes/inferno32.png">Inferno - 32px wide</option>
+    <option value="/assets/LUTs/InfernoSizes/inferno16.png">Inferno - 16px wide</option>
+    <option value="/assets/LUTs/InfernoSizes/inferno8.png">Inferno - 8px wide</option>
+    <option value="/assets/LUTs/InfernoSizes/inferno4.png">Inferno - 4px wide</option>
+    <option value="/assets/LUTs/InfernoSizes/inferno2.png">Inferno - 2px wide</option>
 </select>
 </div>
 
@@ -224,9 +224,12 @@ An here comes the neat part, looking at the fragment shader, we use the brightne
 
 The `0.0` black in the video is mapped to the color on the left and `1.0` white in the video is mapped to the color on the right, with all colors in between being assigned to their corresponding values.
 
-科学の世界は具体的なカラーリングのマップを定義した。「[Viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html)」というカラー。そのカラーを使うべきです。理由が多い、一番大切：色覚異常の人が温度が高いと温度が低いの場所をわかります。そして、虹のマップを黒白プリンターで印刷すると、温度が低いと温度が高いは黒と白として印刷されません。「Viridis」なら、黒白プリンターで印刷すると、温度が低い場所はいつもくらい、温度が高い場所はいつも眩しい。
+What makes this map so well to the GPU, is that on GPUs we get bilinear filtering for free when performing texture reads. So if our 8-bits per channel video has 256 distinct shades of grey, but our 1D-Lut is only 32 pixels wide, then the texture access in between two pixels gets linearly interpolated automatically. In the above selection box you can try setting the 1D Lut to different sizes and compare.
 
-cividis developed it further: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0199239#pone.0199239.ref001
+<blockquote class="reaction"><div class="reaction_text">Incredible how close the 256 pixel wide and very colorful gradient is reproduced, with only 8 pixels worth of information!</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
+
+#### So many colors
+Here is every single colormap that [matlibplot](https://matplotlib.org/) supports, exported as a 1D LUT. Scroll through all of them and choose your favorite!
 
 {% rawFile "posts/WebGL-LUTS-made-simple/select.html" %}
 
@@ -263,9 +266,17 @@ cividis developed it further: https://journals.plos.org/plosone/article?id=10.13
 </details>
 </blockquote>
 
-#### Still performance free?
+Sike! It's a trick question. You don't get to choose. You may think, that you should choose what ever looks best, but in matters of taste, the customer *isn't* always right.
 
-The main concern comes from us creating something called a "dependant texture read". We are triggering one texture read based on the result of another. In graphics programming, a performance sin, as we eliminate a whole class of possible optimized paths, that graphics drivers consider.
+<img src="salty.jpg" style="max-height: 300px">
+
+Unless your data has specific structure, there is actually one colormap type that you should be using or basing your color settings on - "Perceptually Uniform", like the [viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html) family of colormaps. We won't dive into such a deep topic here, but the main points are this: If you choose from the Perceptually Uniform ones, then printing your color in black and white will still have the dark parts dark and bright parts bright, which is not a given with colorful options like jet. But most importantly, people with color blindness will still be able to interpret your data correctly.
+
+Reasons as to why presented here by [Stefan van der Walt](https://github.com/stefanv) and [Nathaniel J. Smith](https://github.com/njsmith).
+<div class="center-child"><iframe width="560" height="315" src="https://www.youtube.com/embed/xAoljeRJ3lU?si=vxcupZ7q-JhcCXFm&amp;start=50" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+
+#### Still performance free?
+We talked about tinting being essentially performance free. The main concern comes from us creating something called a "dependant texture read". We are triggering one texture read based on the result of another. In graphics programming, a performance sin, as we eliminate a whole class of possible optimized paths, that graphics drivers consider.
 
 Matt Zucker
 https://mzucker.github.io/
