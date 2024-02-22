@@ -270,22 +270,26 @@ Sike! It's a trick question. You don't get to choose. You may think, that you sh
 
 <img src="salty.jpg" style="max-height: 300px">
 
-Unless your data has specific structure, there is actually one colormap type that you should be using or basing your color settings on - "Perceptually Uniform", like the [viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html) family of colormaps. We won't dive into such a deep topic here, but the main points are this: If you choose from the Perceptually Uniform ones, then printing your color in black and white will still have the dark parts dark and bright parts bright, which is not a given with colorful options like jet. But most importantly, people with color blindness will still be able to interpret your data correctly.
+Unless your data has specific structure, there is actually one colormap type that you should be using or basing your color settings on - "Perceptually Uniform", like the [viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html) family of colormaps. We won't dive into such a deep topic here, but the main points are this:
+- If you choose from the Perceptually Uniform ones, then printing your data in black and white will still have the dark parts dark and bright parts bright
+  - This is not a given with colorful options like jet, which modify mainly just the hue whilst ignoring perceived lightness
+- People with color blindness will still be able to interpret your data correctly
 
-Reasons as to why presented here by [Stefan van der Walt](https://github.com/stefanv) and [Nathaniel J. Smith](https://github.com/njsmith).
+Reasons as for this and why other colormaps are dangerous for judging critical information are presented here by [Stefan van der Walt](https://github.com/stefanv) and [Nathaniel J. Smith](https://github.com/njsmith).
 <div class="center-child"><iframe width="560" height="315" src="https://www.youtube.com/embed/xAoljeRJ3lU?si=vxcupZ7q-JhcCXFm&amp;start=50" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
 
 #### Still performance free?
-We talked about tinting being essentially performance free. The main concern comes from us creating something called a "dependant texture read". We are triggering one texture read based on the result of another. In graphics programming, a performance sin, as we eliminate a whole class of possible optimized paths, that graphics drivers consider.
+We talked about tinting being essentially performance free. When talking about (small 1D-) LUTs, it gets complicated, though the answer is still probably yes. The main concern comes from us creating something called a "dependant texture read". We are triggering one texture read based on the result of another. In graphics programming, a performance sin, as we eliminate a whole class of possible optimized paths, that graphics drivers consider.
 
-Matt Zucker
-https://mzucker.github.io/
+GPUs have textures caches, which our LUT will have no problem fitting into. To measure things like this properly, we required advanced debugging tools, which are platform specific. This really 
+There is (Nvidia NSight)[https://developer.nvidia.com/blog/identifying-shader-limiters-with-the-shader-profiler-in-nvidia-nsight-graphics/]
 
-https://www.shadertoy.com/view/WlfXRN
+You can perform polynomial approximations of a LUT and thus side-step all possible texture reads. The next WebGL fragment shader features a polynomial approximation of viridis. It was created by [Matt Zucker](https://mzucker.github.io/), available on [ShaderToy](https://www.shadertoy.com/view/WlfXRN), including polynomials for other LUTs. Compare both the original and the approximation in the following two LUT stripes. Remarkably close.
 
 <script  id="fragment_9" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut_viridis.fs" %}</script>
 
-<img src="viridis_from_function.png" style="width: 100%; height: 64px;">
+<img src="/assets/LUTs/PerceptuallyUniform/viridis.png" style="width: 100%; height: 32px; margin-bottom: 8px">
+<img src="viridis_from_function.png" style="width: 100%; height: 32px;">
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_9"></canvas>
 
 <script>setupTri("canvas_9", "vertex", "fragment_9", "videoPlayer", null);</script>
@@ -314,6 +318,23 @@ https://www.shadertoy.com/view/WlfXRN
 
 </details>
 </blockquote>
+
+The resulting shader function performs a bunch of multiplies and adds `c0+t*(c1+t*(c2+t*(c3+t*(c4+t*(c5+t*c6)))));` to get the color, instead of the texture lookup. This is a prime candidate of being optimized by the GPU into a few [Fused Multiply-Add (FMA)](https://en.wikipedia.org/wiki/Multiply%E2%80%93accumulate_operation#Fused_multiply%E2%80%93add) instructions. Whether or not this is actually faster, is a tough to judge without deep platform specific analysis.
+<blockquote class="reaction"><div class="reaction_text">Saves you from handling the LUT texture, quite the time saver!</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
+
+#### Diversity for Zombies
+Let's take a look at how far this technique can be stretched to unlock new ways to express oneself. This time we are looking at the sequel [Left 4 Dead 2](https://en.wikipedia.org/wiki/Left_4_Dead_2). Here is [Bronwen Grimes](http://www.bronwengrimes.com) explaining how Valve Software achieved different color variations of different zombie parts, which simple tinting couldn't deliver, due to it not affecting luminosity.
+
+<figure>
+	<video width="960" height="540" controls><source src="left4dead_Gradients.mp4" type="video/mp4"></video>
+	<figcaption>Video: Creating Zombie variation using gradient ramps
+	<br>
+	Source: Excerpt from <a href="https://www.gdcvault.com/play/1012264/Shading-a-Bigger-Better-Sequel">"Shading a Bigger, Better Sequel: Techniques in Left 4 Dead 2"</a><br>GDC 2010 talk by <a href="http://www.bronwengrimes.com">Bronwen Grimes</a>
+	</figcaption>
+</figure>
+
+Checkout the [full talk](https://www.gdcvault.com/play/1012264/Shading-a-Bigger-Better-Sequel) on the GDC page, if you are interested such techniques.
+<blockquote class="reaction"><div class="reaction_text">The creativity of them using "Exclusive Masking" blew me away. First time I learned about it. Two textures in one channel, set to specific ranges<br>(Texture 1: 0-128, Texture 2: 128-256) at the cost of color precision</div><img class="kiwi" src="/assets/kiwis/love.svg"></blockquote>
 
 #### Precalculating calculations
 
@@ -466,27 +487,6 @@ vec3 finaruKaraa = vec3(videoColor.rgb) * vec3(1.0, 0.5, 0.0);
 ```
 
 <blockquote class="reaction"><div class="reaction_text">「無料」という単語はちょっと違うかも。計算時間は同じから、「測定ができない」はもっといいだろう。ですが、固定なグラフィックスパイプラインの計算時間から見ると、色々な計算が文脈のよって、計算時間に影響しない。だから、この文脈で、無料。</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
-
-#### Valve Software's genius in optimizing
-
-<audio controls><source src="Tristan-Reidford.mp3" type="audio/mpeg"></audio>
-
-> **Tristan Reidford:** Usually each model in the game has its own unique texture maps painted specifically for that model, which give the object its surface colors and detail. To have a convincing variety of cars using this method would have required as many textures as varieties of car, plus multiple duplicates of the textures in different colors, which would have been far out of our allotted texture memory budget. So we had to find a more efficient way to bring about that same result. For example, the texture on this car is shared with 3 different car models distributed throughout the environment. In addition to this one color texture, there is also a 'mask' texture that allows each instance of the car's painted surfaces to be tinted a different color, without having to author a separate texture. So for the cost of two textures you can get four different car models in an unlimited variety of colors.
-
-<figure>
-	<img src="Left4Dead.jpg" alt="Screenshot: Left4Dead and its use tinting cars the same material to get achieve new looks." />
-	<figcaption>Screenshot: Left4Dead and its use tinting cars the same material to get achieve new looks.</figcaption>
-</figure>
-
-Note, that it's not just cars. Essentially everything in the [Source Engine](<https://en.wikipedia.org/wiki/Source_(game_engine)>) can be tinted.
-
-<figure>
-	<video width="960" height="540" controls><source src="left4dead_Gradients.mp4" type="video/mp4"></video>
-	<figcaption>Video: Creating Zombie variation using gradient ramps
-	<br>
-	Source: Excerpt from <a href="https://www.gdcvault.com/play/1012264/Shading-a-Bigger-Better-Sequel">"Shading a Bigger, Better Sequel: Techniques in Left 4 Dead 2"</a>, GDC 2010 talk by [Bronwen Grimes](http://www.bronwengrimes.com)
-	</figcaption>
-</figure>
 
 [OpenLara DIV](https://github.com/XProger/OpenLara/commit/e9ba3a278499fd61768a6ab148b72d9f7d5d5828)
 
