@@ -176,18 +176,18 @@ A 1D LUT is a simple array of numbers. According that array, we will color our g
 
 <div class="center-child">
 <select id="lutSelector">
-    <option value="LUTs/inferno.png">Inferno - 256 wide</option>
-    <option value="LUTs/inferno128.png">Inferno - 128 wide</option>
-    <option value="LUTs/inferno64.png">Inferno - 64 wide</option>
-    <option value="LUTs/inferno32.png">Inferno - 32 wide</option>
-    <option value="LUTs/inferno16.png">Inferno - 16 wide</option>
-    <option value="LUTs/inferno8.png">Inferno - 8 wide</option>
-    <option value="LUTs/inferno4.png">Inferno - 4 wide</option>
-    <option value="LUTs/inferno2.png">Inferno - 2 wide</option>
+    <option value="/assets/LUTs/PerceptuallyUniform/inferno.png">Inferno - 256 wide</option>
+    <option value="/assets/LUTs/InfernoSizes/inferno128.png">Inferno - 128 wide</option>
+    <option value="/assets/LUTs/InfernoSizes/inferno64.png">Inferno - 64 wide</option>
+    <option value="/assets/LUTs/InfernoSizes/inferno32.png">Inferno - 32 wide</option>
+    <option value="/assets/LUTs/InfernoSizes/inferno16.png">Inferno - 16 wide</option>
+    <option value="/assets/LUTs/InfernoSizes/inferno8.png">Inferno - 8 wide</option>
+    <option value="/assets/LUTs/InfernoSizes/inferno4.png">Inferno - 4 wide</option>
+    <option value="/assets/LUTs/InfernoSizes/inferno2.png">Inferno - 2 wide</option>
 </select>
 </div>
 
-<img src="LUTs/inferno.png" id="lut" style="width: 100%; height: 64px;">
+<img src="/assets/LUTs/PerceptuallyUniform/inferno.png" id="lut" style="width: 100%; height: 64px;">
 
 <script  id="fragment_4" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
@@ -224,9 +224,85 @@ An here comes the neat part, looking at the fragment shader, we use the brightne
 
 The `0.0` black in the video is mapped to the color on the left and `1.0` white in the video is mapped to the color on the right, with all colors in between being assigned to their corresponding values.
 
+科学の世界は具体的なカラーリングのマップを定義した。「[Viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html)」というカラー。そのカラーを使うべきです。理由が多い、一番大切：色覚異常の人が温度が高いと温度が低いの場所をわかります。そして、虹のマップを黒白プリンターで印刷すると、温度が低いと温度が高いは黒と白として印刷されません。「Viridis」なら、黒白プリンターで印刷すると、温度が低い場所はいつもくらい、温度が高い場所はいつも眩しい。
+
+cividis developed it further: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0199239#pone.0199239.ref001
+
+{% rawFile "posts/WebGL-LUTS-made-simple/select.html" %}
+
+<img src="/assets/LUTs/PerceptuallyUniform/viridis.png" id="viridis" style="width: 100%; height: 64px;">
+
+<script  id="fragment_5" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
+
+<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_5"></canvas>
+
+<script>setupTri("canvas_5", "vertex", "fragment_5", "videoPlayer", "viridis", "lutSelector2");</script>
+<blockquote>
+<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a href="video-lut.fs">video-lut.fs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+
+```javascript
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
+```
+
+</details>
+</blockquote>
+
 ### Still performance free?
 
 The main concern comes from us creating something called a "dependant texture read". We are triggering one texture read based on the result of another. In graphics programming, a performance sin, as we eliminate a whole class of possible optimized paths, that graphics drivers consider.
+
+Matt Zucker
+https://mzucker.github.io/
+
+https://www.shadertoy.com/view/WlfXRN
+
+<script  id="fragment_9" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut_viridis.fs" %}</script>
+
+<img src="viridis_from_function.png" style="width: 100%; height: 64px;">
+<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_9"></canvas>
+
+<script>setupTri("canvas_9", "vertex", "fragment_9", "videoPlayer", null);</script>
+<blockquote>
+<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a href="video-lut_viridis.fs">video-lut_viridis.fs</a></summary>
+
+```glsl
+{% rawFile "posts/WebGL-LUTS-made-simple/video-lut_viridis.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+
+```javascript
+{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
+```
+
+</details>
+</blockquote>
 
 ### Precalculating calculations
 
@@ -350,7 +426,9 @@ version is wrong
 
 ### Redshift
 
-Tinting the monitor orange during night time to prevent eye-strain, performed by Software like [Redshift](http://jonls.dk/redshift/) works by changing the Gamma Ramp, a 1-D LUT each for the Red, Green and Blue channel of the monitor. To do so it precalculates the Kelvin Warmth -> RGB and additional Gamma calculations by generating 3 LUTs, as seen in the code here: https://github.com/jonls/redshift/blob/490ba2aae9cfee097a88b6e2be98aeb1ce990050/src/colorramp.c#L289
+Tinting the monitor orange during night time to prevent eye-strain, performed by Software like [Redshift](http://jonls.dk/redshift/) works by changing the Gamma Ramp, a 1-D LUT each for the Red, Green and Blue channel of the monitor. To do so it precalculates the Kelvin Warmth -> RGB and additional Gamma calculations by generating 3 LUTs, as seen in the code here:
+
+[ColorRampLinkCode](https://github.com/jonls/redshift/blob/490ba2aae9cfee097a88b6e2be98aeb1ce990050/src/colorramp.c#L289)
 
 This approach is pretty awesome with its has zero performance impact, as the calculations are done by the monitor, not the graphics card. Though support for this hardware interface is pretty horrible across the board and more often than not broken or unimplemented, with graphics stacks like the one of the Raspberry Pi working backwards and losing support.
 
@@ -402,185 +480,3 @@ Note, that it's not just cars. Essentially everything in the [Source Engine](<ht
 [OpenLara DIV](https://github.com/XProger/OpenLara/commit/e9ba3a278499fd61768a6ab148b72d9f7d5d5828)
 
 <iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube.com/embed/_GVSLcqGP7g?si=NST1tXJb7_oB3acl&amp;start=303" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-
-### サーマルカラー
-
-ですが、オレンジは比較的つまらんですので、「[LUT](https://ja.wikipedia.org/wiki/%E3%83%AB%E3%83%83%E3%82%AF%E3%82%A2%E3%83%83%E3%83%97%E3%83%86%E3%83%BC%E3%83%96%E3%83%AB)」という画像または表を使います。その画像は 1 次元の行です。あの画像の高さは 1px です。見えるように、下の画像が 1px の高さから 64px の高さにストレッチされます。
-
-### カラーリングのおすすめ
-
-科学の世界は具体的なカラーリングのマップを定義した。「[Viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html)」というカラー。そのカラーを使うべきです。理由が多い、一番大切：色覚異常の人が温度が高いと温度が低いの場所をわかります。そして、虹のマップを黒白プリンターで印刷すると、温度が低いと温度が高いは黒と白として印刷されません。「Viridis」なら、黒白プリンターで印刷すると、温度が低い場所はいつもくらい、温度が高い場所はいつも眩しい。
-
-cividis developed it further: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0199239#pone.0199239.ref001
-
-<div class="center-child">
-<select id="lutSelector2">
-    <option value="LUTs/viridis.png">Viridis</option>
-	<option value="LUTs/Accent.png">Accent</option>
-	<option value="LUTs/afmhot.png">afmhot</option>
-	<option value="LUTs/autumn.png">autumn</option>
-	<option value="LUTs/binary.png">binary</option>
-	<option value="LUTs/Blues.png">Blues</option>
-	<option value="LUTs/bone.png">bone</option>
-	<option value="LUTs/BrBG.png">BrBG</option>
-	<option value="LUTs/brg.png">brg</option>
-	<option value="LUTs/BuGn.png">BuGn</option>
-	<option value="LUTs/BuPu.png">BuPu</option>
-	<option value="LUTs/bwr.png">bwr</option>
-	<option value="LUTs/cividis.png">cividis</option>
-	<option value="LUTs/CMRmap.png">CMRmap</option>
-	<option value="LUTs/cool.png">cool</option>
-	<option value="LUTs/coolwarm.png">coolwarm</option>
-	<option value="LUTs/copper.png">copper</option>
-	<option value="LUTs/cubehelix.png">cubehelix</option>
-	<option value="LUTs/Dark2.png">Dark2</option>
-	<option value="LUTs/flag.png">flag</option>
-	<option value="LUTs/gist_earth.png">gist_earth</option>
-	<option value="LUTs/gist_gray.png">gist_gray</option>
-	<option value="LUTs/gist_grey.png">gist_grey</option>
-	<option value="LUTs/gist_heat.png">gist_heat</option>
-	<option value="LUTs/gist_ncar.png">gist_ncar</option>
-	<option value="LUTs/gist_rainbow.png">gist_rainbow</option>
-	<option value="LUTs/gist_stern.png">gist_stern</option>
-	<option value="LUTs/gist_yarg.png">gist_yarg</option>
-	<option value="LUTs/gist_yerg.png">gist_yerg</option>
-	<option value="LUTs/GnBu.png">GnBu</option>
-	<option value="LUTs/gnuplot.png">gnuplot</option>
-	<option value="LUTs/gnuplot2.png">gnuplot2</option>
-	<option value="LUTs/gray.png">gray</option>
-	<option value="LUTs/Grays.png">Grays</option>
-	<option value="LUTs/Greens.png">Greens</option>
-	<option value="LUTs/grey.png">grey</option>
-	<option value="LUTs/Greys.png">Greys</option>
-	<option value="LUTs/hot.png">hot</option>
-	<option value="LUTs/hsv.png">hsv</option>
-	<option value="LUTs/inferno.png">inferno</option>
-	<option value="LUTs/inferno2.png">inferno2</option>
-	<option value="LUTs/inferno4.png">inferno4</option>
-	<option value="LUTs/inferno8.png">inferno8</option>
-	<option value="LUTs/inferno16.png">inferno16</option>
-	<option value="LUTs/inferno32.png">inferno32</option>
-	<option value="LUTs/inferno64.png">inferno64</option>
-	<option value="LUTs/inferno128.png">inferno128</option>
-	<option value="LUTs/jet.png">jet</option>
-	<option value="LUTs/magma.png">magma</option>
-	<option value="LUTs/nipy_spectral.png">nipy_spectral</option>
-	<option value="LUTs/ocean.png">ocean</option>
-	<option value="LUTs/Oranges.png">Oranges</option>
-	<option value="LUTs/OrRd.png">OrRd</option>
-	<option value="LUTs/Paired.png">Paired</option>
-	<option value="LUTs/Pastel1.png">Pastel1</option>
-	<option value="LUTs/Pastel2.png">Pastel2</option>
-	<option value="LUTs/pink.png">pink</option>
-	<option value="LUTs/PiYG.png">PiYG</option>
-	<option value="LUTs/plasma.png">plasma</option>
-	<option value="LUTs/PRGn.png">PRGn</option>
-	<option value="LUTs/prism.png">prism</option>
-	<option value="LUTs/PuBu.png">PuBu</option>
-	<option value="LUTs/PuBuGn.png">PuBuGn</option>
-	<option value="LUTs/PuOr.png">PuOr</option>
-	<option value="LUTs/PuRd.png">PuRd</option>
-	<option value="LUTs/Purples.png">Purples</option>
-	<option value="LUTs/rainbow.png">rainbow</option>
-	<option value="LUTs/RdBu.png">RdBu</option>
-	<option value="LUTs/RdGy.png">RdGy</option>
-	<option value="LUTs/RdPu.png">RdPu</option>
-	<option value="LUTs/RdYlBu.png">RdYlBu</option>
-	<option value="LUTs/RdYlGn.png">RdYlGn</option>
-	<option value="LUTs/Reds.png">Reds</option>
-	<option value="LUTs/seismic.png">seismic</option>
-	<option value="LUTs/Set1.png">Set1</option>
-	<option value="LUTs/Set2.png">Set2</option>
-	<option value="LUTs/Set3.png">Set3</option>
-	<option value="LUTs/Spectral.png">Spectral</option>
-	<option value="LUTs/spring.png">spring</option>
-	<option value="LUTs/summer.png">summer</option>
-	<option value="LUTs/tab10.png">tab10</option>
-	<option value="LUTs/tab20.png">tab20</option>
-	<option value="LUTs/tab20b.png">tab20b</option>
-	<option value="LUTs/tab20c.png">tab20c</option>
-	<option value="LUTs/terrain.png">terrain</option>
-	<option value="LUTs/turbo.png">turbo</option>
-	<option value="LUTs/twilight_shifted.png">twilight_shifted</option>
-	<option value="LUTs/twilight.png">twilight</option>
-	<option value="LUTs/viridis.png">viridis</option>
-	<option value="LUTs/winter.png">winter</option>
-	<option value="LUTs/Wistia.png">Wistia</option>
-	<option value="LUTs/YlGn.png">YlGn</option>
-	<option value="LUTs/YlGnBu.png">YlGnBu</option>
-	<option value="LUTs/YlOrBr.png">YlOrBr</option>
-	<option value="LUTs/YlOrRd.png">YlOrRd</option>
-</select>
-</div>
-
-<img src="LUTs/viridis.png" id="viridis" style="width: 100%; height: 64px;">
-
-<script  id="fragment_5" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
-
-<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_5"></canvas>
-
-<script>setupTri("canvas_5", "vertex", "fragment_5", "videoPlayer", "viridis", "lutSelector2");</script>
-<blockquote>
-<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
-
-```glsl
-{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
-```
-
-</details>
-<details>	
-<summary>WebGL Fragment Shader <a href="video-lut.fs">video-lut.fs</a></summary>
-
-```glsl
-{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}
-```
-
-</details>
-<details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
-
-```javascript
-{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
-```
-
-</details>
-</blockquote>
-
-### Still performance free?
-
-Matt Zucker
-https://mzucker.github.io/
-
-https://www.shadertoy.com/view/WlfXRN
-
-<script  id="fragment_9" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut_viridis.fs" %}</script>
-
-<img src="viridis_from_function.png" style="width: 100%; height: 64px;">
-<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_9"></canvas>
-
-<script>setupTri("canvas_9", "vertex", "fragment_9", "videoPlayer", null);</script>
-<blockquote>
-<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
-
-```glsl
-{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
-```
-
-</details>
-<details>	
-<summary>WebGL Fragment Shader <a href="video-lut_viridis.fs">video-lut_viridis.fs</a></summary>
-
-```glsl
-{% rawFile "posts/WebGL-LUTS-made-simple/video-lut_viridis.fs" %}
-```
-
-</details>
-<details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
-
-```javascript
-{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
-```
-
-</details>
-</blockquote>
