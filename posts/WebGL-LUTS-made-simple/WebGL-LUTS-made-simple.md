@@ -131,14 +131,10 @@ Before we jump into how LUTs can help us, let's take a look a how we can manipul
 
 ### Performance is free
 
-**_Depending on the context_**, the multiplication introduced by the tinting has zero performance impact. On a theoretical level, the multiplication has a cost associated with it, since the chip has to perform this multiplication at some point. But you will probably not be able to measure it, as the multiplication is affected by "[latency hiding](https://www2.eecs.berkeley.edu/Pubs/TechRpts/2016/EECS-2016-143.pdf)". The act, cost and latency of pushing the video though the graphics pipeline unlocks a lot of manipulations we get for free this way. We can rationalize this from multiple levels:
+**_Depending on the context_**, the multiplication introduced by the tinting has zero performance impact. On a theoretical level, the multiplication has a cost associated with it, since the chip has to perform this multiplication at some point. But you will probably not be able to measure it, as the multiplication is affected by "[latency hiding](https://www2.eecs.berkeley.edu/Pubs/TechRpts/2016/EECS-2016-143.pdf)". The act, cost and latency of pushing the video though the graphics pipeline unlocks a lot of manipulations we get for free this way. We can rationalize this from multiple levels, but the main point goes like:
 
 - Fetching the texture from memory takes way more time than a multiplication
-  - Even though the result depends on the texture tap, with multiple threads the multiplication can performed while waiting on the texture tap of another pixel
-- Depending on implementation of video decoding, the CPU has to upload each frame to the GPU
-  - Transfers between CPU and GPU are very costly and take time
-- We are locked to the display's refresh rate
-  - It's a bit mental gymnastics, but considering that, anything is "free" as long as we are faster than the display
+  - Even though the result depends on the texture tap, with multiple threads the multiplication is performed while waiting on the texture tap of another pixel
 
 <blockquote class="reaction"><div class="reaction_text">This is about the difference tinting makes, not overall performance. Lot's left on the optimization table, like asynchronously loading the frames to a single-channel texture or processing on every frame, not display refresh</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
@@ -271,7 +267,7 @@ Sike! It's a trick question. You don't get to choose. You may think, that you sh
 <img src="salty.jpg" style="max-height: 300px">
 
 Unless your data has specific structure, there is actually one colormap type that you should be using or basing your color settings on - "Perceptually Uniform", like the [viridis](https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html) family of colormaps. We won't dive into such a deep topic here, but the main points are this:
-- If you choose from the Perceptually Uniform ones, then printing your data in black and white will still have the dark parts dark and bright parts bright
+- If you choose from the Perceptually Uniform ones, then printing your data in black and white will still have the "cold" parts dark and "hot" parts bright
   - This is not a given with colorful options like jet, which modify mainly just the hue whilst ignoring perceived lightness
 - People with color blindness will still be able to interpret your data correctly
 
@@ -281,10 +277,9 @@ Reasons as for this and why other colormaps are dangerous for judging critical i
 #### Still performance free?
 We talked about tinting being essentially performance free. When talking about (small 1D-) LUTs, it gets complicated, though the answer is still probably yes. The main concern comes from us creating something called a "dependant texture read". We are triggering one texture read based on the result of another. In graphics programming, a performance sin, as we eliminate a whole class of possible optimized paths, that graphics drivers consider.
 
-GPUs have textures caches, which our LUT will have no problem fitting into. To measure things like this properly, we required advanced debugging tools, which are platform specific. This really 
-There is (Nvidia NSight)[https://developer.nvidia.com/blog/identifying-shader-limiters-with-the-shader-profiler-in-nvidia-nsight-graphics/]
+GPUs have textures caches, which our LUT will have no problem fitting into and will probably make LUT textures reads very cheap. To measure things performance this finely, how caches are hit and the like, we required advanced debugging tools, which are platform specific. There is [Nvidia NSight](https://developer.nvidia.com/blog/identifying-shader-limiters-with-the-shader-profiler-in-nvidia-nsight-graphics/), which allows you to break down the performance of each step in the shader, though OpenGL is unsupported for this. Either way, this is not the topic of this article. There is one more thing though...
 
-You can perform polynomial approximations of a LUT and thus side-step all possible texture reads. The next WebGL fragment shader features a polynomial approximation of viridis. It was created by [Matt Zucker](https://mzucker.github.io/), available on [ShaderToy](https://www.shadertoy.com/view/WlfXRN), including polynomials for other LUTs. Compare both the original and the approximation in the following two LUT stripes. Remarkably close.
+You can perform polynomial approximations of a colormap and thus side-step a LUT texture read. The next WebGL fragment shader features a polynomial approximation of viridis. It was created by [Matt Zucker](https://mzucker.github.io/), available on [ShaderToy](https://www.shadertoy.com/view/WlfXRN), including polynomials for other color maps. Compare both the original colormap exported as a lut and the approximation exported as a LUT in the following two stripes. Remarkably close.
 
 <script  id="fragment_9" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut_viridis.fs" %}</script>
 
@@ -319,7 +314,7 @@ You can perform polynomial approximations of a LUT and thus side-step all possib
 </details>
 </blockquote>
 
-The resulting shader function performs a bunch of multiplies and adds `c0+t*(c1+t*(c2+t*(c3+t*(c4+t*(c5+t*c6)))));` to get the color, instead of the texture lookup. This is a prime candidate of being optimized by the GPU into a few [Fused Multiply-Add (FMA)](https://en.wikipedia.org/wiki/Multiply%E2%80%93accumulate_operation#Fused_multiply%E2%80%93add) instructions. Whether or not this is actually faster, is a tough to judge without deep platform specific analysis.
+The resulting shader contains the polynomial in [Horner's method](https://en.wikipedia.org/wiki/Horner's_method) and performs a bunch of Multiply-Adds `c0+t*(c1+t*(c2+t*(c3+t*(c4+t*(c5+t*c6)))));` to get the color, instead of the texture lookup. This is a prime candidate for being optimized into a few [Fused Multiply-Add (FMA)](https://en.wikipedia.org/wiki/Multiply%E2%80%93accumulate_operation#Fused_multiply%E2%80%93add) instructions. Even considering [theoretical details](https://en.wikipedia.org/wiki/Horner%27s_method#Parallel_evaluation), this is as good as it gets. Whether or not this is actually faster than a LUT though, is tough to judge without deep platform specific analysis.
 <blockquote class="reaction"><div class="reaction_text">Saves you from handling the LUT texture, quite the time saver!</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
 #### Diversity for Zombies
