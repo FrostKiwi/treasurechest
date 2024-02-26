@@ -14,20 +14,20 @@ image: thumb.jpg
 <script src="fullscreen-tri.js"></script>
 <script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 
-[Look-up-tables](https://en.wikipedia.org/wiki/Lookup_table), more commonly referred to as LUTs, are as old as Mathematics itself. The act of precalculating things into a row or table is nothing new. But in the realm of graphics programming, this simple act unlocks some incredibly creative techniques, which both artists and programmers found when faced with tough technical hurdles. It also just so happens, that these techniques map incredibly well to how GPUs work, with some ending up having zero performance impact.
+[Look-up-tables](https://en.wikipedia.org/wiki/Lookup_table), more commonly referred to as LUTs, are as old as Mathematics itself. The act of precalculating things into a row or table is nothing new. But in the realm of graphics programming, this simple act unlocks some incredibly creative techniques, which both artists and programmers found when faced with tough technical hurdles.
 
-We'll embark on a small journey, which will take us from simple things like turning grayscale footage into color, to creating limitless variations of blood-lusting zombies, with many interactive examples illustrated in WebGL along the way, that you can try out with your own videos or webcam. Though this article uses [WebGL](https://en.wikipedia.org/wiki/WebGL), the techniques shown apply to any other graphics programming context, be it [DirectX](https://en.wikipedia.org/wiki/DirectX), [OpenGL](https://en.wikipedia.org/wiki/OpenGL), [Vulkan](https://en.wikipedia.org/wiki/Vulkan), game engines like [Unity](<https://en.wikipedia.org/wiki/Unity_(game_engine)>), or plain scientific data visualization.
+We'll embark on a small journey, which will take us from simple things like turning grayscale footage into color, to creating limitless variations of blood-lusting zombies, with many interactive WebGL examples along the way, that you can try out with your own videos or webcam. Though this article uses [WebGL](https://en.wikipedia.org/wiki/WebGL), the techniques shown apply to any other graphics programming context, be it [DirectX](https://en.wikipedia.org/wiki/DirectX), [OpenGL](https://en.wikipedia.org/wiki/OpenGL), [Vulkan](https://en.wikipedia.org/wiki/Vulkan), game engines like [Unity](<https://en.wikipedia.org/wiki/Unity_(game_engine)>), or plain scientific data visualization.
 
 <figure>
 	<video width="1400" height="480" style="width: unset; max-width: 100%" autoplay playsinline muted controls loop><source src="preview.mp4" type="video/mp4"></video>
 	<figcaption>Cold ice cream and hot tea. Left: Panasonic GH6, Right: TESTO 890 + 15°x11° Lens</figcaption>
 </figure>
 
-First, let's nail down the basics. We'll be creating and modifying the video above, though you may substitute the footage with your own at any point in the article. The video is a capture of two cameras, a [Panasonic GH6](https://www.dpreview.com/reviews/panasonic-lumix-dc-gh6-review) and a [TESTO 890](https://www.testo.com/en/testo-890/p/0563-0890-X1) thermal camera. I'm eating cold ice cream and drinking hot tea to stretch the temperatures on display.
+We'll be creating and modifying the video above, though you may substitute the footage with your own at any point in the article. The video is a capture of two cameras, a [Panasonic GH6](https://www.dpreview.com/reviews/panasonic-lumix-dc-gh6-review) and a [TESTO 890](https://www.testo.com/en/testo-890/p/0563-0890-X1) thermal camera. I'm eating cold ice cream and drinking hot tea to stretch the temperatures on display.
 
 ## The Setup
 
-We'll first start with the thermal camera footage. The output of the [thermal camera](https://en.wikipedia.org/wiki/Thermographic_camera) is a grayscale video. Instead of this video, you may upload your own or activate the WebCam, which allows you to live stream from a thermal camera using OBS's various input methods and output a virtual camera.
+We'll first start with the thermal camera footage. The output of the [thermal camera](https://en.wikipedia.org/wiki/Thermographic_camera) is a grayscale video. Instead of this video, you may upload your own or activate the WebCam, which even allows you to live stream from a thermal camera using [OBS](https://obsproject.com/)'s virtual WebCam and various input methods.
 
 <blockquote class="reaction"><div class="reaction_text">No data leaves your device, all processing happens on your GPU. Feel free to use videos exposing your most intimate secrets.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
@@ -39,7 +39,7 @@ We'll first start with the thermal camera footage. The output of the [thermal ca
 
 <script src="videoSource.js"></script>
 
-Next we upload this footage to the graphics card using WebGL and redisplay it using a [shader](https://learnopengl.com/Getting-started/Hello-Triangle), which leaves the footage untouched. Each frame is transferred as a 2D [texture](https://learnopengl.com/Getting-started/Textures) to the GPU. We haven't actually done anything visual yet, but now a have graphics pipeline, which allows us to manipulate the video data in realtime. From here on out, we are mainly interested in the "[Fragment Shader](https://learnopengl.com/Getting-started/Hello-Triangle)". This is the piece of code that runs per pixel of the video to determine its final color.
+Next we upload this footage to the graphics card using WebGL and redisplay it using a [shader](https://learnopengl.com/Getting-started/Hello-Triangle), which leaves the footage untouched. Each frame is transferred as a 2D [texture](https://learnopengl.com/Getting-started/Textures) to the GPU. Though we haven't actually done anything visually yet, we have established a graphics pipeline, which allows us to manipulate the video data in realtime. From here on out, we are mainly interested in the "[Fragment Shader](https://learnopengl.com/Getting-started/Hello-Triangle)". This is the piece of code that runs per pixel of the video to determine its final color.
 
 <blockquote class="reaction"><div class="reaction_text">I'm hardcore simplifying here. Technically there are many shader stages, the fragment shader runs per <a href="https://www.khronos.org/opengl/wiki/Fragment">fragment</a> of the output resolution not per pixel of the input, etc.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
@@ -129,9 +129,9 @@ Before we jump into how LUTs can help us, let's take a look a how we can manipul
 </details>
 </blockquote>
 
-### Performance is free
+### Performance cost: Zero
 
-**_Depending on the context_**, the multiplication introduced by the tinting has zero performance impact. On a theoretical level, the multiplication has a cost associated with it, since the chip has to perform this multiplication at some point. But you will probably not be able to measure it, as the multiplication is affected by "[latency hiding](https://www2.eecs.berkeley.edu/Pubs/TechRpts/2016/EECS-2016-143.pdf)". The act, cost and latency of pushing the video though the graphics pipeline unlocks a lot of manipulations we get for free this way. We can rationalize this from multiple levels, but the main point goes like:
+**_Depending on the context_**, the multiplication introduced by the tinting has zero performance impact. On a theoretical level, the multiplication has a cost associated with it, since the chip has to perform this multiplication at some point. But you will probably not be able to measure it *in this context*, as the multiplication is affected by "[latency hiding](https://www2.eecs.berkeley.edu/Pubs/TechRpts/2016/EECS-2016-143.pdf)". The act, cost and latency of pushing the video though the graphics pipeline unlocks a lot of manipulations we get for free this way. We can rationalize this from multiple levels, but the main point goes like:
 
 - Fetching the texture from memory takes way more time than a multiplication
   - Even though the result depends on the texture tap, with multiple threads the multiplication is performed while waiting on the texture tap of another pixel
@@ -159,7 +159,7 @@ Note, that it's not just cars. Essentially everything in the [Source Engine](<ht
 
 ## The LUT - Simple, yet powerful
 
-Now that we have gotten an idea of how we can interact and manipulate color in a graphics programming context, let's dive into how the LUT can elevate that. There core of the idea is this: Instead of defining how the colors are changed across their entire range, let's define what color range changes in what way. If you have replaced the above thermal image with an RGB video of your own, then just the red channel will be used going forward.
+Now that we have gotten an idea of how we can interact and manipulate color in a graphics programming context, let's dive into how a LUT can elevate that. The core of the idea is this: Instead of defining how the colors are changed across their entire range, let's define what color range changes in what way. If you have replaced the above thermal image with an RGB video of your own, then just the red channel will be used going forward.
 
 The following examples make more sense in context of thermal camera footage, so you can click the following button to revert to it, if you wish.
 
@@ -275,11 +275,11 @@ Reasons as for this and why other colormaps are dangerous for judging critical i
 <div class="center-child"><iframe width="560" height="315" src="https://www.youtube.com/embed/xAoljeRJ3lU?si=vxcupZ7q-JhcCXFm&amp;start=50" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
 
 #### Still performance free?
-We talked about tinting being essentially performance free. When talking about (small 1D-) LUTs, it gets complicated, though the answer is still probably yes. The main concern comes from us creating something called a "dependant texture read". We are triggering one texture read based on the result of another. In graphics programming, a performance sin, as we eliminate a whole class of possible optimized paths, that graphics drivers consider.
+We talked about tinting being essentially performance free. When talking about (small 1D-) LUTs it gets complicated, though the answer is still probably yes. The main concern comes from us creating something called a "dependant texture read". We are triggering one texture read based on the result of another. In graphics programming, a performance sin, as we eliminate a whole class of possible optimized paths, that graphics drivers consider.
 
-GPUs have textures caches, which our LUT will have no problem fitting into and will probably make LUT textures reads very cheap. To measure things performance this finely, how caches are hit and the like, we required advanced debugging tools, which are platform specific. There is [Nvidia NSight](https://developer.nvidia.com/blog/identifying-shader-limiters-with-the-shader-profiler-in-nvidia-nsight-graphics/), which allows you to break down the performance of each step in the shader, though OpenGL is unsupported for this. Either way, this is not the topic of this article. There is one more thing though...
+GPUs have textures caches, which our LUT will have no problem fitting into and will probably make LUT textures read very cheap. To measure things performance this finely, how caches are hit and the like, we required advanced debugging tools, which are platform specific. There is [Nvidia NSight](https://developer.nvidia.com/blog/identifying-shader-limiters-with-the-shader-profiler-in-nvidia-nsight-graphics/), which allows you to break down the performance of each step in the shader, though OpenGL is unsupported for this. Either way, this is not the topic of this article. There *is* one more thing though...
 
-You can perform polynomial approximations of a colormap and thus side-step a LUT texture read. The next WebGL fragment shader features a polynomial approximation of viridis. It was created by [Matt Zucker](https://mzucker.github.io/), available on [ShaderToy](https://www.shadertoy.com/view/WlfXRN), including polynomials for other color maps. Compare both the original colormap exported as a lut and the approximation exported as a LUT in the following two stripes. Remarkably close.
+You can perform polynomial approximations of a colormap and thus side-step the LUT texture read. The next WebGL fragment shader features a polynomial approximation of viridis. It was created by [Matt Zucker](https://mzucker.github.io/), available on [ShaderToy](https://www.shadertoy.com/view/WlfXRN) including polynomials for other colormaps. Compare both the original colormap exported as a LUT and the approximation exported as a LUT in the following two stripes. Remarkably close.
 
 <script  id="fragment_9" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut_viridis.fs" %}</script>
 
@@ -314,11 +314,11 @@ You can perform polynomial approximations of a colormap and thus side-step a LUT
 </details>
 </blockquote>
 
-The resulting shader contains the polynomial in [Horner's method](https://en.wikipedia.org/wiki/Horner's_method) and performs a bunch of Multiply-Adds `c0+t*(c1+t*(c2+t*(c3+t*(c4+t*(c5+t*c6)))));` to get the color, instead of the texture lookup. This is a prime candidate for being optimized into a few [Fused Multiply-Add (FMA)](https://en.wikipedia.org/wiki/Multiply%E2%80%93accumulate_operation#Fused_multiply%E2%80%93add) instructions. Even considering [theoretical details](https://en.wikipedia.org/wiki/Horner%27s_method#Parallel_evaluation), this is as good as it gets. Whether or not this is actually faster than a LUT though, is tough to judge without deep platform specific analysis.
+The resulting shader contains the polynomial in [Horner's method](https://en.wikipedia.org/wiki/Horner's_method) and performs a bunch of Multiply-Adds `c0+t*(c1+t*(c2+t*(c3+t*(c4+t*(c5+t*c6)))));` to get the color, instead of the texture lookup. This is a prime candidate for being optimized into a few [Fused Multiply-Add (FMA)](https://en.wikipedia.org/wiki/Multiply%E2%80%93accumulate_operation#Fused_multiply%E2%80%93add) instructions. Even considering [theoretical details](https://en.wikipedia.org/wiki/Horner%27s_method#Parallel_evaluation), this is as good as it gets. Whether or not this is actually faster than a LUT though, is difficult to judge without deep platform specific analysis.
 <blockquote class="reaction"><div class="reaction_text">Saves you from handling the LUT texture, quite the time saver!</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
 #### Diversity for Zombies
-Let's take a look at how far this technique can be stretched to unlock new ways to express oneself. This time we are looking at the sequel [Left 4 Dead 2](https://en.wikipedia.org/wiki/Left_4_Dead_2). Here is [Bronwen Grimes](http://www.bronwengrimes.com) explaining how Valve Software achieved different color variations of different zombie parts, which simple tinting couldn't deliver, due to it not affecting luminosity.
+Let's take a look at how far this technique can be stretched. This time we are looking at the sequel [Left 4 Dead 2](https://en.wikipedia.org/wiki/Left_4_Dead_2). Here is [Bronwen Grimes](http://www.bronwengrimes.com) explaining how Valve Software achieved different color variations of different zombie parts, which simple tinting couldn't deliver well enough.
 
 <figure>
 	<video width="960" height="540" controls><source src="left4dead_Gradients.mp4" type="video/mp4"></video>
@@ -332,13 +332,43 @@ Checkout the [full talk](https://www.gdcvault.com/play/1012264/Shading-a-Bigger-
 <blockquote class="reaction"><div class="reaction_text">The creativity of them using "Exclusive Masking" blew me away. First time I learned about it. Two textures in one channel, set to specific ranges<br>(Texture 1: 0-128, Texture 2: 128-256) at the cost of color precision</div><img class="kiwi" src="/assets/kiwis/love.svg"></blockquote>
 
 #### Precalculating calculations
+One more use for 1D LUTs in graphics programming is to cache expensive calculations. One such example is [Gamma correction](https://en.wikipedia.org/wiki/Gamma_correction), especially if the standard conform [sRGB piece-wise curve instead of the Gamma 2.2 approximation](https://www.colour-science.org/posts/srgb-eotf-pure-gamma-22-or-piece-wise-function/) is required.
 
-Another use is in accelerating calculations. One such example is [Gamma](https://en.wikipedia.org/wiki/Gamma_correction). It contains [as Gamma 2.2, instead of the piece-wise curve](https://www.colour-science.org/posts/srgb-eotf-pure-gamma-22-or-piece-wise-function/)
-Especially older GPUs
+Unless we talk about various approximations, gamma correction requires the use of the function [pow()](https://docs.gl/sl4/pow), which especially on older GPUs is a very expensive instruction. Add to that a branching path, if the piece-wise curve is needed. Or even worse, if you had to contend with the bananas level awful [4-segment piece-wise approximation the Xbox 360 uses](https://cdn.cloudflare.steamstatic.com/apps/valve/2008/GDC2008_PostProcessingInTheOrangeBox.pdf). Precalculating that into a 1D LUT is way to skip such per-pixel calculations. 
+
+<img src="/assets/LUTs/Gamma/gamma2.2.png" id="lut" style="width: 100%; height: 64px;">
+<img src="/assets/LUTs/Gamma/gamma2.2inv.png" id="lut" style="width: 100%; height: 64px;">
+
+At the bottom of the LUT collection select box in chapter [So many colors](#so-many-colors), I included two gamma ramps for reference. Gamma 2.2 and inverse of Gamma 2.2. Whether or not there is benefit from accelerating gamma transformations via 1D LUTs is a question only answerable via benchmarking, but you could imagine other calculations, that would definitely benefit.
+
+An example of this in the wild is tinting the monitor orange during night time [to prevent eye-strain](https://en.wikipedia.org/wiki/Biological_effects_of_high-energy_visible_light#Digital_filters), performed by Software like [Redshift](http://jonls.dk/redshift/). This works by changing the Gamma Ramp, a 1D LUT each for the Red, Green and Blue channel **of the monitor**. To do so it precalculates the Kelvin Warmth -> RGB and additional Gamma calculations by generating 3 1D LUTs, [as seen in Redshift's source code](https://github.com/jonls/redshift/blob/490ba2aae9cfee097a88b6e2be98aeb1ce990050/src/colorramp.c#L289).
+
+<figure>
+	<img src="nightlight.png" alt="Night Light feature in Android" />
+	<figcaption>Night Light feature in Android</figcaption>
+</figure>
+
+The approach of Redshift and similar pieces of software is pretty awesome with its truly zero performance impact, as the calculations are done by the monitor, not the graphics card. Though support for this hardware interface is pretty horrible across the board these days and more often than not broken or unimplemented, with graphics stacks like the one of the Raspberry Pi working backwards and [losing support with newer updates](https://github.com/raspberrypi/firmware/issues/1274). Microsoft even warns [developers not to use that Gamma Hardware API](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-setdevicegammaramp) with a warning box longer than the API documentation itself.
+
+<blockquote class="reaction"><div class="reaction_text">Quite the sad state for a solution this elegant. A sign of the times, with hardware support deemed too shaky and more features becoming software filters.</div><img class="kiwi" src="/assets/kiwis/sad.svg"></blockquote>
 
 ### Camera 3D LUTs
+Let's go 3D. 3D LUTs are well covered by many articles, blogs and videos, so I will plow though the basics and focus on more complex workflows.
 
-As with the previous example, we can have three 1D LUTs for each color channel, so why would we even need a whole RGB cube?
+#### The basic theory
+The origin is in the top left, because in OpenGL and WebGL, the texture coordinates are layed out that way.
+<figure>
+	<img src="3DLut.png">
+	<figcaption>3D LUT, in its 2D representation, 32³px cube as a 1024px x 32px strip</figcaption>
+</figure>
+
+<figure>
+	<img src="32cube.png" alt="The above 3D LUT, displayed in 3D without interpolation" />
+	<figcaption>The above 3D LUT, displayed in 3D without interpolation</figcaption>
+</figure>
+
+
+<blockquote class="reaction"><div class="reaction_text">You can change color balance with a 1D LUT for Red, Green and Blue. So what a 3D LUT can, that 3 1D LUTs cannot, isn't so obvious. 3D LUT cubes are needed for changes requiring a combination of RGB as input, like changes to saturation, hue, specific colors or to perform color isolation.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 RGB Cube, where the cube X is Red, Y is Green, Blue is Z.
 Some of them are even bought.
@@ -450,14 +480,6 @@ version is wrong
 
 </details>
 </blockquote>
-
-### Redshift
-
-Tinting the monitor orange during night time to prevent eye-strain, performed by Software like [Redshift](http://jonls.dk/redshift/) works by changing the Gamma Ramp, a 1-D LUT each for the Red, Green and Blue channel of the monitor. To do so it precalculates the Kelvin Warmth -> RGB and additional Gamma calculations by generating 3 LUTs, as seen in the code here:
-
-[ColorRampLinkCode](https://github.com/jonls/redshift/blob/490ba2aae9cfee097a88b6e2be98aeb1ce990050/src/colorramp.c#L289)
-
-This approach is pretty awesome with its has zero performance impact, as the calculations are done by the monitor, not the graphics card. Though support for this hardware interface is pretty horrible across the board and more often than not broken or unimplemented, with graphics stacks like the one of the Raspberry Pi working backwards and losing support.
 
 ### 入力ファイル
 
