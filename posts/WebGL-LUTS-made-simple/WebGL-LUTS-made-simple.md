@@ -334,7 +334,7 @@ Let's take a look at how far this technique can be stretched. This time we are l
 	</figcaption>
 </figure>
 
-The resulting 
+The resulting variations can be seen in the following screenshot. The most important feature being the ability to create both a bright & dark shade of suit from one texture.
 
 <figure>
 	<img src="mayaHLSL.jpg">
