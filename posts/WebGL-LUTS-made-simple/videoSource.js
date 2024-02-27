@@ -1,7 +1,5 @@
-const videoPlayer = document.getElementById('videoPlayer');
-
-function changeVideoURL(url) {
-	var videoPlayer = document.getElementById('videoPlayer');
+function changeVideoURL(url, player) {
+	var videoPlayer = document.getElementById(player);
 
 	if (videoPlayer.srcObject) {
 		const stream = videoPlayer.srcObject;
@@ -21,13 +19,14 @@ function changeVideoURL(url) {
 	videoPlayer.play();
 }
 
-function changeVideo(input) {
+function changeVideo(input, player) {
 	var file = input.files[0];
 	var url = URL.createObjectURL(file);
-	changeVideoURL(url);
+	changeVideoURL(url, player);
 }
 
-function startWebcam() {
+function startWebcam(player) {
+	const videoPlayer = document.getElementById(player);
 	videoPlayer.setAttribute("autoplay", true);
 	if (navigator.mediaDevices.getUserMedia) {
 		navigator.mediaDevices.getUserMedia({ audio: false, video: true })
