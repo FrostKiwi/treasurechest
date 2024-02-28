@@ -392,7 +392,7 @@ The approach of Redshift and similar pieces of software is pretty awesome with i
 
 <blockquote class="reaction"><div class="reaction_text">Quite the sad state for a solution this elegant. A sign of the times, with hardware support deemed too shaky and more features becoming software filters.</div><img class="kiwi" src="/assets/kiwis/sad.svg"></blockquote>
 
-### Camera 3D LUTs
+### The powerful 3D LUT
 
 Let's go 3D! The basic idea is that we represent the entire RGB space in one cube remapping all possible colors, loaded and sampled as a 3D texture. As before, by modifying the LUT, we modify the mapping of the colors. ***3D vector in, 3D vector out***
 
