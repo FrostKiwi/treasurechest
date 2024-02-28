@@ -5,7 +5,7 @@ date: 2023-10-19
 last_modified: 2023-12-27
 description: Discovering color banding solutions & Smooth gradients with a clever Noise one-liner by SLEDGEHAMMER Games
 publicTags:
-  - OpenGL
+  - Graphics
   - WebGL
   - GameDev
 image: threshold.png

@@ -1,17 +1,46 @@
 "use strict";
 
 /* Helpers */
-function createAndCompileShader(gl, type, source) {
+function createAndCompileShader(gl, type, source, canvas) {
 	const shader = gl.createShader(type);
-	gl.shaderSource(shader, document.getElementById(source).text);
+	const element = document.getElementById(source);
+	let shaderSource;
+
+	if (element.tagName === 'SCRIPT')
+		shaderSource = element.text;
+	else
+		shaderSource = ace.edit(source).getValue();
+
+	gl.shaderSource(shader, shaderSource);
 	gl.compileShader(shader);
-	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		console.error(gl.getShaderInfoLog(shader));
-	}
+	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
+		displayErrorMessage(canvas, gl.getShaderInfoLog(shader));
+	else
+		displayErrorMessage(canvas, "");
 	return shader;
 }
 
-function setupTexture(gl, target, source){
+function displayErrorMessage(canvas, message) {
+	let errorElement = canvas.nextSibling;
+	const hasErrorElement = errorElement && errorElement.tagName === 'PRE';
+
+	if (message) {
+		if (!hasErrorElement) {
+			errorElement = document.createElement('pre');
+			errorElement.style.color = 'red';
+			canvas.parentNode.insertBefore(errorElement, canvas.nextSibling);
+		}
+		errorElement.textContent = `Shader Compilation Error: ${message}`;
+		canvas.style.display = 'none';
+		errorElement.style.display = 'block';
+	} else {
+		if (hasErrorElement)
+			errorElement.style.display = 'none';
+		canvas.style.display = 'block';
+	}
+}
+
+function setupTexture(gl, target, source) {
 	gl.deleteTexture(target);
 	target = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, target);
@@ -25,31 +54,53 @@ function setupTexture(gl, target, source){
 	return target;
 }
 
-function setupTri(canvasId, vertexId, fragmentId, lut) {
+function setupTri(canvasId, vertexId, fragmentId, videoId, lut, lutselect, buttonId) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false });
 	const lutImg = document.getElementById(lut);
-	let lutTexture, videoTexture;
-	
+	let lutTexture, videoTexture, shaderProgram;
+
 	/* Shaders */
-	const vertexShader = createAndCompileShader(gl, gl.VERTEX_SHADER, vertexId);
-	const fragmentShader = createAndCompileShader(gl, gl.FRAGMENT_SHADER, fragmentId);
-	
-	const shaderProgram = gl.createProgram();
-	gl.attachShader(shaderProgram, vertexShader);
-	gl.attachShader(shaderProgram, fragmentShader);
-	gl.linkProgram(shaderProgram);
-	gl.useProgram(shaderProgram);
-	
+	function initializeShaders() {
+		const vertexShader = createAndCompileShader(gl, gl.VERTEX_SHADER, vertexId, canvas);
+		const fragmentShader = createAndCompileShader(gl, gl.FRAGMENT_SHADER, fragmentId, canvas);
+
+		shaderProgram = gl.createProgram();
+		gl.attachShader(shaderProgram, vertexShader);
+		gl.attachShader(shaderProgram, fragmentShader);
+		gl.linkProgram(shaderProgram);
+
+		/* Clean-up */
+		gl.detachShader(shaderProgram, vertexShader);
+		gl.detachShader(shaderProgram, fragmentShader);
+		gl.deleteShader(vertexShader);
+		gl.deleteShader(fragmentShader);
+
+		gl.useProgram(shaderProgram);
+	}
+
+	initializeShaders();
+
 	const lutTextureLocation = gl.getUniformLocation(shaderProgram, "lut");
-	
+
+	if (buttonId) {
+		const button = document.getElementById(buttonId);
+		button.addEventListener('click', function () {
+			if (shaderProgram)
+				gl.deleteProgram(shaderProgram);
+			initializeShaders();
+		});
+	}
+
 	/* Video Setup */
-	const video = document.getElementById('videoPlayer');
+	const video = document.getElementById(videoId);
 
 	if (video.paused) {
+		/* Fighting battery optimizations */
 		video.loop = true;
 		video.muted = true;
+		video.playsinline = true;
 		video.play();
 	}
 
@@ -81,6 +132,37 @@ function setupTri(canvasId, vertexId, fragmentId, lut) {
 			}
 		}
 	}
+	
+	if (lutselect) {
+		const lutSelectElement = document.getElementById(lutselect);
+		if (lutSelectElement) {
+			lutSelectElement.addEventListener('change', function () {
+				/* Select Box */
+				if (lutSelectElement.tagName === 'SELECT') {
+					const newPath = lutSelectElement.value;
+					lutImg.onload = function () {
+						lutTextureInitialized = false;
+					};
+					lutImg.src = newPath;
+				}
+				/* Input box */
+				else if (lutSelectElement.tagName === 'INPUT' && lutSelectElement.type === 'file') {
+					const file = lutSelectElement.files[0];
+					if (file) {
+						const reader = new FileReader();
+						reader.onload = function (e) {
+							lutImg.onload = function () {
+								lutTextureInitialized = false;
+							};
+							lutImg.src = e.target.result;
+						};
+						reader.readAsDataURL(file);
+					}
+				}
+			});
+		}
+	}
+
 
 	/* Vertex Buffer with a Fullscreen Triangle */
 	/* Position and UV coordinates */

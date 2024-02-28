@@ -2,24 +2,32 @@ const fs = require('fs');
 const path = require('path');
 
 const postsDir = 'posts/';
-const outputDir = '_site/'; // Change this to your output directory
+const outputDir = '_site/';
 
-fs.readdirSync(postsDir).forEach(dir => {
-	const fullDirPath = path.join(postsDir, dir);
-	if (fs.statSync(fullDirPath).isDirectory()) {
-		const outputPostDir = path.join(outputDir, dir);
+function copyAssetsRecursively(srcDir, destDir) {
+	if (!fs.existsSync(destDir)) {
+		fs.mkdirSync(destDir, { recursive: true });
+	}
 
-		// Create the directory in the output if it doesn't exist
-		if (!fs.existsSync(outputPostDir)) {
-			fs.mkdirSync(outputPostDir, { recursive: true });
-		}
+	fs.readdirSync(srcDir, { withFileTypes: true }).forEach(entry => {
+		const srcPath = path.join(srcDir, entry.name);
+		const destPath = path.join(destDir, entry.name);
 
-		fs.readdirSync(fullDirPath).forEach(file => {
-			if (file !== `${dir}.md`) { // Exclude markdown files
-				const srcPath = path.join(fullDirPath, file);
-				const destPath = path.join(outputPostDir, file);
-				fs.copyFileSync(srcPath, destPath); // Copy the file
+		if (entry.isDirectory()) {
+			copyAssetsRecursively(srcPath, destPath);
+		} else {
+			if (path.extname(entry.name) !== '.md') {
+				fs.copyFileSync(srcPath, destPath);
 			}
-		});
+		}
+	});
+}
+
+fs.readdirSync(postsDir, { withFileTypes: true }).forEach(entry => {
+	if (entry.isDirectory()) {
+		const fullDirPath = path.join(postsDir, entry.name);
+		const outputPostDir = path.join(outputDir, entry.name);
+
+		copyAssetsRecursively(fullDirPath, outputPostDir);
 	}
 });

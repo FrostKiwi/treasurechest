@@ -8,6 +8,7 @@
 	color: #49002d;
 	background-color: #ffe4f5;
 	padding: 10px;
+	padding-right: 16px;
 }
 
 @media (max-width: 320px) {
@@ -48,6 +49,7 @@
 	margin: 0;
 	margin-bottom: 4px;
 	color: #a9015e;
+	text-align: justify;
 }
 
 .post-date {

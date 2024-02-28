@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require('path');
 const CleanCSS = require("clean-css");
 const Image = require("@11ty/eleventy-img");
 const { execSync } = require('child_process');
@@ -30,6 +31,7 @@ module.exports = function (eleventyConfig) {
 	eleventyConfig.addPlugin(syntaxHighlight);
 	/* The required CSS for the PrimJS color theme */
 	eleventyConfig.addPassthroughCopy("assets");
+	eleventyConfig.addPassthroughCopy("ace");
 	eleventyConfig.on('beforeBuild', () => {
 		// Run the custom script before building the site
 		execSync('node moveAssets.js');
