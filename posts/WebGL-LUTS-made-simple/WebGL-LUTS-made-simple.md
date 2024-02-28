@@ -36,7 +36,7 @@ We'll first start with the thermal camera footage. The output of the [thermal ca
 <div class="center-child"><button onclick="document.getElementById('fileInput').click();">Upload Video</button><button onclick="startWebcam('videoPlayer');">Connect Webcam</button></div>
 
 <video width="100%" height="480" autoplay playsinline muted controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video></div>
-
+<blockquote class="reaction"><div class="reaction_text">Don't pause the video, it's the live input for the WebGL examples below</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 <script src="videoSource.js"></script>
 
 Next we upload this footage to the graphics card using WebGL and redisplay it using a [shader](https://learnopengl.com/Getting-started/Hello-Triangle), which leaves the footage untouched. Each frame is transferred as a 2D [texture](https://learnopengl.com/Getting-started/Textures) to the GPU. Though we haven't actually done anything visually yet, we have established a graphics pipeline, which allows us to manipulate the video data in realtime. From here on out, we are mainly interested in the "[Fragment Shader](https://learnopengl.com/Getting-started/Hello-Triangle)". This is the piece of code that runs per pixel of the video to determine its final color.
