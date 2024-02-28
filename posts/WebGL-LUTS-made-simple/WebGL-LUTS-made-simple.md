@@ -1,5 +1,5 @@
 ---
-title: Unreasonably effective - How video games use LUTs and how you can too
+title: How video games use LUTs and how you can too
 permalink: "/{{ page.fileSlug }}/"
 date: 2024-02-28
 last_modified: 2024-02-29
@@ -365,7 +365,7 @@ The resulting variations can be seen in the following screenshot. The most impor
 	</figcaption></figcaption>
 </figure>
 
-With just a couple of LUTs chosen at random for skin and clothes, the following color variations are achieved. Fitting colorramps were chosen by artists and included in the final game. This is the part I find so remarkable - How such a simple technique was leveled up to bring so much value to the visual experience. All at the cost of a simple texture read. That is effective, unreasonably so ;]
+With just a couple of LUTs chosen at random for skin and clothes, the following color variations are achieved. Fitting colorramps were chosen by artists and included in the final game. This is the part I find so remarkable - How such a simple technique was leveled up to bring so much value to the visual experience. All at the cost of a simple texture read.
 
 <figure>
 	<img src="l4dluts.jpg">
