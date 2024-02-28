@@ -35,7 +35,7 @@ We'll first start with the thermal camera footage. The output of the [thermal ca
 
 <div class="center-child"><button onclick="document.getElementById('fileInput').click();">Upload Video</button><button onclick="startWebcam('videoPlayer');">Connect Webcam</button></div>
 
-<video width="100%" height="480" playsinline muted controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video></div>
+<video width="100%" height="480" autoplay playsinline muted controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video></div>
 
 <script src="videoSource.js"></script>
 
@@ -290,7 +290,7 @@ Unless your data has specific structure, there is actually one colormap type tha
 
 Reasons for this and why other colormaps are dangerous for judging critical information are presented by [Stefan van der Walt](https://github.com/stefanv) and [Nathaniel J. Smith](https://github.com/njsmith) in this talk.
 
-<div class="center-child"><iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube.com/embed/xAoljeRJ3lU?si=vxcupZ7q-JhcCXFm&amp;start=50" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube.com/embed/xAoljeRJ3lU?si=vxcupZ7q-JhcCXFm&amp;start=50" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 #### Still performance free?
 
