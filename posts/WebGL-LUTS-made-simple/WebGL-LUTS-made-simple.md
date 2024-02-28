@@ -2,7 +2,7 @@
 title: Unreasonably effective - How video games use LUTs and how you can too
 permalink: "/{{ page.fileSlug }}/"
 date: 2024-02-28
-last_modified:
+last_modified: 2024-02-29
 description: How to implement 1D LUTs to color grayscale thermal vision videos, 3D LUTs for color correct and smart hacks from video games
 publicTags:
   - Graphics
