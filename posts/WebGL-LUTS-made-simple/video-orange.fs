@@ -3,7 +3,7 @@
    change anything. For color manipulation, having mediump is ample. For
    precision trigonometry, bumping to highp is often needed. */
 precision mediump float;
-/* Our vexture coordinates */
+/* Our texture coordinates */
 varying vec2 tex;
 /* Our video texture */
 uniform sampler2D video;
