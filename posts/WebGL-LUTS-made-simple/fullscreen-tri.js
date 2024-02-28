@@ -132,19 +132,37 @@ function setupTri(canvasId, vertexId, fragmentId, videoId, lut, lutselect, butto
 			}
 		}
 	}
-
+	
 	if (lutselect) {
 		const lutSelectElement = document.getElementById(lutselect);
 		if (lutSelectElement) {
 			lutSelectElement.addEventListener('change', function () {
-				const newPath = lutSelectElement.value;
-				lutImg.onload = function () {
-					lutTextureInitialized = false;
-				};
-				lutImg.src = newPath;
+				/* Select Box */
+				if (lutSelectElement.tagName === 'SELECT') {
+					const newPath = lutSelectElement.value;
+					lutImg.onload = function () {
+						lutTextureInitialized = false;
+					};
+					lutImg.src = newPath;
+				}
+				/* Input box */
+				else if (lutSelectElement.tagName === 'INPUT' && lutSelectElement.type === 'file') {
+					const file = lutSelectElement.files[0];
+					if (file) {
+						const reader = new FileReader();
+						reader.onload = function (e) {
+							lutImg.onload = function () {
+								lutTextureInitialized = false;
+							};
+							lutImg.src = e.target.result;
+						};
+						reader.readAsDataURL(file);
+					}
+				}
 			});
 		}
 	}
+
 
 	/* Vertex Buffer with a Fullscreen Triangle */
 	/* Position and UV coordinates */

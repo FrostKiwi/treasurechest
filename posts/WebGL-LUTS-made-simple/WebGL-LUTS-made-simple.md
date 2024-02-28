@@ -1,7 +1,7 @@
 ---
 title: Unreasonably effective - How video games use LUTs and how you can too
 permalink: "/{{ page.fileSlug }}/"
-date:
+date: 2024-02-28
 last_modified:
 description: How to implement 1D LUTs to color grayscale thermal vision videos, 3D LUTs for color correct and smart hacks from video games
 publicTags:
@@ -27,7 +27,7 @@ We'll be creating and modifying the video above, though you may substitute the f
 
 ## The Setup
 
-We'll first start with the thermal camera footage. The output of the [thermal camera](https://en.wikipedia.org/wiki/Thermographic_camera) is a grayscale video. Instead of this video, you may upload your own or activate the WebCam, which even allows you to live stream from a thermal camera using [OBS](https://obsproject.com/)'s virtual WebCam and various input methods.
+We'll first start with the thermal camera footage. The output of the [thermal camera](https://en.wikipedia.org/wiki/Thermographic_camera) is a grayscale video. Instead of this video, you may upload your own or activate the webcam, which even allows you to live stream from a thermal camera using [OBS](https://obsproject.com/)'s virtual webcam output and various input methods.
 
 <blockquote class="reaction"><div class="reaction_text">No data leaves your device, all processing happens on your GPU. Feel free to use videos exposing your most intimate secrets.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
@@ -112,6 +112,11 @@ Before we jump into how LUTs can help us, let's take a look a how we can manipul
 
 <script>setupTri("canvas_3", "vertex", "tintingShader", "videoPlayer", null, null, "shaderReload_3");</script>
 <blockquote>
+<details><summary><a href="screenshot_orange.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+
+![image](screenshot_orange.jpg)
+
+</details>
 <details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
@@ -138,7 +143,7 @@ Before we jump into how LUTs can help us, let's take a look a how we can manipul
 
 <blockquote class="reaction"><div class="reaction_text">This is about the difference tinting makes, not overall performance. Lot's left on the optimization table, like asynchronously loading the frames to a single-channel texture or processing on every frame, not display refresh</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-A similar vein, it was also talked about in the [recent blog post](https://rosenzweig.io/blog/conformant-gl46-on-the-m1.html) by [Alyssa Rosenzweig](https://rosenzweig.io), about her GPU reverse engineering project achieving proper standard conformant OpenGL Drivers on the Apple M1. Regarding performance implications of a specific additional operation she noted:
+In similar vein, it was also talked about in the [recent blog post](https://rosenzweig.io/blog/conformant-gl46-on-the-m1.html) by [Alyssa Rosenzweig](https://rosenzweig.io), about her GPU reverse engineering project achieving proper standard conformant OpenGL Drivers on the Apple M1. Regarding performance implications of a specific additional operation she noted:
 
 > **Alyssa Rosenzweig**: The difference should be small percentage-wise, as arithmetic is faster than memory. With thousands of threads running in parallel, the arithmetic cost may even be hidden by the load’s latency.
 
@@ -164,11 +169,11 @@ Now that we have gotten an idea of how we can interact and manipulate color in a
 The following examples make more sense in context of thermal camera footage, so you can click the following button to revert to it, if you wish.
 
 <div class="center-child">
-<button onclick='changeVideoURL("bwvid.mp4", "player")'>Reload thermal camera footage</button></div>
+<button onclick='changeVideoURL("bwvid.mp4", "videoPlayer")'>Reload thermal camera footage</button></div>
 
 ### The humble 1D LUT
 
-A 1D LUT is a simple array of numbers. According that array, we will color our gray video according to that array. In the context of graphics programming, this gets uploaded as a 1D-texture to the graphics card, where it is used to color the grayscale video.
+A 1D LUT is a simple array of numbers. If the 1D LUT is an RGB image, then a 1D LUT is a 1D array of colors. According that array, we will color our gray video. In the context of graphics programming, this gets uploaded as a 1D-texture to the graphics card, where it is used to transform the single channel pixels into RGB.
 
 <div class="center-child">
 <select id="lutSelector">
@@ -191,6 +196,11 @@ A 1D LUT is a simple array of numbers. According that array, we will color our g
 
 <script>setupTri("canvas_4", "vertex", "fragment_4", "videoPlayer", "lut", "lutSelector")</script>
 <blockquote>
+<details><summary><a href="screenshot_inferno.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+
+![image](screenshot_inferno.jpg)
+
+</details>
 <details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
@@ -216,9 +226,9 @@ A 1D LUT is a simple array of numbers. According that array, we will color our g
 </details>
 </blockquote>
 
-An here comes the neat part, looking at the fragment shader, we use the brightness of the video, which goes from `[0.0 - 1.0]` to index into the X-Axis of our 1D LUT, which also has texture coordinates corresponding to`[0.0 - 1.0]`, resulting in the expression `vec4 finalcolor = texture(lut, videoColor);`. In WebGL 1.0, we don't have 1D-Textures, so we use a 2D-Texture of 1px height. `vec4 finalColor = texture2D(lut, vec2(videoColor, 0.5));` Thus the resulting code actually needs the Y coordinate as well, neither of which particularly matters.
+An here comes the neat part, looking at the fragment shader, we use the brightness of the video, which goes from `[0.0 - 1.0]` to index into the X-Axis of our 1D LUT, which also has texture coordinates corresponding to`[0.0 - 1.0]`, resulting in the expression `vec4 finalcolor = texture(lut, videoColor);`. In WebGL 1.0, we don't have 1D-Textures, so we use a 2D-Texture of 1px height. `vec4 finalColor = texture2D(lut, vec2(videoColor, 0.5));` Thus the resulting code actually needs the Y coordinate as well, [neither of which particularly matters](https://github.com/tuket/opengl_tex1d_benchmark).
 
-The `0.0` black in the video is mapped to the color on the left and `1.0` white in the video is mapped to the color on the right, with all colors in between being assigned to their corresponding values.
+The `0.0` black in the video is mapped to the color on the left and `1.0` white in the video is mapped to the color on the right, with all colors in between being assigned to their corresponding values. ***1D vector in, 3D vector out.***
 
 What makes this map so well to the GPU, is that on GPUs we get bilinear filtering for free when performing texture reads. So if our 8-bits per channel video has 256 distinct shades of grey, but our 1D-Lut is only 32 pixels wide, then the texture access in between two pixels gets linearly interpolated automatically. In the above selection box you can try setting the 1D Lut to different sizes and compare.
 
@@ -238,6 +248,11 @@ Here is every single colormap that [matlibplot](https://matplotlib.org/) support
 
 <script>setupTri("canvas_5", "vertex", "fragment_5", "videoPlayer", "viridis", "lutSelector2");</script>
 <blockquote>
+<details><summary><a href="screenshot_viridis.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+
+![image](screenshot_viridis.jpg)
+
+</details>
 <details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
@@ -273,15 +288,15 @@ Unless your data has specific structure, there is actually one colormap type tha
   - This is not a given with colorful options like jet, which modify mainly just the hue whilst ignoring perceived lightness
 - People with color blindness will still be able to interpret your data correctly
 
-Reasons as for this and why other colormaps are dangerous for judging critical information are presented here by [Stefan van der Walt](https://github.com/stefanv) and [Nathaniel J. Smith](https://github.com/njsmith).
+Reasons for this and why other colormaps are dangerous for judging critical information are presented by [Stefan van der Walt](https://github.com/stefanv) and [Nathaniel J. Smith](https://github.com/njsmith) in this talk.
 
 <div class="center-child"><iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube.com/embed/xAoljeRJ3lU?si=vxcupZ7q-JhcCXFm&amp;start=50" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
 
 #### Still performance free?
 
-We talked about tinting being essentially performance free. When talking about (small 1D-) LUTs it gets complicated, though the answer is still probably yes. The main concern comes from us creating something called a "dependant texture read". We are triggering one texture read based on the result of another. In graphics programming, a performance sin, as we eliminate a whole class of possible optimized paths, that graphics drivers consider.
+We talked about tinting being essentially performance free. When talking about (small 1D) LUTs it gets complicated, though the answer is still probably yes. The main concern comes from us creating something called a "dependant texture read". We are triggering one texture read based on the result of another. In graphics programming, a performance sin, as we eliminate a whole class of possible optimized paths, that graphics drivers consider.
 
-GPUs have textures caches, which our LUT will have no problem fitting into and will probably make LUT textures read very cheap. To measure things performance this finely, how caches are hit and the like, we required advanced debugging tools, which are platform specific. There is [Nvidia NSight](https://developer.nvidia.com/blog/identifying-shader-limiters-with-the-shader-profiler-in-nvidia-nsight-graphics/), which allows you to break down the performance of each step in the shader, though OpenGL is unsupported for this. Either way, this is not the topic of this article. There _is_ one more thing though...
+GPUs have textures caches, which our LUT will have no problem fitting into and will probably make LUT texture reads very cheap. To measure performance this finely, how caches are hit and the like, we required advanced debugging tools, which are platform specific. There is [Nvidia NSight](https://developer.nvidia.com/blog/identifying-shader-limiters-with-the-shader-profiler-in-nvidia-nsight-graphics/), which allows you to break down the performance of each step in the shader, though OpenGL is unsupported for this. Either way, this is not the topic of this article. There _is_ one more thing though...
 
 You can perform polynomial approximations of a colormap and thus side-step the LUT texture read. The next WebGL fragment shader features a polynomial approximation of viridis. It was created by [Matt Zucker](https://mzucker.github.io/), available on [ShaderToy](https://www.shadertoy.com/view/WlfXRN) including polynomials for other colormaps. Compare both the original colormap exported as a LUT and the approximation exported as a LUT in the following two stripes. Remarkably close.
 
@@ -293,6 +308,11 @@ You can perform polynomial approximations of a colormap and thus side-step the L
 
 <script>setupTri("canvas_9", "vertex", "fragment_9", "videoPlayer", null);</script>
 <blockquote>
+<details><summary><a href="screenshot_viridis_polynomial.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+
+![image](screenshot_viridis_polynomial.jpg)
+
+</details>
 <details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
@@ -359,7 +379,7 @@ Unless we talk about various approximations, gamma correction requires the use o
 	<figcaption>Gamma 2.2 its inverted counterpart baked into 1D LUTs</figcaption>
 </figure>
 
-At the bottom of the LUT collection select box in chapter [So many colors](#so-many-colors), I included two gamma ramps for reference. Gamma 2.2 and inverse of Gamma 2.2. Whether or not there is benefit from accelerating gamma transformations via 1D LUTs is a question only answerable via benchmarking, but you could imagine other calculations, that would definitely benefit.
+At the bottom of the LUT collection select box in chapter [So many colors](#so-many-colors), I included two gamma ramps for reference. Gamma 2.2 and inverse of Gamma 2.2. For this example: ***1D vector in, 1D vector out***, but you can also output up to 4D vectors with a 1D LUT, as we have 4 color channels. Whether or not there is benefit from accelerating gamma transformations via 1D LUTs is a question only answerable via benchmarking, but you could imagine other calculations, that would definitely benefit.
 
 An example of this in the wild is tinting the monitor orange during night time [to prevent eye-strain](https://en.wikipedia.org/wiki/Biological_effects_of_high-energy_visible_light#Digital_filters), performed by Software like [Redshift](http://jonls.dk/redshift/). This works by changing the Gamma Ramp, a 1D LUT each for the Red, Green and Blue channel **of the monitor**. To do so it precalculates the Kelvin Warmth -> RGB and additional Gamma calculations by generating 3 1D LUTs, [as seen in Redshift's source code](https://github.com/jonls/redshift/blob/490ba2aae9cfee097a88b6e2be98aeb1ce990050/src/colorramp.c#L289).
 
@@ -374,11 +394,11 @@ The approach of Redshift and similar pieces of software is pretty awesome with i
 
 ### Camera 3D LUTs
 
-Let's go 3D! The basic idea is that we represent the entire RGB space in one cube remapping all possible colors, loaded and sampled as a 3D texture. As before, by modifying the LUT, we modify the mapping of the colors.
+Let's go 3D! The basic idea is that we represent the entire RGB space in one cube remapping all possible colors, loaded and sampled as a 3D texture. As before, by modifying the LUT, we modify the mapping of the colors. ***3D vector in, 3D vector out***
 
 <blockquote class="reaction"><div class="reaction_text">You can change color balance with a 1D LUT for Red, Green and Blue. So what a 3D LUT can, that 3 1D LUTs cannot, isn't so obvious. 3D LUT cubes are needed for changes requiring a combination of RGB as input, like changes to saturation, hue, specific colors or to perform color isolation.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
-Again, the LUT can be any size, but typically a cube is used. Typically it is saved as a strip or square containing the cube, separated as planes for use in video games or as an ["Iridas/Adobe" .cube file](https://drive.google.com/file/d/143Eh08ZYncCAMwJ1q4gWxVOqR_OSWYvs/view), which video editors use. Here is a 32³px strip of the cube.
+Again, the LUT can be any size, but typically a cube is used. Typically it is saved as a strip or square containing the cube, separated as planes for use in video games or as an ["Iridas/Adobe" .cube file](https://drive.google.com/file/d/143Eh08ZYncCAMwJ1q4gWxVOqR_OSWYvs/view), which video editors use. Here is the 32³px cube as a strip.
 
 <figure>
 	<img src="3DLut.png">
@@ -392,17 +412,15 @@ We can load these planes as a 32³px cube and display it in 3D as [voxels](https
 	<figcaption>The above 3D LUT, displayed in 3D without interpolation</figcaption>
 </figure>
 
-Since it's in 3D, we only see the outer most voxels. We map the Red to X, Green to Y and Blue to Z, since this is identical to the mapping on graphics cards. You may have noticed the origin being in the top left. This is due to DirectX having the texture coordinate origin in the top left, as opposed to OpenGL, which has [its origin in the bottom left](https://learnopengl.com/Getting-started/Textures).
+Since it's in 3D, we only see the outer most voxels. We map the Red to X, Green to Y and Blue to Z, since this is identical to the mapping on graphics cards. You may have noticed the origin being in the top left. This is due to DirectX having the texture coordinate origin [in the top left](https://www.puredevsoftware.com/blog/2018/03/17/texture-coordinates-d3d-vs-opengl/), as opposed to OpenGL, which has [its origin in the bottom left](https://learnopengl.com/Getting-started/Textures). Generally the DirectX layout is the unofficial standard, though nothing prevents you from flipping it.
 
 <blockquote class="reaction"><div class="reaction_text">This is the reason why screenshots from OpenGL are sometimes vertically flipped, when handled by tools expecting DirectX layout and vice versa. Many libraries <a href="https://github.com/nothings/stb/blob/ae721c50eaf761660b4f90cc590453cdb0c2acd0/stb_image_write.h#L53">have a switch to handle that</a>.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
 #### Setup
 
-We'll be using this footage shot on the Panasonic GH6. It is shot in its [Panasonic V-Log](https://www.panasonic.com/uk/consumer/cameras-camcorders/lumix-expert-advice-learn/technique-technology/what-is-v-log.html) color profile (what a horrible name, not to be confused with a vlog), a [logarithmic profile](https://en.wikipedia.org/wiki/Log_profile) retaining more [dynamic range](https://en.wikipedia.org/wiki/Dynamic_range) and most importantly, having a rigid definition of both Gamut and Gamma, compatible with conversions to other color profiles. Unprocessed, it looks very washed out.
+We'll be using this footage shot on the Panasonic GH6. It is shot in its [Panasonic V-Log](https://www.panasonic.com/uk/consumer/cameras-camcorders/lumix-expert-advice-learn/technique-technology/what-is-v-log.html) color profile (what a horrible name, not to be confused with a [vlog](https://en.wikipedia.org/wiki/Vlog)), a [logarithmic profile](https://en.wikipedia.org/wiki/Log_profile) retaining more [dynamic range](https://en.wikipedia.org/wiki/Dynamic_range) and most importantly, having a rigid definition of both Gamut and Gamma, compatible with conversions to other color profiles. Unprocessed, it looks very washed out and very boring.
 
-<blockquote class="reaction"><div class="reaction_text">What a horrible name, not to be confused with a <a href="https://en.wikipedia.org/wiki/Vlog">vlog</a></div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
-
-You may substitute you own footage, though the examples don't make much sense outside of a V-Log profile footage.
+You may substitute you own footage, though the examples don't make much sense outside of V-Log color profile footage.
 
 <input type="file" id="fileInput" accept="video/*" style="display: none;" onchange="changeVideo(this, 'gh6footage')">
 
@@ -423,6 +441,11 @@ And now we load the footage again into WebGL and process it with a 3D LUT in its
 
 <script>setupTri("canvas_6", "vertex", "fragment_6", "gh6footage", "3dlut");</script>
 <blockquote>
+<details><summary><a href="screenshot_v_log.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+
+![image](screenshot_v_log.jpg)
+
+</details>
 <details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
@@ -453,6 +476,11 @@ One technical detail is that for compatibility I'm using WebGL 1.0, so 3D Textur
 Unfortunately, that code contains a mistake around Z-Axis calculation of the cube, shifting the colors blue, a mistake [corrected in 2019](https://github.com/WebGLSamples/WebGLSamples.github.io/commit/b07bf14b53c2666918ff8ae207a7588732012a2b). So if you want to perform the same backwards compatibility to WebGL 1.0, OpenGLES 2 or OpenGL 2.1 without the [OES_texture_3D](https://registry.khronos.org/OpenGL/extensions/OES/OES_texture_3D.txt) extension, make sure you copy the most recent version, as used here.
 
 #### Simple corrections
+As with the 1D LUT, any correction we apply to the LUT will be applied to the footage or graphics scene we use. In the following example I imported my footage and LUT into [DaVinci Resolve](https://www.blackmagicdesign.com/products/davinciresolve). I applied Panasonic's "[V-Log to V-709 3D-LUT](https://na.panasonic.com/us/resource-center/v-log-v-709-3d-lut)", which transforms the footage into what Panasonic considers a pleasing standard look. Then a bit of contrast and white point correction to make white full-bright were applied. Afterwards the LUT was exported again. This LUT and its result are shown below.
+
+<input type="file" id="3DLutInput" accept="image/*" style="display: none;">
+<a href="3DLut.png" download="3DLut.png" id="downloadLink" style="display: none;"></a>
+<div class="center-child"><button onclick="document.getElementById('downloadLink').click();">Download clean LUT</button><button onclick="document.getElementById('3DLutInput').click();">Upload LUT</button></div>
 
 <img src="3DLutDavinci.png" id="3dlutDavinci" style="width: 100%">
 
@@ -460,8 +488,13 @@ Unfortunately, that code contains a mistake around Z-Axis calculation of the cub
 
 <canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_7"></canvas>
 
-<script>setupTri("canvas_7", "vertex", "fragment_7", "gh6footage", "3dlutDavinci");</script>
+<script>setupTri("canvas_7", "vertex", "fragment_7", "gh6footage", "3dlutDavinci", "3DLutInput");</script>
 <blockquote>
+<details><summary><a href="screenshot_v709.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+
+![image](screenshot_v709.jpg)
+
+</details>
 <details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
@@ -486,6 +519,25 @@ Unfortunately, that code contains a mistake around Z-Axis calculation of the cub
 
 </details>
 </blockquote>
+
+With the above two buttons you can also download the clean LUT, screenshot the uncorrected footage in the "[Setup chapter](#setup)" and apply your own corrections. The upload LUT button allows you to replace the LUT and see the result. Be aware, that the LUT has to maintain the exact same 1024px x 32px size and remain a 32³px cube.
+
+<blockquote class="reaction"><div class="reaction_text">Just to clarify, the used video is still the original! DaVinci Resolve exported a LUT, not a video. The full color correction is happening right now.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+#### Left 4 Dead's use of 3D LUTs
+
+Using 3D LUTs to style your game's colors via outside tools is a very well known workflow. The way it works is:
+
+- take a screenshot of the scene you want to color correct
+- open it and an initialized 3D LUT in Photoshop or similar photo editing software
+- Apply your color corrections, to both the screenshot and LUT at the same time
+- crop out and export the 3D LUT
+
+Continuing the use of Left 4 Dead as an example, Left 4 Dead does exactly the same. Here is a tutorial walking you through the process for Left 4 Dead 2 specifically.
+
+<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube.com/embed/xXVzJ_CfnfQ?si=4hMkpjkRX86xD2yT&amp;start=250" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+You can use any color correction tool of Photoshop freely. The only limitation is that you may not use any filters influencing the relation of multiple pixels. So all [convolutions](<https://en.wikipedia.org/wiki/Kernel_(image_processing)>) like blur, sharpen, emboss, etc., cannot be used. Or rather, they will lead to unexpected results by blurring the remapped colors.
 
 #### Advanced Adventures
 But we aren't just limited to simple corrections. In-depth video editing and color grading suites like [DaVinci Resolve](https://www.blackmagicdesign.com/products/davinciresolve) allow you to implement complicated color transforms and color grades and export those as 3D LUTs. This field is so incredibly complicated, that it's far beyond practical to implement these yourself.
@@ -519,7 +571,7 @@ LUT_3D_INPUT_RANGE 0.0 1.0
 	<figcaption>DaVinci Resolve applying a film emulation lut and the needed color transform for input.</figcaption>
 </figure>
 
-This is a very complex set of details to get right and we get it all baked into one simple LUT. Below is the resulting LUT of this transformation process. Even if you don't like the result stylistically, this is about unlocking the potential of a heavy-weight color grading suite for use in you graphical applications.
+This is a very complex set of details to get right and we get it all baked into one simple LUT. Below is the resulting LUT of this transformation process. Even if you don't like the result stylistically, this is about unlocking the potential of a heavy-weight color grading suite for use in your graphical applications.
 
 <img src="3DLutDavinci_Film.png" id="3dlutDavinci_Film" style="width: 100%">
 
@@ -529,6 +581,11 @@ This is a very complex set of details to get right and we get it all baked into 
 
 <script>setupTri("canvas_8", "vertex", "fragment_8", "gh6footage", "3dlutDavinci_Film");</script>
 <blockquote>
+<details><summary><a href="screenshot_filmic.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+
+![image](screenshot_filmic.jpg)
+
+</details>
 <details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
@@ -554,20 +611,7 @@ This is a very complex set of details to get right and we get it all baked into 
 </details>
 </blockquote>
 
-#### Left 4 Dead's use of 3D LUTs
-
-Using 3D LUTs to style your game's colors via outside tools is a very well known workflow. The way it works is:
-
-- take a screenshot of the scene you want to color correct
-- open it and an initialized 3D LUT in Photoshop or similar photo editing software
-- Apply your color corrections, to both the screenshot and LUT at the same time
-- crop out and export the 3D LUT
-
-Continuing the use of Left 4 Dead as an example, Left 4 Dead does exactly the same. Here is a tutorial walking you through the process for Left 4 Dead 2 specifically.
-
-<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube.com/embed/xXVzJ_CfnfQ?si=4hMkpjkRX86xD2yT&amp;start=250" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-
-You can use any color correction tool of Photoshop freely. The only limitation is that you may not use any filters influencing the relation of multiple pixels. So all [convolutions](<https://en.wikipedia.org/wiki/Kernel_(image_processing)>) like blur, sharpen, emboss, etc., cannot be used. Or rather, they will lead to unexpected results by blurring the remapped colors.
+To be fair, we are abusing formats a bit. For article compatibility, the above video is in an 8-bit format highly compressed format, whereas this is usually done on 10-bit footage. But what about LUT size? Isn't 32³px small for for filmic color correction? Surprisingly, most LUTs are only 33³px in size, like the official "[V-Log to V-709 3D-LUT](https://na.panasonic.com/us/resource-center/v-log-v-709-3d-lut)" LUT. The Panasonic in-camera monitoring LUTs, only use 17³px, even on Panasonic's 5-digit dollar cinema cameras. So even for cinema use, this seems to be ample.
 
 ## Other uses
 
