@@ -94,20 +94,23 @@ function setupTri(canvasId, vertexId, fragmentId, videoId, lut, lutselect, butto
 	}
 
 	/* Video Setup */
-	const video = document.getElementById(videoId);
-
-	if (video.paused) {
-		/* Fighting battery optimizations */
-		video.loop = true;
-		video.muted = true;
-		video.playsinline = true;
-		video.play();
-	}
+	let video = document.getElementById(videoId);
 
 	let videoTextureInitialized = false;
 	let lutTextureInitialized = false;
 
 	function updateTextures() {
+		if (!video) {
+			/* Fight reload issues */
+			video = document.getElementById(videoId);
+		}
+		if (video && video.paused && video.readyState >= 4) {
+			/* Fighting battery optimizations */
+			video.loop = true;
+			video.muted = true;
+			video.playsinline = true;
+			video.play();
+		}
 		if (lut && lutImg.naturalWidth && !lutTextureInitialized) {
 			lutTexture = setupTexture(gl, lutTexture, lutImg);
 			lutTextureInitialized = true;
@@ -132,7 +135,7 @@ function setupTri(canvasId, vertexId, fragmentId, videoId, lut, lutselect, butto
 			}
 		}
 	}
-	
+
 	if (lutselect) {
 		const lutSelectElement = document.getElementById(lutselect);
 		if (lutSelectElement) {
