@@ -82,6 +82,8 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 
 Both the video and its WebGL rendition should be identical and playing in sync.
 
+<blockquote class="reaction"><div class="reaction_text">Unless you are on  <a href="https://www.mozilla.org/en-US/firefox/browsers/mobile/android/">Firefox Android</a>, where <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1709726">video is broken for WebGL</a></div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
+
 ## Tinting
 
 Before we jump into how LUTs can help us, let's take a look a how we can manipulate this footage. The Fragment Shader below colors the image orange by multiplying the image with the color orange in line `21`. Coloring a texture that way is referred to as "tinting".
