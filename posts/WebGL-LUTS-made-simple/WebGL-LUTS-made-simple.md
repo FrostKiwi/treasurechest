@@ -365,6 +365,16 @@ The resulting variations can be seen in the following screenshot. The most impor
 	</figcaption></figcaption>
 </figure>
 
+With just a a couple of LUTs chosen at random for skin and clothes, the following color variations are achieved. Fitting colorramps were chosen by artists and included in the final game. This is the part I find so remarkable - How such a simple technique was leveled up to bring so much value to the visual experience. All at the cost of a simple texture read. That is effective, unreasonably so ;]
+
+<figure>
+	<img src="l4dluts.jpg">
+	<img src="zombievariation.jpg">
+	<figcaption>LUTs for skin and clothes chosen at random to create color variation<br>
+	Source: Excerpt from <a href="https://www.gdcvault.com/play/1012264/Shading-a-Bigger-Better-Sequel">"Shading a Bigger, Better Sequel: Techniques in Left 4 Dead 2"</a><br>GDC 2010 talk by <a href="http://www.bronwengrimes.com">Bronwen Grimes</a>
+	</figcaption></figcaption>
+</figure>
+
 Checkout the [full talk](https://www.gdcvault.com/play/1012264/Shading-a-Bigger-Better-Sequel) on the GDC page, if you are interested such techniques.
 
 <blockquote class="reaction"><div class="reaction_text">The creativity of them using "Exclusive Masking" blew me away. First time I learned about it. Two textures in one channel, set to specific ranges<br>(Texture 1: 0-128, Texture 2: 128-256) at the cost of color precision</div><img class="kiwi" src="/assets/kiwis/love.svg"></blockquote>
