@@ -6,7 +6,7 @@
     "title": "FrostKiwi's Secrets",
     "subtitle": "A collection of useful things I want to share with the world",
     "language": "en",
-    "url": "https://blog.frost.kiwi/",
+    "url": "https://blog.frost.kiwi",
     "author": {
       "name": "Wladislav Artsimovich",
       "email": "blog@frost.kiwi"
@@ -19,7 +19,7 @@
   <title>{{ metadata.title }}</title>
   <subtitle>{{ metadata.subtitle }}</subtitle>
   <link href="{{ permalink | absoluteUrl(metadata.url) }}" rel="self"/>
-  <link href="{{ metadata.url }}"/>
+  <link href="{{ metadata.url }}" rel="alternate"/>
   <updated>{{ collections.post | getNewestCollectionItemDate | dateToRfc3339 }}</updated>
   <id>{{ metadata.url }}</id>
   <author>
@@ -31,10 +31,18 @@
       {%- set absolutePostUrl = post.url | absoluteUrl(metadata.url) %}
       <entry>
         <title>{{ post.data.title }}</title>
-        <link href="{{ absolutePostUrl }}"/>
+        <link href="{{ absolutePostUrl }}" rel="alternate"/>
         <updated>{{ post.date | dateToRfc3339 }}</updated>
         <id>{{ absolutePostUrl }}</id>
         <summary>{{ post.data.description }}</summary>
+		<content xml:lang="{{ metadata.language }}" type="html">
+			{{ post.data.description }}
+		  	<![CDATA[
+    			<a href="{{ absolutePostUrl }}">
+      				<img alt="thumbnail" src="{{ post.data.image }}" />
+		    	</a>
+  			]]>
+		</content>
       </entry>
     {%- endif %}
   {%- endfor %}
