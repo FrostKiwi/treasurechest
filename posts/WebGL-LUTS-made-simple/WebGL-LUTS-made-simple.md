@@ -238,7 +238,7 @@ What makes this map so well to the GPU, is that on GPUs we get bilinear filterin
 
 #### So many colors
 
-Here is every single colormap that [matlibplot](https://matplotlib.org/) supports, exported as a 1D LUT. Scroll through all of them and choose your favorite!
+Here is every single colormap that [matplotlib](https://matplotlib.org/) supports, exported as a 1D LUT. Scroll through all of them and choose your favorite!
 
 {% rawFile "posts/WebGL-LUTS-made-simple/select.html" %}
 
