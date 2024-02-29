@@ -538,7 +538,7 @@ With the above two buttons you can also download the clean LUT, screenshot the u
 
 #### Left 4 Dead's use of 3D LUTs
 
-Using 3D LUTs to style your game's colors via outside tools is a very well known workflow. The way it works is:
+Using 3D LUTs to style your game's colors via outside tools is a very well known workflow and standard across the video game industry, as opposed to the previous and game specific 1D LUT use for introducing variation in skin and clothes. The way it works is:
 
 - take a screenshot of the scene you want to color correct
 - open it and an initialized 3D LUT in Photoshop or similar photo editing software
