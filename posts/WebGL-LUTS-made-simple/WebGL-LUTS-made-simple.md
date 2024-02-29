@@ -388,7 +388,7 @@ Unless we talk about various approximations, gamma correction requires the use o
 <figure>
 	<img src="/assets/LUTs/Gamma/gamma2.2.png" style="width: 100%; height: 64px;">
 	<img src="/assets/LUTs/Gamma/gamma2.2inv.png" style="width: 100%; height: 64px;">
-	<figcaption>Gamma 2.2 its inverted counterpart baked into 1D LUTs</figcaption>
+	<figcaption>Gamma 2.2 and its inverted counterpart baked into 1D LUTs</figcaption>
 </figure>
 
 At the bottom of the LUT collection select box in chapter [So many colors](#so-many-colors), I included two gamma ramps for reference. Gamma 2.2 and inverse of Gamma 2.2. For this example: ***1D vector in, 1D vector out***, but you can also output up to 4D vectors with a 1D LUT, as we have 4 color channels. Whether or not there is benefit from accelerating gamma transformations via 1D LUTs is a question only answerable via benchmarking, but you could imagine other calculations, that would definitely benefit.
@@ -623,7 +623,7 @@ This is a very complex set of details to get right and we get it all baked into 
 </details>
 </blockquote>
 
-To be fair, we are abusing formats a bit. For article compatibility, the above video is in an 8-bit format highly compressed format, whereas this is usually done on 10-bit footage. But what about LUT size? Isn't 32³px small for for filmic color correction? Surprisingly, most LUTs are only 33³px in size, like the official "[V-Log to V-709 3D-LUT](https://na.panasonic.com/us/resource-center/v-log-v-709-3d-lut)" LUT. The Panasonic in-camera monitoring LUTs, only use 17³px, even on Panasonic's 5-digit dollar cinema cameras. So even for cinema use, this seems to be ample.
+To be fair, we are abusing formats a bit. For article compatibility, the above video is in an 8-bit format highly compressed format, whereas this is usually done on 10-bit footage. But what about LUT size? Isn't 32³px small for for filmic color correction? Surprisingly, most LUTs are only 33³px in size, like the official "[V-Log to V-709 3D-LUT](https://na.panasonic.com/us/resource-center/v-log-v-709-3d-lut)". The Panasonic in-camera monitoring LUTs, only use 17³px, even on Panasonic's 5-digit dollar cinema cameras. So even for cinema use, this seems to be ample.
 
 ## Other uses
 
