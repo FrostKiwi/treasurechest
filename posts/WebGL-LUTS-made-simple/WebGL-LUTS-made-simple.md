@@ -35,7 +35,7 @@ We'll first start with the thermal camera footage. The output of the [thermal ca
 
 <div class="center-child"><button onclick="document.getElementById('fileInput').click();">Upload Video</button><button onclick="startWebcam('videoPlayer');">Connect Webcam</button></div>
 
-<video width="100%" height="480" autoplay playsinline muted controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video></div>
+<video width="100%" height="480" autoplay playsinline muted controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video>
 <blockquote class="reaction"><div class="reaction_text">Don't pause the video, it's the live input for the WebGL examples below</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 <script src="videoSource.js"></script>
 
