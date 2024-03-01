@@ -31,7 +31,7 @@
 	<meta property="og:description"
 		content="{{ description | default: "TechBlog and secret sauce recipes of Wladislav Artsimovich" }}" />
 	<meta property="og:image"
-		content="https://blog.frost.kiwi{{ post.data.image | default: "/assets/opengraph.jpg" }}" />
+		content="https://blog.frost.kiwi{{ post.data.social | default: "/assets/opengraph.jpg" }}" />
 
 	<!-- Concat CSS to minify it -->
 	{% capture css %}

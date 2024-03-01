@@ -88,11 +88,15 @@ module.exports = function (eleventyConfig) {
 		for (const post of posts) {
 			if (post.data.image) {
 				const image = await Image('./posts/' + post.url + '/' + post.data.image, {
-					widths: [256],
+					widths: [256, "auto"],
 					formats: ['jpeg'],
 					outputDir: './_site/' + post.url
 				});
 				post.data.image = post.url + image.jpeg[0].filename;
+				if (image.jpeg[1])
+					post.data.social = post.url + image.jpeg[1].filename;
+				else
+					post.data.social = post.url + image.jpeg[0].filename;
 			}
 		}
 
