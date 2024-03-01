@@ -175,7 +175,7 @@ The following examples make more sense in context of thermal camera footage, so 
 
 ### The humble 1D LUT
 
-A 1D LUT is a simple array of numbers. If the 1D LUT is an RGB image, then a 1D LUT is a 1D array of colors. According that array, we will color our gray video. In the context of graphics programming, this gets uploaded as a 1D-texture to the graphics card, where it is used to transform the single channel pixels into RGB.
+A 1D LUT is a simple array of numbers. If the 1D LUT is an RGB image, then a 1D LUT is a 1D array of colors. According to that array, we will color our gray video. In the context of graphics programming, this gets uploaded as a 1D-texture to the graphics card, where it is used to transform the single channel pixels into RGB.
 
 <div class="center-child">
 <select id="lutSelector">
