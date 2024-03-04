@@ -13,6 +13,7 @@ image: thumbnail.png
 ---
 In graphics programming, getting rid of the [aliasing jaggies](https://en.wikipedia.org/wiki/Jaggies) is an art form with decades upon decades of maths, creative techniques and non-stop innovation. From the simple yet performance intensive rendering at a higher resolution an down-sampling "[supersampling anti-aliasing (SSAA)](https://en.wikipedia.org/wiki/Supersampling)", to the 
 
+
 What this article talks about is a set of techniques with the same goal, but vastly different approach - using the make-up of the geometry itself to draw anti-aliased shapes in one single sample.
 
 <canvas style="width: 100%; height: 200px;"></canvas>
@@ -81,3 +82,18 @@ This is compatible with all OpenGL and GLSL versions that use shaders. For OpenG
 Advanced font rendering uses `GL_EXT_blend_func_extended` sometimes to perform advanced blending, but that is not required for our Anti-Aliasing case.
 
 Mention Assassin Creed Unity Depth reprojection talk and how they MSAA the hell out of a small render target and blow and reconstruct the fullres version out of that info.
+
+https://www.youtube.com/watch?v=1J6aAHLCbWg
+https://www.shadertoy.com/view/3stcD4
+http://miciwan.com/SIGGRAPH2013/Lighting%20Technology%20of%20The%20Last%20Of%20Us.pdf
+
+FXAA
+
+https://web.archive.org/web/20110903074855/http://www.eurogamer.net/articles/digital-foundry-future-of-anti-aliasing?page=3
+https://web.archive.org/web/20120120070945/http://timothylottes.blogspot.com/2011/12/big-fxaa-update-soon.html
+https://web.archive.org/web/20120120082725/http://timothylottes.blogspot.com/2011/12/fxaa-40-stills-and-features.html
+https://web.archive.org/web/20120120080002/http://timothylottes.blogspot.com/2011/12/fxaa-40-stills-and-features-part-2.html
+https://web.archive.org/web/20120120051227/http://timothylottes.blogspot.com/2011/12/kotaku-what-is-fxaa.html
+https://web.archive.org/web/20120120072820/http://timothylottes.blogspot.com/2011/12/fxaa-40-will-have-new-spatial-only.html
+https://web.archive.org/web/20120120085634/http://timothylottes.blogspot.com/2011/12/fxaa-40-development-update-stills.html
+https://web.archive.org/web/20120120075218/http://timothylottes.blogspot.com/2011/12/fxaa-40-with-178x-ssaa.html
