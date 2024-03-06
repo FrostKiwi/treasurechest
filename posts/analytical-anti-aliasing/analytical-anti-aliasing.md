@@ -2,16 +2,22 @@
 wip: true
 title: Analytical Anti-Aliasing
 permalink: "/{{ page.fileSlug }}/"
-date:
+date: 2999-12-09
 last_modified:
 description: How to fix jaggies the analytical way with some juicy secrets
 publicTags:
-  - OpenGL
+  - Graphics
   - WebGL
   - GameDev
 image: thumbnail.png
 ---
-In graphics programming, getting rid of the [aliasing jaggies](https://en.wikipedia.org/wiki/Jaggies) is an art form with decades upon decades of maths, creative techniques and non-stop innovation. From the simple yet performance intensive rendering at a higher resolution an down-sampling "[supersampling anti-aliasing (SSAA)](https://en.wikipedia.org/wiki/Supersampling)", to the 
+Today's journey is [Anti-Aliasing](https://en.wikipedia.org/wiki/Spatial_anti-aliasing) and the destination is **Analytical Anti-Aliasing**. Getting rid of rasterization [jaggies](https://en.wikipedia.org/wiki/Jaggies) is an art-form with decades upon decades of maths, creative techniques and non-stop innovation. With so many years of research and development, there are many flavors.
+
+From the [simple but resource intensive **SSAA**](https://en.wikipedia.org/wiki/Supersampling), over [theory dense **SMAA**](https://www.iryoku.com/smaa/), to using [machine learning with **DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). We'll take a look at how they work, before introducing a new way to look a the problem - the *analytical* way. The perfect Anti-Aliasing exists and is simpler than you think. Let's find out if you should use it.
+
+
+- [Supersampling anti-aliasing [**SSAA**]](https://en.wikipedia.org/wiki/Supersampling)
+- [Multisampling anti-aliasing [**MSAA**]](https://en.wikipedia.org/wiki/Supersampling)
 
 
 What this article talks about is a set of techniques with the same goal, but vastly different approach - using the make-up of the geometry itself to draw anti-aliased shapes in one single sample.
@@ -19,8 +25,7 @@ What this article talks about is a set of techniques with the same goal, but vas
 <canvas style="width: 100%; height: 200px;"></canvas>
 <script src="canvas_1.js"></script>
 
-## Analytical Anti-Aliasing
-### What makes it analytical?
+## What makes it analytical?
 
 ![image](compare.png)
 
@@ -97,3 +102,8 @@ https://web.archive.org/web/20120120051227/http://timothylottes.blogspot.com/201
 https://web.archive.org/web/20120120072820/http://timothylottes.blogspot.com/2011/12/fxaa-40-will-have-new-spatial-only.html
 https://web.archive.org/web/20120120085634/http://timothylottes.blogspot.com/2011/12/fxaa-40-development-update-stills.html
 https://web.archive.org/web/20120120075218/http://timothylottes.blogspot.com/2011/12/fxaa-40-with-178x-ssaa.html
+
+Capsule shadows
+
+https://github.com/godotengine/godot-proposals/issues/5262
+https://docs.unrealengine.com/4.27/en-US/BuildingWorlds/LightingAndShadows/CapsuleShadows/Overview/
