@@ -6,7 +6,8 @@
 // @match     *://www.wanikani.com/subjects/review*
 // @match     *://www.wanikani.com/recent-mistakes*
 // @match     *://www.wanikani.com/subject-lessons*
-// @version     0.5.0
+// @match     *://www.wanikani.com/subjects/extra_study*
+// @version     0.5.1
 // @license     Do what you want with it (Preferably improve it).
 // @grant       none
 // ==/UserScript==
@@ -60,6 +61,8 @@
 		});
 	}
 
+	/* The detection of OnYomi vs KunYomi is provided by HaraldN in his
+	   Userscript "WaniKani Katakana For On’yomi" */
 	const newQuestion = function (e) {
 		if (e.detail.subject.type == 'Kanji' && e.detail.questionType == "reading") {
 			reading_type = e.detail.subject.primary_reading_type;
