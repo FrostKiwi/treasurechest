@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        WaniKani Japanese Review Questions
 // @namespace   WK_CustomQuestion
-// @description Changes the text of the Review or Lesson Quiz question. Original created by hoovard, with extra thanks going to previous authors Rui Pinheiro (LordGravewish) and Ethan.
+// @description Changes the text of the Review or Lesson Quiz question. Original created by hoovard, with extra thanks going to previous authors Rui Pinheiro (LordGravewish) and Ethan. Rewritten by FrostKiwi for the new WaniKani version with OnYomi vs KunYomi detection provided by HaraldN
 // @author    FrostKiwi
 // @match     *://www.wanikani.com/subjects/review*
 // @match     *://www.wanikani.com/recent-mistakes*
