@@ -9,7 +9,7 @@ main img {
 	margin-right: auto;
 }
 
-main {
+p {
 	text-align: justify;
 }
 
@@ -129,7 +129,6 @@ table img {
 	margin-top: 2rem;
 	margin-bottom: 0px;
 	font-size: 2.2em;
-	text-align: justify;
 }
 
 .profile_wrapper {
@@ -253,7 +252,8 @@ figure {
 	margin-bottom: 2rem;
 }
 
-figure img, video {
+figure img,
+video {
 	margin-bottom: 1rem;
 }
 
@@ -325,7 +325,7 @@ h2:hover .anchor-link,
 h3:hover .anchor-link,
 h4:hover .anchor-link,
 h5:hover .anchor-link,
-h6:hover .anchor-link{
+h6:hover .anchor-link {
 	visibility: visible;
 }
 

@@ -40,16 +40,15 @@
 	text-align: left;
 	/* Left-aligning the text */
 	display: flex;
+	/* Centering the content vertically */
 	flex-direction: column;
 	justify-content: center;
-	/* Centering the content vertically */
 }
 
 .post-content h2 {
 	margin: 0;
 	margin-bottom: 4px;
 	color: #a9015e;
-	text-align: justify;
 }
 
 .post-date {

@@ -17,7 +17,7 @@ From the [simple but resource intensive **SSAA**](https://en.wikipedia.org/wiki/
 
 
 - [Supersampling anti-aliasing [**SSAA**]](https://en.wikipedia.org/wiki/Supersampling)
-- [Multisampling anti-aliasing [**MSAA**]](https://en.wikipedia.org/wiki/Supersampling)
+- [Multisampling anti-aliasing [**MSAA**]](https://en.wikipedia.org/wiki/Multisample_anti-aliasing)
 
 
 What this article talks about is a set of techniques with the same goal, but vastly different approach - using the make-up of the geometry itself to draw anti-aliased shapes in one single sample.
