@@ -75,6 +75,18 @@ layout: layout.html
 	</tr>
 	<tr>
 		<td>
+			<a rel="me" href="https://mastodon.frost.kiwi/@FrostKiwi">
+				<img class="social_icon" src="/assets/icons/mastodon.svg">
+			</a>
+		</td>
+		<td>
+			<a rel="me" href="https://mastodon.frost.kiwi/@FrostKiwi">
+				<b>Mastodon</b>
+			</a>
+		</td>
+	</tr>
+	<tr>
+		<td>
 			<a href="https://twitter.com/FrostKiwiOne">
 				<img class="social_icon" src="/assets/icons/twitter.svg">
 				<img class="social_icon" src="/assets/icons/x.svg">
