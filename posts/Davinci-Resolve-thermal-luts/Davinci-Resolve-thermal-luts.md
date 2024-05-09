@@ -21,7 +21,7 @@ When writing [my previous article about LUTs in video games](/WebGL-LUTS-made-si
 I exported every colormap that [matplotlib](https://matplotlib.org/) supports as a 1D .cube file, so you can colormap footage in DaVinci Resolve. This is especially needed for thermal camera footage, when you want to adjust the color mapping more finely. The input is expected to be grayscale. You can [preview](#preview) them and [download](#download) the ones you need. Since it's a .cube file, it should work for other Software with .cube input as well.
 
 ## Export Python script
-Luckily, Python package [colour-science](https://www.colour-science.org/) supports exporting to the .cube "["Iridas/Adobe" format](https://drive.google.com/file/d/143Eh08ZYncCAMwJ1q4gWxVOqR_OSWYvs/view)", which DaVinci Resolve uses for its LUTs. Double luckily, the format supports 1D LUTs, so no extra manipulation is needed.
+Luckily, Python package [colour-science](https://www.colour-science.org/) supports exporting to the .cube ["Iridas/Adobe" format](https://drive.google.com/file/d/143Eh08ZYncCAMwJ1q4gWxVOqR_OSWYvs/view), which DaVinci Resolve uses for its LUTs. Double luckily, the format supports 1D LUTs, so no extra manipulation is needed.
 
 If you want to perform the export yourself or need a colormap not listed, then you can use the Python script below. Required dependencies can be installed via `pip install colour-science matplotlib`.
 
