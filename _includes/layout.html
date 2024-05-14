@@ -107,7 +107,7 @@
 	{% if tags contains 'post' %}
 	<aside>
 		<blockquote>
-			<details open>
+			<details>
 				<summary>Table of Contents</summary>
 				{{ content | toc: '{"tags":["h1","h2","h3","h4"],"ul":"true"}' | modifyTOC: title }}
 			</details>
