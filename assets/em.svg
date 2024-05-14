@@ -1,0 +1,36 @@
+<!-- Thanks to https://rouninmedia.github.io/protecting-your-email-address-via-svg-instead-of-js/ -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 125 24">
+  <defs>
+  <style type="text/css"><![CDATA[
+  rect {
+    width: 125px;
+    height: 24px;
+  }
+
+  a:focus rect,
+  rect:hover {
+    rx: 4px;
+    ry: 4px;
+  }
+
+  text {
+	font-family: "-apple-system", "Helvetica Neue", "Yu Gothic", YuGothic, Verdana,
+		Meiryo, "M+ 1p", sans-serif;
+    font-size: 14px;
+    fill: #eb99a1;
+    pointer-events: none;
+  }
+
+  a:focus text,
+  rect:hover + text {
+    fill: #DA4453;
+    text-decoration: underline;
+  }
+  ]]></style>
+  </defs>
+
+  <a href="mailto:%62%6C%6F%67%40%66%72%6F%73%74%2E%6B%69%77%69">
+    <rect fill-opacity="0.0"/>
+    <text x="50%" y="65%" text-anchor="middle" dominant-baseline="middle">&#x62;&#x6c;&#x6f;&#x67;&#x40;&#x66;&#x72;&#x6f;&#x73;&#x74;&#x2e;<!--.run-->&#x6b;&#x69;&#x77;&#x69;<!--.run--></text>
+  </a>
+</svg>

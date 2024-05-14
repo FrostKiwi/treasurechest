@@ -44,7 +44,7 @@ layout: layout.html
 	</tr>
 	<tr>
 	<td colspan="2">
-		 Via <code>blog [at] frost (dot) kiwi</code>
+		 <object style="height: 2em" class="svg-email-protection" data="/assets/em.svg" type="image/svg+xml"></object>
 	</tr>
 	<td style="text-align: start; padding-left: 0px;" colspan="2">
 		 <h3>Social Media</h3>
