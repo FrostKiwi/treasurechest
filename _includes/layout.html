@@ -9,7 +9,10 @@
 	{% else %}
 		<title>FrostKiwi's Secrets</title>
 	{% endif %}
-	{% favicon 'assets/kiwis/happy.svg' %}
+	<link href="/assets/kiwis/happy.svg" rel="icon" type="image/svg+xml">
+	<link href="/assets/apple-touch-icon.png" sizes="180x180" rel="apple-touch-icon">
+	<link href="/assets/favicon.ico" rel="icon">
+		
 	<meta name="author" content="Wladislav Artsimovich">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="{{ description | default: "TechBlog and secret sauce recipes of Wladislav Artsimovich" }}">
@@ -124,8 +127,7 @@
 		<br>
 		<hr>
 		<div class="comment_group">
-			<h2 id="comments" class="site_title">Comment via GitHub <a href="#comments"
-					class="anchor-link">#</a></h2>
+			<h2 id="comments" class="site_title">Comment via GitHub <a href="#comments" class="anchor-link">#</a></h2>
 			<img class="kiwi" src="/assets/kiwis/speak.svg">
 		</div>
 		<script src="https://utteranc.es/client.js" repo="FrostKiwi/treasurechest" issue-term="pathname"
