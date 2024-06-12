@@ -17,6 +17,11 @@ function changeVideoURL(url, player) {
 	videoPlayer.muted = true;
 	videoPlayer.playsinline = true;
 	videoPlayer.play();
+
+	var canvases = document.querySelectorAll('canvas');
+	canvases.forEach(function (canvas) {
+		canvas.style.maxHeight = null;
+	});
 }
 
 function changeVideo(input, player) {
@@ -35,6 +40,10 @@ function startWebcam(player) {
 				videoPlayer.onloadedmetadata = function (e) {
 					videoPlayer.play()
 				}
+				var canvases = document.querySelectorAll('canvas');
+				canvases.forEach(function (canvas) {
+					canvas.style.maxHeight = null;
+				});
 			})
 			.catch(function (error) {
 				alert(error);
