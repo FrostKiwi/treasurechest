@@ -47,7 +47,7 @@ That's it, now you can apply colormaps to grayscale footage, coloring the footag
 
 ## Preview
 Here you can preview all available colormaps, with the following video and the selectbox. Unless you have specific artistic goals or special data layout, you should use should use the perceptually uniform LUTs, because [reasons](/WebGL-LUTS-made-simple/#so-many-colors).
-<video style="display: none" width="100%" height="480" autoplay playsinline muted controls loop id="videoPlayer"><source src="/WebGL-LUTS-made-simple/bwvid.mp4" type="video/mp4"></video>
+<video style="display: none" width="100%" height="480px" autoplay playsinline muted controls loop id="videoPlayer"><source src="/WebGL-LUTS-made-simple/bwvid.mp4" type="video/mp4"></video>
 
 {% rawFile "posts/WebGL-LUTS-made-simple/select.html" %}
 
@@ -55,7 +55,7 @@ Here you can preview all available colormaps, with the following video and the s
 
 <script  id="fragment_5" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
-<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_5"></canvas>
+<canvas width="684" height="480px" style="width: unset; max-width: 100%; max-height: 480px" id="canvas_5"></canvas>
 
 <script>setupTri("canvas_5", "vertex", "fragment_5", "videoPlayer", "viridis", "lutSelector2");</script>
 

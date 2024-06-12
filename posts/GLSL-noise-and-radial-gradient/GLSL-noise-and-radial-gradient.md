@@ -16,7 +16,7 @@ I **love** to use soft gradients as backdrops when doing graphics programming, a
 <script  id="vertex_2" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}</script>
 <script  id="fragment_2" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/banding.fs" %}</script>
 
-<canvas height="200px" id="canvas_2"></canvas>
+<canvas height="200px" style="max-height: 456px" id="canvas_2"></canvas>
 
 <script>setupTri("canvas_2", "vertex_2", "fragment_2");</script>
 <blockquote>
@@ -76,7 +76,7 @@ Let's fix this. The main point of this article is to share how I get banding fre
 
 Here is what the raw noise looks like. The following WebGL Canvas is set to render at the same pixel density as your screen. (Though some Screen DPI and Browser zoom levels will result in it being one pixel off and there being a tiny bit of interpolation)
 
-<canvas id="canvas_noise"></canvas>
+<canvas id="canvas_noise" style="max-height: 342px" ></canvas>
 <script id="vertex_noise" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/noise.vs" %}</script>
 <script id="fragment_noise" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/noise.fs" %}</script>
 <script>setupTri("canvas_noise", "vertex_noise", "fragment_noise");</script>
@@ -113,7 +113,7 @@ Here is what the raw noise looks like. The following WebGL Canvas is set to rend
 
 Now let's combine both previous WebGL examples to clear the color banding and get a smooth half-circle gradient.
 
-<canvas height="200px" id="canvas_banding_free"></canvas>
+<canvas height="200px" style="max-height: 456px"  id="canvas_banding_free"></canvas>
 <script  id="vertex_banding_free" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}</script>
 <script  id="fragment_banding_free" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/gradient.fs" %}</script>
 <script>setupTri("canvas_banding_free", "vertex_banding_free", "fragment_banding_free");</script>
@@ -167,7 +167,7 @@ Technically, the proper way to achieve banding free-ness is to perform [error di
 
 Here is how I usually use this Shader setup to draw a background for objects and scenes to live on.
 
-<canvas height="200px" id="canvas_bg_example"></canvas>
+<canvas height="200px" style="max-height: 456px" id="canvas_bg_example"></canvas>
 <script  id="vertex_bg_example" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}</script>
 <script  id="fragment_bg_example" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/full_example.fs" %}</script>
 <script>setupTri("canvas_bg_example", "vertex_bg_example", "fragment_bg_example");</script>

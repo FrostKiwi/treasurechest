@@ -19,7 +19,7 @@ image: thumb.jpg
 We'll embark on a small journey, which will take us from simple things like turning grayscale footage into color, to creating limitless variations of blood-lusting zombies, with many interactive WebGL examples along the way, that you can try out with your own videos or webcam. Though this article uses [WebGL](https://en.wikipedia.org/wiki/WebGL), the techniques shown apply to any other graphics programming context, be it [DirectX](https://en.wikipedia.org/wiki/DirectX), [OpenGL](https://en.wikipedia.org/wiki/OpenGL), [Vulkan](https://en.wikipedia.org/wiki/Vulkan), game engines like [Unity](<https://en.wikipedia.org/wiki/Unity_(game_engine)>), or plain scientific data visualization.
 
 <figure>
-	<video width="1400" height="480" style="width: unset; max-width: 100%" autoplay playsinline muted controls loop><source src="preview.mp4" type="video/mp4"></video>
+	<video width="1400" height="480px" style="width: unset; max-width: 100%" autoplay playsinline muted controls loop><source src="preview.mp4" type="video/mp4"></video>
 	<figcaption>Cold ice cream and hot tea. Left: Panasonic GH6, Right: TESTO 890 + 15°x11° Lens</figcaption>
 </figure>
 
@@ -35,7 +35,7 @@ We'll first start with the thermal camera footage. The output of the [thermal ca
 
 <div class="center-child"><button onclick="document.getElementById('fileInput').click();">Upload Video</button><button onclick="startWebcam('videoPlayer');">Connect Webcam</button></div>
 
-<video width="100%" height="480" autoplay playsinline muted controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video>
+<video width="100%" height="480px" autoplay playsinline muted controls loop id="videoPlayer"><source src="bwvid.mp4" type="video/mp4"></video>
 <blockquote class="reaction"><div class="reaction_text">Don't pause the video, it's the live input for the WebGL examples below</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 <script src="videoSource.js"></script>
 
@@ -45,7 +45,7 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 
 <script  id="fragment_2" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-simple.fs" %}</script>
 
-<canvas width="100%" height="480" id="canvas_2"></canvas>
+<canvas width="100%" height="480px" style="max-height: 480px" id="canvas_2"></canvas>
 
 <script>setupTri("canvas_2", "vertex", "fragment_2", "videoPlayer", null);</script>
 
@@ -110,7 +110,7 @@ Before we jump into how LUTs can help us, let's take a look a how we can manipul
 
 <div class="center-child"><button id="shaderReload_3">Reload Shader</button></div>
 
-<canvas width="100%" height="480" id="canvas_3"></canvas>
+<canvas width="100%" height="480px" style="max-height: 480px" id="canvas_3"></canvas>
 
 <script>setupTri("canvas_3", "vertex", "tintingShader", "videoPlayer", null, null, "shaderReload_3");</script>
 <blockquote>
@@ -194,7 +194,7 @@ A 1D LUT is a simple array of numbers. If the 1D LUT is an RGB image, then a 1D 
 
 <script  id="fragment_4" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
-<canvas width="100%" height="480" id="canvas_4"></canvas>
+<canvas width="100%" height="480px" style="max-height: 480px" id="canvas_4"></canvas>
 
 <script>setupTri("canvas_4", "vertex", "fragment_4", "videoPlayer", "lut", "lutSelector")</script>
 <blockquote>
@@ -246,7 +246,7 @@ Here is every single colormap that [matplotlib](https://matplotlib.org/) support
 
 <script  id="fragment_5" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
-<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_5"></canvas>
+<canvas width="684" height="480px" style="max-height: 480px" style="width: unset; max-height: 480px; max-width: 100%" id="canvas_5"></canvas>
 
 <script>setupTri("canvas_5", "vertex", "fragment_5", "videoPlayer", "viridis", "lutSelector2");</script>
 <blockquote>
@@ -306,7 +306,7 @@ You can perform polynomial approximations of a colormap and thus side-step the L
 
 <img src="/assets/LUTs/PerceptuallyUniform/viridis.png" style="width: 100%; height: 32px; margin-bottom: 8px">
 <img src="viridis_from_function.png" style="width: 100%; height: 32px;">
-<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_9"></canvas>
+<canvas width="684" height="480px" style="max-height: 480px" style="width: unset; max-height: 480px; max-width: 100%" id="canvas_9"></canvas>
 
 <script>setupTri("canvas_9", "vertex", "fragment_9", "videoPlayer", null);</script>
 <blockquote>
@@ -434,12 +434,12 @@ We'll be using this footage shot on the Panasonic GH6. It is shot in its [Panaso
 
 You may substitute you own footage, though the examples don't make much sense outside of V-Log color profile footage.
 
-<input type="file" id="fileInput" accept="video/*" style="display: none;" onchange="changeVideo(this, 'gh6footage')">
+<input type="file" id="fileInput2" accept="video/*" style="display: none;" onchange="changeVideo(this, 'gh6footage')">
 
-<div class="center-child"><button onclick="document.getElementById('fileInput').click();">Upload Video</button><button onclick="startWebcam('gh6footage');">Connect Webcam</button></div>
+<div class="center-child"><button onclick="document.getElementById('fileInput2').click();">Upload Video</button><button onclick="startWebcam('gh6footage');">Connect Webcam</button></div>
 
 <figure>
-	<video width="100%" height="480" autoplay playsinline muted controls loop id="gh6footage"><source src="Panasonic-Vlog.mp4" type="video/mp4"></video>
+	<video width="100%" height="480px" autoplay playsinline muted controls loop id="gh6footage"><source src="Panasonic-Vlog.mp4" type="video/mp4"></video>
 	<figcaption>Panasonic GH6 with "V-Log" logarithmic profile</figcaption>
 </figure>
 
@@ -449,7 +449,7 @@ And now we load the footage again into WebGL and process it with a 3D LUT in its
 
 <script  id="fragment_6" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}</script>
 
-<canvas width="100%" height="480" id="canvas_6"></canvas>
+<canvas width="100%" height="480px" style="max-height: 480px" id="canvas_6"></canvas>
 
 <script>setupTri("canvas_6", "vertex", "fragment_6", "gh6footage", "3dlut");</script>
 <blockquote>
@@ -498,7 +498,7 @@ As with the 1D LUT, any correction we apply to the LUT will be applied to the fo
 
 <script  id="fragment_7" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}</script>
 
-<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_7"></canvas>
+<canvas width="684" height="480px" style="width: unset; max-height: 480px; max-width: 100%" id="canvas_7"></canvas>
 
 <script>setupTri("canvas_7", "vertex", "fragment_7", "gh6footage", "3dlutDavinci", "3DLutInput");</script>
 <blockquote>
@@ -589,7 +589,7 @@ This is a very complex set of details to get right and we get it all baked into 
 
 <script  id="fragment_8" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}</script>
 
-<canvas width="684" height="480" style="width: unset; max-width: 100%" id="canvas_8"></canvas>
+<canvas width="684" height="480px" style="width: unset; max-height: 480px; max-width: 100%" id="canvas_8"></canvas>
 
 <script>setupTri("canvas_8", "vertex", "fragment_8", "gh6footage", "3dlutDavinci_Film");</script>
 <blockquote>

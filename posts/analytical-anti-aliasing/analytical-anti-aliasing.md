@@ -15,15 +15,48 @@ Today's journey is [Anti-Aliasing](https://en.wikipedia.org/wiki/Spatial_anti-al
 
 From the [simple but resource intensive **SSAA**](https://en.wikipedia.org/wiki/Supersampling), over [theory dense **SMAA**](https://www.iryoku.com/smaa/), to using [machine learning with **DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). We'll take a look at how they work, before introducing a new way to look a the problem - the *analytical* way. The perfect Anti-Aliasing exists and is simpler than you think. Let's find out if you should use it.
 
-
 - [Supersampling anti-aliasing [**SSAA**]](https://en.wikipedia.org/wiki/Supersampling)
 - [Multisampling anti-aliasing [**MSAA**]](https://en.wikipedia.org/wiki/Multisample_anti-aliasing)
 
 
 What this article talks about is a set of techniques with the same goal, but vastly different approach - using the make-up of the geometry itself to draw anti-aliased shapes in one single sample.
 
-<canvas style="width: 100%; height: 200px;"></canvas>
-<script src="canvas_1.js"></script>
+<script src="circle.js"></script>
+<script id="vertex_0" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}</script>
+<script id="fragment_0" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}</script>
+<canvas width="100%" height="480px" style="max-height: 480px" id="canvas_0"></canvas>
+<script>setupTri("canvas_0", "vertex_0", "fragment_0");</script>
+
+<blockquote>
+<details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+
+![image](screenshot_passthrough.jpg)
+
+</details>
+<details><summary>WebGL Vertex Shader <a href="circle.vs">circle.vs</a></summary>
+
+```glsl
+{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a href="circle.fs">circle.fs</a></summary>
+
+```glsl
+{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="circle.js">circle.js</a></summary>
+
+```javascript
+{% rawFile "posts/analytical-anti-aliasing/circle.js" %}
+```
+
+</details>
+</blockquote>
 
 ## What makes it analytical?
 
