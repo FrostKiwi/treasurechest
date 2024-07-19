@@ -1,18 +1,26 @@
 "use strict";
-function setupTri(canvasId, vertexId, fragmentId) {
+function setupTri(canvasId, circleVtxSrc, circleFragSrc, redrawVtxSrc, redrawFragSrc) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false });
 
 	/* Shaders */
-	const vertexShader = createAndCompileShader(gl.VERTEX_SHADER, vertexId);
-	const fragmentShader = createAndCompileShader(gl.FRAGMENT_SHADER, fragmentId);
-
-	const shaderProgram = gl.createProgram();
-	gl.attachShader(shaderProgram, vertexShader);
-	gl.attachShader(shaderProgram, fragmentShader);
-	gl.linkProgram(shaderProgram);
-	gl.useProgram(shaderProgram);
+	const circleVtxShd = createAndCompileShader(gl.VERTEX_SHADER, circleVtxSrc);
+	const circleFragShd = createAndCompileShader(gl.FRAGMENT_SHADER, circleFragSrc);
+	
+	const redrawVtxShd = createAndCompileShader(gl.VERTEX_SHADER, redrawVtxSrc);
+	const redrawFragShd = createAndCompileShader(gl.FRAGMENT_SHADER, redrawFragSrc);
+	
+	const circleShd = gl.createProgram();
+	gl.attachShader(circleShd, circleVtxShd);
+	gl.attachShader(circleShd, circleFragShd);
+	gl.linkProgram(circleShd);
+	gl.useProgram(circleShd);
+	
+	const redrawShd = gl.createProgram();
+	gl.attachShader(redrawShd, redrawVtxShd);
+	gl.attachShader(redrawShd, redrawFragShd);
+	gl.linkProgram(redrawShd);
 
 	/* Vertex Buffer */
 	const unitQuad = new Float32Array([
@@ -25,21 +33,13 @@ function setupTri(canvasId, vertexId, fragmentId) {
 	const vertex_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(unitQuad), gl.STATIC_DRAW);
-
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
-	var vtx = gl.getAttribLocation(shaderProgram, "vtx");
+	var vtx = gl.getAttribLocation(circleShd, "vtx");
 	gl.enableVertexAttribArray(vtx);
 	gl.vertexAttribPointer(vtx, 2, gl.FLOAT, false, 0, 0);
 
-	/* Vertex Buffer */
-	const transform = new Float32Array([
-		1.0, 0.0,
-		0.0, 1.0,
-	]);
-
-	const transformLocation = gl.getUniformLocation(shaderProgram, "transform");
-
-	gl.uniformMatrix2fv(transformLocation, false, transform);
+	const aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
+	const timeLocation = gl.getUniformLocation(circleShd, "time");
 
 	function redraw() {
 		gl.viewport(0, 0, canvas.width, canvas.height);
@@ -53,6 +53,13 @@ function setupTri(canvasId, vertexId, fragmentId) {
 		return shader;
 	}
 
+	function updateTransform(time) {
+		gl.uniform1f(aspect_ratioLocation, 1.0 / (canvas.width / canvas.height));
+		gl.uniform1f(timeLocation, (time / 10000) % Math.PI * 2);
+		redraw();
+		requestAnimationFrame(updateTransform);
+	}
+
 	function onResize() {
 		const width = Math.round(canvas.clientWidth * window.devicePixelRatio);
 		const height = Math.round(canvas.clientHeight * window.devicePixelRatio);
@@ -60,9 +67,10 @@ function setupTri(canvasId, vertexId, fragmentId) {
 		if (canvas.width !== width || canvas.height !== height) {
 			canvas.width = width;
 			canvas.height = height;
-			redraw();
 		}
 	}
+
 	window.addEventListener('resize', onResize, true);
 	onResize();
+	updateTransform();
 }
