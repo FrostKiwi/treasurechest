@@ -226,7 +226,7 @@ Both the 6-bit screen's dithering pattern and our Interleaved Gradient Noise int
 
 <blockquote class="reaction"><div class="reaction_text">...it's worse!</div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
 
-Clearly obvious diagonal stripes throughout the whole gradient. Yeah, 6-bit panels are a travesty. Especially on a product of this caliber. I mean the old [Thinkpad T500 & X200 I hardware modded](https://www.youtube.com/watch?v=Fs4GjDiOie8) have 6-bit panels, but those are multiple tech generations old. We could tweak the noise algorithm, but it's just not worth to drop our lowest common denominator so low. It's 2024 in a couple days and every human being deserves at least 256 different shades in each color channel.
+Clearly obvious diagonal stripes throughout the whole gradient. Yeah, 6-bit panels are a travesty. Especially on a product of this caliber. I mean the old [Thinkpad T500 & X200 I hardware modded](https://www.youtube.com/watch?v=Fs4GjDiOie8) have 6-bit panels, but those are multiple tech generations old. We could tweak the noise algorithm, but dropping to such a low common denominator is just not worth it. It's 2024 in a couple days and every human being deserves at least 256 different shades in each color channel.
 
 ### Bufferless Version
 Here is what the shaders look like if you use OpenGL 3.3+, OpenGL 2.1 with the [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) extension (`#version` would have to change) or WebGL2 and want to skip the Vertex Buffer setup by putting the fullscreen triangle into the vertex shader. If you get an error around `gl_VertexID` missing, you don't have [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) enabled.
@@ -318,7 +318,7 @@ It's not quite as bad when turned down to lower settings and during gameplay it'
   <figcaption>Deep Color setting in Alien: Isolation</figcaption>
 </figure>
 
-_[Deep Color](https://en.wikipedia.org/wiki/Color_depth#Deep_color_(30-bit))_ is what outputting at 10-bits per channel is called, just like 8bpp is "[True Color](https://en.wikipedia.org/wiki/Color_depth#True_color_(24-bit))". It's also a setting in Alien: Isolation to enable 10bpp rendering. The way this setting works is absolutely not obvious though. You can turn it on, but it will only be actually active under a certain set of circumstances:
+_[Deep Color](https://en.wikipedia.org/wiki/Color_depth#Deep_color_(30-bit))_ is what outputting at 10-bits per channel is called, just like 8bpp is _[True Color](https://en.wikipedia.org/wiki/Color_depth#True_color_(24-bit))_. It's also a setting in Alien: Isolation to enable 10bpp rendering. The way this setting works is absolutely not obvious though. You can turn it on, but it will only be actually active under a certain set of circumstances:
  * Anti-Aliasing **has** to be disabled.
    * That's a serious bummer. None of the Anti-Aliasing shaders handle the 10-bit signal and just crush the result back down to 8-bit. It's as if you didn't turn it on at all :[
  * Your monitor needs to accept a 10 or 12-bit signal. Otherwise, the game won't switch into that higher bit-depth mode.
@@ -343,7 +343,7 @@ Of course, you need to have a rather expensive screen, being able to run 10-bits
   <figcaption>ReShade's Deband effect menu</figcaption>
 </figure>
 
-The `Deband.fx` Shader (Source code below, for reference) applies dithering to areas, that it detects as affected by color banding, based on the ["Weber Ratio"](https://en.wikipedia.org/wiki/Contrast_(vision)#Weber_contrast).
+The `Deband.fx` Shader (Source code below, for reference) applies dithering to areas, that it detects as affected by color banding, based on the _[Weber Ratio](https://en.wikipedia.org/wiki/Contrast_(vision)#Weber_contrast)_.
 
 <details>	
 <summary><a href="https://reshade.me">ReShade</a>'s <a href="https://github.com/crosire/reshade-shaders/blob/slim/Shaders/Deband.fx">Deband.fx</a> source code, for reference</summary>
@@ -375,14 +375,14 @@ The **Gradient ramp** "generator" in [Adobe After Effects](https://en.wikipedia.
 When cranked to the max, you can see streaks running through the noise. Surprisingly, the performance is quite bad. At 0 ramp scatter, the gradient renders instantly, regardless of resolution. To do a 4k frame of this at max ramp scatter takes my high-end [AMD Ryzen 9 7900x](https://www.amd.com/en/products/cpu/amd-ryzen-9-7900x) a quarter second though. 4fps playback with nothing, but a mere gradient. Both facts lead me to believe, that there is some kind iterative algorithm at play here, though I can only guess. To be fair, as long as none of the effect's properties are animated, it caches just one frame and that's it. After effects is pretty smart about it. But it's also known to still carry a legacy set of single-threaded slowness across a lot of its features.
 
 ### KDE Kwin Blur
-Finally, let's talk blur. Blur produces smooth gradients, which quickly suffer from color banding. The [KDE Plasma Desktop](https://kde.org/plasma-desktop/), one of the most popular Desktop Environments for Linux and FreeBSD, uses one of my favorite pieces of graphics programming wizardry, the [Dual Kawase Blur](https://github.com/JujuAdams/Kawase), to blur the backdrops of windows, as [implemented a while back](https://phabricator.kde.org/R108:0179f741bbd4cc01da5866fdf7b6a302869a099b). To defuse said color banding, a noise can be applied on top. The source code for the implementation [can be found here](https://phabricator.kde.org/source/kwin/browse/master/effects/blur/).
+Finally, let's talk blur. Blur produces smooth gradients, which quickly suffer from color banding. The [KDE Plasma Desktop](https://kde.org/plasma-desktop/), one of the most popular Desktop Environments for Linux and FreeBSD, uses one of my favorite pieces of graphics programming wizardry, the [Dual Kawase Blur](https://github.com/JujuAdams/Kawase), to blur the backdrops of windows, as [implemented a while back](https://phabricator.kde.org/R108:0179f741bbd4cc01da5866fdf7b6a302869a099b). To defuse said color banding, noise can be applied on top. The source code for the implementation [can be found here](https://phabricator.kde.org/source/kwin/browse/master/effects/blur/).
 <figure>
 	<img src="kde.png" alt="KDE Plasma's Blur and Noise settings" />
   <figcaption>KDE Plasma's Blur with noise at max strength (<a href="https://phabricator.kde.org/R108:cc0325af41528b4f68e9f376c4d2d27ed1e28f11">Source</a>)<br>Zoomed and contrast boosted in circle</figcaption>
 </figure>
 
 ### Microsoft Windows Acrylic
-To finish off, here is how Windows 11 and its ["Acrylic"](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic#how-we-designed-acrylic) does it. It applies both blur and noise to achieve the same.
+To finish off, here is how Windows 11 and its _[Acrylic](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic#how-we-designed-acrylic)_ does it. It applies both blur and noise to achieve the same.
 <figure>
 	<img src="acrylic-recipe-diagram.png" alt="Microsoft Acrylic implementation diagram" />
   <figcaption>Microsoft Acrylic implementation diagram (<a href="https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic#how-we-designed-acrylic">Source</a>)</figcaption>
