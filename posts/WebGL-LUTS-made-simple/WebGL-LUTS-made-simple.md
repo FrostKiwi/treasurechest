@@ -432,7 +432,7 @@ Since it's in 3D, we only see the outer most voxels. We map the Red to X, Green 
 
 We'll be using this footage shot on the Panasonic GH6. It is shot in its [Panasonic V-Log](https://www.panasonic.com/uk/consumer/cameras-camcorders/lumix-expert-advice-learn/technique-technology/what-is-v-log.html) color profile (what a horrible name, not to be confused with a [vlog](https://en.wikipedia.org/wiki/Vlog)), a [logarithmic profile](https://en.wikipedia.org/wiki/Log_profile) retaining more [dynamic range](https://en.wikipedia.org/wiki/Dynamic_range) and most importantly, having a rigid definition of both Gamut and Gamma, compatible with conversions to other color profiles. Unprocessed, it looks very washed out and very boring.
 
-You may substitute you own footage, though the examples don't make much sense outside of V-Log color profile footage.
+You may substitute your own footage, though the examples don't make much sense outside of V-Log color profile footage.
 
 <input type="file" id="fileInput2" accept="video/*" style="display: none;" onchange="changeVideo(this, 'gh6footage')">
 
