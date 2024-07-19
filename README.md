@@ -1,8 +1,10 @@
 # FrostKiwi's treasure chest
 Hello ヽ(*・ω・)ﾉ 
-This is the repo for my [blog](https://blog.frost.kiwi), with a collection of useful things I want to share with the world.
+This is the repo for my [blog](https://blog.frost.kiwi), with a collection of useful things and educational articles I want to share with the world.
 The blog generated from this repo is here: [blog.frost.kiwi](https://blog.frost.kiwi)
- 
+
+ ![image](https://github.com/FrostKiwi/treasurechest/assets/60887273/be8f15e5-ffed-432e-b03e-b2127a822d4e)
+
 # Redirects for old links:
 This Readme used to be a kind of blog, but now it has become a proper site. There were many places my articles were linked, so to not break them, here are redirects to pre-existing articles:
 ## GLSL Radial background
