@@ -215,7 +215,7 @@ But what about that 6-bit laptop screen? Let's take a look, by photographing the
 
 <blockquote class="reaction"><div class="reaction_text">...ohh you gotta be kidding me</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
-Both the 6-bit screen's dithering pattern and our Interleaved Gradient Noise interfere with each other. Exactly the color bands where the panel performs the dithering, we can see the the interference appearing in the form of saw-tooth ridges. Maybe by increasing the noise strength to correspond to 6-bit values? `(1.0 / 63.0) * gradientNoise(gl_FragCoord.xy) - (0.5 / 63.0)` By dividing by 63 (2⁶-1) instead of 255, we get 6-bit noise. Let's see...
+Both the 6-bit screen's dithering pattern and our Interleaved Gradient Noise interfere with each other. Exactly the color bands where the panel performs the dithering, we can see the interference appearing in the form of saw-tooth ridges. Maybe by increasing the noise strength to correspond to 6-bit values? `(1.0 / 63.0) * gradientNoise(gl_FragCoord.xy) - (0.5 / 63.0)` By dividing by 63 (2⁶-1) instead of 255, we get 6-bit noise. Let's see...
 
 <figure>
 	<img src="6-bit_banding_6-bit_noise.jpg" alt="Interference patterns from both forms of dither interfering" />
