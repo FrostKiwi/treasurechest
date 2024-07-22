@@ -6,7 +6,7 @@ varying vec2 uv;
 /* Aspect ratio */
 uniform float aspect_ratio;
 /* Time for the animation */
-uniform float time;
+uniform vec2 offset;
 
 void main()
 {
@@ -20,12 +20,6 @@ void main()
 	vertex *= 0.5;
 
 	/* Make the circle move in a circle */
-	/* Optimization wise, this is not good, as it's calculated per vertex. It
-	   should be pre-calculated before going to the GPU and only one
-	   transformation matrix should be used. But this is a simple example, so we
-	   will keep it for simplicity's sake. */
-	float radius = 0.1;
-	vec2 offset = vec2(radius * cos(time), radius * sin(time));
 	vertex += offset;
 
 	gl_Position = vec4(vertex, 0.0, 1.0);
