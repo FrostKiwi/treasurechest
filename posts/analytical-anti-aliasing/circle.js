@@ -1,46 +1,41 @@
 "use strict";
-function createAndCompileShader(gl, type, source) {
-	const shader = gl.createShader(type);
-	gl.shaderSource(shader, document.getElementById(source).text);
-	gl.compileShader(shader);
-	return shader;
+function compileAndLinkShader(gl, vtxShdSrc, FragShdSrc){
+	const vtxShd = gl.createShader(gl.VERTEX_SHADER);
+	gl.shaderSource(vtxShd, document.getElementById(vtxShdSrc).text);
+	gl.compileShader(vtxShd);
+
+	const FragShd = gl.createShader(gl.FRAGMENT_SHADER);
+	gl.shaderSource(FragShd, document.getElementById(FragShdSrc).text);
+	gl.compileShader(FragShd);
+	
+	const LinkedShd = gl.createProgram();
+	gl.attachShader(LinkedShd, vtxShd);
+	gl.attachShader(LinkedShd, FragShd);
+	gl.linkProgram(LinkedShd);
+
+	return LinkedShd;
 }
 
-/* Resize the canvas to draw at native one-to-one pixel size */
-function onResize(canvas) {
-	const width = Math.round(canvas.clientWidth * window.devicePixelRatio);
-	const height = Math.round(canvas.clientHeight * window.devicePixelRatio);
-
-	if (canvas.width !== width || canvas.height !== height) {
-		canvas.width = width;
-		canvas.height = height;
-	}
-}
-
-function setupTri(canvasId, circleVtxSrc, circleFragSrc, redrawVtxSrc, redrawFragSrc) {
+function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const gl = canvas.getContext('webgl', { preserveDrawingBuffer: false });
 
 	/* Shaders */
-	const circleVtxShd = createAndCompileShader(gl, gl.VERTEX_SHADER, circleVtxSrc);
-	const circleFragShd = createAndCompileShader(gl, gl.FRAGMENT_SHADER, circleFragSrc);
-	
-	const redrawVtxShd = createAndCompileShader(gl, gl.VERTEX_SHADER, redrawVtxSrc);
-	const redrawFragShd = createAndCompileShader(gl, gl.FRAGMENT_SHADER, redrawFragSrc);
-	
-	const circleShd = gl.createProgram();
-	gl.attachShader(circleShd, circleVtxShd);
-	gl.attachShader(circleShd, circleFragShd);
-	gl.linkProgram(circleShd);
+	/* Circle Shader */
+	const circleShd = compileAndLinkShader(gl, circleVtxSrc, circleFragSrc);
 	gl.useProgram(circleShd);
-	
-	const redrawShd = gl.createProgram();
-	gl.attachShader(redrawShd, redrawVtxShd);
-	gl.attachShader(redrawShd, redrawFragShd);
-	gl.linkProgram(redrawShd);
+	gl.enableVertexAttribArray(0);
+	const aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
+	const timeLocation = gl.getUniformLocation(circleShd, "time");
 
-	/* Vertex Buffer */
+	/* Post Processing Shader */
+	const postShd = compileAndLinkShader(gl, postVtxSrc, postFragSrc);
+	gl.enableVertexAttribArray(0);
+	const u_textureLocation = gl.getUniformLocation(postShd, "u_texture");
+	gl.uniform1i(u_textureLocation, 0);
+
+	/* Vertex Buffer of a simple Quad */
 	const unitQuad = new Float32Array([
 		-1.0, 1.0,
 		1.0, 1.0,
@@ -51,27 +46,53 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, redrawVtxSrc, redrawFra
 	const vertex_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(unitQuad), gl.STATIC_DRAW);
-	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
-	var vtx = gl.getAttribLocation(circleShd, "vtx");
-	gl.enableVertexAttribArray(vtx);
-	gl.vertexAttribPointer(vtx, 2, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
-	const aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
-	const timeLocation = gl.getUniformLocation(circleShd, "time");
+	/* Framebuffer setup */
+	const framebuffer = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
 
-	function redraw() {
-		gl.viewport(0, 0, canvas.width, canvas.height);
-		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-	}
+	const texture = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
-	function updateTransform(time) {
+	function redraw(time) {
+		/* Setup PostProcess Framebuffer */
+		gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+		gl.useProgram(circleShd);
+
+		/* Draw Circle Animation */
 		gl.uniform1f(aspect_ratioLocation, 1.0 / (canvas.width / canvas.height));
 		gl.uniform1f(timeLocation, (time / 10000) % Math.PI * 2);
-		redraw();
-		requestAnimationFrame(updateTransform);
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+		/* Draw the final image to the canvas */
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		gl.useProgram(postShd);
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+		requestAnimationFrame(redraw);
 	}
 
-	window.addEventListener('resize', onResize(canvas), true);
-	onResize(canvas);
-	updateTransform();
+	/* Resize the canvas to draw at native one-to-one pixel size */
+	function onResize() {
+		const width = Math.round(canvas.clientWidth * window.devicePixelRatio);
+		const height = Math.round(canvas.clientHeight * window.devicePixelRatio);
+
+		if (canvas.width !== width || canvas.height !== height) {
+			canvas.width = width;
+			canvas.height = height;
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+			gl.viewport(0, 0, width, height);
+		}
+	}
+
+	window.addEventListener('resize', onResize, true);
+	onResize();
+	redraw();
 }
