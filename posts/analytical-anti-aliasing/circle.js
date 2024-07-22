@@ -36,7 +36,6 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 	gl.enableVertexAttribArray(0);
 	const u_textureLocation = gl.getUniformLocation(postShd, "u_texture");
 	const transformLocation = gl.getUniformLocation(postShd, "transform");
-	const aspect_ratioLocationPost = gl.getUniformLocation(postShd, "aspect_ratio");
 	const offsetLocationPost = gl.getUniformLocation(postShd, "offset");
 	gl.uniform1i(u_textureLocation, 0);
 
@@ -76,7 +75,7 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
 	const circleOffsetAnim = new Float32Array([
-		0, 0
+		0.0, 0.0
 	]);
 
 	let aspect_ratio = 0;
@@ -97,7 +96,6 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 		circleOffsetAnim[0] = radius * Math.cos(speed);
 		circleOffsetAnim[1] = radius * Math.sin(speed);
 		gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
-
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		/* Draw the final image to the canvas */
@@ -107,14 +105,12 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 		/* Simple Passthrough */
 		gl.uniform4f(transformLocation, 1.0, 1.0, 0.0, 0.0);
 		gl.uniform2f(offsetLocationPost, 0.0, 0.0);
-		gl.uniform1f(aspect_ratioLocationPost, aspect_ratio);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		/* Scaled image in the bottom left */
 		gl.uniform4f(transformLocation, 0.25, 0.25, -0.75, -0.75);
 		gl.uniform2fv(offsetLocationPost, circleOffsetAnim);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-
 		/* Draw Red box for viewport illustration */
 		gl.useProgram(redShd);
 		gl.uniform1f(aspect_ratioLocationRed, aspect_ratio);
@@ -147,5 +143,5 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 
 	window.addEventListener('resize', onResize, true);
 	onResize();
-	redraw();
+	redraw(0);
 }
