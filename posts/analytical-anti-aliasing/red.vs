@@ -12,8 +12,8 @@ void main()
 	
 	vec2 vertex = vtx;
 	vertex += offset / (vec2(transform.x, transform.y) * vec2(transform.x, transform.y));
-	vertex.y += transform.w * 11.0;
-	vertex.x += transform.z;
+	vertex.y += transform.w * 10.5;
+	vertex.x += transform.z * 0.5;
 	vertex *= vec2(transform.x, transform.y) * vec2(transform.x, transform.y);
 	gl_Position = vec4(vertex, 0.0, 1.0);
 }

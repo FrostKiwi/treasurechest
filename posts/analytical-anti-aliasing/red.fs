@@ -16,7 +16,7 @@ void main() {
 
     // Render the rectangular line with adjusted thickness
     if (distX > -adjustedThicknessX || distY > -adjustedThicknessY) {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red color
+        gl_FragColor = vec4(1.0, 0.25, 0.3, 1.0); // Red color
     } else {
         discard;
     }

@@ -5,13 +5,13 @@ varying vec2 uv;
 
 /* Aspect ratio */
 uniform float aspect_ratio;
-/* Time for the animation */
+/* Position offset for the animation */
 uniform vec2 offset;
 
 void main()
 {
 	/* Assign the verticies to be used as the distance field for drawing. This
-	   will be linearly interpolated before foing to the fragment shader */
+	   will be linearly interpolated before going to the fragment shader */
 	uv = vtx;
 
 	/* Make Circle smaller and correct aspect ratio */

@@ -79,6 +79,8 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 		0, 0
 	]);
 
+	let aspect_ratio = 0;
+
 	gl.enable(gl.BLEND);
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
@@ -89,7 +91,7 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 		gl.useProgram(circleShd);
 
 		/* Draw Circle Animation */
-		gl.uniform1f(aspect_ratioLocation, 1.0 / (canvas.width / canvas.height));
+		gl.uniform1f(aspect_ratioLocation, aspect_ratio);
 		const radius = 0.1;
 		const speed = (time / 10000) % Math.PI * 2
 		circleOffsetAnim[0] = radius * Math.cos(speed);
@@ -105,7 +107,7 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 		/* Simple Passthrough */
 		gl.uniform4f(transformLocation, 1.0, 1.0, 0.0, 0.0);
 		gl.uniform2f(offsetLocationPost, 0.0, 0.0);
-		gl.uniform1f(aspect_ratioLocationPost, 1.0 / (canvas.width / canvas.height));
+		gl.uniform1f(aspect_ratioLocationPost, aspect_ratio);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		/* Scaled image in the bottom left */
@@ -115,7 +117,7 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 
 		/* Draw Red box for viewport illustration */
 		gl.useProgram(redShd);
-		gl.uniform1f(aspect_ratioLocationRed, 1.0 / (canvas.width / canvas.height));
+		gl.uniform1f(aspect_ratioLocationRed, aspect_ratio);
 		gl.uniform1f(thicknessLocation, 0.15);
 		gl.uniform4f(transformLocationRed, 0.25, 0.25, -0.75, -0.75);
 		gl.uniform2fv(offsetLocationRed, circleOffsetAnim);
@@ -139,6 +141,7 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 			canvas.height = height;
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 			gl.viewport(0, 0, width, height);
+			aspect_ratio = 1.0 / (width / height);
 		}
 	}
 
