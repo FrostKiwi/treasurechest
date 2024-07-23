@@ -375,7 +375,7 @@ With just a couple of LUTs chosen at random for skin and clothes, the following 
 	</figcaption></figcaption>
 </figure>
 
-Checkout the [full talk](https://www.gdcvault.com/play/1012264/Shading-a-Bigger-Better-Sequel) on the GDC page, if you are interested such techniques.
+Checkout the [full talk](https://www.gdcvault.com/play/1012264/Shading-a-Bigger-Better-Sequel) on the GDC page, if you are interested in such techniques.
 
 <blockquote class="reaction"><div class="reaction_text">The creativity of them using "Exclusive Masking" blew me away. First time I learned about it. Two textures in one channel, set to specific ranges<br>(Texture 1: 0-128, Texture 2: 128-256) at the cost of color precision</div><img class="kiwi" src="/assets/kiwis/love.svg"></blockquote>
 
