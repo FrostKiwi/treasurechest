@@ -6,8 +6,6 @@ uniform vec2 offset;
 
 void main()
 {
-	//vec2 uv = vtx;
-
 	uv = vtx;
 	
 	vec2 vertex = vtx;

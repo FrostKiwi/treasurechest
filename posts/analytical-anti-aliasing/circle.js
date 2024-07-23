@@ -113,13 +113,13 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 		/* Draw Red box for viewport illustration */
 		gl.useProgram(redShd);
-		gl.uniform1f(aspect_ratioLocationRed, aspect_ratio);
-		gl.uniform1f(thicknessLocation, 0.15);
+		gl.uniform1f(aspect_ratioLocationRed, (1.0 / aspect_ratio) - 1.0);
+		gl.uniform1f(thicknessLocation, 0.2);
 		gl.uniform4f(transformLocationRed, 0.25, 0.25, -0.75, -0.75);
 		gl.uniform2fv(offsetLocationRed, circleOffsetAnim);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
-		gl.uniform1f(thicknessLocation, 0.05);
+		gl.uniform1f(thicknessLocation, 0.1);
 		gl.uniform4f(transformLocationRed, 0.5, 0.5, 0.0, 0.0);
 		gl.uniform2f(offsetLocationRed, -0.75, -0.75);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);

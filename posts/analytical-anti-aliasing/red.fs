@@ -1,23 +1,32 @@
-#extension GL_OES_standard_derivatives : enable
 precision mediump float;
 varying vec2 uv;
 
 uniform float aspect_ratio;
 uniform float thickness;
 
+float smoothstep2(float edge0, float edge1, float x){
+	float t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+    return t * t * (3.0 - 2.0 * t);
+}
+
+float linearstep(float edge0, float edge1, float x) {
+    return clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+}
+
+float linearstepNoclamp(float edge0, float edge1, float x) {
+    return (x - edge0) / (edge1 - edge0);
+}
+
+float sdBox( in vec2 p, in vec2 b )
+{
+    vec2 d = abs(p)-b;
+    return length(max(d,0.0)) + min(max(d.x,d.y),0.0);
+}
+
 void main() {
-    // Adjust thickness based on aspect ratio
-    float adjustedThicknessX = thickness * aspect_ratio;
-    float adjustedThicknessY = thickness;
+    float dist = sdBox(uv, vec2(1.0 + (thickness * 0.5 * aspect_ratio), 1.0));
 
-    // Calculate distance to the box edges
-    float distX = abs(uv.x) - 1.0 + adjustedThicknessX;
-    float distY = abs(uv.y) - 1.0 + adjustedThicknessY;
+    float alpha = linearstepNoclamp(thickness, thickness * 1.25, -dist);
 
-    // Render the rectangular line with adjusted thickness
-    if (distX > -adjustedThicknessX || distY > -adjustedThicknessY) {
-        gl_FragColor = vec4(1.0, 0.25, 0.3, 1.0); // Red color
-    } else {
-        discard;
-    }
+    gl_FragColor = vec4(1.0, 0.25, 0.3, 1.0 - alpha);	
 }
