@@ -60,18 +60,8 @@
 				<script>
 					(() => {
 						const kiwis = [
-							'/assets/kiwis/detective.svg',
-							'/assets/kiwis/facepalm.svg',
-							'/assets/kiwis/happy.svg',
-							'/assets/kiwis/ice.svg',
-							'/assets/kiwis/love.svg',
-							'/assets/kiwis/miffed.svg',
-							'/assets/kiwis/party.svg',
-							'/assets/kiwis/sad.svg',
-							'/assets/kiwis/surprised.svg',
-							'/assets/kiwis/teach.svg',
-							'/assets/kiwis/think.svg'
-						];
+							'detective', 'facepalm', 'happy', 'ice', 'love', 'miffed', 'party', 'sad', 'surprised', 'teach', 'think'
+						].map(name => `/assets/kiwis/${name}.svg`);
 						const randomKiwi = () => document.querySelector('.kiwi').src = kiwis[Math.floor(Math.random() * kiwis.length)];
 						document.querySelector('.kiwi').onclick = randomKiwi;
 						randomKiwi();
