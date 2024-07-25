@@ -275,6 +275,11 @@ aside blockquote {
 	margin-bottom: 1rem;
 }
 
+blockquote {
+	border-image: linear-gradient(0deg, rgba(223, 116, 126, 1) 0%, rgba(235, 153, 161, 1) 100%);
+	border-image-slice: 1;
+}
+
 aside a {
 	font-size: smaller;
 }

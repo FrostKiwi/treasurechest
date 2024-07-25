@@ -7,6 +7,7 @@
 	overflow: hidden;
 	color: #49002d;
 	background-color: #ffe4f5;
+	background: linear-gradient(0deg, rgba(238, 191, 221, 1) 0%, rgba(255, 228, 245, 1) 100%);
 	padding: 10px;
 	padding-right: 16px;
 }
@@ -19,6 +20,7 @@
 
 .post-card:hover {
 	background-color: #a4607d;
+	background: linear-gradient(0deg, rgba(147, 69, 102, 1) 0%, rgba(164, 96, 125, 1) 100%);
 }
 
 .post-card img {
