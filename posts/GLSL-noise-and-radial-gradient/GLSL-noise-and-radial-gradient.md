@@ -318,7 +318,7 @@ It's not quite as bad when turned down to lower settings and during gameplay it'
   <figcaption>Deep Color setting in Alien: Isolation</figcaption>
 </figure>
 
-_[Deep Color](https://en.wikipedia.org/wiki/Color_depth#Deep_color_(30-bit))_ is what outputting at 10-bits per channel is called, just like 8bpp is _[True Color](https://en.wikipedia.org/wiki/Color_depth#True_color_(24-bit))_. It's also a setting in Alien: Isolation to enable 10bpp rendering. The way this setting works is absolutely not obvious though. You can turn it on, but it will only be actually active under a certain set of circumstances:
+_[Deep Color](https://en.wikipedia.org/wiki/Color_depth#Deep_color_(30-bit))_ is what outputting at 10-bits per channel is called, just like 8bpp is _[True Color](https://en.wikipedia.org/wiki/Color_depth#True_color_(24-bit))_. It's also a setting in Alien: Isolation to enable 10bpc rendering. The way this setting works is absolutely not obvious though. You can turn it on, but it will only be actually active under a certain set of circumstances:
  * Anti-Aliasing **has** to be disabled.
    * That's a serious bummer. None of the Anti-Aliasing shaders handle the 10-bit signal and just crush the result back down to 8-bit. It's as if you didn't turn it on at all :[
  * Your monitor needs to accept a 10 or 12-bit signal. Otherwise, the game won't switch into that higher bit-depth mode.
