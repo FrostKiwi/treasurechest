@@ -68,7 +68,8 @@ What this article talks about is a set of techniques with the same goal, but vas
 
 </details>
 </blockquote>
-Let's start out simple. Using GLSL Shaders, we draw the circle in the most simple and naive way possible: 4 vertices making up a Quad are sent to the vertex shader <a href="circle.vs">circle.vs</a>.   : `if (length(uv) < 1.0)` we draw our color and if it is outside the circle, we reject the fragment. What we are doing is known as Alpha testing.
+
+Let's start out simple. Using GLSL Shaders, we draw the circle in the most simple and naive way possible: 4 vertices making up a Quad are sent to the vertex shader <a href="circle.vs">circle.vs</a>. `if (length(uv) < 1.0)` we draw our color and if it is outside the circle, we reject the fragment. What we are doing is known as Alpha testing.
 
 ## What makes it analytical?
 
