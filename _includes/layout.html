@@ -62,9 +62,10 @@
 						const kiwis = [
 							'detective', 'facepalm', 'happy', 'ice', 'love', 'miffed', 'party', 'sad', 'surprised', 'teach', 'think'
 						].map(name => `/assets/kiwis/${name}.svg`);
-						const randomKiwi = () => document.querySelector('.kiwi').src = kiwis[Math.floor(Math.random() * kiwis.length)];
-						document.querySelector('.kiwi').onclick = randomKiwi;
-						randomKiwi();
+						let currentKiwi = Math.floor(Math.random() * kiwis.length);
+						const nextKiwi = () => document.querySelector('.kiwi').src = kiwis[++currentKiwi % kiwis.length];
+						document.querySelector('.kiwi').onclick = nextKiwi;
+						nextKiwi();
 					})();
 				</script>
 				<a class="no_border" href="/">
