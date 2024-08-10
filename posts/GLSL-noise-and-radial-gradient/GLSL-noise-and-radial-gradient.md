@@ -74,7 +74,7 @@ Let's fix this. The main point of this article is to share how I get banding fre
 
 > [...] a noise function that we could classify as being half way between dithered and random, and that we called **_Interleaved Gradient Noise_**.
 
-Here is what the raw noise looks like. The following WebGL Canvas is set to render at the same pixel density as your screen. (Though some Screen DPI and Browser zoom levels will result in it being one pixel off and there being a tiny bit of interpolation)
+Here is what the raw noise looks like. The following WebGL Canvas is set to render at the same pixel density as your screen.
 
 <canvas id="canvas_noise" style="max-height: 342px" ></canvas>
 <script id="vertex_noise" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/noise.vs" %}</script>

@@ -128,9 +128,13 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 	}
 
 	/* Resize the canvas to draw at native one-to-one pixel size */
+	/* Awesome solution by https://stackoverflow.com/a/35244519/6240779 */
 	function onResize() {
-		const width = Math.round(canvas.clientWidth * window.devicePixelRatio);
-		const height = Math.round(canvas.clientHeight * window.devicePixelRatio);
+		const dipRect = canvas.getBoundingClientRect();
+		const width = Math.round(devicePixelRatio * dipRect.right)
+			- Math.round(devicePixelRatio * dipRect.left);
+		const height = Math.round(devicePixelRatio * dipRect.bottom)
+			- Math.round(devicePixelRatio * dipRect.top);
 
 		if (canvas.width !== width || canvas.height !== height) {
 			canvas.width = width;
