@@ -3,6 +3,7 @@ varying vec2 uv;
 
 uniform float aspect_ratio;
 uniform float thickness;
+uniform float pixelsize;
 
 float smoothstep2(float edge0, float edge1, float x){
 	float t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
@@ -26,7 +27,7 @@ float sdBox( in vec2 p, in vec2 b )
 void main() {
     float dist = sdBox(uv, vec2(1.0 + (thickness * 0.5 * aspect_ratio), 1.0));
 
-    float alpha = linearstepNoclamp(thickness, thickness * 1.25, -dist);
+    float alpha = linearstepNoclamp(thickness, thickness + pixelsize, -dist);
 
     gl_FragColor = vec4(1.0, 0.25, 0.3, 1.0 - alpha);	
 }

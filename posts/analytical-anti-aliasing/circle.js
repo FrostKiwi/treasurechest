@@ -47,6 +47,7 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 	const offsetLocationRed = gl.getUniformLocation(redShd, "offset");
 	const aspect_ratioLocationRed = gl.getUniformLocation(redShd, "aspect_ratio");
 	const thicknessLocation = gl.getUniformLocation(redShd, "thickness");
+	const pixelsizeLocation = gl.getUniformLocation(redShd, "pixelsize");
 
 	/* Vertex Buffer of a simple Quad */
 	const unitQuad = new Float32Array([
@@ -115,11 +116,13 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 		gl.useProgram(redShd);
 		gl.uniform1f(aspect_ratioLocationRed, (1.0 / aspect_ratio) - 1.0);
 		gl.uniform1f(thicknessLocation, 0.2);
+		gl.uniform1f(pixelsizeLocation, (1.0 / canvas.width) * 50);
 		gl.uniform4f(transformLocationRed, 0.25, 0.25, -0.75, -0.75);
 		gl.uniform2fv(offsetLocationRed, circleOffsetAnim);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		gl.uniform1f(thicknessLocation, 0.1);
+		gl.uniform1f(pixelsizeLocation, 0.0);
 		gl.uniform4f(transformLocationRed, 0.5, 0.5, 0.0, 0.0);
 		gl.uniform2f(offsetLocationRed, -0.75, -0.75);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
