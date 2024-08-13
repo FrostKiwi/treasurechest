@@ -1,0 +1,68 @@
+<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    text {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+      font-size: 18px;
+      fill: #d9d8dc;
+    }
+  </style>
+
+  <!-- Axes -->
+  <line x1="200" y1="10" x2="200" y2="400" stroke="#d9d8dc" stroke-width="2" stroke-dasharray="4,4"/>
+  <line x1="0" y1="200" x2="390" y2="200" stroke="#d9d8dc" stroke-width="2" stroke-dasharray="4,4"/>
+  <polygon points="195,10 205,10 200,0" fill="#d9d8dc" />
+  <polygon points="390,195 390,205 400,200" fill="#d9d8dc" />
+  <text x="210" y="20">Y</text>
+  <text x="380" y="225">X</text>
+
+  <!-- Blended Quad, as per https://stackoverflow.com/a/63058275/6240779 -->
+  <g id="rgb-quad" transform="translate(100,100) scale(2)">
+    <style>
+      #rgb-quad { isolation: isolate; }
+      #rgb-quad>* { mix-blend-mode: screen; }
+    </style>
+    
+    <defs>
+        <polygon id="quad" points="0,0 100,0 100,100 0,100" stroke="none"/>
+        
+        <linearGradient id="magenta" gradientTransform="rotate(-45) translate(-0.25, -0.25)">
+            <stop offset="0%"  stop-color="#000" />
+            <stop offset="100%" stop-color="#f0f" />
+        </linearGradient>
+    
+        <linearGradient id="yellow" gradientTransform="rotate(45)">
+            <stop offset="0%"  stop-color="#ff0" />
+            <stop offset="100%" stop-color="#000" />
+        </linearGradient>
+    
+        <linearGradient id="cyan" gradientTransform="rotate(45) translate(0.5, 0.5)">
+            <stop offset="0%"  stop-color="#000" />
+            <stop offset="100%" stop-color="#0ff" />
+        </linearGradient>
+    
+        <linearGradient id="white" gradientTransform="rotate(-45) translate(-0.75, -0.75)">
+            <stop offset="0%"  stop-color="#fff" />
+            <stop offset="100%" stop-color="#000" />
+        </linearGradient>
+    </defs>
+    
+    <g id="rgb-quad">
+        <use href="#quad" fill="url('#yellow')"/>
+        <use href="#quad" fill="url('#cyan')"/>
+        <use href="#quad" fill="url('#magenta')"/>
+        <use href="#quad" fill="url('#white')"/>
+    </g>
+
+    <!-- White dots -->
+    <circle cx="0" cy="0" r="2" fill="white"/>
+    <circle cx="100" cy="0" r="2" fill="white"/>
+    <circle cx="100" cy="100" r="2" fill="white"/>
+    <circle cx="0" cy="100" r="2" fill="white"/>
+  </g>
+
+  <!-- Vertices -->
+  <text x="85" y="320">(-1, -1)</text>
+  <text x="305" y="320">(1, -1)</text>
+  <text x="305" y="90">(1, 1)</text>
+  <text x="85" y="90">(-1, 1)</text>  
+</svg>

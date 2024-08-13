@@ -1,47 +1,35 @@
 "use strict";
 function compileAndLinkShader(gl, vtxShdSrc, FragShdSrc) {
-	// Compile vertex shader
+	/* Vertex Shader Compilation */
 	const vtxShd = gl.createShader(gl.VERTEX_SHADER);
 	gl.shaderSource(vtxShd, document.getElementById(vtxShdSrc).text);
 	gl.compileShader(vtxShd);
 
-	// Check for vertex shader compilation errors
-	if (!gl.getShaderParameter(vtxShd, gl.COMPILE_STATUS)) {
+	if (!gl.getShaderParameter(vtxShd, gl.COMPILE_STATUS))
 		console.error("Vertex shader compilation error: ", gl.getShaderInfoLog(vtxShd));
-		gl.deleteShader(vtxShd);
-		return null;
-	}
 
-	// Compile fragment shader
+	/* Fragment Shader Compilation */
 	const FragShd = gl.createShader(gl.FRAGMENT_SHADER);
 	gl.shaderSource(FragShd, document.getElementById(FragShdSrc).text);
 	gl.compileShader(FragShd);
 
-	// Check for fragment shader compilation errors
-	if (!gl.getShaderParameter(FragShd, gl.COMPILE_STATUS)) {
+	if (!gl.getShaderParameter(FragShd, gl.COMPILE_STATUS))
 		console.error("Fragment shader compilation error: ", gl.getShaderInfoLog(FragShd));
-		gl.deleteShader(FragShd);
-		return null;
-	}
 
-	// Link shaders into a program
+	/* Shader Linking */
 	const LinkedShd = gl.createProgram();
 	gl.attachShader(LinkedShd, vtxShd);
 	gl.attachShader(LinkedShd, FragShd);
 	gl.linkProgram(LinkedShd);
 
-	// Check for linking errors
-	if (!gl.getProgramParameter(LinkedShd, gl.LINK_STATUS)) {
+	if (!gl.getProgramParameter(LinkedShd, gl.LINK_STATUS))
 		console.error("Shader program linking error: ", gl.getProgramInfoLog(LinkedShd));
-		gl.deleteProgram(LinkedShd);
-		return null;
-	}
 
 	return LinkedShd;
 }
 
 
-function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, redVtxSrc, redFragSrc) {
+function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, redVtxSrc, redFragSrc) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const webglVersion = canvasId == 'canvasMSAA' ? 'webgl2' : 'webgl';
@@ -70,30 +58,25 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 	}
 
 	/* Shaders */
-	// Circle Shader
+	/* Circle Shader */
 	const circleShd = compileAndLinkShader(gl, circleVtxSrc, circleFragSrc);
-	gl.useProgram(circleShd);
 	const aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
 	const offsetLocationCircle = gl.getUniformLocation(circleShd, "offset");
 
-	// Post Processing Shader
+	/* Post Processing Shader */
 	const postShd = compileAndLinkShader(gl, postVtxSrc, postFragSrc);
-	gl.useProgram(postShd);
-	const u_textureLocation = gl.getUniformLocation(postShd, "u_texture");
 	const transformLocation = gl.getUniformLocation(postShd, "transform");
 	const offsetLocationPost = gl.getUniformLocation(postShd, "offset");
-	gl.uniform1i(u_textureLocation, 0);
 
-	// Simple Red Box
+	/* Simple Red Box */
 	const redShd = compileAndLinkShader(gl, redVtxSrc, redFragSrc);
-	gl.useProgram(redShd);
 	const transformLocationRed = gl.getUniformLocation(redShd, "transform");
 	const offsetLocationRed = gl.getUniformLocation(redShd, "offset");
 	const aspect_ratioLocationRed = gl.getUniformLocation(redShd, "aspect_ratio");
 	const thicknessLocation = gl.getUniformLocation(redShd, "thickness");
 	const pixelsizeLocation = gl.getUniformLocation(redShd, "pixelsize");
 
-	// Vertex Buffer of a simple Quad with some colors
+	/* Vertex Buffer of a simple Quad with some colors */
 	const unitQuad = new Float32Array([
 		-1.0, 1.0, 1.0, 1.0, 0.0,
 		1.0, 1.0, 1.0, 0.0, 1.0,
@@ -127,6 +110,7 @@ function setupTri(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	
 	if (canvasId !== 'canvasMSAA')
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 	

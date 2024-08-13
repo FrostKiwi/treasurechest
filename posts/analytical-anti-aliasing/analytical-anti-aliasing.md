@@ -13,18 +13,13 @@ image: thumbnail.png
 ---
 Today's journey is [Anti-Aliasing](https://en.wikipedia.org/wiki/Spatial_anti-aliasing) and the destination is **Analytical Anti-Aliasing**. Getting rid of rasterization [jaggies](https://en.wikipedia.org/wiki/Jaggies) is an art-form with decades upon decades of maths, creative techniques and non-stop innovation. With so many years of research and development, there are many flavors.
 
-From the [simple but resource intensive **SSAA**](https://en.wikipedia.org/wiki/Supersampling), over [theory dense **SMAA**](https://www.iryoku.com/smaa/), to using [machine learning with **DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). We'll take a look at how they work, before introducing a new way to look a the problem - the ✨***analytical***🌟 way. The perfect Anti-Aliasing exists and is simpler than you think. Let's find out when and if you should use it.
+From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/Supersampling), over theory dense [**SMAA**](https://www.iryoku.com/smaa/), to using machine learning with [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). Same goal - ***vastly*** different approaches. We'll take a look at how they work, before introducing a new way to look a the problem - the ✨***analytical***🌟 way. The perfect Anti-Aliasing exists and is simpler than you think. Let's find out when and if you should use it.
+
+<blockquote class="reaction"><div class="reaction_text">To understand the Anti-Aliasing algorithms, we will implement them along the way! That's what the WebGL + Source code boxes are for.</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 
 ## The Setup
-To explain the Anti-Aliasing algorithms, we will implement them along the way. That's what the WebGL Boxes are for. 
-Let's setup our test scene. 
-
-Along the article are WebGL boxes, which implement all the anti-aliasing techniques we will be talking about.
-- [Supersampling anti-aliasing [**SSAA**]](https://en.wikipedia.org/wiki/Supersampling)
-- [Multisampling anti-aliasing [**MSAA**]](https://en.wikipedia.org/wiki/Multisample_anti-aliasing)
-
-
-What this article talks about is a set of techniques with the same goal, but vastly different approach - using the make-up of the geometry itself to draw anti-aliased shapes in one single sample.
+Each WebGL canvas draws a moving circle. Anti-Aliasing cannot be fully understood with just images, movement is vital to see pixel crawling and sub-pixel filtering. Finally, the red box shows part of the circle's border with 8x zoom, without performing any additional filtering.
+<blockquote class="reaction"><div class="reaction_text">Rendering is done at native resolution of your device, essential to judge Anti-aliasing properly. Results will depend on screen resolution. Please pixel-peep and judge sharpness and aliasing closely.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 <script src="circle.js"></script>
 <script id="vertexPass" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/post.vs" %}</script>
@@ -36,7 +31,7 @@ What this article talks about is a set of techniques with the same goal, but vas
 <script id="vertex_0" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}</script>
 <script id="fragment_0" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}</script>
 <canvas width="100%" height="480px" style="max-height: 480px" id="canvas_0"></canvas>
-<script>setupTri("canvas_0", "vertex_0", "fragment_0", "vertexPass", "fragmentPass", "vertexRedBox", "fragmentRedBox");</script>
+<script>setup("canvas_0", "vertex_0", "fragment_0", "vertexPass", "fragmentPass", "vertexRedBox", "fragmentRedBox");</script>
 
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
@@ -69,10 +64,20 @@ What this article talks about is a set of techniques with the same goal, but vas
 </details>
 </blockquote>
 
-Let's start out simple. Using GLSL Shaders, we draw the circle in the most simple and naive way possible: 4 vertices making up a Quad are sent to the vertex shader <a href="circle.vs">circle.vs</a>. `if (length(uv) < 1.0)` we draw our color and if it is outside the circle, we reject the fragment. What we are doing is known as Alpha testing.
+Let's start out simple. Using GLSL Shaders we tell the GPU of your device to draw a circle in the most simple and naive way possible, as seen in [circle.fs](circle.fs) above: If the `length()` from the middle of the circle is bigger than 1.0, we `discard` the fragment.
 
-### SSAA
-### MSAA
+### Technical breakdown
+The exact technical background of how the circle is necessary to follow this article, but will help in understanding whats happening under the hood.
+4 vertices making up a Quad are sent to the vertex shader [circle.vs](circle.vs), where they are received as `attribute vec2 vtx`. The coordinates are of a unit quad, meaning the coordinates look like the following image.
+
+![](unit.svg)
+
+The vertices are given to the fragment shader [circle.fs](circle.fs) via `varying vec2 uv`. The fragment shader is called per pixel and the `varying` is interpolated linearly between [Barycentric coordinate](https://en.wikipedia.org/wiki/Barycentric_coordinate_system).
+`if (length(uv) < 1.0)` we draw our color and if it is outside the circle, we reject the fragment. What we are doing is known as Alpha testing.
+
+## SSAA
+### Conceptually simple - actually hard
+## MSAA
 Choose MSAA sample count. Your hardware [may support up to MSAA x64](https://opengl.gpuinfo.org/displaycapability.php?name=GL_MAX_SAMPLES), but what is available to WebGL is implementation defined. WebGL 1 doesn't support MSAA at all, which is why the next windows will initialize a WebGL 2 context. NVIDIA limits the maximum Sample count to 8x, even if more is supported. On smartphones you will most likely get 4x.
 https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msaa#color-resolve
 
@@ -91,10 +96,36 @@ https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msa
 <script id="vertexMSAA" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.vs" %}</script>
 <script id="fragmentMSAA" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.fs" %}</script>
 <canvas width="100%" height="480px" style="max-height: 480px" id="canvasMSAA"></canvas>
-<script>setupTri("canvasMSAA", "vertexMSAA", "fragmentMSAA", "vertexPass", "fragmentPass", "vertexRedBox", "fragmentRedBox");</script>
+<script>setup("canvasMSAA", "vertexMSAA", "fragmentMSAA", "vertexPass", "fragmentPass", "vertexRedBox", "fragmentRedBox");</script>
 
-#### Potentially Performance free
-https://gdcvault.com/play/1024538 @ -16:40 MSAA Cheap
+The brain-melting lengths to which graphics programmers go to utilize hardware acceleration to the last drop has me sometimes in awe.
+
+### Performance cost: Zero (maybe)
+Looking at the history and development of modern video games, one might be led to believe, that this technique is of the past. What suprised me, is that it is still the king under certain circumstances and in very specific situations, even performance free. This goes very much against instinct, as MSAA is usually one of the top performance killers. 
+
+<figure>
+	<video width="960" height="540" controls><source src="MSAA-PerformanceFree.mp4" type="video/mp4"></video>
+	<figcaption>Video: MSAA 4x is performance free in certain contexts
+	<br>
+	Excerpt from <a href="https://gdcvault.com/play/1024538">"Developing High Performance Games for Different Mobile VR Platforms"</a><br> GDC 2017 talk by <a href="https://www.linkedin.com/in/rahulprasad2/	">Rahul Prasad</a>
+	</figcaption>
+</figure>
+
+> [Rahul Prasad:](https://www.linkedin.com/in/rahulprasad2/) Use MSAA [...] It's actually not as expensive on mobile as it is on desktop, it's one of the nice things you get on mobile. [...] On some (mobile) GPUs 4x (MSAA) is free, so use it when you have it.
+
+<details><summary>The technical reasons for this derail the point of the blog post, but in case you are interested, you can expand me</summary>
+
+This is possible under the condition of [forward rendering](https://gamedevelopment.tutsplus.com/forward-rendering-vs-deferred-rendering--gamedev-12342a) with geometry that is not too dense and the GPU having [tiled-based rendering architecture](https://developer.arm.com/documentation/102662/0100/Tile-based-GPUs), which allows the GPU to perform MSAA calculations without heavy memory access. We won't dive into why this is may be true under certain circumstances, as it is not the point of the blog article. In case you want to go down that particular rabbit hole, here is Epic Games' [Niklas Smedberg](https://www.linkedin.com/in/niklas-smedberg-a96466/) explaining giving a run-down.
+
+<figure>
+	<video width="960" height="540" controls><source src="tile-based-gpus.mp4" type="video/mp4"></video>
+	<figcaption>Video: Tiled based rendering GPU architecture
+	<br>
+	Excerpt from <a href="https://gdcvault.com/play/1020756">"Next-Generation AAA Mobile Rendering"</a><br> GDC 2014 talk by <a href="https://www.linkedin.com/in/niklas-smedberg-a96466/">Niklas Smedberg</a> and <a href="https://www.linkedin.com/in/niklas-smedberg-a96466/">Timothy Lottes</a>
+	</figcaption>
+</figure>
+
+</details>
 
 ## What makes it analytical?
 
@@ -121,6 +152,8 @@ This has been documented many times over, by many people in different forms. I u
 
 Mention connection to Freya the stray and https://acegikmo.com/shapes/
 
+## Secret sauce 💦
+When following graphics programming literature while implementing analytical anti-aliasing in various shaders, I discovered many implementation details that I don't agree with. So from here on out, we'll go into the nitty gritty, as I spill the tea on some juicy GPU code secrets.
 ### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
 Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliasing in `GLSL`, but its use doesn't make sense. It performs a hermite interpolation, but the we are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here. Though the slight performance difference doesn't particularly matter on modern graphics cards so wasting cycles on performing the hermite interpolation doesn't make sense to me.
 
@@ -166,6 +199,8 @@ This is compatible with all OpenGL and GLSL versions that use shaders. For OpenG
 Advanced font rendering uses `GL_EXT_blend_func_extended` sometimes to perform advanced blending, but that is not required for our Anti-Aliasing case.
 
 Mention Assassin Creed Unity Depth reprojection talk and how they MSAA the hell out of a small render target and blow and reconstruct the fullres version out of that info.
+[Talk](https://advances.realtimerendering.com/s2015/aaltonenhaar_siggraph2015_combined_final_footer_220dpi.pdf)[Ulrich Haar](https://www.linkedin.com/in/ulrich-haar-730407218) and [Sebastian Aaltonen](https://x.com/SebAaltonen)
+
 
 https://www.youtube.com/watch?v=1J6aAHLCbWg
 https://www.shadertoy.com/view/3stcD4
