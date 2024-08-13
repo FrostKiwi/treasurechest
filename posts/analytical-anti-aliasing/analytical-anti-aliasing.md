@@ -15,7 +15,7 @@ Today's journey is [Anti-Aliasing](https://en.wikipedia.org/wiki/Spatial_anti-al
 
 From the [simple but resource intensive **SSAA**](https://en.wikipedia.org/wiki/Supersampling), over [theory dense **SMAA**](https://www.iryoku.com/smaa/), to using [machine learning with **DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). We'll take a look at how they work, before introducing a new way to look a the problem - the ✨***analytical***🌟 way. The perfect Anti-Aliasing exists and is simpler than you think. Let's find out when and if you should use it.
 
-## The test case
+## The Setup
 To explain the Anti-Aliasing algorithms, we will implement them along the way. That's what the WebGL Boxes are for. 
 Let's setup our test scene. 
 
@@ -71,6 +71,31 @@ What this article talks about is a set of techniques with the same goal, but vas
 
 Let's start out simple. Using GLSL Shaders, we draw the circle in the most simple and naive way possible: 4 vertices making up a Quad are sent to the vertex shader <a href="circle.vs">circle.vs</a>. `if (length(uv) < 1.0)` we draw our color and if it is outside the circle, we reject the fragment. What we are doing is known as Alpha testing.
 
+### SSAA
+### MSAA
+Choose MSAA sample count. Your hardware [may support up to MSAA x64](https://opengl.gpuinfo.org/displaycapability.php?name=GL_MAX_SAMPLES), but what is available to WebGL is implementation defined. WebGL 1 doesn't support MSAA at all, which is why the next windows will initialize a WebGL 2 context. NVIDIA limits the maximum Sample count to 8x, even if more is supported. On smartphones you will most likely get 4x.
+https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msaa#color-resolve
+
+<div class="center-child">
+<select id="MSAA">.
+    <option value="1">No MSAA</option>
+    <option disabled value="2">MSAA -   2x</option>
+    <option selected disabled value="4">MSAA -   4x</option>
+    <option disabled value="8">MSAA -   8x</option>
+    <option disabled value="16">MSAA - 16x</option>
+    <option disabled value="32">MSAA - 32x</option>
+    <option disabled value="64">MSAA - 64x</option>
+</select>
+</div>
+
+<script id="vertexMSAA" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.vs" %}</script>
+<script id="fragmentMSAA" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.fs" %}</script>
+<canvas width="100%" height="480px" style="max-height: 480px" id="canvasMSAA"></canvas>
+<script>setupTri("canvasMSAA", "vertexMSAA", "fragmentMSAA", "vertexPass", "fragmentPass", "vertexRedBox", "fragmentRedBox");</script>
+
+#### Potentially Performance free
+https://gdcvault.com/play/1024538 @ -16:40 MSAA Cheap
+
 ## What makes it analytical?
 
 ![image](compare.png)
@@ -98,6 +123,14 @@ Mention connection to Freya the stray and https://acegikmo.com/shapes/
 
 ### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
 Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliasing in `GLSL`, but its use doesn't make sense. It performs a hermite interpolation, but the we are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here. Though the slight performance difference doesn't particularly matter on modern graphics cards so wasting cycles on performing the hermite interpolation doesn't make sense to me.
+
+We can implement it ourselves, without the hermite interpolation
+
+```
+implement
+```
+
+But wait! If all we want know is the pixel size, then most of this cancels out! Infact, we don't need any kind of step function.
 
 
 
