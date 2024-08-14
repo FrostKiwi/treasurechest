@@ -28,16 +28,25 @@ function compileAndLinkShader(gl, vtxShdSrc, FragShdSrc) {
 	return LinkedShd;
 }
 
-
 function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, redVtxSrc, redFragSrc) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const webglVersion = canvasId == 'canvasMSAA' ? 'webgl2' : 'webgl';
-	const gl = canvas.getContext(webglVersion, { preserveDrawingBuffer: false, antialias: false, alpha: true, premultipliedAlpha: true });
+	const gl = canvas.getContext(webglVersion,
+		{
+			preserveDrawingBuffer: false,
+			antialias: false,
+			alpha: true,
+			premultipliedAlpha: true
+		}
+	);
 	gl.getExtension('OES_standard_derivatives');
 
 	/* Setup Possibilities */
 	let samples = 1;
+	let renderbuffer = null;
+	let resolveFramebuffer = null;
+
 	if (canvasId == 'canvasMSAA') {
 		const maxSamples = gl.getParameter(gl.MAX_SAMPLES);
 
@@ -96,13 +105,6 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 	const framebuffer = gl.createFramebuffer();
 	gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
 
-	if (canvasId == 'canvasMSAA') {
-		const renderbuffer = gl.createRenderbuffer();
-		gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
-		gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, canvas.width, canvas.height);
-		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, renderbuffer);
-	}
-
 	const texture = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
@@ -110,19 +112,32 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	
-	if (canvasId !== 'canvasMSAA')
+
+	if (canvasId == 'canvasMSAA') {
+		renderbuffer = gl.createRenderbuffer();
+		gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
+		gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, canvas.width, canvas.height);
+		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, renderbuffer);
+
+		resolveFramebuffer = gl.createFramebuffer();
+		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, resolveFramebuffer);
+		gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+	} else {
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-	
+	}
+
 	const circleOffsetAnim = new Float32Array([
 		0.0, 0.0
 	]);
 
 	let aspect_ratio = 0;
 
-	function redraw(time) {
-		gl.disable(gl.BLEND);
+	if (canvasId == 'canvasMSAA')
 		gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
+
+	function redraw(time) {
+		if (canvasId == 'canvasMSAA')
+			gl.disable(gl.BLEND);
 
 		/* Setup PostProcess Framebuffer */
 		gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
@@ -138,16 +153,10 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 		gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
-		gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
-		gl.enable(gl.BLEND);
-		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-
 		if (canvasId == 'canvasMSAA') {
 			/* Resolve the MSAA framebuffer to a regular texture */
 			gl.bindFramebuffer(gl.READ_FRAMEBUFFER, framebuffer);
-			const resolveFramebuffer = gl.createFramebuffer();
 			gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, resolveFramebuffer);
-			gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 			gl.blitFramebuffer(
 				0, 0, canvas.width, canvas.height,
 				0, 0, canvas.width, canvas.height,
@@ -169,6 +178,7 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		/* Draw Red box for viewport illustration */
+		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 		gl.useProgram(redShd);
 		gl.uniform1f(aspect_ratioLocationRed, (1.0 / aspect_ratio) - 1.0);
@@ -195,8 +205,10 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 		if (canvas.width !== width || canvas.height !== height || sampleChange) {
 			canvas.width = width;
 			canvas.height = height;
-			if (canvasId == 'canvasMSAA')
+			if (canvasId == 'canvasMSAA') {
+				gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
 				gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, width, height);
+			}
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 			gl.viewport(0, 0, width, height);
 			aspect_ratio = 1.0 / (width / height);

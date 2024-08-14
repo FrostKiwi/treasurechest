@@ -58,6 +58,8 @@
     <circle cx="100" cy="0" r="2" fill="white"/>
     <circle cx="100" cy="100" r="2" fill="white"/>
     <circle cx="0" cy="100" r="2" fill="white"/>
+
+	<line x1="0" y1="0" x2="100" y2="100" stroke="white" stroke-width="1"/>
   </g>
 
   <!-- Vertices -->
