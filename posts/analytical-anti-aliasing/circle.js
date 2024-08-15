@@ -136,8 +136,10 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 		gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
 
 	function redraw(time) {
-		if (canvasId == 'canvasMSAA')
+		if (canvasId == 'canvasMSAA'){
 			gl.disable(gl.BLEND);
+			gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
+		}
 
 		/* Setup PostProcess Framebuffer */
 		gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
@@ -152,6 +154,10 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 		circleOffsetAnim[1] = radius * Math.sin(speed);
 		gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+		gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
+		gl.enable(gl.BLEND);
+		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
 		if (canvasId == 'canvasMSAA') {
 			/* Resolve the MSAA framebuffer to a regular texture */
@@ -178,7 +184,6 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		/* Draw Red box for viewport illustration */
-		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 		gl.useProgram(redShd);
 		gl.uniform1f(aspect_ratioLocationRed, (1.0 / aspect_ratio) - 1.0);
