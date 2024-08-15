@@ -2,7 +2,7 @@
 title: How to (and how not to) fix color banding
 permalink: "/{{ page.fileSlug }}/"
 date: 2023-10-19
-last_modified: 2023-12-27
+last_modified: 2024-08-15
 description: Discovering color banding solutions & Smooth gradients with a clever Noise one-liner by SLEDGEHAMMER Games
 publicTags:
   - Graphics
@@ -70,7 +70,7 @@ Many Laptop screens are in fact 6-bit panels performing dithering to fake an 8-b
  What you can see are *some* banding steps being a clean uniform color and *some* of them being dithered via the panel's integrated look-up table to achieve a perceived 8-bit output via [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering). Though note, how the dithering does **not** result in the banding steps being broken up, it just dithers the color step itself. Capturing this via a photo is a bit difficult, since there is also the pattern of individual pixels messing with the capture and introducing [moiré ](https://en.wikipedia.org/wiki/Moir%C3%A9_pattern) and interference patterns.
 ## Magic GLSL One-liner
 
-Let's fix this. The main point of this article is to share how I get banding free gradients in one GLSL fragment shader, rendering in a single pass and without sampling or texture taps to achieve banding free-ness. It involves the best noise one-liner I have ever seen. That genius one-liner is not from me, but from [Jorge Jimenez](https://www.iryoku.com/) in his [**presentation**]((http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare)) on how Gradient noise was implemented in [Call of Duty: Advanced Warfare](https://en.wikipedia.org/wiki/Call_of_Duty:_Advanced_Warfare). You can read it on the presentation's slide 123 onwards. It's described as:
+Let's fix this. The main point of this article is to share how I get banding free gradients in one GLSL fragment shader, rendering in a single pass and without sampling or texture taps to achieve banding free-ness. It involves the best noise one-liner I have ever seen. That genius one-liner is not from me, but from [Jorge Jimenez](https://www.iryoku.com/) in his [**presentation**](http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare) on how Gradient noise was implemented in [Call of Duty: Advanced Warfare](https://en.wikipedia.org/wiki/Call_of_Duty:_Advanced_Warfare). You can read it on the presentation's slide 123 onwards. It's described as:
 
 > [...] a noise function that we could classify as being half way between dithered and random, and that we called **_Interleaved Gradient Noise_**.
 
@@ -284,6 +284,30 @@ void main()
 
 ## What are the big-boys doing?
 To finish off, let's take a look how color banding is solved in other pieces of software. Not *just* in the context of gradients, but also beyond.
+
+### Valve Software
+[Alex Vlachos](https://alex.vlachos.com/), formerly at Valve, gave a GDC talk in 2015, where he showed off an algorithm "used for years since Portal 2 on the Xbox 360", that Valve Software used in their ["The Lab"](https://store.steampowered.com/app/450390/The_Lab/) VR demos to combat color banding.
+
+<figure>
+	<video width="1280" height="720" controls><source src="valve.mp4" type="video/mp4"></video>
+	<figcaption>Video: Use of noise in shaders by Valve Software
+	<br>
+	Source: Excerpt from <a href="https://gdcvault.com/play/1021771">"Advanced VR Rendering"</a>, GDC 2015 talk by <a href="https://alex.vlachos.com/">Alex Vlachos</a>
+	</figcaption>
+</figure>
+
+Here is the code that was showcased in the talk, in case you want to use it yourself. Valve animates the dither, as indicated by variable `g_flTime`.
+
+```hlsl
+float3 ScreenSpaceDither( float2 vScreenPos )
+{
+	// Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR
+	float3 vDither = dot( float2( 171.0, 231.0 ), vScreenPos.xy + g_flTime ).xxx;
+	vDither.rgb = frac( vDither.rgb / float3( 103.0, 71.0, 97.0 ) ) - float3( 0.5, 0.5, 0.5 );
+	return ( vDither.rgb / 255.0 ) * 0.375;
+}
+```
+<blockquote class="reaction"><div class="reaction_text">The code from the talk is <a href="https://en.wikipedia.org/wiki/High-Level_Shader_Language">HLSL</a> as used in <a href="https://en.wikipedia.org/wiki/Direct3D">DirectX</a>, not <a href="https://en.wikipedia.org/wiki/OpenGL_Shading_Language">GLSL</a> as used with <a href="https://en.wikipedia.org/wiki/OpenGL">OpenGL</a> or <a href="https://en.wikipedia.org/wiki/WebGL">WebGL</a>.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 ### Alien: Isolation
 I consider [Alien: Isolation](https://en.wikipedia.org/wiki/Alien:_Isolation) to be a technical master piece in terms of lighting, especially considering the time it was released. They faked realtime global illumination in a really interesting fashion, with the flashlight lighting up the area when shining directly at a wall fairly close and casting a redish ambiance when shining at a deep red door. It's mostly a hardcoded fake effect working with specific surfaces, but I digress...
