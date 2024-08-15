@@ -23,7 +23,7 @@ jo_mpeg is a C++ [single header library](https://github.com/nothings/single_file
 ## Results
 I encoded a couple of seconds from [Big Buck Bunny](https://peach.blender.org/) as a sample: [sample.mpeg](sample.mpeg)
 
-<blockquote class="reaction"><div class="reaction_text">Can't show it directly in browser, as MPEG1 is not supported anymore. Also there is <a href="https://jsmpeg.com/">jsmpeg</a>, but it also [doesn't support](https://github.com/phoboslab/jsmpeg/issues/432) this output.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Can't show it directly in browser, as MPEG1 is not supported anymore. Also there is <a href="https://jsmpeg.com/">jsmpeg</a>, but it also <a href="https://github.com/phoboslab/jsmpeg/issues/432">doesn't support</a> this output.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
 <figure>
 	<img src="comparison.png" alt="Input frame vs Output frame. Side effect of conversion: Increased saturation and contrast." />
