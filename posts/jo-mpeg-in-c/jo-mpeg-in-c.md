@@ -10,7 +10,7 @@ publicTags:
   - video
 image: jo_mpeg.png
 ---
-jo_mpeg is a C++ [single header library](https://github.com/nothings/single_file_libs) written by [Jon Olick](https://www.jonolick.com/home/mpeg-video-writer), which creates MPEG-1 videos (without audio). It is [listed as a C++ only library](https://github.com/nothings/single_file_libs#video) in stb's single header library collection. However, only the & reference format is what makes this library C++ only. Replacing those with simple pointers makes this compile with both C and C++. I'm also a big fan of [stb-type of library code](https://github.com/nothings/stb?tab=readme-ov-file#why-single-file-headers), so I converted the library to C.
+jo_mpeg is a C++ [single header library](https://github.com/nothings/single_file_libs) written by [Jon Olick](https://www.jonolick.com/home/mpeg-video-writer), which creates [MPEG-1](https://en.wikipedia.org/wiki/MPEG-1) videos (without audio). It is [listed as a C++ only library](https://github.com/nothings/single_file_libs#video) in stb's single header library collection. However, only the & reference format is what makes this library C++ only. Replacing those with simple pointers makes this compile with both C and C++. I'm also a big fan of [stb-type of library code](https://github.com/nothings/stb?tab=readme-ov-file#why-single-file-headers), so I converted the library to C.
 
 <details>
 <summary>Full source of the C compatible <a href="jo_mpeg.h">jo_mpeg.h</a></summary>
@@ -39,7 +39,7 @@ Unfortunately, the output has increased saturation and contrast. This is due to 
 
 I'm not sure why the code change credited to `r- lyeh` happened, but I guess the used video player handled color space incorrectly. Both [VLC](https://www.videolan.org/) and [MPV](https://mpv.io/) playback the colors correctly with `v1.03`.
 
-Quality is hardcoded and results in roughly `8mbps` at a resolution of `684x385`. The encoder performs only [intra-frame compression](https://en.wikipedia.org/wiki/Intra-frame_coding), no [inter-frame compression](https://en.wikipedia.org/wiki/Inter_frame), so in its current state it's more of a image encoder than a video encoder, as it just appends [I-frames](https://en.wikipedia.org/wiki/MPEG-1#I-frames). Quality measurements are at roughly `27db` [PSNR](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio#Quality_estimation_with_PSNR) and `0.9` [SSIM](https://medium.com/srm-mic/all-about-structural-similarity-index-ssim-theory-code-in-pytorch-6551b455541e)...
+Quality is hardcoded and results in roughly `8mbps` at a resolution of `684x385`. The encoder performs only [intra-frame compression](https://en.wikipedia.org/wiki/Intra-frame_coding), no [inter-frame compression](https://en.wikipedia.org/wiki/Inter_frame), so in its current state it's more of a image encoder than a video encoder, as it just appends [I-frames](https://en.wikipedia.org/wiki/MPEG-1#I-frames). Quality measurements are at roughly `27db` [PSNR](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio#Quality_estimation_with_PSNR) and `0.9` [SSIM](https://medium.com/srm-mic/all-about-structural-similarity-index-ssim-theory-code-in-pytorch-6551b455541e). These values showcase the advanced age of MPEG-1...
 
 <figure>
 	<video width="684" height="342" controls><source src="not-terrible.mp4" type="video/mp4"></video>
