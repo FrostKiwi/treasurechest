@@ -129,6 +129,10 @@ This is possible under the condition of [forward rendering](https://gamedevelopm
 
 </details>
 
+### MSAA - Conclusion
+- ✅ No extra framebuffer needed
+- ✅❌ Performance cheap in certain cirumstances
+
 ## What makes it analytical?
 
 ![image](compare.png)
@@ -137,6 +141,8 @@ This is possible under the condition of [forward rendering](https://gamedevelopm
 [Signed distance functions](https://en.wikipedia.org/wiki/Signed_distance_function#Applications)
 ### [Valve Software](https://www.valvesoftware.com/)'s implementation
 Valve introduced extensive use of signed distance field rendering to the [Source engine](https://en.wikipedia.org/wiki/Source_(game_engine)) during the development of the [Orange Box](https://en.wikipedia.org/wiki/The_Orange_Box). Most prominently in [Team Fortress 2](https://www.teamfortress.com/), where it was used to create smooth yet sharp UI elements on the HUD and decals in the game world. It received even its own [Developer Commentary](https://wiki.teamfortress.com/wiki/Developer_commentary) entry.
+
+![](tf2hud.png)
 
 <audio controls><source src="tf2-dev-commentary.mp3" type="audio/mpeg"></audio>
 > **Alden Kroll:** Two-dimensional HUD elements present a particular art problem, because they have to look good and sharp no matter what resolution the user is running their game at. Given today's availability of high resolution wide-screen displays, this can require a lot of texture memory and a lot of work anticipating different display resolutions. The problem for Team Fortress 2 was even more daunting because of our desire to include a lot of smooth curved elements in our HUD. We developed a new shader system for drawing 'line art' images. The system allows us to create images at a fixed resolution that produced smooth silhouettes even when scaled up to a very high resolution. This shader system also handles outlining and drop-shadows, and can be applied in the 3D space to world elements such as signs.

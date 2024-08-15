@@ -23,7 +23,7 @@
     </style>
     
     <defs>
-        <polygon id="quad" points="0,0 100,0 100,100 0,100" stroke="none"/>
+        <polygon id="quad" points="0,0 100,0 100,100 0,100" stroke="#d9d8dc" stroke-width="1"/>
         
         <linearGradient id="magenta" gradientTransform="rotate(-45) translate(-0.25, -0.25)">
             <stop offset="0%"  stop-color="#000" />
@@ -59,7 +59,7 @@
     <circle cx="100" cy="100" r="2" fill="white"/>
     <circle cx="0" cy="100" r="2" fill="white"/>
 
-	<line x1="0" y1="0" x2="100" y2="100" stroke="white" stroke-width="1"/>
+	<line x1="0" y1="0" x2="100" y2="100" stroke="#d9d8dc" stroke-width="1"/>
   </g>
 
   <!-- Vertices -->
