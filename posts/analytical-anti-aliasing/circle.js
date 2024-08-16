@@ -58,8 +58,12 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, b
 	);
 	
 	let DerivativesExtension = null;
-	if (webglVersion === 'webgl')
+	let TextureLodExtension = null;
+	if (webglVersion === 'webgl'){
 		DerivativesExtension = gl.getExtension('OES_standard_derivatives');
+		TextureLodExtension = gl.getExtension("EXT_shader_texture_lod");
+		console.log(TextureLodExtension);
+	}
 
 	/* Setup Possibilities */
 	let samples = 1;
@@ -97,8 +101,9 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, b
 	const transformLocation = gl.getUniformLocation(blitShd, "transform");
 	const offsetLocationPost = gl.getUniformLocation(blitShd, "offset");
 
-	/* Blit Shader */
+	/* Post Shader */
 	const postShd = compileAndLinkShader(gl, postVtxSrc, postFragSrc);
+	const rcpFrameLocation = gl.getUniformLocation(postShd, "RcpFrame");
 
 	/* Simple Red Box */
 	const redShd = compileAndLinkShader(gl, redVtxSrc, redFragSrc);
@@ -207,6 +212,7 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, b
 			gl.viewport(0, 0, canvas.width, canvas.height);
 		
 		gl.useProgram(postShd);
+		gl.uniform2f(rcpFrameLocation, 1.0 / canvas.width, 1.0 / canvas.height);
 		gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
 		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);

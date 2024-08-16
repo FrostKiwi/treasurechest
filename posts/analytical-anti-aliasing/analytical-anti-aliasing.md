@@ -27,6 +27,7 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 
 <script id="vertexPost" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/post.vs" %}</script>
 <script id="fragmentPost" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/post.fs" %}</script>
+<script id="fragmentPostFXAA" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/post-FXAA.fs" %}</script>
 
 <script id="vertexRedBox" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/red.vs" %}</script>
 <script id="fragmentRedBox" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/red.fs" %}</script>
@@ -182,6 +183,41 @@ This is possible under the condition of [forward rendering](https://gamedevelopm
 ### MSAA - Conclusion
 - ✅ No extra framebuffer needed
 - ✅❌ Performance cheap in certain cirumstances
+
+## FXAA
+<canvas width="100%" height="480px" style="max-height: 480px" id="canvasFXAA"></canvas>
+<script>setup("canvasFXAA", "vertex_0", "fragment_0", "vertexPost", "fragmentPostFXAA", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
+
+<blockquote>
+<details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+
+<!-- ![image](screenshot_passthrough.jpg) -->
+
+</details>
+<details><summary>WebGL Vertex Shader <a href="circle.vs">circle.vs</a></summary>
+
+```glsl
+{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a href="circle.fs">circle.fs</a></summary>
+
+```glsl
+{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="circle.js">circle.js</a></summary>
+
+```javascript
+{% rawFile "posts/analytical-anti-aliasing/circle.js" %}
+```
+
+</details>
+</blockquote>
 
 ## What makes it analytical?
 
