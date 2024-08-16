@@ -22,8 +22,11 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 <blockquote class="reaction"><div class="reaction_text">Rendering is done at native resolution of your device, essential to judge Anti-aliasing properly. Results will depend on screen resolution. Please pixel-peep and judge sharpness and aliasing closely.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 <script src="circle.js"></script>
-<script id="vertexPass" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/post.vs" %}</script>
-<script id="fragmentPass" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/post.fs" %}</script>
+<script id="vertexBlit" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/blit.vs" %}</script>
+<script id="fragmentBlit" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/blit.fs" %}</script>
+
+<script id="vertexPost" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/post.vs" %}</script>
+<script id="fragmentPost" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/post.fs" %}</script>
 
 <script id="vertexRedBox" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/red.vs" %}</script>
 <script id="fragmentRedBox" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/red.fs" %}</script>
@@ -31,7 +34,7 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 <script id="vertex_0" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}</script>
 <script id="fragment_0" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}</script>
 <canvas width="100%" height="480px" style="max-height: 480px" id="canvasSimple"></canvas>
-<script>setup("canvasSimple", "vertex_0", "fragment_0", "vertexPass", "fragmentPass", "vertexRedBox", "fragmentRedBox");</script>
+<script>setup("canvasSimple", "vertex_0", "fragment_0", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
 
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
@@ -78,9 +81,9 @@ The vertices are given to the fragment shader [circle.fs](circle.fs) via `varyin
 `if (length(uv) < 1.0)` we draw our color and if it is outside the circle, we reject the fragment. What we are doing is known as Alpha testing.
 
 ## SSAA
-
+SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Supersampling). Render it bigger, downsample to be smaller. . Implemented in mere seconds.
 <canvas width="100%" height="480px" style="max-height: 480px" id="canvasSSAA"></canvas>
-<script>setup("canvasSSAA", "vertex_0", "fragment_0", "vertexPass", "fragmentPass", "vertexRedBox", "fragmentRedBox");</script>
+<script>setup("canvasSSAA", "vertex_0", "fragment_0", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
 
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
@@ -112,8 +115,20 @@ The vertices are given to the fragment shader [circle.fs](circle.fs) via `varyin
 
 </details>
 </blockquote>
+There is definitely Anti-Aliasing happening, but not enough. We have 4 input pixels for every 1 output pixel we draw to the screen. There should be 4 steps of transparency, but we only get two!
 
 ### Conceptually simple - actually hard
+We aren't sampling against the circle shape at twice the resolution, we are sampling against the quantized result of the circle shape at twice the resolution. Twice the resolution, but discrete pixels nonetheless. The pixelation doesn't hold enough information where we need it the most: at the axis-aligned "flat parts". We simply approached the problem too naively, paying with four times the memory ***and*** four times the calculation requirement, but only a half-assed result.
+
+There are [multiple ways to sample with SSAA](https://en.wikipedia.org/wiki/Supersampling#Supersampling_patterns), all with pros and cons. So in reality, to implement SSAA properly, we need deep integration with the rendering pipeline.
+
+And some of the biggest ones were even discovered on accident.
+https://web.archive.org/web/20180716171211/https://naturalviolence.webs.com/sgssaa.htm
+
+There are so many ways to do a seemingly simple task.
+#### The dreaded blur
+There are more problems.
+
 ## MSAA
 Choose MSAA sample count. Your hardware [may support up to MSAA x64](https://opengl.gpuinfo.org/displaycapability.php?name=GL_MAX_SAMPLES), but what is available to WebGL is implementation defined. WebGL 1 doesn't support MSAA at all, which is why the next windows will initialize a WebGL 2 context. NVIDIA limits the maximum Sample count to 8x, even if more is supported. On smartphones you will most likely get 4x.
 https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msaa#color-resolve
@@ -133,7 +148,7 @@ https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msa
 <script id="vertexMSAA" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.vs" %}</script>
 <script id="fragmentMSAA" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.fs" %}</script>
 <canvas width="100%" height="480px" style="max-height: 480px" id="canvasMSAA"></canvas>
-<script>setup("canvasMSAA", "vertexMSAA", "fragmentMSAA", "vertexPass", "fragmentPass", "vertexRedBox", "fragmentRedBox");</script>
+<script>setup("canvasMSAA", "vertexMSAA", "fragmentMSAA", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
 
 The brain-melting lengths to which graphics programmers go to utilize hardware acceleration to the last drop has me sometimes in awe.
 

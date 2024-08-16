@@ -42,11 +42,11 @@ function setupTexture(gl, width, height, target, filter) {
 	return target;
 }
 
-function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, redVtxSrc, redFragSrc) {
+function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const webglVersion = canvasId == 'canvasMSAA' ? 'webgl2' : 'webgl';
-	let frameTexture, circleDrawFramebuffer;
+	let frameTexture, circleDrawFramebuffer, frameTextureLinear;
 	let buffersInitialized = false;
 	const gl = canvas.getContext(webglVersion,
 		{
@@ -92,10 +92,13 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 	const aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
 	const offsetLocationCircle = gl.getUniformLocation(circleShd, "offset");
 
-	/* Post Processing Shader */
+	/* Blit Shader */
+	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);
+	const transformLocation = gl.getUniformLocation(blitShd, "transform");
+	const offsetLocationPost = gl.getUniformLocation(blitShd, "offset");
+
+	/* Blit Shader */
 	const postShd = compileAndLinkShader(gl, postVtxSrc, postFragSrc);
-	const transformLocation = gl.getUniformLocation(postShd, "transform");
-	const offsetLocationPost = gl.getUniformLocation(postShd, "offset");
 
 	/* Simple Red Box */
 	const redShd = compileAndLinkShader(gl, redVtxSrc, redFragSrc);
@@ -132,7 +135,6 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 	let redrawActive = false;
 
 	function setupTextureBuffers() {
-		console.log(canvasId, "Setup Buffers");
 		if (canvasId == 'canvasMSAA') {
 			/* Setup MSAA Render-To-Texture with WebGL 2 */
 			gl.deleteFramebuffer(circleDrawFramebuffer)
@@ -153,12 +155,22 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 			gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTexture, 0);
 		} else {
 			/* Setup standard Render-To-Texture with WebGL 1 */
+			gl.deleteFramebuffer(resolveFramebuffer);
+			resolveFramebuffer = gl.createFramebuffer();
+			gl.bindFramebuffer(gl.FRAMEBUFFER, resolveFramebuffer);
+
+			frameTexture = setupTexture(gl, canvas.width, canvas.height, frameTexture, gl.NEAREST);
+			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTexture, 0);
+
 			gl.deleteFramebuffer(circleDrawFramebuffer);
 			circleDrawFramebuffer = gl.createFramebuffer();
 			gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
 
-			frameTexture = setupTexture(gl, canvas.width, canvas.height, frameTexture, gl.NEAREST);
-			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTexture, 0);
+			if (canvasId == 'canvasSSAA')
+				frameTextureLinear = setupTexture(gl, canvas.width * 2, canvas.height * 2, frameTextureLinear, gl.LINEAR);
+			else
+				frameTextureLinear = setupTexture(gl, canvas.width, canvas.height, frameTextureLinear, gl.LINEAR);
+			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTextureLinear, 0);
 		}
 		buffersInitialized = true;
 	}
@@ -173,6 +185,9 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 			gl.disable(gl.BLEND);
 			gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
 		}
+		
+		if (canvasId == 'canvasSSAA')
+			gl.viewport(0, 0, canvas.width * 2, canvas.height * 2);
 
 		/* Setup PostProcess Framebuffer */
 		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
@@ -188,6 +203,14 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 		gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
+		if (canvasId == 'canvasSSAA')
+			gl.viewport(0, 0, canvas.width, canvas.height);
+		
+		gl.useProgram(postShd);
+		gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
+		gl.enable(gl.BLEND);
+		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
 		if (canvasId == 'canvasMSAA') {
 			/* Resolve the MSAA framebuffer to a regular texture */
 			gl.bindFramebuffer(gl.READ_FRAMEBUFFER, circleDrawFramebuffer);
@@ -197,14 +220,16 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 				0, 0, canvas.width, canvas.height,
 				gl.COLOR_BUFFER_BIT, gl.NEAREST
 			);
+		} else {
+			gl.bindTexture(gl.TEXTURE_2D, frameTextureLinear);
+			gl.bindFramebuffer(gl.FRAMEBUFFER, resolveFramebuffer);
+			gl.clear(gl.COLOR_BUFFER_BIT);
+			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 		}
 
+		gl.useProgram(blitShd);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		gl.useProgram(postShd);
-
-		gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
-		gl.enable(gl.BLEND);
-		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+		gl.bindTexture(gl.TEXTURE_2D, frameTexture);
 
 		/* Simple Passthrough */
 		gl.uniform4f(transformLocation, 1.0, 1.0, 0.0, 0.0);
