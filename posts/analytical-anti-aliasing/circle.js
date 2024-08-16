@@ -28,10 +28,26 @@ function compileAndLinkShader(gl, vtxShdSrc, FragShdSrc) {
 	return LinkedShd;
 }
 
+function setupTexture(gl, canvas, target, filter) {
+	gl.deleteTexture(target);
+	target = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, target);
+
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	return target;
+}
+
 function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, redVtxSrc, redFragSrc) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const webglVersion = canvasId == 'canvasMSAA' ? 'webgl2' : 'webgl';
+	let frameTexture, framebuffer;
+	let buffersInitialized = false;
 	const gl = canvas.getContext(webglVersion,
 		{
 			preserveDrawingBuffer: false,
@@ -57,12 +73,13 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 				option.disabled = false;
 			}
 		}
+		samples = parseInt(msaaSelect.value);
 
-		samples = parseInt(msaaSelect.value); // Initial samples based on selected option
 		/* Event listener for select dropdown */
 		msaaSelect.addEventListener('change', function () {
-			samples = parseInt(msaaSelect.value); // Update samples based on the new selection
-			onResize(true); // Call the resize function to apply changes
+			/* Get new MSAA level and reset-init buffers */
+			samples = parseInt(msaaSelect.value);
+			setupTextureBuffers();
 		});
 	}
 
@@ -101,42 +118,55 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 	gl.enableVertexAttribArray(0);
 	gl.enableVertexAttribArray(1);
 
-	/* Framebuffer setup with MSAA */
-	const framebuffer = gl.createFramebuffer();
-	gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-
-	const texture = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, texture);
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-	if (canvasId == 'canvasMSAA') {
-		renderbuffer = gl.createRenderbuffer();
-		gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
-		gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, canvas.width, canvas.height);
-		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, renderbuffer);
-
-		resolveFramebuffer = gl.createFramebuffer();
-		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, resolveFramebuffer);
-		gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-	} else {
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-	}
+	setupTextureBuffers();
 
 	const circleOffsetAnim = new Float32Array([
 		0.0, 0.0
 	]);
 
 	let aspect_ratio = 0;
+	let last_time = 0;
+	let redrawActive = false;
 
-	if (canvasId == 'canvasMSAA')
-		gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
+	function setupTextureBuffers() {
+		console.log(canvasId, "Setup Buffers");
+		if (canvasId == 'canvasMSAA') {x
+			/* Setup MSAA Render-To-Texture with WebGL 2 */
+			gl.deleteFramebuffer(framebuffer)
+			framebuffer = gl.createFramebuffer();
+			gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+
+			gl.deleteRenderbuffer(renderbuffer);
+			renderbuffer = gl.createRenderbuffer();
+			gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
+			gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, canvas.width, canvas.height);
+			gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, renderbuffer);
+
+			gl.deleteFramebuffer(resolveFramebuffer);
+			resolveFramebuffer = gl.createFramebuffer();
+			gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, resolveFramebuffer);
+
+			frameTexture = setupTexture(gl, canvas, frameTexture, gl.NEAREST);
+			gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTexture, 0);
+		} else {
+			/* Setup standard Render-To-Texture with WebGL 1 */
+			gl.deleteFramebuffer(framebuffer);
+			framebuffer = gl.createFramebuffer();
+			gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+
+			frameTexture = setupTexture(gl, canvas, frameTexture, gl.NEAREST);
+			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTexture, 0);
+		}
+		buffersInitialized = true;
+	}
 
 	function redraw(time) {
-		if (canvasId == 'canvasMSAA'){
+		redrawActive = true;
+		if (!buffersInitialized) {
+			setupTextureBuffers();
+		}
+		last_time = time;
+		if (canvasId == 'canvasMSAA') {
 			gl.disable(gl.BLEND);
 			gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
 		}
@@ -155,10 +185,6 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 		gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
-		gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
-		gl.enable(gl.BLEND);
-		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-
 		if (canvasId == 'canvasMSAA') {
 			/* Resolve the MSAA framebuffer to a regular texture */
 			gl.bindFramebuffer(gl.READ_FRAMEBUFFER, framebuffer);
@@ -172,6 +198,10 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		gl.useProgram(postShd);
+
+		gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
+		gl.enable(gl.BLEND);
+		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
 		/* Simple Passthrough */
 		gl.uniform4f(transformLocation, 1.0, 1.0, 0.0, 0.0);
@@ -198,23 +228,20 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 		gl.uniform4f(transformLocationRed, 0.5, 0.5, 0.0, 0.0);
 		gl.uniform2f(offsetLocationRed, -0.75, -0.75);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-
-		requestAnimationFrame(redraw);
+		redrawActive = false;
 	}
 
-	function onResize(sampleChange) {
+	function onResize() {
 		const dipRect = canvas.getBoundingClientRect();
 		const width = Math.round(devicePixelRatio * dipRect.right) - Math.round(devicePixelRatio * dipRect.left);
 		const height = Math.round(devicePixelRatio * dipRect.bottom) - Math.round(devicePixelRatio * dipRect.top);
 
-		if (canvas.width !== width || canvas.height !== height || sampleChange) {
+		if (canvas.width !== width || canvas.height !== height) {
 			canvas.width = width;
 			canvas.height = height;
-			if (canvasId == 'canvasMSAA') {
-				gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
-				gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, width, height);
-			}
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+			setupTextureBuffers();
+
 			gl.viewport(0, 0, width, height);
 			aspect_ratio = 1.0 / (width / height);
 		}
@@ -222,5 +249,47 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 
 	window.addEventListener('resize', onResize, true);
 	onResize();
-	redraw(0);
+
+	let isRendering = false;
+
+	function renderLoop(time) {
+		if (isRendering) {
+			redraw(time);
+			requestAnimationFrame(renderLoop);
+		}
+	}
+
+	function handleIntersection(entries) {
+		entries.forEach(entry => {
+			if (entry.isIntersecting) {
+				if (!isRendering) {
+					/* Start rendering, when canvas visible */
+					isRendering = true;
+					renderLoop(last_time);
+				}
+			} else {
+				/* Stop another redraw being called */
+				isRendering = false;
+				while (redrawActive) {
+					/* Spin on draw calls being processed. To simplify sync.
+					   In reality this code is block is never reached, but just
+					   in case, we have this here. */
+					console.log("Spin");
+				}
+				/* Force the rendering pipeline to sync with CPU before we mess with it */
+				gl.finish();
+				
+				/* Delete the important buffer to free up memory */
+				gl.deleteTexture(frameTexture);
+				gl.deleteFramebuffer(framebuffer);
+				gl.deleteRenderbuffer(renderbuffer);
+				gl.deleteFramebuffer(resolveFramebuffer);
+				buffersInitialized = false;
+			}
+		});
+	}
+
+	/* Only render when the canvas is actually on screen */
+	let observer = new IntersectionObserver(handleIntersection);
+	observer.observe(canvas);
 }

@@ -63,8 +63,8 @@
   </g>
 
   <!-- Vertices -->
-  <text x="85" y="320">(-1, -1)</text>
-  <text x="305" y="320">(1, -1)</text>
-  <text x="305" y="90">(1, 1)</text>
-  <text x="85" y="90">(-1, 1)</text>  
+  <text x="100" y="320" text-anchor="middle">(-1, -1)</text>
+  <text x="300" y="320" text-anchor="middle">(1, -1)</text>
+  <text x="300" y="90" text-anchor="middle">(1, 1)</text>
+  <text x="100" y="90" text-anchor="middle">(-1, 1)</text>  
 </svg>
