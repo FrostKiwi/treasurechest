@@ -1,5 +1,3 @@
-#extension GL_EXT_shader_texture_lod : enable
-#extension GL_OES_standard_derivatives : enable
 precision mediump float;
 
 uniform sampler2D u_texture;
@@ -30,11 +28,11 @@ vec4 FxaaPixelShader(
 	vec2 posM;
 	posM.x = pos.x;
 	posM.y = pos.y;
-	vec4 rgbyM = texture2DLodEXT(tex, posM, 0.0);
-	float lumaS = FxaaLuma(texture2DLodEXT(tex, posM + (vec2(ivec2(0, 1)) * fxaaQualityRcpFrame.xy), 0.0));
-	float lumaE = FxaaLuma(texture2DLodEXT(tex, posM + (vec2(ivec2(1, 0)) * fxaaQualityRcpFrame.xy), 0.0));
-	float lumaN = FxaaLuma(texture2DLodEXT(tex, posM + (vec2(ivec2(0, -1)) * fxaaQualityRcpFrame.xy), 0.0));
-	float lumaW = FxaaLuma(texture2DLodEXT(tex, posM + (vec2(ivec2(-1, 0)) * fxaaQualityRcpFrame.xy), 0.0));
+	vec4 rgbyM = texture2D(tex, posM);
+	float lumaS = FxaaLuma(texture2D(tex, posM + (vec2(ivec2(0, 1)) * fxaaQualityRcpFrame.xy)));
+	float lumaE = FxaaLuma(texture2D(tex, posM + (vec2(ivec2(1, 0)) * fxaaQualityRcpFrame.xy)));
+	float lumaN = FxaaLuma(texture2D(tex, posM + (vec2(ivec2(0, -1)) * fxaaQualityRcpFrame.xy)));
+	float lumaW = FxaaLuma(texture2D(tex, posM + (vec2(ivec2(-1, 0)) * fxaaQualityRcpFrame.xy)));
 
 	float maxSM = max(lumaS, rgbyM.w);
 	float minSM = min(lumaS, rgbyM.w);
@@ -52,10 +50,10 @@ vec4 FxaaPixelShader(
 	if (earlyExit)
 		return rgbyM;
 
-	float lumaNW = FxaaLuma(texture2DLodEXT(tex, posM + (vec2(ivec2(-1, -1)) * fxaaQualityRcpFrame.xy), 0.0));
-	float lumaSE = FxaaLuma(texture2DLodEXT(tex, posM + (vec2(ivec2(1, 1)) * fxaaQualityRcpFrame.xy), 0.0));
-	float lumaNE = FxaaLuma(texture2DLodEXT(tex, posM + (vec2(ivec2(1, -1)) * fxaaQualityRcpFrame.xy), 0.0));
-	float lumaSW = FxaaLuma(texture2DLodEXT(tex, posM + (vec2(ivec2(-1, 1)) * fxaaQualityRcpFrame.xy), 0.0));
+	float lumaNW = FxaaLuma(texture2D(tex, posM + (vec2(ivec2(-1, -1)) * fxaaQualityRcpFrame.xy)));
+	float lumaSE = FxaaLuma(texture2D(tex, posM + (vec2(ivec2(1, 1)) * fxaaQualityRcpFrame.xy)));
+	float lumaNE = FxaaLuma(texture2D(tex, posM + (vec2(ivec2(1, -1)) * fxaaQualityRcpFrame.xy)));
+	float lumaSW = FxaaLuma(texture2D(tex, posM + (vec2(ivec2(-1, 1)) * fxaaQualityRcpFrame.xy)));
 
 	float lumaNS = lumaN + lumaS;
 	float lumaWE = lumaW + lumaE;
@@ -119,9 +117,9 @@ vec4 FxaaPixelShader(
 	posP.x = posB.x + offNP.x * 1.0;
 	posP.y = posB.y + offNP.y * 1.0;
 	float subpixD = ((-2.0) * subpixC) + 3.0;
-	float lumaEndN = FxaaLuma(texture2DLodEXT(tex, posN, 0.0));
+	float lumaEndN = FxaaLuma(texture2D(tex, posN));
 	float subpixE = subpixC * subpixC;
-	float lumaEndP = FxaaLuma(texture2DLodEXT(tex, posP, 0.0));
+	float lumaEndP = FxaaLuma(texture2D(tex, posP));
 
 	if (!pairN)
 		lumaNN = lumaSS;
@@ -147,9 +145,9 @@ vec4 FxaaPixelShader(
 	if (doneNP)
 	{
 		if (!doneN)
-			lumaEndN = FxaaLuma(texture2DLodEXT(tex, posN.xy, 0.0));
+			lumaEndN = FxaaLuma(texture2D(tex, posN.xy));
 		if (!doneP)
-			lumaEndP = FxaaLuma(texture2DLodEXT(tex, posP.xy, 0.0));
+			lumaEndP = FxaaLuma(texture2D(tex, posP.xy));
 		if (!doneN)
 			lumaEndN = lumaEndN - lumaNN * 0.5;
 		if (!doneP)
@@ -169,9 +167,9 @@ vec4 FxaaPixelShader(
 		if (doneNP)
 		{
 			if (!doneN)
-				lumaEndN = FxaaLuma(texture2DLodEXT(tex, posN.xy, 0.0));
+				lumaEndN = FxaaLuma(texture2D(tex, posN.xy, 0.0));
 			if (!doneP)
-				lumaEndP = FxaaLuma(texture2DLodEXT(tex, posP.xy, 0.0));
+				lumaEndP = FxaaLuma(texture2D(tex, posP.xy, 0.0));
 			if (!doneN)
 				lumaEndN = lumaEndN - lumaNN * 0.5;
 			if (!doneP)
@@ -191,9 +189,9 @@ vec4 FxaaPixelShader(
 			if (doneNP)
 			{
 				if (!doneN)
-					lumaEndN = FxaaLuma(texture2DLodEXT(tex, posN.xy, 0.0));
+					lumaEndN = FxaaLuma(texture2D(tex, posN.xy));
 				if (!doneP)
-					lumaEndP = FxaaLuma(texture2DLodEXT(tex, posP.xy, 0.0));
+					lumaEndP = FxaaLuma(texture2D(tex, posP.xy));
 				if (!doneN)
 					lumaEndN = lumaEndN - lumaNN * 0.5;
 				if (!doneP)
@@ -239,7 +237,7 @@ vec4 FxaaPixelShader(
 	if (horzSpan)
 		posM.y += pixelOffsetSubpix * lengthSign;
 
-	return vec4(texture2DLodEXT(tex, posM, 0.0).xyz, rgbyM.w);
+	return vec4(texture2D(tex, posM, 0.0).xyz, rgbyM.w);
 }
 
 void main() {
