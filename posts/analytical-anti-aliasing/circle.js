@@ -28,7 +28,7 @@ function compileAndLinkShader(gl, vtxShdSrc, FragShdSrc) {
 	return LinkedShd;
 }
 
-function setupTexture(gl, canvas, target, filter) {
+function setupTexture(gl, width, height, target, filter) {
 	gl.deleteTexture(target);
 	target = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, target);
@@ -38,7 +38,7 @@ function setupTexture(gl, canvas, target, filter) {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width, canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 	return target;
 }
 
@@ -46,7 +46,7 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const webglVersion = canvasId == 'canvasMSAA' ? 'webgl2' : 'webgl';
-	let frameTexture, framebuffer;
+	let frameTexture, circleDrawFramebuffer;
 	let buffersInitialized = false;
 	const gl = canvas.getContext(webglVersion,
 		{
@@ -56,7 +56,10 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 			premultipliedAlpha: true
 		}
 	);
-	gl.getExtension('OES_standard_derivatives');
+	
+	let DerivativesExtension = null;
+	if (webglVersion === 'webgl')
+		DerivativesExtension = gl.getExtension('OES_standard_derivatives');
 
 	/* Setup Possibilities */
 	let samples = 1;
@@ -130,11 +133,11 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 
 	function setupTextureBuffers() {
 		console.log(canvasId, "Setup Buffers");
-		if (canvasId == 'canvasMSAA') {x
+		if (canvasId == 'canvasMSAA') {
 			/* Setup MSAA Render-To-Texture with WebGL 2 */
-			gl.deleteFramebuffer(framebuffer)
-			framebuffer = gl.createFramebuffer();
-			gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+			gl.deleteFramebuffer(circleDrawFramebuffer)
+			circleDrawFramebuffer = gl.createFramebuffer();
+			gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
 
 			gl.deleteRenderbuffer(renderbuffer);
 			renderbuffer = gl.createRenderbuffer();
@@ -146,15 +149,15 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 			resolveFramebuffer = gl.createFramebuffer();
 			gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, resolveFramebuffer);
 
-			frameTexture = setupTexture(gl, canvas, frameTexture, gl.NEAREST);
+			frameTexture = setupTexture(gl, canvas.width, canvas.height, frameTexture, gl.NEAREST);
 			gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTexture, 0);
 		} else {
 			/* Setup standard Render-To-Texture with WebGL 1 */
-			gl.deleteFramebuffer(framebuffer);
-			framebuffer = gl.createFramebuffer();
-			gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+			gl.deleteFramebuffer(circleDrawFramebuffer);
+			circleDrawFramebuffer = gl.createFramebuffer();
+			gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
 
-			frameTexture = setupTexture(gl, canvas, frameTexture, gl.NEAREST);
+			frameTexture = setupTexture(gl, canvas.width, canvas.height, frameTexture, gl.NEAREST);
 			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTexture, 0);
 		}
 		buffersInitialized = true;
@@ -172,7 +175,7 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 		}
 
 		/* Setup PostProcess Framebuffer */
-		gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.useProgram(circleShd);
 
@@ -187,7 +190,7 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 
 		if (canvasId == 'canvasMSAA') {
 			/* Resolve the MSAA framebuffer to a regular texture */
-			gl.bindFramebuffer(gl.READ_FRAMEBUFFER, framebuffer);
+			gl.bindFramebuffer(gl.READ_FRAMEBUFFER, circleDrawFramebuffer);
 			gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, resolveFramebuffer);
 			gl.blitFramebuffer(
 				0, 0, canvas.width, canvas.height,
@@ -281,7 +284,7 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, r
 				
 				/* Delete the important buffer to free up memory */
 				gl.deleteTexture(frameTexture);
-				gl.deleteFramebuffer(framebuffer);
+				gl.deleteFramebuffer(circleDrawFramebuffer);
 				gl.deleteRenderbuffer(renderbuffer);
 				gl.deleteFramebuffer(resolveFramebuffer);
 				buffersInitialized = false;

@@ -30,8 +30,8 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 
 <script id="vertex_0" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}</script>
 <script id="fragment_0" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}</script>
-<canvas width="100%" height="480px" style="max-height: 480px" id="canvas_0"></canvas>
-<script>setup("canvas_0", "vertex_0", "fragment_0", "vertexPass", "fragmentPass", "vertexRedBox", "fragmentRedBox");</script>
+<canvas width="100%" height="480px" style="max-height: 480px" id="canvasSimple"></canvas>
+<script>setup("canvasSimple", "vertex_0", "fragment_0", "vertexPass", "fragmentPass", "vertexRedBox", "fragmentRedBox");</script>
 
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
@@ -78,6 +78,41 @@ The vertices are given to the fragment shader [circle.fs](circle.fs) via `varyin
 `if (length(uv) < 1.0)` we draw our color and if it is outside the circle, we reject the fragment. What we are doing is known as Alpha testing.
 
 ## SSAA
+
+<canvas width="100%" height="480px" style="max-height: 480px" id="canvasSSAA"></canvas>
+<script>setup("canvasSSAA", "vertex_0", "fragment_0", "vertexPass", "fragmentPass", "vertexRedBox", "fragmentRedBox");</script>
+
+<blockquote>
+<details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+
+<!-- ![image](screenshot_passthrough.jpg) -->
+
+</details>
+<details><summary>WebGL Vertex Shader <a href="circle.vs">circle.vs</a></summary>
+
+```glsl
+{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a href="circle.fs">circle.fs</a></summary>
+
+```glsl
+{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="circle.js">circle.js</a></summary>
+
+```javascript
+{% rawFile "posts/analytical-anti-aliasing/circle.js" %}
+```
+
+</details>
+</blockquote>
+
 ### Conceptually simple - actually hard
 ## MSAA
 Choose MSAA sample count. Your hardware [may support up to MSAA x64](https://opengl.gpuinfo.org/displaycapability.php?name=GL_MAX_SAMPLES), but what is available to WebGL is implementation defined. WebGL 1 doesn't support MSAA at all, which is why the next windows will initialize a WebGL 2 context. NVIDIA limits the maximum Sample count to 8x, even if more is supported. On smartphones you will most likely get 4x.
