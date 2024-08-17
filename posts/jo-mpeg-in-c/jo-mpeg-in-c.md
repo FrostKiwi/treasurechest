@@ -2,7 +2,7 @@
 title: Jo_MPEG converted to C
 permalink: "/{{ page.fileSlug }}/"
 date: 2022-02-18
-last_modified: 2024-08-15
+last_modified: 2024-08-17
 description: Single-header MPEG-1 Video library ported to C
 publicTags:
   - C++
@@ -22,9 +22,20 @@ jo_mpeg is a C++ [single header library](https://github.com/nothings/single_file
 
 ## Results
 I encoded a couple of seconds from [Big Buck Bunny](https://peach.blender.org/) as a sample: [sample.mpeg](sample.mpeg)
+Thanks to [jsmpeg](https://jsmpeg.com/) we can see the output directly in the browser, after [muxing it into an MPEG-TS](https://github.com/phoboslab/jsmpeg/issues/432) container.
 
-<blockquote class="reaction"><div class="reaction_text">Can't show it directly in browser, as MPEG1 is not supported anymore. Also there is <a href="https://jsmpeg.com/">jsmpeg</a>, but it also <a href="https://github.com/phoboslab/jsmpeg/issues/432">doesn't support</a> this output.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
+<script src="jsmpeg.min.js"></script>
+<div class="jsmpeg" data-url="sample.ts"></div>
 
+Quality is hardcoded and results in roughly `8mbps` at a resolution of `684x385`. The encoder performs only [intra-frame compression](https://en.wikipedia.org/wiki/Intra-frame_coding), no [inter-frame compression](https://en.wikipedia.org/wiki/Inter_frame), so in its current state it's more of a image encoder than a video encoder, as it just appends [I-frames](https://en.wikipedia.org/wiki/MPEG-1#I-frames). Quality measurements are at roughly `27db` [PSNR](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio#Quality_estimation_with_PSNR) and `0.9` [SSIM](https://medium.com/srm-mic/all-about-structural-similarity-index-ssim-theory-code-in-pytorch-6551b455541e). These values showcase the advanced age of MPEG-1...
+
+<figure>
+	<video width="684" height="342" controls><source src="not-terrible.mp4" type="video/mp4"></video>
+	<figcaption>...Or in other words</figcaption>
+</figure>
+
+
+## Code changes
 <figure>
 	<img src="comparison.png" alt="Input frame vs Output frame. Side effect of conversion: Increased saturation and contrast." />
 	<figcaption>Input frame vs Output frame. Side effect of conversion: Increased saturation and contrast.</figcaption>
@@ -38,10 +49,3 @@ Unfortunately, the output has increased saturation and contrast. This is due to 
 </figure>
 
 I'm not sure why the code change credited to `r- lyeh` happened, but I guess the used video player handled color space incorrectly. Both [VLC](https://www.videolan.org/) and [MPV](https://mpv.io/) playback the colors correctly with `v1.03`.
-
-Quality is hardcoded and results in roughly `8mbps` at a resolution of `684x385`. The encoder performs only [intra-frame compression](https://en.wikipedia.org/wiki/Intra-frame_coding), no [inter-frame compression](https://en.wikipedia.org/wiki/Inter_frame), so in its current state it's more of a image encoder than a video encoder, as it just appends [I-frames](https://en.wikipedia.org/wiki/MPEG-1#I-frames). Quality measurements are at roughly `27db` [PSNR](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio#Quality_estimation_with_PSNR) and `0.9` [SSIM](https://medium.com/srm-mic/all-about-structural-similarity-index-ssim-theory-code-in-pytorch-6551b455541e). These values showcase the advanced age of MPEG-1...
-
-<figure>
-	<video width="684" height="342" controls><source src="not-terrible.mp4" type="video/mp4"></video>
-	<figcaption>...Or in other words</figcaption>
-</figure>
