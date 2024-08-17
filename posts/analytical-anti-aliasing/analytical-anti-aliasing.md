@@ -219,6 +219,41 @@ This is possible under the condition of [forward rendering](https://gamedevelopm
 </details>
 </blockquote>
 
+```
+Choose the amount of sub-pixel aliasing removal.
+This can effect sharpness.
+```
+
+<select id="fxaaQualitySubpix">
+	<option value="1.00">1.00 - upper limit (softer)</option>
+	<option value="0.75">0.75 - default amount of filtering</option>
+	<option value="0.50">0.50 - lower limit (sharper, less sub-pixel aliasing removal)</option>
+	<option value="0.25">0.25 - almost off</option>
+	<option value="0.00">0.00 - completely off</option>
+</select>
+
+```
+The minimum amount of local contrast required to apply algorithm.
+```
+
+<select id="fxaaQualityEdgeThreshold">
+<option value="0.333">0.333 - too little (faster)</option>
+<option value="0.250">0.250 - low quality</option>
+<option value="0.166">0.166 - default</option>
+<option value="0.125">0.125 - high quality </option>
+<option value="0.063">0.063 - overkill (slower)</option>
+</select>
+
+```
+Trims the algorithm from processing darks.
+```
+
+<select id="fxaaQualityEdgeThresholdMin">
+<option value="0.0833">0.0833 - upper limit (default, the start of visible unfiltered edges)</option>
+<option value="0.0625">0.0625 - high quality (faster)</option>
+<option value="0.0312">0.0312 - visible limit (slower)</option>
+</select>
+
 ## What makes it analytical?
 
 ![image](compare.png)
