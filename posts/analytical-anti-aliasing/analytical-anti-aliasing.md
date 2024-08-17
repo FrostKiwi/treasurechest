@@ -255,6 +255,40 @@ Trims the algorithm from processing darks.
 </select>
 
 ## What makes it analytical?
+<script id="fragmentAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analytical.fs" %}</script>
+<canvas width="100%" height="480px" style="max-height: 480px" id="canvasAnalytical"></canvas>
+<script>setup("canvasAnalytical", "vertex_0", "fragmentAnalytical", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
+
+<blockquote>
+<details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+
+<!-- ![image](screenshot_passthrough.jpg) -->
+
+</details>
+<details><summary>WebGL Vertex Shader <a href="circle.vs">circle.vs</a></summary>
+
+```glsl
+{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a href="circle.fs">circle.fs</a></summary>
+
+```glsl
+{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="circle.js">circle.js</a></summary>
+
+```javascript
+{% rawFile "posts/analytical-anti-aliasing/circle.js" %}
+```
+
+</details>
+</blockquote>
 
 ![image](compare.png)
 
