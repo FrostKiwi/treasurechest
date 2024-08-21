@@ -61,7 +61,7 @@
 				<script>
 					(() => {
 						const kiwis = [
-							'detective', 'facepalm', 'happy', 'ice', 'love', 'miffed', 'party', 'sad', 'surprised', 'teach', 'think'
+							'detective', 'facepalm', 'happy', 'ice', 'love', 'miffed', 'party', 'sad', 'surprised', 'teach', 'think', 'book', 'cyber', 'dead', 'laugh', 'sleep'
 						].map(name => `/assets/kiwis/${name}.svg`);
 						let currentKiwi = Math.floor(Math.random() * kiwis.length);
 						const nextKiwi = () => document.querySelector('.kiwi').src = kiwis[++currentKiwi % kiwis.length];
