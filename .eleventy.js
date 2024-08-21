@@ -1,8 +1,8 @@
 const fs = require("fs");
+const path = require('path');
 const CleanCSS = require("clean-css");
 const Image = require("@11ty/eleventy-img");
 const { execSync } = require('child_process');
-/* const faviconPlugin = require("eleventy-favicon"); */
 const pluginRss = require("@11ty/eleventy-plugin-rss");
 const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
 const eleventyPluginFilesMinifier = require("@sherby/eleventy-plugin-files-minifier");
@@ -54,6 +54,12 @@ module.exports = function (eleventyConfig) {
 		/* Comments */
 		tocHtml = tocHtml.replace('</ul></nav>', '</ul></li><li><a href="#comments">Comments</a></li></ul></nav>');
 		return tocHtml;
+	});
+
+	eleventyConfig.addFilter('generatePreloadLinks', function (directory) {
+		const dirPath = path.join(__dirname, directory);
+		const files = fs.readdirSync(dirPath);
+		return files.map(file => `<link rel="preload" href="${directory}/${file}" as="image">`).join('\n');
 	});
 
 	/* CSS minifier as per https://www.11ty.dev/docs/quicktips/inline-css/ */
