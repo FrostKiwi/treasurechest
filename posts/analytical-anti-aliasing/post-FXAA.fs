@@ -54,7 +54,6 @@ vec4 FxaaPixelShader(
 	bool earlyExit = range < rangeMaxClamped;
 
 	if (earlyExit)
-
 		return rgbyM;
 
 	float lumaNW = FxaaLuma(texture2D(tex, posM + (vec2(ivec2(-1, -1)) * fxaaQualityRcpFrame.xy)));
@@ -140,14 +139,14 @@ vec4 FxaaPixelShader(
 	bool doneN = abs(lumaEndN) >= gradientScaled;
 	bool doneP = abs(lumaEndP) >= gradientScaled;
 	if (!doneN)
-		posN.x -= offNP.x * 1.0;
+		posN.x -= offNP.x * 1.5;
 	if (!doneN)
-		posN.y -= offNP.y * 1.0;
+		posN.y -= offNP.y * 1.5;
 	bool doneNP = (!doneN) || (!doneP);
 	if (!doneP)
-		posP.x += offNP.x * 1.0;
+		posP.x += offNP.x * 1.5;
 	if (!doneP)
-		posP.y += offNP.y * 1.0;
+		posP.y += offNP.y * 1.5;
 
 	if (doneNP)
 	{
@@ -162,14 +161,14 @@ vec4 FxaaPixelShader(
 		doneN = abs(lumaEndN) >= gradientScaled;
 		doneP = abs(lumaEndP) >= gradientScaled;
 		if (!doneN)
-			posN.x -= offNP.x * 1.0;
+			posN.x -= offNP.x * 2.0;
 		if (!doneN)
-			posN.y -= offNP.y * 1.0;
+			posN.y -= offNP.y * 2.0;
 		doneNP = (!doneN) || (!doneP);
 		if (!doneP)
-			posP.x += offNP.x * 1.0;
+			posP.x += offNP.x * 2.0;
 		if (!doneP)
-			posP.y += offNP.y * 1.0;
+			posP.y += offNP.y * 2.0;
 
 		if (doneNP)
 		{
@@ -184,14 +183,14 @@ vec4 FxaaPixelShader(
 			doneN = abs(lumaEndN) >= gradientScaled;
 			doneP = abs(lumaEndP) >= gradientScaled;
 			if (!doneN)
-				posN.x -= offNP.x * 1.0;
+				posN.x -= offNP.x * 4.0;
 			if (!doneN)
-				posN.y -= offNP.y * 1.0;
+				posN.y -= offNP.y * 4.0;
 			doneNP = (!doneN) || (!doneP);
 			if (!doneP)
-				posP.x += offNP.x * 1.0;
+				posP.x += offNP.x * 4.0;
 			if (!doneP)
-				posP.y += offNP.y * 1.0;
+				posP.y += offNP.y * 4.0;
 
 			if (doneNP)
 			{
@@ -206,175 +205,14 @@ vec4 FxaaPixelShader(
 				doneN = abs(lumaEndN) >= gradientScaled;
 				doneP = abs(lumaEndP) >= gradientScaled;
 				if (!doneN)
-					posN.x -= offNP.x * 1.0;
+					posN.x -= offNP.x * 12.0;
 				if (!doneN)
-					posN.y -= offNP.y * 1.0;
+					posN.y -= offNP.y * 12.0;
 				doneNP = (!doneN) || (!doneP);
 				if (!doneP)
-					posP.x += offNP.x * 1.0;
+					posP.x += offNP.x * 12.0;
 				if (!doneP)
-					posP.y += offNP.y * 1.0;
-
-				if (doneNP)
-				{
-					if (!doneN)
-						lumaEndN = FxaaLuma(texture2D(tex, posN.xy));
-					if (!doneP)
-						lumaEndP = FxaaLuma(texture2D(tex, posP.xy));
-					if (!doneN)
-						lumaEndN = lumaEndN - lumaNN * 0.5;
-					if (!doneP)
-						lumaEndP = lumaEndP - lumaNN * 0.5;
-					doneN = abs(lumaEndN) >= gradientScaled;
-					doneP = abs(lumaEndP) >= gradientScaled;
-					if (!doneN)
-						posN.x -= offNP.x * 1.5;
-					if (!doneN)
-						posN.y -= offNP.y * 1.5;
-					doneNP = (!doneN) || (!doneP);
-					if (!doneP)
-						posP.x += offNP.x * 1.5;
-					if (!doneP)
-						posP.y += offNP.y * 1.5;
-
-					if (doneNP)
-					{
-						if (!doneN)
-							lumaEndN = FxaaLuma(texture2D(tex, posN.xy));
-						if (!doneP)
-							lumaEndP = FxaaLuma(texture2D(tex, posP.xy));
-						if (!doneN)
-							lumaEndN = lumaEndN - lumaNN * 0.5;
-						if (!doneP)
-							lumaEndP = lumaEndP - lumaNN * 0.5;
-						doneN = abs(lumaEndN) >= gradientScaled;
-						doneP = abs(lumaEndP) >= gradientScaled;
-						if (!doneN)
-							posN.x -= offNP.x * 2.0;
-						if (!doneN)
-							posN.y -= offNP.y * 2.0;
-						doneNP = (!doneN) || (!doneP);
-						if (!doneP)
-							posP.x += offNP.x * 2.0;
-						if (!doneP)
-							posP.y += offNP.y * 2.0;
-
-						if (doneNP)
-						{
-							if (!doneN)
-								lumaEndN = FxaaLuma(texture2D(tex, posN.xy));
-							if (!doneP)
-								lumaEndP = FxaaLuma(texture2D(tex, posP.xy));
-							if (!doneN)
-								lumaEndN = lumaEndN - lumaNN * 0.5;
-							if (!doneP)
-								lumaEndP = lumaEndP - lumaNN * 0.5;
-							doneN = abs(lumaEndN) >= gradientScaled;
-							doneP = abs(lumaEndP) >= gradientScaled;
-							if (!doneN)
-								posN.x -= offNP.x * 2.0;
-							if (!doneN)
-								posN.y -= offNP.y * 2.0;
-							doneNP = (!doneN) || (!doneP);
-							if (!doneP)
-								posP.x += offNP.x * 2.0;
-							if (!doneP)
-								posP.y += offNP.y * 2.0;
-
-							if (doneNP)
-							{
-								if (!doneN)
-									lumaEndN = FxaaLuma(texture2D(tex, posN.xy));
-								if (!doneP)
-									lumaEndP = FxaaLuma(texture2D(tex, posP.xy));
-								if (!doneN)
-									lumaEndN = lumaEndN - lumaNN * 0.5;
-								if (!doneP)
-									lumaEndP = lumaEndP - lumaNN * 0.5;
-								doneN = abs(lumaEndN) >= gradientScaled;
-								doneP = abs(lumaEndP) >= gradientScaled;
-								if (!doneN)
-									posN.x -= offNP.x * 2.0;
-								if (!doneN)
-									posN.y -= offNP.y * 2.0;
-								doneNP = (!doneN) || (!doneP);
-								if (!doneP)
-									posP.x += offNP.x * 2.0;
-								if (!doneP)
-									posP.y += offNP.y * 2.0;
-
-								if (doneNP)
-								{
-									if (!doneN)
-										lumaEndN = FxaaLuma(texture2D(tex, posN.xy));
-									if (!doneP)
-										lumaEndP = FxaaLuma(texture2D(tex, posP.xy));
-									if (!doneN)
-										lumaEndN = lumaEndN - lumaNN * 0.5;
-									if (!doneP)
-										lumaEndP = lumaEndP - lumaNN * 0.5;
-									doneN = abs(lumaEndN) >= gradientScaled;
-									doneP = abs(lumaEndP) >= gradientScaled;
-									if (!doneN)
-										posN.x -= offNP.x * 2.0;
-									if (!doneN)
-										posN.y -= offNP.y * 2.0;
-									doneNP = (!doneN) || (!doneP);
-									if (!doneP)
-										posP.x += offNP.x * 2.0;
-									if (!doneP)
-										posP.y += offNP.y * 2.0;
-
-									if (doneNP)
-									{
-										if (!doneN)
-											lumaEndN = FxaaLuma(texture2D(tex, posN.xy));
-										if (!doneP)
-											lumaEndP = FxaaLuma(texture2D(tex, posP.xy));
-										if (!doneN)
-											lumaEndN = lumaEndN - lumaNN * 0.5;
-										if (!doneP)
-											lumaEndP = lumaEndP - lumaNN * 0.5;
-										doneN = abs(lumaEndN) >= gradientScaled;
-										doneP = abs(lumaEndP) >= gradientScaled;
-										if (!doneN)
-											posN.x -= offNP.x * 4.0;
-										if (!doneN)
-											posN.y -= offNP.y * 4.0;
-										doneNP = (!doneN) || (!doneP);
-										if (!doneP)
-											posP.x += offNP.x * 4.0;
-										if (!doneP)
-											posP.y += offNP.y * 4.0;
-
-										if (doneNP)
-										{
-											if (!doneN)
-												lumaEndN = FxaaLuma(texture2D(tex, posN.xy));
-											if (!doneP)
-												lumaEndP = FxaaLuma(texture2D(tex, posP.xy));
-											if (!doneN)
-												lumaEndN = lumaEndN - lumaNN * 0.5;
-											if (!doneP)
-												lumaEndP = lumaEndP - lumaNN * 0.5;
-											doneN = abs(lumaEndN) >= gradientScaled;
-											doneP = abs(lumaEndP) >= gradientScaled;
-											if (!doneN)
-												posN.x -= offNP.x * 8.0;
-											if (!doneN)
-												posN.y -= offNP.y * 8.0;
-											doneNP = (!doneN) || (!doneP);
-											if (!doneP)
-												posP.x += offNP.x * 8.0;
-											if (!doneP)
-												posP.y += offNP.y * 8.0;
-										}
-									}
-								}
-							}
-						}
-					}
-				}
+					posP.y += offNP.y * 12.0;
 			}
 		}
 	}
@@ -407,6 +245,7 @@ vec4 FxaaPixelShader(
 
 	return vec4(texture2D(tex, posM).xyz, rgbyM.w);
 }
+
 
 void main() {
 	gl_FragColor = FxaaPixelShader(

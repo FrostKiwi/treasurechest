@@ -127,6 +127,8 @@ And some of the biggest ones were even discovered on accident.
 https://web.archive.org/web/20180716171211/https://naturalviolence.webs.com/sgssaa.htm
 
 There are so many ways to do a seemingly simple task.
+
+There is more: Bilinear interpolation is based on a 2x2 texel read, so you won't be able to downscale beyond 50%, without new aliasing being introduced.
 #### The dreaded blur
 There are more problems.
 
@@ -224,37 +226,81 @@ Choose the amount of sub-pixel aliasing removal.
 This can effect sharpness.
 ```
 
-<select id="fxaaQualitySubpix">
-	<option value="1.00">1.00 - upper limit (softer)</option>
-	<option value="0.75">0.75 - default amount of filtering</option>
-	<option value="0.50">0.50 - lower limit (sharper, less sub-pixel aliasing removal)</option>
-	<option value="0.25">0.25 - almost off</option>
-	<option value="0.00">0.00 - completely off</option>
-</select>
+### FXAA Live Demo
 
-```
-The minimum amount of local contrast required to apply algorithm.
-```
+<script id="vertexInteractive" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.vs" %}</script>
+<script id="fragmentInteractive" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.fs" %}</script>
+<script src="FXAA-interactive.js"></script>
+<canvas width="100%" id="canvasFXAAInteractive"></canvas>
+<script>setupFXAA("canvasFXAAInteractive", "vertexInteractive", "fragmentInteractive");</script>
 
-<select id="fxaaQualityEdgeThreshold">
-<option value="0.333">0.333 - too little (faster)</option>
-<option value="0.250">0.250 - low quality</option>
-<option value="0.166">0.166 - default</option>
-<option value="0.125">0.125 - high quality </option>
-<option value="0.063">0.063 - overkill (slower)</option>
-</select>
+<blockquote>
+<details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
 
-```
-Trims the algorithm from processing darks.
+<!-- ![image](screenshot_passthrough.jpg) -->
+
+</details>
+<details><summary>WebGL Vertex Shader <a href="circle.vs">circle.vs</a></summary>
+
+```glsl
+{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}
 ```
 
-<select id="fxaaQualityEdgeThresholdMin">
-<option value="0.0833">0.0833 - upper limit (default, the start of visible unfiltered edges)</option>
-<option value="0.0625">0.0625 - high quality (faster)</option>
-<option value="0.0312">0.0312 - visible limit (slower)</option>
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a href="circle.fs">circle.fs</a></summary>
+
+```glsl
+{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="circle.js">circle.js</a></summary>
+
+```javascript
+{% rawFile "posts/analytical-anti-aliasing/circle.js" %}
+```
+
+</details>
+</blockquote>
+
+<input type="checkbox" id="fxaa" name="Enable FXAA" checked /> Enable FXAA
+
+Choose the quality preset. Trades performance for quality, with 3 different "styles" of dither.
+
+```
+ _ = the lowest digit is directly related to performance
+_  = the highest digit is directly related to style
+```
+
+<select id="FXAA_QUALITY_PRESET">
+	<optgroup label="Default medium dither">
+		<option value="10">10 (fastest)</option>
+		<option value="11">11</option>
+		<option value="12" selected>12 (default)</option>
+		<option value="13">13</option>
+		<option value="14">14</option>
+		<option value="15">15 (highest quality)</option>
+	</optgroup>
+	<optgroup label="Less dither, more expensive">
+		<option value="20">20 (fastest)</option>
+		<option value="21">21</option>
+		<option value="22">22</option>
+		<option value="23">23</option>
+		<option value="24">24</option>
+		<option value="25">25</option>
+		<option value="26">26</option>
+		<option value="27">27</option>
+		<option value="28">28</option>
+		<option value="29">29 (highest quality)</option>
+	<optgroup label="No dither, very expensive">
+		<option value="39">39 (EXTREME QUALITY)</option>
+	</optgroup>
 </select>
 
 ## What makes it analytical?
+
 <script id="fragmentAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analytical.fs" %}</script>
 <canvas width="100%" height="480px" style="max-height: 480px" id="canvasAnalytical"></canvas>
 <script>setup("canvasAnalytical", "vertex_0", "fragmentAnalytical", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>

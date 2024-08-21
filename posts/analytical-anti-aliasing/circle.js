@@ -58,11 +58,8 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, b
 	);
 	
 	let DerivativesExtension = null;
-	let TextureLodExtension = null;
 	if (webglVersion === 'webgl'){
 		DerivativesExtension = gl.getExtension('OES_standard_derivatives');
-		TextureLodExtension = gl.getExtension("EXT_shader_texture_lod");
-		console.log(TextureLodExtension);
 	}
 
 	/* Setup Possibilities */
@@ -308,7 +305,6 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, b
 					/* Spin on draw calls being processed. To simplify sync.
 					   In reality this code is block is never reached, but just
 					   in case, we have this here. */
-					console.log("Spin");
 				}
 				/* Force the rendering pipeline to sync with CPU before we mess with it */
 				gl.finish();
