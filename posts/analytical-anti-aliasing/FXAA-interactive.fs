@@ -8,7 +8,7 @@ uniform bool enable;
 #define FXAA_PC 1
 #define FXAA_GLSL_120 1
 #define FXAA_FAST_PIXEL_OFFSET 0
-#define FXAA_GREEN_AS_LUMA 1
+#define FXAA_GREEN_AS_LUMA 0
 
 #ifndef FXAA_PS3
     #define FXAA_PS3 0
@@ -922,7 +922,8 @@ void main(void)
 	/* Discard fragments outside the circle */
 	//vec3 color = texture2D(texture, uv).rgb;
 	//float luma = dot(color.rgb, vec3(0.299, 0.587, 0.114));
-	//gl_FragColor = vec4(color, luma);
-	gl_FragColor = FxaaPixelShader(
-		uv, vec4(0.0), texture, RcpFrame, 0.75, 0.166, 0.0833);
+	//gl_FragColor = vec4(luma);
+	gl_FragColor = vec4(texture2D(texture, uv).rgb, 1.0);
+	//gl_FragColor = FxaaPixelShader(
+	//	uv, vec4(0.0), texture, RcpFrame, 0.75, 0.166, 0.0833);
 }

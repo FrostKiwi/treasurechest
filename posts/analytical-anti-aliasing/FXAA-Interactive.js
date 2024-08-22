@@ -116,7 +116,7 @@ function setupFXAA(canvasId, circleVtxSrc, circleFragSrc) {
 	let textures = [];
 
 	/* Load frames */
-	loadAllFrames(gl, 11, 30).then((loadedTextures) => {
+	loadAllFrames(gl, 0, 28).then((loadedTextures) => {
 		textures = loadedTextures;
 		framesLoaded = true;
 	});
@@ -139,21 +139,21 @@ function setupFXAA(canvasId, circleVtxSrc, circleFragSrc) {
 	let redrawActive = false;
 	let exportIMG = false;
 
-	canvas.width = 640;
+	canvas.width = 684;
 	canvas.height = 480;
 
-	gl.viewport(0, 0, 640, 480);
+	gl.viewport(0, 0, 684, 480);
 
 	const fps = 30;
 	const frameDuration = 1000 / fps;
 	let frameIndex = 0;
 	let lastFrameTime = 0;
 	let forward = true;
+	let start = false;
 
 	let frame = 0;
 	function redraw() {
 		redrawActive = true;
-
 		/* Setup PostProcess Framebuffer */
 		gl.bindTexture(gl.TEXTURE_2D, textures[frameIndex]);
 		gl.clear(gl.COLOR_BUFFER_BIT);
@@ -163,16 +163,22 @@ function setupFXAA(canvasId, circleVtxSrc, circleFragSrc) {
 		redrawActive = false;
 
 		if (exportIMG && framesLoaded) {
+			if (frameIndex == 0)
+				start = true;
+		}
+		if (start) {
 			gl.finish();
-			if (frame == 19)
+			if (frameIndex == 28){
+				start = false;
 				exportIMG = false;
+			}
 			canvas.toBlob((blob) => {
 				const url = URL.createObjectURL(blob);
-
+				console.log(frameIndex);
 				const a = document.createElement('a');
 				a.style.display = 'none';
 				a.href = url;
-				a.download = `lover${frame}.png`;
+				a.download = `${frameIndex}.png`;
 
 				document.body.appendChild(a);
 				a.click();
@@ -182,8 +188,8 @@ function setupFXAA(canvasId, circleVtxSrc, circleFragSrc) {
 			}, `image/png`);
 		}
 		frame++;
-		if (frame > 19)
-			frame = 0;
+		/* 		if (frame > 32)
+					frame = 0; */
 	}
 
 	let isRendering = false;
@@ -198,7 +204,8 @@ function setupFXAA(canvasId, circleVtxSrc, circleFragSrc) {
 
 				if (forward) {
 					frameIndex++;
-					if (frameIndex == 19) {
+					if (frameIndex == 29) {
+						frameIndex = 28;
 						forward = false;
 						setTimeout(() => requestAnimationFrame(renderLoop), 1000);
 						return;
