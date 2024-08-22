@@ -1,5 +1,5 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 
 /* Our Vertex data for the Quad */
 in vec2 vtx;

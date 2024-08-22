@@ -1,5 +1,5 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 
 /* The coordinates that are interpolated from the vertex shader */
 in vec2 uv;
