@@ -56,12 +56,6 @@ module.exports = function (eleventyConfig) {
 		return tocHtml;
 	});
 
-	eleventyConfig.addFilter('generatePreloadLinks', function (directory) {
-		const dirPath = path.join(__dirname, directory);
-		const files = fs.readdirSync(dirPath);
-		return files.map(file => `<link rel="preload" href="${directory}/${file}" as="image">`).join('\n');
-	});
-
 	/* CSS minifier as per https://www.11ty.dev/docs/quicktips/inline-css/ */
 	eleventyConfig.addFilter("cssmin", function (code) {
 		return new CleanCSS({}).minify(code).styles;

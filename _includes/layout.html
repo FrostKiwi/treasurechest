@@ -13,8 +13,6 @@
 	<link rel="icon" href="/assets/favicon.ico" sizes="32x32">
 	<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
 	<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
-
-	{{ "/assets/kiwis/" | generatePreloadLinks }}
 		
 	<meta name="author" content="Wladislav Artsimovich">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -67,6 +65,7 @@
 						].map(name => `/assets/kiwis/${name}.svg`);
 						let currentKiwi = Math.floor(Math.random() * kiwis.length);
 						const nextKiwi = () => document.querySelector('.kiwi').src = kiwis[++currentKiwi % kiwis.length];
+						new Image().src = kiwis[(currentKiwi + 1) % kiwis.length];
 						document.querySelector('.kiwi').onclick = nextKiwi;
 						nextKiwi();
 					})();

@@ -93,12 +93,12 @@ async function loadAllFrames(gl, start, end) {
 	return textures;
 }
 
-function setupFXAA(canvasId, circleVtxSrc, circleFragSrc) {
+function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, ) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const gl = canvas.getContext('webgl',
 		{
-			preserveDrawingBuffer: true,
+			preserveDrawingBuffer: false,
 			antialias: false,
 			alpha: false,
 			premultipliedAlpha: false
@@ -107,19 +107,13 @@ function setupFXAA(canvasId, circleVtxSrc, circleFragSrc) {
 
 	/* Shaders */
 	/* Circle Shader */
-	const fxaaShd = compileAndLinkShader(gl, circleVtxSrc, circleFragSrc);
+	const fxaaShd = compileAndLinkShader(gl, simpleVtxSrc, simpleFragSrc);
 	const rcpFrameLocation = gl.getUniformLocation(fxaaShd, "RcpFrame");
 	const enableLocation = gl.getUniformLocation(fxaaShd, "enable");
 
 	/* Load frames */
 	let framesLoaded = false;
 	let textures = [];
-
-	/* Load frames */
-	loadAllFrames(gl, 0, 28).then((loadedTextures) => {
-		textures = loadedTextures;
-		framesLoaded = true;
-	});
 
 	/* Vertex Buffer of a simple Quad with some colors */
 	const unitQuad = new Float32Array([
@@ -154,6 +148,7 @@ function setupFXAA(canvasId, circleVtxSrc, circleFragSrc) {
 	let frame = 0;
 	function redraw() {
 		redrawActive = true;
+
 		/* Setup PostProcess Framebuffer */
 		gl.bindTexture(gl.TEXTURE_2D, textures[frameIndex]);
 		gl.clear(gl.COLOR_BUFFER_BIT);
@@ -225,12 +220,17 @@ function setupFXAA(canvasId, circleVtxSrc, circleFragSrc) {
 		}
 	}
 
-	function handleIntersection(entries) {
-		entries.forEach(entry => {
+	async function handleIntersection(entries) {
+		for (const entry of entries) {
 			if (entry.isIntersecting) {
 				if (!isRendering) {
 					/* Start rendering, when canvas visible */
 					isRendering = true;
+
+					/* Load all frames and await the result */
+					textures = await loadAllFrames(gl, 0, 28);
+					framesLoaded = true;
+
 					renderLoop(last_time);
 				}
 			} else {
@@ -238,17 +238,24 @@ function setupFXAA(canvasId, circleVtxSrc, circleFragSrc) {
 				isRendering = false;
 				while (redrawActive) {
 					/* Spin on draw calls being processed. To simplify sync.
-					   In reality this code is block is never reached, but just
+					   In reality, this code block is never reached, but just
 					   in case, we have this here. */
 				}
 				/* Force the rendering pipeline to sync with CPU before we mess with it */
 				gl.finish();
 
-				/* Delete the important buffer to free up memory */
-				//buffersInitialized = false;
+				/* Delete the textures to free up memory */
+				if (framesLoaded) {
+					textures.forEach(texture => {
+						gl.deleteTexture(texture);
+					});
+					textures = [];
+					framesLoaded = false;
+				}
 			}
-		});
+		}
 	}
+
 
 	/* Only render when the canvas is actually on screen */
 	let observer = new IntersectionObserver(handleIntersection);
