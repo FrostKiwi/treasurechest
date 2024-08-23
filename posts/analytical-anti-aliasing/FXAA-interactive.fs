@@ -919,11 +919,9 @@ FxaaFloat4 FxaaPixelShader(
 
 void main(void)
 {
-	/* Discard fragments outside the circle */
-	//vec3 color = texture2D(texture, uv).rgb;
-	//float luma = dot(color.rgb, vec3(0.299, 0.587, 0.114));
-	//gl_FragColor = vec4(luma);
-	gl_FragColor = vec4(texture2D(texture, uv).rgb, 1.0);
-	//gl_FragColor = FxaaPixelShader(
-	//	uv, vec4(0.0), texture, RcpFrame, 0.75, 0.166, 0.0833);
+	if(enable)
+		gl_FragColor = FxaaPixelShader(
+			uv, vec4(0.0), texture, RcpFrame, 0.75, 0.166, 0.0833);
+	else
+		gl_FragColor = vec4(texture2D(texture, uv).rgb, 1.0);
 }

@@ -230,9 +230,10 @@ This can effect sharpness.
 
 <script id="vertexInteractive" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.vs" %}</script>
 <script id="fragmentInteractive" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.fs" %}</script>
-<script src="FXAA-interactive.js"></script>
+<script id="vertexLuma" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/FXAA-Luma.vs" %}</script>
+<script id="fragmentLuma" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/FXAA-Luma.fs" %}</script>
+
 <canvas width="100%" id="canvasFXAAInteractive"></canvas>
-<script>setupFXAA("canvasFXAAInteractive", "vertexInteractive", "fragmentInteractive", "vertexRedBox", "fragmentRedBox");</script>
 
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
@@ -298,6 +299,9 @@ _  = the highest digit is directly related to style
 		<option value="39">39 (EXTREME QUALITY)</option>
 	</optgroup>
 </select>
+<script src="FXAA-interactive.js"></script>
+<script>setupFXAA("canvasFXAAInteractive", "vertexInteractive", "fragmentInteractive", "vertexLuma", "fragmentLuma", "vertexRedBox", "fragmentRedBox");</script>
+
 
 ## What makes it analytical?
 

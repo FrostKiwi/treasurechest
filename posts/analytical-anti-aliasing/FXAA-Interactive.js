@@ -29,7 +29,7 @@ async function loadAllFrames(gl, start, end) {
 	return textures;
 }
 
-function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, redVtxSrc, redFragSrc) {
+function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaSrc, lumaFragSrc, redVtxSrc, redFragSrc) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const gl = canvas.getContext('webgl',
@@ -41,11 +41,16 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, redVtxSrc, redFragSrc)
 		}
 	);
 
+	let lumaBuffer, lumaTexture;
+	let enableFXAA = true;
+
 	/* Shaders */
-	/* Circle Shader */
+	/* Passthrough Shader */
 	const fxaaShd = compileAndLinkShader(gl, simpleVtxSrc, simpleFragSrc);
 	const rcpFrameLocation = gl.getUniformLocation(fxaaShd, "RcpFrame");
 	const enableLocation = gl.getUniformLocation(fxaaShd, "enable");
+
+	const lumaShd = compileAndLinkShader(gl, vertexLumaSrc, lumaFragSrc);
 
 	/* Simple Red Box */
 	const redShd = compileAndLinkShader(gl, redVtxSrc, redFragSrc);
@@ -105,6 +110,22 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, redVtxSrc, redFragSrc)
 		gl.uniform2f(offsetLocationRed, x, y);
 	}
 
+	function setupBuffers() {
+		gl.deleteFramebuffer(lumaBuffer);
+		lumaBuffer = gl.createFramebuffer();
+		gl.bindFramebuffer(gl.FRAMEBUFFER, lumaBuffer);
+
+		lumaTexture = setupTexture(gl, canvas.width, canvas.height, lumaTexture, gl.LINEAR);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, lumaTexture, 0);
+	}
+
+	/* Not working :[ Maybe pass it in as a param */
+	const fxaaCheckbox = document.getElementById('fxaa');
+	fxaaCheckbox.addEventListener('change', () => {
+		enableFXAA = fxaaCheckbox.checked;
+		console.log(`FXAA Enabled: ${enableFXAA}`);
+	});
+
 	const vertex_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
 	gl.bufferData(gl.ARRAY_BUFFER, unitQuad, gl.STATIC_DRAW);
@@ -132,10 +153,19 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, redVtxSrc, redFragSrc)
 		redrawActive = true;
 
 		/* Setup PostProcess Framebuffer */
+		gl.bindFramebuffer(gl.FRAMEBUFFER, lumaBuffer);
 		gl.disable(gl.BLEND);
 		gl.bindTexture(gl.TEXTURE_2D, textures[frameIndex]);
 		gl.clear(gl.COLOR_BUFFER_BIT);
+		gl.useProgram(lumaShd);
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+		/* Draw To Screen */
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		gl.bindTexture(gl.TEXTURE_2D, lumaTexture);
 		gl.useProgram(fxaaShd);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+		gl.uniform1i(enableLocation, enableFXAA);
 		gl.uniform2f(rcpFrameLocation, 1.0 / canvas.width, 1.0 / canvas.height);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
@@ -222,6 +252,7 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, redVtxSrc, redFragSrc)
 
 					/* Load all frames and await the result */
 					textures = await loadAllFrames(gl, 0, 28);
+					setupBuffers();
 					framesLoaded = true;
 
 					renderLoop(last_time);
@@ -242,6 +273,8 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, redVtxSrc, redFragSrc)
 					textures.forEach(texture => {
 						gl.deleteTexture(texture);
 					});
+					gl.deleteTexture(lumaTexture);
+					gl.deleteFramebuffer(lumaBuffer);
 					textures = [];
 					framesLoaded = false;
 				}
