@@ -18,70 +18,6 @@ async function loadFrame(gl, path) {
 	return target;
 }
 
-/* Normal transform
-357.25	206.375
-356.602	207.301
-356.309	207.559
-354.832	208.711
-353.121	209.863
-350.578	211.102
-347.594	212.336
-343.457	214.652
-338.086	216.977
-332.803	219.934
-327.791	222.625
-324.259	224.398
-319.233	227.902
-315.627	231.492
-315.381	233.305
-314.672	234.145
-314.616	235.363
-315.028	236.508
-316.072	237.676
-317.366	238.301
-317.657	239.703
-319.354	240.016
-320.018	241.277
-321.091	241.785
-321.726	241.777
-321.824	242.117
-322.334	242.109
-322.082	242.965
-
-Retrack
-356.188	206.188
-355.488	207.145
-355.195	207.367
-353.859	208.531
-352.148	209.699
-349.438	210.875
-346.484	212.188
-342.305	214.477
-337.125	216.809
-331.816	219.738
-326.789	222.449
-323.188	224.207
-318.188	227.742
-314.543	231.297
-314.238	233.133
-313.598	233.926
-313.516	235.188
-314.09	236.312
-315.121	237.496
-316.227	238.125
-316.578	239.523
-318.199	239.828
-319.082	241.117
-320.129	241.613
-320.684	241.594
-320.855	241.91
-321.188	241.91
-321.121	242.801
-
-
-End of Keyframe Data
- */
-
 async function loadAllFrames(gl, start, end) {
 	const framePromises = [];
 	for (let i = start; i <= end; i++) {
@@ -93,7 +29,7 @@ async function loadAllFrames(gl, start, end) {
 	return textures;
 }
 
-function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, ) {
+function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, redVtxSrc, redFragSrc) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const gl = canvas.getContext('webgl',
@@ -111,6 +47,14 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, ) {
 	const rcpFrameLocation = gl.getUniformLocation(fxaaShd, "RcpFrame");
 	const enableLocation = gl.getUniformLocation(fxaaShd, "enable");
 
+	/* Simple Red Box */
+	const redShd = compileAndLinkShader(gl, redVtxSrc, redFragSrc);
+	const transformLocationRed = gl.getUniformLocation(redShd, "transform");
+	const offsetLocationRed = gl.getUniformLocation(redShd, "offset");
+	const aspect_ratioLocationRed = gl.getUniformLocation(redShd, "aspect_ratio");
+	const thicknessLocation = gl.getUniformLocation(redShd, "thickness");
+	const pixelsizeLocation = gl.getUniformLocation(redShd, "pixelsize");
+
 	/* Load frames */
 	let framesLoaded = false;
 	let textures = [];
@@ -122,6 +66,44 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, ) {
 		1.0, -1.0,
 		-1.0, -1.0,
 	]);
+
+	const trackedCoords = [
+		[357.250, 206.375],
+		[356.602, 207.301],
+		[356.309, 207.559],
+		[354.832, 208.711],
+		[353.121, 209.863],
+		[350.578, 211.102],
+		[347.594, 212.336],
+		[343.457, 214.652],
+		[338.086, 216.977],
+		[332.803, 219.934],
+		[327.791, 222.625],
+		[324.259, 224.398],
+		[319.233, 227.902],
+		[315.627, 231.492],
+		[315.381, 233.305],
+		[314.672, 234.145],
+		[314.616, 235.363],
+		[315.028, 236.508],
+		[316.072, 237.676],
+		[317.366, 238.301],
+		[317.657, 239.703],
+		[319.354, 240.016],
+		[320.018, 241.277],
+		[321.091, 241.785],
+		[321.726, 241.777],
+		[321.824, 242.117],
+		[322.334, 242.109],
+		[322.082, 242.965],
+		[322.100, 242.965]
+	];
+
+	function applyTrackingData(index) {
+		const x = (trackedCoords[index][0] / canvas.width) * 2 - 1;
+		const y = 1 - (trackedCoords[index][1] / canvas.height) * 2;
+		gl.uniform2f(offsetLocationRed, x, y);
+	}
 
 	const vertex_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
@@ -150,11 +132,24 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, ) {
 		redrawActive = true;
 
 		/* Setup PostProcess Framebuffer */
+		gl.disable(gl.BLEND);
 		gl.bindTexture(gl.TEXTURE_2D, textures[frameIndex]);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.useProgram(fxaaShd);
 		gl.uniform2f(rcpFrameLocation, 1.0 / canvas.width, 1.0 / canvas.height);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+		/* Draw Red box for viewport illustration */
+		gl.enable(gl.BLEND);
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+		gl.useProgram(redShd);
+		gl.uniform1f(aspect_ratioLocationRed, (1.0 / (canvas.width / canvas.height)) - 1.0);
+		gl.uniform1f(thicknessLocation, 0.2);
+		gl.uniform1f(pixelsizeLocation, (1.0 / canvas.width) * 50);
+		gl.uniform4f(transformLocationRed, 0.25, 0.25, 0, 0);
+		applyTrackingData(frameIndex);
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
 		redrawActive = false;
 
 		if (exportIMG && framesLoaded) {
@@ -163,7 +158,7 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, ) {
 		}
 		if (start) {
 			gl.finish();
-			if (frameIndex == 28){
+			if (frameIndex == 28) {
 				start = false;
 				exportIMG = false;
 			}
@@ -183,8 +178,6 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, ) {
 			}, `image/png`);
 		}
 		frame++;
-		/* 		if (frame > 32)
-					frame = 0; */
 	}
 
 	let isRendering = false;

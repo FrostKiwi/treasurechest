@@ -232,7 +232,7 @@ This can effect sharpness.
 <script id="fragmentInteractive" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.fs" %}</script>
 <script src="FXAA-interactive.js"></script>
 <canvas width="100%" id="canvasFXAAInteractive"></canvas>
-<script>setupFXAA("canvasFXAAInteractive", "vertexInteractive", "fragmentInteractive");</script>
+<script>setupFXAA("canvasFXAAInteractive", "vertexInteractive", "fragmentInteractive", "vertexRedBox", "fragmentRedBox");</script>
 
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
