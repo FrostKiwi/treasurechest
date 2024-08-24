@@ -147,6 +147,7 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaSrc, lumaFra
 	let lastFrameTime = 0;
 	let forward = true;
 	let start = false;
+	let delayActive = false;
 
 	let frame = 0;
 	function redraw() {
@@ -173,7 +174,7 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaSrc, lumaFra
 		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 		gl.useProgram(redShd);
-		gl.uniform1f(aspect_ratioLocationRed, (1.0 / (canvas.width / canvas.height)) - 1.0);
+		gl.uniform1f(aspect_ratioLocationRed, canvas.width / canvas.height - 1.0);
 		gl.uniform1f(thicknessLocation, 0.2);
 		gl.uniform1f(pixelsizeLocation, (1.0 / canvas.width) * 50);
 		gl.uniform4f(transformLocationRed, 0.25, 0.25, 0, 0);
@@ -214,7 +215,6 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaSrc, lumaFra
 
 	function renderLoop(time) {
 		if (isRendering) {
-
 			if (time - lastFrameTime >= frameDuration) {
 				lastFrameTime = time;
 
@@ -225,23 +225,40 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaSrc, lumaFra
 					if (frameIndex == 29) {
 						frameIndex = 28;
 						forward = false;
-						setTimeout(() => requestAnimationFrame(renderLoop), 1000);
-						return;
+
+						if (!delayActive) {
+							delayActive = true;
+							setTimeout(() => {
+								delayActive = false;
+								if (isRendering) requestAnimationFrame(renderLoop);
+							}, 1000);
+							return;
+						}
 					}
 				} else {
 					frameIndex--;
 					if (frameIndex < 0) {
 						forward = true;
 						frameIndex = 0;
-						setTimeout(() => requestAnimationFrame(renderLoop), 1000);
-						return;
+
+						if (!delayActive) {
+							delayActive = true;
+							setTimeout(() => {
+								delayActive = false;
+								if (isRendering) requestAnimationFrame(renderLoop);
+							}, 1000);
+							return;
+						}
 					}
 				}
 			}
 
-			requestAnimationFrame(renderLoop);
+			if (!delayActive) {
+				requestAnimationFrame(renderLoop);
+			}
 		}
 	}
+
 
 	async function handleIntersection(entries) {
 		for (const entry of entries) {
@@ -267,7 +284,6 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaSrc, lumaFra
 				}
 				/* Force the rendering pipeline to sync with CPU before we mess with it */
 				gl.finish();
-
 				/* Delete the textures to free up memory */
 				if (framesLoaded) {
 					textures.forEach(texture => {
