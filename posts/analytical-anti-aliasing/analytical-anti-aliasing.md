@@ -34,6 +34,20 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 
 <script id="vertex_0" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}</script>
 <script id="fragment_0" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}</script>
+<div class="toggleRes">
+	<div>
+	  <input type="radio" id="native" name="setupRes" value="1" checked />
+	  <label for="native">Native Resolution</label>
+	</div>
+	<div>
+	  <input type="radio" id="half" name="setupRes" value="2" />
+	  <label for="half">½ Resolution</label>
+	</div>
+	<div>
+	  <input type="radio" id="quarter" name="setupRes" value="4" />
+	  <label for="quarter">¼ Resolution</label>
+	</div>
+</div>
 <canvas width="100%" height="480px" style="max-height: 480px" id="canvasSimple"></canvas>
 <script>setup("canvasSimple", "vertex_0", "fragment_0", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
 

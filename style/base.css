@@ -439,3 +439,46 @@ table.contact h3 {
 	background: #eb99a1;
 	cursor: pointer;
 }
+
+.toggleRes {
+	display: flex;
+	/* Ensure full width */
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+/* Style each child div */
+.toggleRes>div {
+	flex: 1;
+	/* Make each child div take equal space */
+	display: flex;
+}
+
+/* Hide the native radio buttons */
+.toggleRes input {
+	display: none;
+}
+
+/* Style the labels to match the button style */
+.toggleRes label {
+	flex: 1;
+	/* Ensure labels fill the entire width of their container */
+	padding: 10px 20px;
+	cursor: pointer;
+	transition: background-color 0.3s, color 0.3s;
+	margin-bottom: unset;
+	display: flex;
+	justify-content: center;
+}
+
+/* Checked state styling */
+.toggleRes input:checked+label {
+	background-color: #eb99a1;
+	color: #120c0e;
+}
+
+/* Hover effect */
+.toggleRes label:hover {
+	background-color: #DA4453;
+	color: #120c0e;
+}
