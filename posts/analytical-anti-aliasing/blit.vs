@@ -8,7 +8,7 @@ void main()
 {
 	vec2 uv = vtx;
 	uv += offset / (vec2(transform.x, transform.y) * vec2(transform.x, transform.y));
-	uv.y += transform.w * 10.5;
+	uv.y += transform.w * 14.8;
 	uv.x += transform.z * 0.5;
 	uv *= vec2(transform.x, transform.y) * vec2(transform.x, transform.y);
 

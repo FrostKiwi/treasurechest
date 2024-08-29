@@ -1,5 +1,4 @@
 const fs = require("fs");
-const path = require('path');
 const CleanCSS = require("clean-css");
 const Image = require("@11ty/eleventy-img");
 const { execSync } = require('child_process');
@@ -67,9 +66,6 @@ module.exports = function (eleventyConfig) {
 
 	/* HTML minifier */
 	eleventyConfig.addPlugin(eleventyPluginFilesMinifier);
-
-	/* SVG -> All Favicon variants packer */
-	/* eleventyConfig.addPlugin(faviconPlugin); */
 
 	/* RSS Plugin */
 	eleventyConfig.addPlugin(pluginRss);

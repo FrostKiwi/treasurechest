@@ -21,6 +21,8 @@ From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/
 To understand the Anti-Aliasing algorithms, we will implement them along the way! That's what the WebGL + Source code boxes are for. Each [WebGL canvas](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL) draws a moving circle. Anti-Aliasing cannot be fully understood with just images, movement is vital to see pixel crawling and sub-pixel filtering. Finally, the red box shows part of the circle's border with 8x zoom, without performing any additional filtering.
 <blockquote class="reaction"><div class="reaction_text">Rendering is done at native resolution of your device, essential to judge Anti-aliasing properly. Results will depend on screen resolution. Please pixel-peep and judge sharpness and aliasing closely.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
+<script src="utility.js"></script>
+<script src="circleSimple.js"></script>
 <script src="circle.js"></script>
 <script id="vertexBlit" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/blit.vs" %}</script>
 <script id="fragmentBlit" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/blit.fs" %}</script>
@@ -48,8 +50,8 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 	  <label for="quarter">¼ Resolution</label>
 	</div>
 </div>
-<canvas width="100%" height="480px" style="max-height: 480px" id="canvasSimple"></canvas>
-<script>setup("canvasSimple", "vertex_0", "fragment_0", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
+<canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasSimple"></canvas>
+<script>setupSimple("canvasSimple", "vertex_0", "fragment_0", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "setupRes");</script>
 
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
@@ -73,10 +75,10 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="circle.js">circle.js</a></summary>
+<summary>WebGL Javascript <a href="circleSimple.js">circleSimple.js</a></summary>
 
 ```javascript
-{% rawFile "posts/analytical-anti-aliasing/circle.js" %}
+{% rawFile "posts/analytical-anti-aliasing/circleSimple.js" %}
 ```
 
 </details>
@@ -97,7 +99,7 @@ The vertices are given to the fragment shader [circle.fs](circle.fs) via `varyin
 
 ## SSAA
 SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Supersampling). Render it bigger, downsample to be smaller. . Implemented in mere seconds.
-<canvas width="100%" height="480px" style="max-height: 480px" id="canvasSSAA"></canvas>
+<canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasSSAA"></canvas>
 <script>setup("canvasSSAA", "vertex_0", "fragment_0", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
 
 <blockquote>
@@ -138,7 +140,9 @@ We aren't sampling against the circle shape at twice the resolution, we are samp
 There are [multiple ways to sample with SSAA](https://en.wikipedia.org/wiki/Supersampling#Supersampling_patterns), all with pros and cons. So in reality, to implement SSAA properly, we need deep integration with the rendering pipeline.
 
 And some of the biggest ones were even discovered on accident.
+```
 https://web.archive.org/web/20180716171211/https://naturalviolence.webs.com/sgssaa.htm
+```
 
 There are so many ways to do a seemingly simple task.
 
@@ -147,8 +151,10 @@ There is more: Bilinear interpolation is based on a 2x2 texel read, so you won't
 There are more problems.
 
 ## MSAA
-Choose MSAA sample count. Your hardware [may support up to MSAA x64](https://opengl.gpuinfo.org/displaycapability.php?name=GL_MAX_SAMPLES), but what is available to WebGL is implementation defined. WebGL 1 doesn't support MSAA at all, which is why the next windows will initialize a WebGL 2 context. NVIDIA limits the maximum Sample count to 8x, even if more is supported. On smartphones you will most likely get 4x.
+Choose MSAA sample count. Your hardware [may support up to MSAA x64](https://opengl.gpuinfo.org/displaycapability.php?name=GL_MAX_SAMPLES), but what is available to WebGL is implementation defined. WebGL 1 doesn't support MSAA at all, which is why the next windows will initialize a WebGL 2 context. NVIDIA limits the maximum Sample count to 4x, even if more is supported. On smartphones you will most likely get 4x.
+```
 https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msaa#color-resolve
+```
 
 <div class="center-child">
 <select id="MSAA">.
@@ -164,7 +170,7 @@ https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msa
 
 <script id="vertexMSAA" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.vs" %}</script>
 <script id="fragmentMSAA" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.fs" %}</script>
-<canvas width="100%" height="480px" style="max-height: 480px" id="canvasMSAA"></canvas>
+<canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasMSAA"></canvas>
 <script>setup("canvasMSAA", "vertexMSAA", "fragmentMSAA", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
 
 The brain-melting lengths to which graphics programmers go to utilize hardware acceleration to the last drop has me sometimes in awe.
@@ -201,7 +207,7 @@ This is possible under the condition of [forward rendering](https://gamedevelopm
 - ✅❌ Performance cheap in certain cirumstances
 
 ## FXAA
-<canvas width="100%" height="480px" style="max-height: 480px" id="canvasFXAA"></canvas>
+<canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasFXAA"></canvas>
 <script>setup("canvasFXAA", "vertex_0", "fragment_0", "vertexPost", "fragmentPostFXAA", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
 
 <blockquote>
@@ -320,7 +326,7 @@ _  = the highest digit is directly related to style
 ## What makes it analytical?
 
 <script id="fragmentAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analytical.fs" %}</script>
-<canvas width="100%" height="480px" style="max-height: 480px" id="canvasAnalytical"></canvas>
+<canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasAnalytical"></canvas>
 <script>setup("canvasAnalytical", "vertex_0", "fragmentAnalytical", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
 
 <blockquote>
@@ -446,9 +452,11 @@ Mention Assassin Creed Unity Depth reprojection talk and how they MSAA the hell 
 [Talk](https://advances.realtimerendering.com/s2015/aaltonenhaar_siggraph2015_combined_final_footer_220dpi.pdf)[Ulrich Haar](https://www.linkedin.com/in/ulrich-haar-730407218) and [Sebastian Aaltonen](https://x.com/SebAaltonen)
 
 
+```
 https://www.youtube.com/watch?v=1J6aAHLCbWg
 https://www.shadertoy.com/view/3stcD4
 http://miciwan.com/SIGGRAPH2013/Lighting%20Technology%20of%20The%20Last%20Of%20Us.pdf
+```
 
 FXAA
 
@@ -461,11 +469,13 @@ The final version publicly released was FXAA 3.11 on [August 12th 2011](https://
 A little history tour, since this information is almost lost due to [link rot](https://en.wikipedia.org/wiki/Link_rot) so severe, that graphics researcher were forced to [use archive links](http://behindthepixels.io/assets/files/TemporalAA.pdf#page=14). By that time Timothy Lottes was already experimenting with temporal anti-aliasing, a technique of 
 In fact, FXAA was supposed to [evole into FXXA v4](https://web.archive.org/web/20120120082725/http://timothylottes.blogspot.com/2011/12/fxaa-40-stills-and-features.html) and [incorporate temporal anti aliasing](https://web.archive.org/web/20120120070945/http://timothylottes.blogspot.com/2011/12/big-fxaa-update-soon.html), but instead it evolved and rebranded into [TXAA](https://web.archive.org/web/20210116205348/https://www.nvidia.com/en-gb/geforce/technologies/txaa/technology/).
 
+```
 TSSAA http://web.archive.org/web/20120120082628/http://timothylottes.blogspot.com/2011_04_01_archive.html
+```
 
 April 2011 
 
-
+```
 https://web.archive.org/web/20110903074855/http://www.eurogamer.net/articles/digital-foundry-future-of-anti-aliasing?page=3
 https://web.archive.org/web/20120120070945/http://timothylottes.blogspot.com/2011/12/big-fxaa-update-soon.html
 https://web.archive.org/web/20120120082725/http://timothylottes.blogspot.com/2011/12/fxaa-40-stills-and-features.html
@@ -474,8 +484,11 @@ https://web.archive.org/web/20120120051227/http://timothylottes.blogspot.com/201
 https://web.archive.org/web/20120120072820/http://timothylottes.blogspot.com/2011/12/fxaa-40-will-have-new-spatial-only.html
 https://web.archive.org/web/20120120085634/http://timothylottes.blogspot.com/2011/12/fxaa-40-development-update-stills.html
 https://web.archive.org/web/20120120075218/http://timothylottes.blogspot.com/2011/12/fxaa-40-with-178x-ssaa.html
+```
 
 Capsule shadows
 
+```
 https://github.com/godotengine/godot-proposals/issues/5262
 https://docs.unrealengine.com/4.27/en-US/BuildingWorlds/LightingAndShadows/CapsuleShadows/Overview/
+```

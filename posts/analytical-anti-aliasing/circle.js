@@ -1,53 +1,10 @@
-"use strict";
-function compileAndLinkShader(gl, vtxShdSrc, FragShdSrc) {
-	/* Vertex Shader Compilation */
-	const vtxShd = gl.createShader(gl.VERTEX_SHADER);
-	gl.shaderSource(vtxShd, document.getElementById(vtxShdSrc).text);
-	gl.compileShader(vtxShd);
-
-	if (!gl.getShaderParameter(vtxShd, gl.COMPILE_STATUS))
-		console.error("Vertex shader compilation error: ", gl.getShaderInfoLog(vtxShd));
-
-	/* Fragment Shader Compilation */
-	const FragShd = gl.createShader(gl.FRAGMENT_SHADER);
-	gl.shaderSource(FragShd, document.getElementById(FragShdSrc).text);
-	gl.compileShader(FragShd);
-
-	if (!gl.getShaderParameter(FragShd, gl.COMPILE_STATUS))
-		console.error("Fragment shader compilation error: ", gl.getShaderInfoLog(FragShd));
-
-	/* Shader Linking */
-	const LinkedShd = gl.createProgram();
-	gl.attachShader(LinkedShd, vtxShd);
-	gl.attachShader(LinkedShd, FragShd);
-	gl.linkProgram(LinkedShd);
-
-	if (!gl.getProgramParameter(LinkedShd, gl.LINK_STATUS))
-		console.error("Shader program linking error: ", gl.getProgramInfoLog(LinkedShd));
-
-	return LinkedShd;
-}
-
-function setupTexture(gl, width, height, target, filter) {
-	gl.deleteTexture(target);
-	target = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, target);
-
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-	return target;
-}
-
-function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc) {
+function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc, radioName) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const webglVersion = canvasId == 'canvasMSAA' ? 'webgl2' : 'webgl';
 	let frameTexture, circleDrawFramebuffer, frameTextureLinear;
 	let buffersInitialized = false;
+	let resDiv = 1;
 	const gl = canvas.getContext(webglVersion,
 		{
 			preserveDrawingBuffer: false,
@@ -86,6 +43,14 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, b
 			setupTextureBuffers();
 		});
 	}
+
+	/* Render Resolution */
+	const radios = document.querySelectorAll(`input[name="${radioName}"]`);
+	radios.forEach(radio => {
+		radio.addEventListener('change', (event) => {
+			resDiv = event.target.value;
+		});
+	});
 
 	/* Shaders */
 	/* Circle Shader */
@@ -200,7 +165,7 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, b
 		gl.uniform1f(aspect_ratioLocation, aspect_ratio);
 		var radius = 0.1;
 		var speed = (time / 10000) % Math.PI * 2;
-		circleOffsetAnim[0] = radius * Math.cos(speed);
+		circleOffsetAnim[0] = radius * Math.cos(speed) + 0.1;
 		circleOffsetAnim[1] = radius * Math.sin(speed);
 		gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);

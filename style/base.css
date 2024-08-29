@@ -463,12 +463,13 @@ table.contact h3 {
 .toggleRes label {
 	flex: 1;
 	/* Ensure labels fill the entire width of their container */
-	padding: 10px 20px;
+	padding: 10px 0px;
 	cursor: pointer;
 	transition: background-color 0.3s, color 0.3s;
 	margin-bottom: unset;
 	display: flex;
 	justify-content: center;
+	user-select: none;
 }
 
 /* Checked state styling */
