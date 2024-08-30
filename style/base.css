@@ -443,7 +443,7 @@ table.contact h3 {
 .toggleRes {
 	display: flex;
 	/* Ensure full width */
-	border-radius: 8px;
+	border-radius: 12px;
 	overflow: hidden;
 }
 
@@ -452,6 +452,7 @@ table.contact h3 {
 	flex: 1;
 	/* Make each child div take equal space */
 	display: flex;
+	flex-direction: column;
 }
 
 /* Hide the native radio buttons */
@@ -462,14 +463,22 @@ table.contact h3 {
 /* Style the labels to match the button style */
 .toggleRes label {
 	flex: 1;
+	flex-direction: column;
+	line-height: 1.2em;
+	align-items: center;
 	/* Ensure labels fill the entire width of their container */
-	padding: 10px 0px;
+	padding: 10px 4px;
 	cursor: pointer;
 	transition: background-color 0.3s, color 0.3s;
 	margin-bottom: unset;
 	display: flex;
 	justify-content: center;
 	user-select: none;
+}
+
+.toggleRes label > div {
+	font-size: smaller;
+	filter: contrast(50%);
 }
 
 /* Checked state styling */

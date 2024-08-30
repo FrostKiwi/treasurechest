@@ -137,6 +137,8 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 		redrawActive = false;
 	}
 
+	let isRendering = false;
+
 	function onResize() {
 		const dipRect = canvas.getBoundingClientRect();
 		const width = Math.round(devicePixelRatio * dipRect.right) - Math.round(devicePixelRatio * dipRect.left);
@@ -148,13 +150,14 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 
 			setupTextureBuffers();
 			aspect_ratio = 1.0 / (width / height);
+			stopRendering();
+			startRendering();
 		}
 	}
 
 	window.addEventListener('resize', onResize, true);
 	onResize();
 
-	let isRendering = false;
 
 	function renderLoop(time) {
 		if (isRendering) {

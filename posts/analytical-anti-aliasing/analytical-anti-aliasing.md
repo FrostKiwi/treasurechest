@@ -15,11 +15,11 @@ Today's journey is [Anti-Aliasing](https://en.wikipedia.org/wiki/Spatial_anti-al
 
 From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/Supersampling), over theory dense [**SMAA**](https://www.iryoku.com/smaa/), to using machine learning with [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). Same goal - ***vastly*** different approaches. We'll take a look at how they work, before introducing a new way to look a the problem - the ✨***analytical***🌟 way. The perfect Anti-Aliasing exists and is simpler than you think. Let's find out when and if you should use it.
 
-<blockquote class="reaction"><div class="reaction_text">Having implemented it multiple times over the years, I'll also share some juicy secrets I have never read anywhere before.</div><img class="kiwi" src="/assets/kiwis/ice.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Having implemented it multiple times over the years, I'll also share some juicy secrets I have never read anywhere before.</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
 
 ## The Setup
-To understand the Anti-Aliasing algorithms, we will implement them along the way! That's what the WebGL + Source code boxes are for. Each [WebGL canvas](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL) draws a moving circle. Anti-Aliasing cannot be fully understood with just images, movement is vital to see pixel crawling and sub-pixel filtering. Finally, the red box shows part of the circle's border with 8x zoom, without performing any additional filtering.
-<blockquote class="reaction"><div class="reaction_text">Rendering is done at native resolution of your device, essential to judge Anti-aliasing properly. Results will depend on screen resolution. Please pixel-peep and judge sharpness and aliasing closely.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+To understand the Anti-Aliasing algorithms, we will implement them along the way! That's what the WebGL + Source code boxes are for. Each [WebGL canvas](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL) draws a moving circle. Anti-Aliasing cannot be fully understood with just images, movement is *essential* to see pixel crawling and sub-pixel filtering. The red box shows part of the circle's border with 4x zoom. Rendering is done at **native** resolution of your device, without scaling, essential to judge Anti-aliasing properly. Results will depend on screen resolution.
+<blockquote class="reaction"><div class="reaction_text">Please pixel-peep and judge sharpness and aliasing closely. Resolution of your screen too high to see aliasing? Lower the resolution with the following buttons, which will <a href="https://tanalin.com/en/articles/integer-scaling/">integer-scale</a> the rendering.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 <script src="utility.js"></script>
 <script src="circleSimple.js"></script>
@@ -38,20 +38,24 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 <script id="fragment_0" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}</script>
 <div class="toggleRes">
 	<div>
-	  <input type="radio" id="native" name="setupRes" value="1" checked />
-	  <label for="native">Native Resolution</label>
+	  <input type="radio" id="native" name="resSimple" value="1" checked />
+	  <label for="native">Native<div>Resolution</div></label>
 	</div>
 	<div>
-	  <input type="radio" id="half" name="setupRes" value="2" />
-	  <label for="half">½ Resolution</label>
+	  <input type="radio" id="half" name="resSimple" value="2" />
+	  <label for="half">½<div>Resolution</div></label>
 	</div>
 	<div>
-	  <input type="radio" id="quarter" name="setupRes" value="4" />
-	  <label for="quarter">¼ Resolution</label>
+	  <input type="radio" id="quarter" name="resSimple" value="4" />
+	  <label for="quarter">¼<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="eight" name="resSimple" value="8" />
+	  <label for="eight">⅛<div>Resolution</div></label>
 	</div>
 </div>
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasSimple"></canvas>
-<script>setupSimple("canvasSimple", "vertex_0", "fragment_0", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "setupRes");</script>
+<script>setupSimple("canvasSimple", "vertex_0", "fragment_0", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resSimple");</script>
 
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
