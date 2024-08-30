@@ -1,4 +1,12 @@
 "use strict";
+/* Vertex Buffer of a simple Quad with some colors */
+const unitQuad = new Float32Array([
+	-1.0, 1.0, 1.0, 1.0, 0.0,
+	1.0, 1.0, 1.0, 0.0, 1.0,
+	1.0, -1.0, 0.0, 1.0, 1.0,
+	-1.0, -1.0, 1.0, 1.0, 1.0
+]);
+
 function compileAndLinkShader(gl, vtxShdSrc, FragShdSrc) {
 	/* Vertex Shader Compilation */
 	const vtxShd = gl.createShader(gl.VERTEX_SHADER);

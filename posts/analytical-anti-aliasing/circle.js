@@ -75,14 +75,6 @@ function setup(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, b
 	const thicknessLocation = gl.getUniformLocation(redShd, "thickness");
 	const pixelsizeLocation = gl.getUniformLocation(redShd, "pixelsize");
 
-	/* Vertex Buffer of a simple Quad with some colors */
-	const unitQuad = new Float32Array([
-		-1.0, 1.0, 1.0, 1.0, 0.0,
-		1.0, 1.0, 1.0, 0.0, 1.0,
-		1.0, -1.0, 0.0, 1.0, 1.0,
-		-1.0, -1.0, 1.0, 1.0, 1.0
-	]);
-
 	const vertex_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
 	gl.bufferData(gl.ARRAY_BUFFER, unitQuad, gl.STATIC_DRAW);

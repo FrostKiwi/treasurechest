@@ -1,7 +1,7 @@
-function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc, radioName) {
+function setupSSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc, radioName) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
-	let circleDrawFramebuffer, frameTexture;
+	let frameTexture, circleDrawFramebuffer, frameTextureLinear;
 	let buffersInitialized = false;
 	let resDiv = 1;
 	const gl = canvas.getContext('webgl',
@@ -9,8 +9,13 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 			preserveDrawingBuffer: false,
 			antialias: false,
 			alpha: true,
+			premultipliedAlpha: true
 		}
 	);
+
+	/* Setup Possibilities */
+	let renderbuffer = null;
+	let resolveFramebuffer = null;
 
 	/* Render Resolution */
 	const radios = document.querySelectorAll(`input[name="${radioName}"]`);
@@ -35,6 +40,9 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);
 	const transformLocation = gl.getUniformLocation(blitShd, "transform");
 	const offsetLocationPost = gl.getUniformLocation(blitShd, "offset");
+
+	/* Post Shader */
+	const postShd = compileAndLinkShader(gl, postVtxSrc, postFragSrc);
 
 	/* Simple Red Box */
 	const redShd = compileAndLinkShader(gl, redVtxSrc, redFragSrc);
@@ -62,18 +70,24 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 	let last_time = 0;
 	let redrawActive = false;
 
+	gl.enable(gl.BLEND);
+
 	function setupTextureBuffers() {
+		gl.deleteFramebuffer(resolveFramebuffer);
+		resolveFramebuffer = gl.createFramebuffer();
+		gl.bindFramebuffer(gl.FRAMEBUFFER, resolveFramebuffer);
+
+		frameTexture = setupTexture(gl, canvas.width / resDiv, canvas.height / resDiv, frameTexture, gl.NEAREST);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTexture, 0);
+
 		gl.deleteFramebuffer(circleDrawFramebuffer);
 		circleDrawFramebuffer = gl.createFramebuffer();
 		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
 
-		frameTexture = setupTexture(gl, canvas.width / resDiv, canvas.height / resDiv, frameTexture, gl.NEAREST);
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTexture, 0);
+		frameTextureLinear = setupTexture(gl, (canvas.width / resDiv) * 2, (canvas.height / resDiv) * 2, frameTextureLinear, gl.LINEAR);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTextureLinear, 0);
 		buffersInitialized = true;
 	}
-
-	gl.enable(gl.BLEND);
-	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
 	function redraw(time) {
 		redrawActive = true;
@@ -82,8 +96,9 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 		}
 		last_time = time;
 
+		gl.viewport(0, 0, (canvas.width / resDiv) * 2, (canvas.height / resDiv) * 2);
+
 		/* Setup PostProcess Framebuffer */
-		gl.viewport(0, 0, canvas.width / resDiv, canvas.height / resDiv);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.useProgram(circleShd);
@@ -97,10 +112,21 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 		gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
-		gl.viewport(0, 0, canvas.width, canvas.height);
+		gl.viewport(0, 0, canvas.width / resDiv, canvas.height / resDiv);
+
+		gl.useProgram(postShd);
+		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+		gl.bindTexture(gl.TEXTURE_2D, frameTextureLinear);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, resolveFramebuffer);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		gl.useProgram(blitShd);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		gl.bindTexture(gl.TEXTURE_2D, frameTexture);
+
+		gl.viewport(0, 0, canvas.width, canvas.height);
 
 		/* Simple Passthrough */
 		gl.uniform4f(transformLocation, 1.0, 1.0, 0.0, 0.0);
@@ -113,6 +139,7 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		/* Draw Red box for viewport illustration */
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 		gl.useProgram(redShd);
 		gl.uniform1f(aspect_ratioLocationRed, (1.0 / aspect_ratio) - 1.0);
 		gl.uniform1f(thicknessLocation, 0.2);
@@ -151,7 +178,6 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 	window.addEventListener('resize', onResize, true);
 	onResize();
 
-
 	function renderLoop(time) {
 		if (isRendering) {
 			redraw(time);
@@ -164,6 +190,7 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 		isRendering = true;
 		renderLoop(last_time);
 	}
+
 	function stopRendering() {
 		/* Stop another redraw being called */
 		isRendering = false;
@@ -179,6 +206,8 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 		/* Delete the important buffer to free up memory */
 		gl.deleteTexture(frameTexture);
 		gl.deleteFramebuffer(circleDrawFramebuffer);
+		gl.deleteRenderbuffer(renderbuffer);
+		gl.deleteFramebuffer(resolveFramebuffer);
 		buffersInitialized = false;
 	}
 

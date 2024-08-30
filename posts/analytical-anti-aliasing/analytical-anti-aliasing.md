@@ -11,6 +11,14 @@ publicTags:
   - GameDev
 image: thumbnail.png
 ---
+
+<script src='https://mrdoob.github.io/stats.js/build/stats.min.js'></script>
+<script>
+	var stats = new Stats();
+	stats.showPanel( 0 );
+	document.body.appendChild( stats.dom );
+</script>
+
 Today's journey is [Anti-Aliasing](https://en.wikipedia.org/wiki/Spatial_anti-aliasing) and the destination is **Analytical Anti-Aliasing**. Getting rid of rasterization [jaggies](https://en.wikipedia.org/wiki/Jaggies) is an art-form with decades upon decades of maths, creative techniques and non-stop innovation. With so many years of research and development, there are many flavors.
 
 From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/Supersampling), over theory dense [**SMAA**](https://www.iryoku.com/smaa/), to using machine learning with [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). Same goal - ***vastly*** different approaches. We'll take a look at how they work, before introducing a new way to look a the problem - the ✨***analytical***🌟 way. The perfect Anti-Aliasing exists and is simpler than you think. Let's find out when and if you should use it.
@@ -106,8 +114,27 @@ By performing the check `if (length(uv) < 1.0)` we draw our color for fragments 
 
 ## SSAA
 SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Supersampling). Render it bigger, downsample to be smaller. . Implemented in mere seconds.
+<div class="toggleRes">
+	<div>
+	  <input type="radio" id="nativeSSAA" name="resSSAA" value="1" checked />
+	  <label for="nativeSSAA">Native<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="halfSSAA" name="resSSAA" value="2" />
+	  <label for="halfSSAA">½<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="quarterSSAA" name="resSSAA" value="4" />
+	  <label for="quarterSSAA">¼<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="eightSSAA" name="resSSAA" value="8" />
+	  <label for="eightSSAA">⅛<div>Resolution</div></label>
+	</div>
+</div>
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasSSAA"></canvas>
-<script>setup("canvasSSAA", "vertex_0", "fragment_0", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
+<script src="circleSSAA.js"></script>
+<script>setupSSAA("canvasSSAA", "vertex_0", "fragment_0", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resSSAA");</script>
 
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
@@ -177,8 +204,30 @@ https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msa
 
 <script id="vertexMSAA" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.vs" %}</script>
 <script id="fragmentMSAA" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.fs" %}</script>
+<div class="toggleRes">
+	<div>
+	  <input type="radio" id="nativeMSAA" name="resMSAA" value="1" checked />
+	  <label for="nativeMSAA">Native<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="halfMSAA" name="resMSAA" value="2" />
+	  <label for="halfMSAA">½<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="quarterMSAA" name="resMSAA" value="4" />
+	  <label for="quarterMSAA">¼<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="eightMSAA" name="resMSAA" value="8" />
+	  <label for="eightMSAA">⅛<div>Resolution</div></label>
+	</div>
+</div>
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasMSAA"></canvas>
-<script>setup("canvasMSAA", "vertexMSAA", "fragmentMSAA", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
+<script src="circleMSAA.js"></script>
+<script>setupMSAA("canvasMSAA", "vertexMSAA", "fragmentMSAA", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resMSAA");</script>
+
+This requires a more modern device supporting [WebGL2](https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext). MSAA predates even WebGL 1, but wasn't standardized until WebGL 2.
+
 
 The brain-melting lengths to which graphics programmers go to utilize hardware acceleration to the last drop has me sometimes in awe.
 
