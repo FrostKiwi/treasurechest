@@ -11,6 +11,10 @@ publicTags:
   - GameDev
 image: thumbnail.png
 ---
+
+<script src="//cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
+
 Today's journey is [Anti-Aliasing](https://en.wikipedia.org/wiki/Spatial_anti-aliasing) and the destination is **Analytical Anti-Aliasing**. Getting rid of rasterization [jaggies](https://en.wikipedia.org/wiki/Jaggies) is an art-form with decades upon decades of maths, creative techniques and non-stop innovation. With so many years of research and development, there are many flavors.
 
 From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/Supersampling), over theory dense [**SMAA**](https://www.iryoku.com/smaa/), to using machine learning with [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). Same goal - ***vastly*** different approaches. We'll take a look at how they work, before introducing a new way to look a the problem - the ✨***analytical***🌟 way. The perfect Anti-Aliasing exists and is simpler than you think. Let's find out when and if you should use it.
@@ -18,7 +22,7 @@ From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/
 <blockquote class="reaction"><div class="reaction_text">Having implemented it multiple times over the years, I'll also share some juicy secrets I have never read anywhere before.</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
 
 ## The Setup
-To understand the Anti-Aliasing algorithms, we will implement them along the way! That's what the WebGL + Source code boxes are for. Each [WebGL canvas](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL) draws a moving circle. Anti-Aliasing cannot be fully understood with just images, movement is *essential* to see pixel crawling and sub-pixel filtering. The red box shows part of the circle's border with 4x zoom. Rendering is done at **native** resolution of your device, without scaling, essential to judge Anti-aliasing properly. Results will depend on screen resolution.
+To understand the Anti-Aliasing algorithms, we will implement them along the way! That's what the WebGL + Source code boxes are for. Each [WebGL canvas](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL) draws a moving circle. Anti-Aliasing cannot be fully understood with just images, movement is *essential* to see pixel crawling and sub-pixel filtering. The red box shows part of the circle's border with 4x zoom. Rendering is done without scaling at **native** resolution of your device, essential to judge Anti-aliasing properly. Results will depend on screen resolution.
 <blockquote class="reaction"><div class="reaction_text">Please pixel-peep and judge sharpness and aliasing closely. Resolution of your screen too high to see aliasing? Lower the resolution with the following buttons, which will <a href="https://tanalin.com/en/articles/integer-scaling/">integer-scale</a> the rendering.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 <script src="utility.js"></script>
