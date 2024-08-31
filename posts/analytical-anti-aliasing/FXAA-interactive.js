@@ -29,7 +29,7 @@ async function loadAllFrames(gl, start, end) {
 	return textures;
 }
 
-function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaSrc, lumaFragSrc, redVtxSrc, redFragSrc) {
+function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaSrc, lumaFragSrc, redVtxSrc, redFragSrc) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const gl = canvas.getContext('webgl',
@@ -134,7 +134,6 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaSrc, lumaFra
 
 	let last_time = 0;
 	let redrawActive = false;
-	let exportIMG = false;
 
 	canvas.width = 684;
 	canvas.height = 480;
@@ -146,7 +145,6 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaSrc, lumaFra
 	let frameIndex = 0;
 	let lastFrameTime = 0;
 	let forward = true;
-	let start = false;
 	let delayActive = false;
 
 	let frame = 0;
@@ -183,31 +181,6 @@ function setupFXAA(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaSrc, lumaFra
 
 		redrawActive = false;
 
-		if (exportIMG && framesLoaded) {
-			if (frameIndex == 0)
-				start = true;
-		}
-		if (start) {
-			gl.finish();
-			if (frameIndex == 28) {
-				start = false;
-				exportIMG = false;
-			}
-			canvas.toBlob((blob) => {
-				const url = URL.createObjectURL(blob);
-				console.log(frameIndex);
-				const a = document.createElement('a');
-				a.style.display = 'none';
-				a.href = url;
-				a.download = `${frameIndex}.png`;
-
-				document.body.appendChild(a);
-				a.click();
-
-				document.body.removeChild(a);
-				URL.revokeObjectURL(url);
-			}, `image/png`);
-		}
 		frame++;
 	}
 

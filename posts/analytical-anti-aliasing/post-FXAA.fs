@@ -23,7 +23,6 @@ uniform vec2 RcpFrame;
 float FxaaLuma(vec4 rgba) { return rgba.w; }
 vec4 FxaaPixelShader(
 	vec2 pos,
-	vec4 fxaaConsolePosPos,
 	sampler2D tex,
 	vec2 fxaaQualityRcpFrame,
 	float fxaaQualitySubpix,
@@ -249,5 +248,5 @@ vec4 FxaaPixelShader(
 
 void main() {
 	gl_FragColor = FxaaPixelShader(
-		texCoord, vec4(0.0), u_texture, RcpFrame, 0.75, 0.166, 0.0833);
+		texCoord, u_texture, RcpFrame, 0.75, 0.166, 0.0833);
 }

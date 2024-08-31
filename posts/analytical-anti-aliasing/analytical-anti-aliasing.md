@@ -262,8 +262,27 @@ The one sentence version is: This is possible under the condition of [forward re
 - ✅❌ Performance cheap in certain cirumstances
 
 ## FXAA
+<div class="toggleRes">
+	<div>
+	  <input type="radio" id="nativeFXAA" name="resFXAA" value="1" checked />
+	  <label for="nativeFXAA">Native<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="halfFXAA" name="resFXAA" value="2" />
+	  <label for="halfFXAA">½<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="quarterFXAA" name="resFXAA" value="4" />
+	  <label for="quarterFXAA">¼<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="eightFXAA" name="resFXAA" value="8" />
+	  <label for="eightFXAA">⅛<div>Resolution</div></label>
+	</div>
+</div>
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasFXAA"></canvas>
-<script>setup("canvasFXAA", "vertex_0", "fragment_0", "vertexPost", "fragmentPostFXAA", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
+<script src="circleFXAA.js"></script>
+<script>setupFXAA("canvasFXAA", "vertex_0", "fragment_0", "vertexPost", "fragmentPostFXAA", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resFXAA");</script>
 
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
@@ -308,7 +327,7 @@ This can effect sharpness.
 <script id="vertexLuma" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/FXAA-Luma.vs" %}</script>
 <script id="fragmentLuma" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/FXAA-Luma.fs" %}</script>
 
-<canvas width="100%" id="canvasFXAAInteractive"></canvas>
+<canvas width="100%" style="aspect-ratio: 1.425" id="canvasFXAAInteractive"></canvas>
 
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
@@ -342,6 +361,7 @@ This can effect sharpness.
 </blockquote>
 
 <input type="checkbox" id="fxaa" name="Enable FXAA" checked /> Enable FXAA
+<input type="checkbox" id="red" name="Enable Red Box" checked /> Enable Red Box
 
 Choose the quality preset. Trades performance for quality, with 3 different "styles" of dither.
 
@@ -375,7 +395,7 @@ _  = the highest digit is directly related to style
 	</optgroup>
 </select>
 <script src="FXAA-interactive.js"></script>
-<script>setupFXAA("canvasFXAAInteractive", "vertexInteractive", "fragmentInteractive", "vertexLuma", "fragmentLuma", "vertexRedBox", "fragmentRedBox");</script>
+<script>setupFXAAInteractive("canvasFXAAInteractive", "vertexInteractive", "fragmentInteractive", "vertexLuma", "fragmentLuma", "vertexRedBox", "fragmentRedBox");</script>
 
 
 ## What makes it analytical?

@@ -1,10 +1,10 @@
-function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc, radioName) {
+function setupFXAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc, radioName) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	let frameTexture, circleDrawFramebuffer, frameTextureLinear;
 	let buffersInitialized = false;
 	let resDiv = 1;
-	const gl = canvas.getContext('webgl2',
+	const gl = canvas.getContext('webgl',
 		{
 			preserveDrawingBuffer: false,
 			antialias: false,
@@ -17,24 +17,6 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSr
 	let samples = 1;
 	let renderbuffer = null;
 	let resolveFramebuffer = null;
-
-	const maxSamples = gl.getParameter(gl.MAX_SAMPLES);
-
-	/* Enable the options in the MSAA dropdown based on maxSamples */
-	const msaaSelect = document.getElementById("MSAA");
-	for (let option of msaaSelect.options) {
-		if (parseInt(option.value) <= maxSamples) {
-			option.disabled = false;
-		}
-	}
-	samples = parseInt(msaaSelect.value);
-
-	/* Event listener for select dropdown */
-	msaaSelect.addEventListener('change', function () {
-		/* Get new MSAA level and reset-init buffers */
-		samples = parseInt(msaaSelect.value);
-		setupTextureBuffers();
-	});
 
 	/* Render Resolution */
 	const radios = document.querySelectorAll(`input[name="${radioName}"]`);
@@ -62,6 +44,7 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSr
 
 	/* Post Shader */
 	const postShd = compileAndLinkShader(gl, postVtxSrc, postFragSrc);
+	const rcpFrameLocation = gl.getUniformLocation(postShd, "RcpFrame");
 
 	/* Simple Red Box */
 	const redShd = compileAndLinkShader(gl, redVtxSrc, redFragSrc);
@@ -90,23 +73,23 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSr
 	let redrawActive = false;
 	let animationFrameId;
 
+	gl.enable(gl.BLEND);
+
 	function setupTextureBuffers() {
-		gl.deleteFramebuffer(circleDrawFramebuffer)
+		gl.deleteFramebuffer(resolveFramebuffer);
+		resolveFramebuffer = gl.createFramebuffer();
+		gl.bindFramebuffer(gl.FRAMEBUFFER, resolveFramebuffer);
+
+		frameTexture = setupTexture(gl, canvas.width / resDiv, canvas.height / resDiv, frameTexture, gl.NEAREST);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTexture, 0);
+
+		gl.deleteFramebuffer(circleDrawFramebuffer);
 		circleDrawFramebuffer = gl.createFramebuffer();
 		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
 
-		gl.deleteRenderbuffer(renderbuffer);
-		renderbuffer = gl.createRenderbuffer();
-		gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
-		gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, canvas.width / resDiv, canvas.height / resDiv);
-		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, renderbuffer);
+		frameTextureLinear = setupTexture(gl, canvas.width / resDiv, canvas.height / resDiv, frameTextureLinear, gl.LINEAR);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTextureLinear, 0);
 
-		gl.deleteFramebuffer(resolveFramebuffer);
-		resolveFramebuffer = gl.createFramebuffer();
-		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, resolveFramebuffer);
-
-		frameTexture = setupTexture(gl, canvas.width / resDiv, canvas.height / resDiv, frameTexture, gl.NEAREST);
-		gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTexture, 0);
 		buffersInitialized = true;
 	}
 
@@ -116,14 +99,12 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSr
 			setupTextureBuffers();
 		}
 		last_time = time;
-		gl.disable(gl.BLEND);
-		gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
 
+		gl.viewport(0, 0, canvas.width / resDiv, canvas.height / resDiv);
 		/* Setup PostProcess Framebuffer */
 		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.useProgram(circleShd);
-		gl.viewport(0, 0, canvas.width / resDiv, canvas.height / resDiv);
 
 		/* Draw Circle Animation */
 		gl.uniform1f(aspect_ratioLocation, aspect_ratio);
@@ -134,21 +115,18 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSr
 		gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
-		gl.viewport(0, 0, canvas.width, canvas.height);
-
 		gl.useProgram(postShd);
+		gl.uniform2f(rcpFrameLocation, 1.0 / (canvas.width / resDiv), 1.0 / (canvas.height / resDiv));
 		gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
-		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-		/* Resolve the MSAA framebuffer to a regular texture */
-		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, circleDrawFramebuffer);
-		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, resolveFramebuffer);
-		gl.blitFramebuffer(
-			0, 0, canvas.width, canvas.height,
-			0, 0, canvas.width, canvas.height,
-			gl.COLOR_BUFFER_BIT, gl.NEAREST
-		);
+		gl.bindTexture(gl.TEXTURE_2D, frameTextureLinear);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, resolveFramebuffer);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+
+		gl.viewport(0, 0, canvas.width, canvas.height);
 
 		gl.useProgram(blitShd);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -213,7 +191,6 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSr
 		isRendering = true;
 		renderLoop(last_time);
 	}
-
 	function stopRendering() {
 		/* Stop another redraw being called */
 		isRendering = false;
@@ -243,6 +220,7 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSr
 			}
 		});
 	}
+
 
 	/* Only render when the canvas is actually on screen */
 	let observer = new IntersectionObserver(handleIntersection);
