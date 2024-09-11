@@ -1,5 +1,4 @@
 #extension GL_OES_standard_derivatives : enable
-
 precision mediump float;
 varying vec2 uv;
 varying vec3 color;

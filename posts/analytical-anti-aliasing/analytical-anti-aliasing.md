@@ -400,9 +400,32 @@ _  = the highest digit is directly related to style
 
 ## What makes it analytical?
 
+<div class="toggleRes">
+	<div>
+	  <input type="radio" id="nativeAnalytical" name="resAnalytical" value="1" checked />
+	  <label for="nativeAnalytical">Native<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="halfAnalytical" name="resAnalytical" value="2" />
+	  <label for="halfAnalytical">½<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="quarterAnalytical" name="resAnalytical" value="4" />
+	  <label for="quarterAnalytical">¼<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="eightAnalytical" name="resAnalytical" value="8" />
+	  <label for="eightAnalytical">⅛<div>Resolution</div></label>
+	</div>
+</div>
+
 <script id="fragmentAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analytical.fs" %}</script>
+
+<script src="circleAnalytical.js"></script>
+
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasAnalytical"></canvas>
-<script>setup("canvasAnalytical", "vertex_0", "fragmentAnalytical", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
+<!-- <script>setup("canvasAnalytical", "vertex_0", "fragmentAnalytical", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script> -->
+<script>setupAnalytical("canvasAnalytical", "vertex_0", "fragmentAnalytical", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resAnalytical");</script>
 
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
