@@ -2,7 +2,7 @@
 async function loadFrame(gl, path) {
 	const response = await fetch(path);
 	const blob = await response.blob();
-	const bitmap = await createImageBitmap(blob);
+	const bitmap = await createImageBitmap(blob, { colorSpaceConversion: 'none' });
 
 	const target = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, target);
