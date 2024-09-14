@@ -116,8 +116,6 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSr
 			setupTextureBuffers();
 		}
 		last_time = time;
-		gl.disable(gl.BLEND);
-		gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
 
 		/* Setup PostProcess Framebuffer */
 		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
@@ -132,13 +130,18 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSr
 		circleOffsetAnim[0] = radius * Math.cos(speed) + 0.1;
 		circleOffsetAnim[1] = radius * Math.sin(speed);
 		gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
+
+		gl.disable(gl.BLEND);
+		gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
+
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+		
+		gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
+		gl.enable(gl.BLEND);
 
 		gl.viewport(0, 0, canvas.width, canvas.height);
 
 		gl.useProgram(postShd);
-		gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
-		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
 		/* Resolve the MSAA framebuffer to a regular texture */
@@ -147,8 +150,10 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSr
 		gl.blitFramebuffer(
 			0, 0, canvas.width, canvas.height,
 			0, 0, canvas.width, canvas.height,
-			gl.COLOR_BUFFER_BIT, gl.NEAREST
+			gl.COLOR_BUFFER_BIT, gl.LINEAR
 		);
+		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
 
 		gl.useProgram(blitShd);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);

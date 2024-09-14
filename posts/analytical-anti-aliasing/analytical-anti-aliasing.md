@@ -11,14 +11,6 @@ publicTags:
   - GameDev
 image: thumbnail.png
 ---
-
-<script src='https://mrdoob.github.io/stats.js/build/stats.min.js'></script>
-<script>
-	var stats = new Stats();
-	stats.showPanel( 0 );
-	document.body.appendChild( stats.dom );
-</script>
-
 Today's journey is [Anti-Aliasing](https://en.wikipedia.org/wiki/Spatial_anti-aliasing) and the destination is **Analytical Anti-Aliasing**. Getting rid of rasterization [jaggies](https://en.wikipedia.org/wiki/Jaggies) is an art-form with decades upon decades of maths, creative techniques and non-stop innovation. With so many years of research and development, there are many flavors.
 
 From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/Supersampling), over theory dense [**SMAA**](https://www.iryoku.com/smaa/), to using machine learning with [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). Same goal - ***vastly*** different approaches. We'll take a look at how they work, before introducing a new way to look a the problem - the ✨***analytical***🌟 way. The perfect Anti-Aliasing exists and is simpler than you think. Let's find out when and if you should use it.
@@ -33,6 +25,7 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 <script src="circleSimple.js"></script>
 <script src="circle.js"></script>
 <script id="vertexBlit" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/blit.vs" %}</script>
+<script id="vertexBlitSimple" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/blitSimple.vs" %}</script>
 <script id="fragmentBlit" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/blit.fs" %}</script>
 
 <script id="vertexPost" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/post.vs" %}</script>
@@ -327,7 +320,143 @@ This can effect sharpness.
 <script id="vertexLuma" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/FXAA-Luma.vs" %}</script>
 <script id="fragmentLuma" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/FXAA-Luma.fs" %}</script>
 
+<div style="display: flex; flex-wrap: wrap; gap: 0px 12px; justify-content: space-around;">
+    <span style="display: flex; gap: 8px; white-space: nowrap">
+        <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
+            <input style="margin-bottom: unset;" type="checkbox" id="fxaaCheck" name="Enable FXAA" checked />
+            Enable FXAA
+        </label>
+    </span>
+    <span style="display: flex; gap: 8px; white-space: nowrap">
+        <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
+            <input style="margin-bottom: unset;" type="checkbox" id="redCheck" name="Enable Red Box" checked />
+            Enable Red Box
+        </label>
+    </span>
+    <span style="display: flex; gap: 8px; white-space: nowrap">
+        <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
+            <input style="margin-bottom: unset;" type="checkbox" id="pauseCheck" name="Play / Pause" checked />
+            Play / Pause
+        </label>
+    </span>
+</div>
+
+
 <canvas width="100%" style="aspect-ratio: 1.425" id="canvasFXAAInteractive"></canvas>
+
+<select id="FXAA_QUALITY_PRESET">
+	<optgroup label="Default medium dither">
+		<option value="10">10 (fastest)</option>
+		<option value="11">11</option>
+		<option value="12" selected>12 (default)</option>
+		<option value="13">13</option>
+		<option value="14">14</option>
+		<option value="15">15 (highest quality)</option>
+	</optgroup>
+	<optgroup label="Less dither, more expensive">
+		<option value="20">20 (fastest)</option>
+		<option value="21">21</option>
+		<option value="22">22</option>
+		<option value="23">23</option>
+		<option value="24">24</option>
+		<option value="25">25</option>
+		<option value="26">26</option>
+		<option value="27">27</option>
+		<option value="28">28</option>
+		<option value="29">29 (highest quality)</option>
+	<optgroup label="No dither, very expensive">
+		<option value="39">39 (EXTREME QUALITY)</option>
+	</optgroup>
+</select>
+<div style="display: flex; flex-wrap: wrap; gap: 0px 12px; justify-content: space-around;">
+    <span style="display: flex; gap: 8px; white-space: nowrap">
+        <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
+            <input style="margin-bottom: unset;" type="checkbox" id="lumaCheck" name="Show Luma" />
+            Show Luma
+        </label>
+    </span>
+    <span style="display: flex; gap: 8px; white-space: nowrap">
+        <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
+            <input style="margin-bottom: unset;" type="checkbox" id="greenCheck" name="Green as Luma" />
+            Green as Luma
+        </label>
+    </span>
+</div>
+
+<div class="slider">
+    <span>
+		<code>fxaaQualitySubpix</code>
+		<output id="fxaaQualitySubpixValue">0.75</output>
+	</span>
+    <div class="row">
+        <span>Min</span>
+        <input type="range" step="0.01" min="0" max="1" value="0.75" id="fxaaQualitySubpixRange" oninput="fxaaQualitySubpixValue.value = fxaaQualitySubpixRange.value">
+        <span>Max</span>
+    </div>
+</div>
+
+<div class="slider">
+    <span>
+		<code>fxaaQualityEdgeThreshold</code>
+		<output id="fxaaQualityEdgeThresholdValue">0.166</output>
+	</span>
+    <div class="row">
+        <span>Min</span>
+        <input type="range" step="0.001" min="0" max="1" value="0.166" id="fxaaQualityEdgeThresholdRange" oninput="fxaaQualityEdgeThresholdValue.value = fxaaQualityEdgeThresholdRange.value">
+        <span>Max</span>
+    </div>
+</div>
+
+<div class="slider">
+    <span>
+		<code>fxaaQualityEdgeThresholdMin</code>
+		<output id="fxaaQualityEdgeThresholdMinValue">0.0833</output>
+	</span>
+    <div class="row">
+        <span>Min</span>
+        <input type="range" step="0.0001" min="0" max="1" value="0.0833" id="fxaaQualityEdgeThresholdMinRange" oninput="fxaaQualityEdgeThresholdMinValue.value = fxaaQualityEdgeThresholdMinRange.value">
+        <span>Max</span>
+    </div>
+</div>
+
+<details><summary><code>fxaaQualitySubpix</code> Explanation</summary>
+<pre>
+Choose the amount of sub-pixel aliasing removal.
+This can effect sharpness.
+  1.00 - upper limit (softer)
+  0.75 - default amount of filtering
+  0.50 - lower limit (sharper, less sub-pixel aliasing removal)
+  0.25 - almost off
+  0.00 - completely off</pre>
+</details>
+<details><summary><code>fxaaQualityEdgeThreshold</code> Explanation</summary>
+<pre>
+The minimum amount of local contrast required to apply algorithm.
+  0.333 - too little (faster)
+  0.250 - low quality
+  0.166 - default
+  0.125 - high quality 
+  0.063 - overkill (slower)</pre>
+</details>
+<details><summary><code>fxaaQualityEdgeThresholdMin</code> Explanation</summary>
+<pre>
+Trims the algorithm from processing darks.
+  0.0833 - upper limit (default, the start of visible unfiltered edges)
+  0.0625 - high quality (faster)
+  0.0312 - visible limit (slower)
+Special notes when using FXAA_GREEN_AS_LUMA,
+  Likely want to set this to zero.
+  As colors that are mostly not-green
+  will appear very dark in the green channel!
+  Tune by looking at mostly non-green content,
+  then start at zero and increase until aliasing is a problem.</pre>
+</details>
+<details><summary><code>FXAA_QUALITY_PRESET</code> Explanation</summary>
+<pre>
+Trades performance for quality, with 3 different "styles" of dither.
+ _ = the lowest digit is directly related to performance
+_  = the highest digit is directly related to style</pre>
+</details>
 
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
@@ -360,42 +489,8 @@ This can effect sharpness.
 </details>
 </blockquote>
 
-<input type="checkbox" id="fxaa" name="Enable FXAA" checked /> Enable FXAA
-<input type="checkbox" id="red" name="Enable Red Box" checked /> Enable Red Box
-
-Choose the quality preset. Trades performance for quality, with 3 different "styles" of dither.
-
-```
- _ = the lowest digit is directly related to performance
-_  = the highest digit is directly related to style
-```
-
-<select id="FXAA_QUALITY_PRESET">
-	<optgroup label="Default medium dither">
-		<option value="10">10 (fastest)</option>
-		<option value="11">11</option>
-		<option value="12" selected>12 (default)</option>
-		<option value="13">13</option>
-		<option value="14">14</option>
-		<option value="15">15 (highest quality)</option>
-	</optgroup>
-	<optgroup label="Less dither, more expensive">
-		<option value="20">20 (fastest)</option>
-		<option value="21">21</option>
-		<option value="22">22</option>
-		<option value="23">23</option>
-		<option value="24">24</option>
-		<option value="25">25</option>
-		<option value="26">26</option>
-		<option value="27">27</option>
-		<option value="28">28</option>
-		<option value="29">29 (highest quality)</option>
-	<optgroup label="No dither, very expensive">
-		<option value="39">39 (EXTREME QUALITY)</option>
-	</optgroup>
-</select>
 <script src="FXAA-interactive.js"></script>
-<script>setupFXAAInteractive("canvasFXAAInteractive", "vertexInteractive", "fragmentInteractive", "vertexLuma", "fragmentLuma", "vertexRedBox", "fragmentRedBox");</script>
+<script>setupFXAAInteractive("canvasFXAAInteractive", "vertexInteractive", "fragmentInteractive", "vertexLuma", "fragmentLuma", "vertexBlitSimple", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
 
 
 ## What makes it analytical?

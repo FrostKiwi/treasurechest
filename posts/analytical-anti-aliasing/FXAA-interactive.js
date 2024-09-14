@@ -29,7 +29,7 @@ async function loadAllFrames(gl, start, end) {
 	return textures;
 }
 
-function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaSrc, lumaFragSrc, redVtxSrc, redFragSrc) {
+function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaSrc, lumaFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	const gl = canvas.getContext('webgl',
@@ -41,16 +41,50 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 		}
 	);
 
-	let lumaBuffer, lumaTexture;
+	let lumaBuffer, lumaTexture, blitBuffer, blitTexture;
 	let enableFXAA = true;
+	let enableRed = true;
+	let showLuma = false;
+	let greenLuma = false;
+	let pause = false;
+	let fxaaQualityPreset = 12;
 
 	/* Shaders */
 	/* Passthrough Shader */
-	const fxaaShd = compileAndLinkShader(gl, simpleVtxSrc, simpleFragSrc);
-	const rcpFrameLocation = gl.getUniformLocation(fxaaShd, "RcpFrame");
-	const enableLocation = gl.getUniformLocation(fxaaShd, "enable");
+	let fxaaShd;
+	let rcpFrameLocation;
+	let fxaaQualitySubpixLocation;
+	let fxaaQualityEdgeThresholdLocation;
+	let fxaaQualityEdgeThresholdMinLocation;
+
+	function updateFXAAShader() {
+		if (fxaaShd) {
+			gl.deleteProgram(fxaaShd);
+		}
+
+		const prefix = `
+        #define FXAA_QUALITY_PRESET ${fxaaQualityPreset}
+        #define FXAA_GREEN_AS_LUMA ${greenLuma ? 1 : 0}
+        #define FXAA_ENABLE ${enableFXAA ? 1 : 0}
+        #define FXAA_LUMA ${showLuma ? 1 : 0}
+	    `;
+
+		fxaaShd = compileAndLinkShader(gl, simpleVtxSrc, simpleFragSrc, prefix);
+
+		rcpFrameLocation = gl.getUniformLocation(fxaaShd, "RcpFrame");
+		fxaaQualitySubpixLocation = gl.getUniformLocation(fxaaShd, "u_fxaaQualitySubpix");
+		fxaaQualityEdgeThresholdLocation = gl.getUniformLocation(fxaaShd, "u_fxaaQualityEdgeThreshold");
+		fxaaQualityEdgeThresholdMinLocation = gl.getUniformLocation(fxaaShd, "u_fxaaQualityEdgeThresholdMin");
+	}
+
+	updateFXAAShader();
 
 	const lumaShd = compileAndLinkShader(gl, vertexLumaSrc, lumaFragSrc);
+
+	/* Blit Shader */
+	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);
+	const transformLocation = gl.getUniformLocation(blitShd, "transform");
+	const offsetLocationPost = gl.getUniformLocation(blitShd, "offset");
 
 	/* Simple Red Box */
 	const redShd = compileAndLinkShader(gl, redVtxSrc, redFragSrc);
@@ -104,10 +138,10 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 		[322.100, 242.965]
 	];
 
-	function applyTrackingData(index) {
+	function applyTrackingData(index, location) {
 		const x = (trackedCoords[index][0] / canvas.width) * 2 - 1;
 		const y = 1 - (trackedCoords[index][1] / canvas.height) * 2;
-		gl.uniform2f(offsetLocationRed, x, y);
+		gl.uniform2f(location, x, y);
 	}
 
 	function setupBuffers() {
@@ -117,13 +151,74 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 
 		lumaTexture = setupTexture(gl, canvas.width, canvas.height, lumaTexture, gl.LINEAR);
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, lumaTexture, 0);
+
+		gl.deleteFramebuffer(blitBuffer);
+		blitBuffer = gl.createFramebuffer();
+		gl.bindFramebuffer(gl.FRAMEBUFFER, blitBuffer);
+
+		blitTexture = setupTexture(gl, canvas.width, canvas.height, blitTexture, gl.NEAREST);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, blitTexture, 0);
 	}
 
 	/* Not working :[ Maybe pass it in as a param */
-	const fxaaCheckbox = document.getElementById('fxaa');
+	const fxaaCheckbox = document.getElementById('fxaaCheck');
 	fxaaCheckbox.addEventListener('change', () => {
 		enableFXAA = fxaaCheckbox.checked;
-		console.log(`FXAA Enabled: ${enableFXAA}`);
+		updateFXAAShader();
+		redraw();
+	});
+	const redCheckbox = document.getElementById('redCheck');
+	redCheckbox.addEventListener('change', () => {
+		enableRed = redCheckbox.checked;
+		redraw();
+	});
+	const pauseCheckbox = document.getElementById('pauseCheck');
+	pauseCheckbox.addEventListener('change', () => {
+		pause = !pauseCheckbox.checked;
+		redraw();
+	});
+	const lumaCheckbox = document.getElementById('lumaCheck');
+	lumaCheckbox.addEventListener('change', () => {
+		showLuma = lumaCheckbox.checked;
+		updateFXAAShader();
+		redraw();
+	});
+	const greenCheckbox = document.getElementById('greenCheck');
+	greenCheckbox.addEventListener('change', () => {
+		greenLuma = greenCheckbox.checked;
+		updateFXAAShader();
+		redraw();
+	});
+
+	/* FXAA Parameters */
+	const fxaaQualityPresetSelect = document.getElementById('FXAA_QUALITY_PRESET');
+	fxaaQualityPresetSelect.addEventListener('change', function () {
+		fxaaQualityPreset = parseInt(fxaaQualityPresetSelect.value);
+		updateFXAAShader();
+		redraw();
+	});
+
+	let fxaaQualitySubpix = 0.75;
+	let fxaaQualityEdgeThreshold = 0.166;
+	let fxaaQualityEdgeThresholdMin = 0.0833;
+
+	const fxaaQualitySubpixRange = document.getElementById('fxaaQualitySubpixRange');
+	const fxaaQualityEdgeThresholdRange = document.getElementById('fxaaQualityEdgeThresholdRange');
+	const fxaaQualityEdgeThresholdMinRange = document.getElementById('fxaaQualityEdgeThresholdMinRange');
+
+	fxaaQualitySubpixRange.addEventListener('input', function () {
+		fxaaQualitySubpix = parseFloat(fxaaQualitySubpixRange.value);
+		redraw();
+	});
+
+	fxaaQualityEdgeThresholdRange.addEventListener('input', function () {
+		fxaaQualityEdgeThreshold = parseFloat(fxaaQualityEdgeThresholdRange.value);
+		redraw();
+	});
+
+	fxaaQualityEdgeThresholdMinRange.addEventListener('input', function () {
+		fxaaQualityEdgeThresholdMin = parseFloat(fxaaQualityEdgeThresholdMinRange.value);
+		redraw();
 	});
 
 	const vertex_buffer = gl.createBuffer();
@@ -147,8 +242,9 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 	let forward = true;
 	let delayActive = false;
 
-	let frame = 0;
 	function redraw() {
+		if (!isRendering || redrawActive || !framesLoaded)
+			return;
 		redrawActive = true;
 
 		/* Setup PostProcess Framebuffer */
@@ -160,12 +256,31 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		/* Draw To Screen */
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, blitBuffer);
 		gl.bindTexture(gl.TEXTURE_2D, lumaTexture);
 		gl.useProgram(fxaaShd);
 		gl.clear(gl.COLOR_BUFFER_BIT);
-		gl.uniform1i(enableLocation, enableFXAA);
+		
+		/* FXAA Arguments */
 		gl.uniform2f(rcpFrameLocation, 1.0 / canvas.width, 1.0 / canvas.height);
+		gl.uniform1f(fxaaQualitySubpixLocation, fxaaQualitySubpix);
+		gl.uniform1f(fxaaQualityEdgeThresholdLocation, fxaaQualityEdgeThreshold);
+		gl.uniform1f(fxaaQualityEdgeThresholdMinLocation, fxaaQualityEdgeThresholdMin);
+
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+		gl.useProgram(blitShd);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		gl.bindTexture(gl.TEXTURE_2D, blitTexture);
+
+		/* Simple Passthrough */
+		gl.uniform4f(transformLocation, 1.0, 1.0, 0.0, 0.0);
+		gl.uniform2f(offsetLocationPost, 0.0, 0.0);
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+		/* Scaled image in the bottom left */
+		gl.uniform4f(transformLocation, 0.25, 0.25, -0.75, -0.75);
+		applyTrackingData(frameIndex, offsetLocationPost);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		/* Draw Red box for viewport illustration */
@@ -176,12 +291,18 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 		gl.uniform1f(thicknessLocation, 0.2);
 		gl.uniform1f(pixelsizeLocation, (1.0 / canvas.width) * 50);
 		gl.uniform4f(transformLocationRed, 0.25, 0.25, 0, 0);
-		applyTrackingData(frameIndex);
-		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+		applyTrackingData(frameIndex, offsetLocationRed);
+		if (enableRed)
+			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+		gl.uniform1f(thicknessLocation, 0.1);
+		gl.uniform1f(pixelsizeLocation, 0.0);
+		gl.uniform4f(transformLocationRed, 0.5, 0.5, 0.0, 0.0);
+		gl.uniform2f(offsetLocationRed, -0.75, -0.75);
+		if (enableRed)
+			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		redrawActive = false;
-
-		frame++;
 	}
 
 	let isRendering = false;
@@ -194,7 +315,8 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 				redraw();
 
 				if (forward) {
-					frameIndex++;
+					if (!pause)
+						frameIndex++;
 					if (frameIndex == 29) {
 						frameIndex = 28;
 						forward = false;
@@ -209,7 +331,8 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 						}
 					}
 				} else {
-					frameIndex--;
+					if(!pause)
+						frameIndex--;
 					if (frameIndex < 0) {
 						forward = true;
 						frameIndex = 0;
@@ -264,6 +387,8 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 					});
 					gl.deleteTexture(lumaTexture);
 					gl.deleteFramebuffer(lumaBuffer);
+					gl.deleteTexture(blitTexture);
+					gl.deleteFramebuffer(blitBuffer);
 					textures = [];
 					framesLoaded = false;
 				}

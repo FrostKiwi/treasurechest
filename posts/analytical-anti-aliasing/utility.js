@@ -7,7 +7,7 @@ const unitQuad = new Float32Array([
 	-1.0, -1.0, 1.0, 1.0, 1.0
 ]);
 
-function compileAndLinkShader(gl, vtxShdSrc, FragShdSrc) {
+function compileAndLinkShader(gl, vtxShdSrc, FragShdSrc, FragPrefix) {
 	/* Vertex Shader Compilation */
 	const vtxShd = gl.createShader(gl.VERTEX_SHADER);
 	gl.shaderSource(vtxShd, document.getElementById(vtxShdSrc).text);
@@ -18,7 +18,12 @@ function compileAndLinkShader(gl, vtxShdSrc, FragShdSrc) {
 
 	/* Fragment Shader Compilation */
 	const FragShd = gl.createShader(gl.FRAGMENT_SHADER);
-	gl.shaderSource(FragShd, document.getElementById(FragShdSrc).text);
+	let fragmentSource = document.getElementById(FragShdSrc).text;
+
+	if (FragPrefix)
+		fragmentSource = FragPrefix + '\n' + fragmentSource;
+
+	gl.shaderSource(FragShd, fragmentSource);
 	gl.compileShader(FragShd);
 
 	if (!gl.getShaderParameter(FragShd, gl.COMPILE_STATUS))
