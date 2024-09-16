@@ -134,6 +134,20 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSr
 		gl.disable(gl.BLEND);
 		gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
 
+		const actualSamples = gl.getRenderbufferParameter(
+			gl.RENDERBUFFER,
+			gl.RENDERBUFFER_SAMPLES
+		);
+		const actualWidth = gl.getRenderbufferParameter(
+			gl.RENDERBUFFER,
+			gl.RENDERBUFFER_WIDTH
+		);
+		const actualHeight = gl.getRenderbufferParameter(
+			gl.RENDERBUFFER,
+			gl.RENDERBUFFER_HEIGHT
+		);
+		console.log(`Requested samples: ${samples}, Actual samples: ${actualSamples}, resolution: ${actualWidth} x ${actualHeight}`);
+
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 		
 		gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);

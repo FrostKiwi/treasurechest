@@ -387,13 +387,6 @@ table.contact h3 {
 	align-items: center;
 }
 
-.slider > span {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	gap: 12px;
-}
-
 .slider input {
 	-webkit-appearance: none;
 	width: 100%;
@@ -407,6 +400,10 @@ table.contact h3 {
 	transition: opacity .2s;
 	margin-bottom: unset;
 	padding: unset;
+}
+
+.slider select {
+	margin-bottom: unset;
 }
 
 .slider input:hover {

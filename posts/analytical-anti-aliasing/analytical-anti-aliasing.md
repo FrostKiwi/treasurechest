@@ -11,6 +11,9 @@ publicTags:
   - GameDev
 image: thumbnail.png
 ---
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
+
 Today's journey is [Anti-Aliasing](https://en.wikipedia.org/wiki/Spatial_anti-aliasing) and the destination is **Analytical Anti-Aliasing**. Getting rid of rasterization [jaggies](https://en.wikipedia.org/wiki/Jaggies) is an art-form with decades upon decades of maths, creative techniques and non-stop innovation. With so many years of research and development, there are many flavors.
 
 From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/Supersampling), over theory dense [**SMAA**](https://www.iryoku.com/smaa/), to using machine learning with [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). Same goal - ***vastly*** different approaches. We'll take a look at how they work, before introducing a new way to look a the problem - the ✨***analytical***🌟 way. The perfect Anti-Aliasing exists and is simpler than you think. Let's find out when and if you should use it.
@@ -308,11 +311,6 @@ The one sentence version is: This is possible under the condition of [forward re
 </details>
 </blockquote>
 
-```
-Choose the amount of sub-pixel aliasing removal.
-This can effect sharpness.
-```
-
 ### FXAA Live Demo
 
 <script id="vertexInteractive" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.vs" %}</script>
@@ -343,7 +341,85 @@ This can effect sharpness.
 
 
 <canvas width="100%" style="aspect-ratio: 1.425" id="canvasFXAAInteractive"></canvas>
+<div style="display: flex; flex-wrap: wrap; gap: 0px 12px; justify-content: space-around;">
+    <span style="display: flex; gap: 8px; white-space: nowrap">
+        <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
+            <input style="margin-bottom: unset;" type="checkbox" id="lumaCheck" name="Show Luma" />
+            Show Luma
+        </label>
+    </span>
+    <span style="display: flex; gap: 8px; white-space: nowrap">
+        <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
+            <input style="margin-bottom: unset;" type="checkbox" id="greenCheck" name="Green as Luma" />
+            Green as Luma
+			<button style="border-radius: 64px; font-weight: 600" onclick="var element = document.getElementById('LumaExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+        </label>
+    </span>
+</div>
+{% raw %}
+<pre id="LumaExplanation" style="display: none;">
+------------------------------------------------------------------------------
+                    INTEGRATION - RGBL AND COLORSPACE
+------------------------------------------------------------------------------
+FXAA3 requires RGBL as input unless the following is set, 
 
+  #define FXAA_GREEN_AS_LUMA 1
+
+In which case the engine uses green in place of luma,
+and requires RGB input is in a non-linear colorspace.
+
+RGB should be LDR (low dynamic range).
+Specifically do FXAA after tonemapping.
+
+RGB data as returned by a texture fetch can be non-linear,
+or linear when FXAA_GREEN_AS_LUMA is not set.
+Note an "sRGB format" texture counts as linear,
+because the result of a texture fetch is linear data.
+Regular "RGBA8" textures in the sRGB colorspace are non-linear.
+
+If FXAA_GREEN_AS_LUMA is not set,
+luma must be stored in the alpha channel prior to running FXAA.
+This luma should be in a perceptual space (could be gamma 2.0).
+Example pass before FXAA where output is gamma 2.0 encoded,
+
+  color.rgb = ToneMap(color.rgb); // linear color output
+  color.rgb = sqrt(color.rgb);    // gamma 2.0 color output
+  return color;
+
+To use FXAA,
+
+  color.rgb = ToneMap(color.rgb);  // linear color output
+  color.rgb = sqrt(color.rgb);     // gamma 2.0 color output
+  color.a = dot(color.rgb, FxaaFloat3(0.299, 0.587, 0.114)); // compute luma
+  return color;
+
+Another example where output is linear encoded,
+say for instance writing to an sRGB formated render target,
+where the render target does the conversion back to sRGB after blending,
+
+  color.rgb = ToneMap(color.rgb); // linear color output
+  return color;
+
+To use FXAA,
+
+  color.rgb = ToneMap(color.rgb); // linear color output
+  color.a = sqrt(dot(color.rgb, FxaaFloat3(0.299, 0.587, 0.114))); // compute luma
+  return color;
+
+Getting luma correct is required for the algorithm to work correctly.
+
+------------------------------------------------------------------------------
+                          BEING LINEARLY CORRECT?
+------------------------------------------------------------------------------
+Applying FXAA to a framebuffer with linear RGB color will look worse.
+This is very counter intuitive, but happends to be true in this case.
+The reason is because dithering artifacts will be more visiable 
+in a linear colorspace.
+</pre>
+{% endraw %}
+<div class="slider">
+<div class="row">
+<code>FXAA_QUALITY_PRESET</code>
 <select id="FXAA_QUALITY_PRESET">
 	<optgroup label="Default medium dither">
 		<option value="10">10 (fastest)</option>
@@ -368,78 +444,59 @@ This can effect sharpness.
 		<option value="39">39 (EXTREME QUALITY)</option>
 	</optgroup>
 </select>
-<div style="display: flex; flex-wrap: wrap; gap: 0px 12px; justify-content: space-around;">
-    <span style="display: flex; gap: 8px; white-space: nowrap">
-        <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
-            <input style="margin-bottom: unset;" type="checkbox" id="lumaCheck" name="Show Luma" />
-            Show Luma
-        </label>
-    </span>
-    <span style="display: flex; gap: 8px; white-space: nowrap">
-        <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
-            <input style="margin-bottom: unset;" type="checkbox" id="greenCheck" name="Green as Luma" />
-            Green as Luma
-        </label>
-    </span>
+<button style="border-radius: 64px; font-weight: 600" onclick="var element = document.getElementById('fxaaQualityExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
 </div>
+</div>
+<pre id="fxaaQualityExplanation" style="display: none;">
+Trades performance for quality, with 3 different "styles" of dither.
+ _ = the lowest digit is directly related to performance
+_  = the highest digit is directly related to style
+</pre>
 
 <div class="slider">
-    <span>
-		<code>fxaaQualitySubpix</code>
-		<output id="fxaaQualitySubpixValue">0.75</output>
-	</span>
     <div class="row">
-        <span>Min</span>
-        <input type="range" step="0.01" min="0" max="1" value="0.75" id="fxaaQualitySubpixRange" oninput="fxaaQualitySubpixValue.value = fxaaQualitySubpixRange.value">
-        <span>Max</span>
+        <code>fxaaQualitySubpix</code>
+        <input type="range" step="0.01" min="0" max="1" value="0.75" id="fxaaQualitySubpixRange" oninput="fxaaQualitySubpixValue.value = parseFloat(this.value).toFixed(2)">
+        <output id="fxaaQualitySubpixValue">0.75</output>
+		<button style="border-radius: 64px; font-weight: 600" onclick="var element = document.getElementById('fxaaQualitySubpixExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
     </div>
 </div>
-
-<div class="slider">
-    <span>
-		<code>fxaaQualityEdgeThreshold</code>
-		<output id="fxaaQualityEdgeThresholdValue">0.166</output>
-	</span>
-    <div class="row">
-        <span>Min</span>
-        <input type="range" step="0.001" min="0" max="1" value="0.166" id="fxaaQualityEdgeThresholdRange" oninput="fxaaQualityEdgeThresholdValue.value = fxaaQualityEdgeThresholdRange.value">
-        <span>Max</span>
-    </div>
-</div>
-
-<div class="slider">
-    <span>
-		<code>fxaaQualityEdgeThresholdMin</code>
-		<output id="fxaaQualityEdgeThresholdMinValue">0.0833</output>
-	</span>
-    <div class="row">
-        <span>Min</span>
-        <input type="range" step="0.0001" min="0" max="1" value="0.0833" id="fxaaQualityEdgeThresholdMinRange" oninput="fxaaQualityEdgeThresholdMinValue.value = fxaaQualityEdgeThresholdMinRange.value">
-        <span>Max</span>
-    </div>
-</div>
-
-<details><summary><code>fxaaQualitySubpix</code> Explanation</summary>
-<pre>
+<pre id="fxaaQualitySubpixExplanation" style="display: none;">
 Choose the amount of sub-pixel aliasing removal.
 This can effect sharpness.
   1.00 - upper limit (softer)
   0.75 - default amount of filtering
   0.50 - lower limit (sharper, less sub-pixel aliasing removal)
   0.25 - almost off
-  0.00 - completely off</pre>
-</details>
-<details><summary><code>fxaaQualityEdgeThreshold</code> Explanation</summary>
-<pre>
+  0.00 - completely off
+</pre>
+
+<div class="slider">
+    <div class="row">
+        <code>fxaaQualityEdgeThreshold</code>
+        <input type="range" step="0.001" min="0" max="1" value="0.166" id="fxaaQualityEdgeThresholdRange" oninput="fxaaQualityEdgeThresholdValue.value = parseFloat(this.value).toFixed(3)">
+		<output id="fxaaQualityEdgeThresholdValue">0.166</output>
+        <button style="border-radius: 64px; font-weight: 600" onclick="var element = document.getElementById('fxaaQualityEdgeThresholdExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+    </div>
+</div>
+<pre id="fxaaQualityEdgeThresholdExplanation" style="display: none;">
 The minimum amount of local contrast required to apply algorithm.
   0.333 - too little (faster)
   0.250 - low quality
   0.166 - default
   0.125 - high quality 
-  0.063 - overkill (slower)</pre>
-</details>
-<details><summary><code>fxaaQualityEdgeThresholdMin</code> Explanation</summary>
-<pre>
+  0.063 - overkill (slower)
+</pre>
+
+<div class="slider">
+    <div class="row">
+        <code>fxaaQualityEdgeThresholdMin</code>
+        <input type="range" step="0.0001" min="0" max="1" value="0.0833" id="fxaaQualityEdgeThresholdMinRange" oninput="fxaaQualityEdgeThresholdMinValue.value = parseFloat(this.value).toFixed(4)">
+        <output id="fxaaQualityEdgeThresholdMinValue">0.0833</output>
+		<button style="border-radius: 64px; font-weight: 600" onclick="var element = document.getElementById('fxaaQualityEdgeThresholdMinExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+    </div>
+</div>
+<pre id="fxaaQualityEdgeThresholdMinExplanation" style="display: none;">
 Trims the algorithm from processing darks.
   0.0833 - upper limit (default, the start of visible unfiltered edges)
   0.0625 - high quality (faster)
@@ -449,14 +506,9 @@ Special notes when using FXAA_GREEN_AS_LUMA,
   As colors that are mostly not-green
   will appear very dark in the green channel!
   Tune by looking at mostly non-green content,
-  then start at zero and increase until aliasing is a problem.</pre>
-</details>
-<details><summary><code>FXAA_QUALITY_PRESET</code> Explanation</summary>
-<pre>
-Trades performance for quality, with 3 different "styles" of dither.
- _ = the lowest digit is directly related to performance
-_  = the highest digit is directly related to style</pre>
-</details>
+  then start at zero and increase until aliasing is a problem.
+</pre>
+
 
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
