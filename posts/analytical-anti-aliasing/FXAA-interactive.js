@@ -328,9 +328,9 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 	function renderLoop(time) {
 		if (isRendering) {
 			if (time - lastFrameTime >= frameDuration) {
-				lastFrameTime = time;
-
+				
 				redraw();
+				lastFrameTime = performance.now();
 
 				if (forward) {
 					if (!pause)
