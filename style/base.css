@@ -372,22 +372,7 @@ table.contact h3 {
 }
 
 /* Sliders */
-
 .slider {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-}
-
-.slider .row {
-	width: 100%;
-	display: flex;
-	flex-direction: row;
-	gap: 12px;
-	align-items: center;
-}
-
-.slider input {
 	-webkit-appearance: none;
 	width: 100%;
 	height: 10px;
@@ -395,26 +380,31 @@ table.contact h3 {
 	background: #40363a;
 	outline: none;
 	border: none;
-	opacity: 0.7;
-	-webkit-transition: .2s;
-	transition: opacity .2s;
 	margin-bottom: unset;
 	padding: unset;
 }
 
-.slider select {
-	margin-bottom: unset;
-}
-
-.slider input:hover {
-	opacity: 1;
-}
-
-.slider input:focus {
+.slider:focus {
 	border: none;
 }
 
-.slider input::-webkit-slider-thumb {
+.slider:hover::-webkit-slider-thumb {
+	background: #DA4453;
+}
+
+.slider:hover::-moz-range-thumb {
+	background: #DA4453;
+}
+
+.slider:focus::-webkit-slider-thumb {
+	border: 1px solid #eb99a1;
+}
+
+.slider:focus::-moz-range-thumb {
+	border: 1px solid #eb99a1;
+}
+
+.slider::-webkit-slider-thumb {
 	-webkit-appearance: none;
 	appearance: none;
 	width: 20px;
@@ -425,7 +415,7 @@ table.contact h3 {
 	cursor: pointer;
 }
 
-.slider input::-moz-range-thumb {
+.slider::-moz-range-thumb {
 	width: 20px;
 	height: 20px;
 	border-radius: 50%;

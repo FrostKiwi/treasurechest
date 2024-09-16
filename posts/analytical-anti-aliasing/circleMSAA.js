@@ -1,4 +1,4 @@
-function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc, radioName) {
+function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, circleSimpleFragSrc, postVtxSrc, postFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc, radioName) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	let frameTexture, circleDrawFramebuffer, frameTextureLinear;
@@ -54,6 +54,9 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSr
 	const circleShd = compileAndLinkShader(gl, circleVtxSrc, circleFragSrc);
 	const aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
 	const offsetLocationCircle = gl.getUniformLocation(circleShd, "offset");
+	const circleShd_step = compileAndLinkShader(gl, circleVtxSrc, circleSimpleFragSrc);
+	const aspect_ratioLocation_step = gl.getUniformLocation(circleShd_step, "aspect_ratio");
+	const offsetLocationCircle_step = gl.getUniformLocation(circleShd_step, "offset");
 
 	/* Blit Shader */
 	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);
@@ -98,8 +101,22 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSr
 		gl.deleteRenderbuffer(renderbuffer);
 		renderbuffer = gl.createRenderbuffer();
 		gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
-		gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, canvas.width / resDiv, canvas.height / resDiv);
-		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, renderbuffer);
+		if (samples != 1) {
+			gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, canvas.width / resDiv, canvas.height / resDiv);
+			gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, renderbuffer);
+
+			const actualSamples = gl.getRenderbufferParameter(
+				gl.RENDERBUFFER,
+				gl.RENDERBUFFER_SAMPLES
+			);
+			const errorMessageElement = document.getElementById('sampleErrorMessage');
+			if (samples !== actualSamples) {
+				errorMessageElement.style.display = 'block';
+				errorMessageElement.textContent = `⚠️You chose MSAAx${samples}, but the graphics driver forced it to MSAAx${actualSamples}. You are probably on a smartphone, where this behavior is expected, due to MSAAx${actualSamples} being performance-free.`;
+			} else {
+				errorMessageElement.style.display = 'none';
+			}
+		}
 
 		gl.deleteFramebuffer(resolveFramebuffer);
 		resolveFramebuffer = gl.createFramebuffer();
@@ -117,57 +134,54 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSr
 		}
 		last_time = time;
 
+		gl.disable(gl.BLEND);
+		gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
 		/* Setup PostProcess Framebuffer */
-		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
+		if (samples == 1)
+			gl.bindFramebuffer(gl.FRAMEBUFFER, resolveFramebuffer);
+		else
+			gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
 		gl.clear(gl.COLOR_BUFFER_BIT);
-		gl.useProgram(circleShd);
+		if (samples == 1)
+			gl.useProgram(circleShd_step);
+		else
+			gl.useProgram(circleShd);
 		gl.viewport(0, 0, canvas.width / resDiv, canvas.height / resDiv);
 
 		/* Draw Circle Animation */
-		gl.uniform1f(aspect_ratioLocation, aspect_ratio);
 		var radius = 0.1;
 		var speed = (time / 10000) % Math.PI * 2;
 		circleOffsetAnim[0] = radius * Math.cos(speed) + 0.1;
 		circleOffsetAnim[1] = radius * Math.sin(speed);
-		gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
-
-		gl.disable(gl.BLEND);
-		gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
-
-		const actualSamples = gl.getRenderbufferParameter(
-			gl.RENDERBUFFER,
-			gl.RENDERBUFFER_SAMPLES
-		);
-		const actualWidth = gl.getRenderbufferParameter(
-			gl.RENDERBUFFER,
-			gl.RENDERBUFFER_WIDTH
-		);
-		const actualHeight = gl.getRenderbufferParameter(
-			gl.RENDERBUFFER,
-			gl.RENDERBUFFER_HEIGHT
-		);
-		console.log(`Requested samples: ${samples}, Actual samples: ${actualSamples}, resolution: ${actualWidth} x ${actualHeight}`);
+		if (samples == 1) {
+			gl.uniform2fv(offsetLocationCircle_step, circleOffsetAnim);
+			gl.uniform1f(aspect_ratioLocation_step, aspect_ratio);
+		}
+		else {
+			gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
+			gl.uniform1f(aspect_ratioLocation, aspect_ratio);
+		}
 
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-		
+
 		gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);
 		gl.enable(gl.BLEND);
 
 		gl.viewport(0, 0, canvas.width, canvas.height);
 
-		gl.useProgram(postShd);
-		gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+		if (samples !== 1) {
+			gl.useProgram(postShd);
+			gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-		/* Resolve the MSAA framebuffer to a regular texture */
-		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, circleDrawFramebuffer);
-		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, resolveFramebuffer);
-		gl.blitFramebuffer(
-			0, 0, canvas.width, canvas.height,
-			0, 0, canvas.width, canvas.height,
-			gl.COLOR_BUFFER_BIT, gl.LINEAR
-		);
-		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
-		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+			/* Resolve the MSAA framebuffer to a regular texture */
+			gl.bindFramebuffer(gl.READ_FRAMEBUFFER, circleDrawFramebuffer);
+			gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, resolveFramebuffer);
+			gl.blitFramebuffer(
+				0, 0, canvas.width, canvas.height,
+				0, 0, canvas.width, canvas.height,
+				gl.COLOR_BUFFER_BIT, gl.LINEAR
+			);
+		}
 
 		gl.useProgram(blitShd);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);

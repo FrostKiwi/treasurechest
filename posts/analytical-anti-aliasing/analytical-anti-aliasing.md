@@ -11,9 +11,6 @@ publicTags:
   - GameDev
 image: thumbnail.png
 ---
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
-
 Today's journey is [Anti-Aliasing](https://en.wikipedia.org/wiki/Spatial_anti-aliasing) and the destination is **Analytical Anti-Aliasing**. Getting rid of rasterization [jaggies](https://en.wikipedia.org/wiki/Jaggies) is an art-form with decades upon decades of maths, creative techniques and non-stop innovation. With so many years of research and development, there are many flavors.
 
 From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/Supersampling), over theory dense [**SMAA**](https://www.iryoku.com/smaa/), to using machine learning with [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). Same goal - ***vastly*** different approaches. We'll take a look at how they work, before introducing a new way to look a the problem - the ✨***analytical***🌟 way. The perfect Anti-Aliasing exists and is simpler than you think. Let's find out when and if you should use it.
@@ -26,17 +23,13 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 
 <script src="utility.js"></script>
 <script src="circleSimple.js"></script>
-<script src="circle.js"></script>
 <script id="vertexBlit" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/blit.vs" %}</script>
-<script id="vertexBlitSimple" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/blitSimple.vs" %}</script>
 <script id="fragmentBlit" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/blit.fs" %}</script>
-
 <script id="vertexPost" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/post.vs" %}</script>
 <script id="fragmentPost" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/post.fs" %}</script>
-<script id="fragmentPostFXAA" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/post-FXAA.fs" %}</script>
-
 <script id="vertexRedBox" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/red.vs" %}</script>
 <script id="fragmentRedBox" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/red.fs" %}</script>
+<script id="fragmentPostFXAA" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/post-FXAA.fs" %}</script>
 
 <script id="vertex_0" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}</script>
 <script id="fragment_0" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}</script>
@@ -154,10 +147,10 @@ SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Sup
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="circle.js">circle.js</a></summary>
+<summary>WebGL Javascript <a href="circleSSAA.js">circleSSAA.js</a></summary>
 
 ```javascript
-{% rawFile "posts/analytical-anti-aliasing/circle.js" %}
+{% rawFile "posts/analytical-anti-aliasing/circleSSAA.js" %}
 ```
 
 </details>
@@ -198,8 +191,11 @@ https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msa
 </select>
 </div>
 
+<blockquote id="sampleErrorMessage" style="display: none" class="reaction"></blockquote>
+
 <script id="vertexMSAA" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.vs" %}</script>
 <script id="fragmentMSAA" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.fs" %}</script>
+<script id="fragmentMSAA_step" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA_step.fs" %}</script>
 <div class="toggleRes">
 	<div>
 	  <input type="radio" id="nativeMSAA" name="resMSAA" value="1" checked />
@@ -220,7 +216,37 @@ https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msa
 </div>
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasMSAA"></canvas>
 <script src="circleMSAA.js"></script>
-<script>setupMSAA("canvasMSAA", "vertexMSAA", "fragmentMSAA", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resMSAA");</script>
+<script>setupMSAA("canvasMSAA", "vertexMSAA", "fragmentMSAA", "fragmentMSAA_step", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resMSAA");</script>
+<blockquote>
+<details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+
+<!-- ![image](screenshot_passthrough.jpg) -->
+
+</details>
+<details><summary>WebGL Vertex Shader <a href="circle-MSAA.vs">circle-MSAA.vs</a></summary>
+
+```glsl
+{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a href="circle-MSAA.fs">circle-MSAA.fs</a></summary>
+
+```glsl
+{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="circleMSAA.js">circleMSAA.js</a></summary>
+
+```javascript
+{% rawFile "posts/analytical-anti-aliasing/circleMSAA.js" %}
+```
+
+</details>
+</blockquote>
 
 This requires a more modern device supporting [WebGL2](https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext). MSAA predates even WebGL 1, but wasn't standardized until WebGL 2.
 
@@ -302,25 +328,23 @@ The one sentence version is: This is possible under the condition of [forward re
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="circle.js">circle.js</a></summary>
+<summary>WebGL Javascript <a href="circleFXAA.js">circleFXAA.js</a></summary>
 
 ```javascript
-{% rawFile "posts/analytical-anti-aliasing/circle.js" %}
+{% rawFile "posts/analytical-anti-aliasing/circleFXAA.js" %}
 ```
 
 </details>
 </blockquote>
 
 ### FXAA Live Demo
-
 <script id="vertexInteractive" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.vs" %}</script>
 <script id="fragmentInteractive" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.fs" %}</script>
 <script id="vertexLuma" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/FXAA-Luma.vs" %}</script>
 <script id="fragmentLuma" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/FXAA-Luma.fs" %}</script>
-
 <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; justify-content: space-around;">
     <span style="display: flex; gap: 8px; white-space: nowrap">
-        <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
+        <label style="display: flex; gap: 8px; align-items: center;">
             <input style="margin-bottom: unset;" type="checkbox" id="fxaaCheck" name="Enable FXAA" checked />
             Enable FXAA
         </label>
@@ -338,89 +362,106 @@ The one sentence version is: This is possible under the condition of [forward re
         </label>
     </span>
 </div>
-
-
+<style>
+    .settingsTable .noborder td {
+        border-bottom: unset;
+    }
+    .variable-name-row {
+        display: none;
+    }
+    @media screen and (max-width: 500px) {
+        .variable-name-row {
+            display: table-row;
+			text-align: center;
+        }
+        .variable-name-cell {
+            display: none;
+        }
+    }
+	.settingsTable pre {
+    	overflow-x: auto;
+    	max-width: 100%;
+    	white-space: pre-wrap;
+	}
+	.precolumn {
+		padding: 0px;
+	}
+</style>
 <canvas width="100%" style="aspect-ratio: 1.425" id="canvasFXAAInteractive"></canvas>
-<div style="display: flex; flex-wrap: wrap; gap: 0px 12px; justify-content: space-around;">
-    <span style="display: flex; gap: 8px; white-space: nowrap">
-        <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
-            <input style="margin-bottom: unset;" type="checkbox" id="lumaCheck" name="Show Luma" />
-            Show Luma
-        </label>
-    </span>
-    <span style="display: flex; gap: 8px; white-space: nowrap">
-        <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
-            <input style="margin-bottom: unset;" type="checkbox" id="greenCheck" name="Green as Luma" />
-            Green as Luma
-			<button style="border-radius: 64px; font-weight: 600" onclick="var element = document.getElementById('LumaExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
-        </label>
-    </span>
-</div>
-{% raw %}
-<pre id="LumaExplanation" style="display: none;">
-------------------------------------------------------------------------------
-                    INTEGRATION - RGBL AND COLORSPACE
-------------------------------------------------------------------------------
-FXAA3 requires RGBL as input unless the following is set, 
-
-  #define FXAA_GREEN_AS_LUMA 1
-
+<table class="settingsTable" style="width: 100%; max-width: 100%;">
+	<tr class="noborder">
+		<td colspan=4 style="width:100%">
+			<div style="display: flex; gap: 0px 12px; align-items: center;">
+			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-around;">
+			        <span style="display: flex; gap: 8px; white-space: nowrap;">
+			            <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
+			                <input style="margin-bottom: unset;" type="checkbox" id="lumaCheck" name="Show Luma" />
+			                Show Luma
+			            </label>
+			        </span>
+			        <span style="display: flex; gap: 8px; white-space: nowrap;">
+			            <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
+			                <input style="margin-bottom: unset;" type="checkbox" id="greenCheck" name="Green as Luma" />
+			                Green as Luma
+			            </label>
+			        </span>
+			    </div>
+			    <button style="border-radius: 50%; font-weight: 600;" onclick="var element = document.getElementById('LumaExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td class="precolumn" colspan=4>
+		<pre id="LumaExplanation" style="display: none;">
+-------------------------------------------------
+    	INTEGRATION - RGBL AND COLORSPACE
+-------------------------------------------------
+FXAA3 requires RGBL as input unless the following is set, &#13;&#10;
+  #define FXAA_GREEN_AS_LUMA 1&#13;&#10;
 In which case the engine uses green in place of luma,
-and requires RGB input is in a non-linear colorspace.
-
+and requires RGB input is in a non-linear colorspace.&#13;&#10;
 RGB should be LDR (low dynamic range).
-Specifically do FXAA after tonemapping.
-
+Specifically do FXAA after tonemapping.&#13;&#10;
 RGB data as returned by a texture fetch can be non-linear,
 or linear when FXAA_GREEN_AS_LUMA is not set.
 Note an "sRGB format" texture counts as linear,
 because the result of a texture fetch is linear data.
-Regular "RGBA8" textures in the sRGB colorspace are non-linear.
-
+Regular "RGBA8" textures in the sRGB colorspace are non-linear.&#13;&#10;
 If FXAA_GREEN_AS_LUMA is not set,
 luma must be stored in the alpha channel prior to running FXAA.
 This luma should be in a perceptual space (could be gamma 2.0).
-Example pass before FXAA where output is gamma 2.0 encoded,
-
+Example pass before FXAA where output is gamma 2.0 encoded,&#13;&#10;
   color.rgb = ToneMap(color.rgb); // linear color output
   color.rgb = sqrt(color.rgb);    // gamma 2.0 color output
-  return color;
-
-To use FXAA,
-
+  return color;&#13;&#10;
+To use FXAA,&#13;&#10;
   color.rgb = ToneMap(color.rgb);  // linear color output
   color.rgb = sqrt(color.rgb);     // gamma 2.0 color output
   color.a = dot(color.rgb, FxaaFloat3(0.299, 0.587, 0.114)); // compute luma
-  return color;
-
+  return color;&#13;&#10;
 Another example where output is linear encoded,
 say for instance writing to an sRGB formated render target,
-where the render target does the conversion back to sRGB after blending,
-
+where the render target does the conversion back to sRGB after blending,&#13;&#10;
   color.rgb = ToneMap(color.rgb); // linear color output
-  return color;
-
-To use FXAA,
-
+  return color;&#13;&#10;
+To use FXAA,&#13;&#10;
   color.rgb = ToneMap(color.rgb); // linear color output
   color.a = sqrt(dot(color.rgb, FxaaFloat3(0.299, 0.587, 0.114))); // compute luma
-  return color;
-
-Getting luma correct is required for the algorithm to work correctly.
-
-------------------------------------------------------------------------------
-                          BEING LINEARLY CORRECT?
-------------------------------------------------------------------------------
-Applying FXAA to a framebuffer with linear RGB color will look worse.
-This is very counter intuitive, but happends to be true in this case.
-The reason is because dithering artifacts will be more visiable 
-in a linear colorspace.
-</pre>
-{% endraw %}
-<div class="slider">
-<div class="row">
-<code>FXAA_QUALITY_PRESET</code>
-<select id="FXAA_QUALITY_PRESET">
+  return color;&#13;&#10;
+Getting luma correct is required for the algorithm to work correctly.</pre>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>FXAA_QUALITY_PRESET</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>FXAA_QUALITY_PRESET</code>
+		</td>
+		<td colspan=2 style="width:100%">
+<select id="FXAA_QUALITY_PRESET" style="width: 100%; margin-bottom: unset">
 	<optgroup label="Default medium dither">
 		<option value="10">10 (fastest)</option>
 		<option value="11">11</option>
@@ -444,59 +485,102 @@ in a linear colorspace.
 		<option value="39">39 (EXTREME QUALITY)</option>
 	</optgroup>
 </select>
-<button style="border-radius: 64px; font-weight: 600" onclick="var element = document.getElementById('fxaaQualityExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
-</div>
-</div>
-<pre id="fxaaQualityExplanation" style="display: none;">
+		</td>
+		<td>
+			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('fxaaQualityExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+		</td>
+	</tr>
+	<tr>
+		<td class="precolumn" colspan=4>
+		<pre id="fxaaQualityExplanation" style="display: none;">
 Trades performance for quality, with 3 different "styles" of dither.
  _ = the lowest digit is directly related to performance
-_  = the highest digit is directly related to style
-</pre>
-
-<div class="slider">
-    <div class="row">
-        <code>fxaaQualitySubpix</code>
-        <input type="range" step="0.01" min="0" max="1" value="0.75" id="fxaaQualitySubpixRange" oninput="fxaaQualitySubpixValue.value = parseFloat(this.value).toFixed(2)">
-        <output id="fxaaQualitySubpixValue">0.75</output>
-		<button style="border-radius: 64px; font-weight: 600" onclick="var element = document.getElementById('fxaaQualitySubpixExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
-    </div>
-</div>
-<pre id="fxaaQualitySubpixExplanation" style="display: none;">
+_  = the highest digit is directly related to style</pre>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>fxaaQualitySubpix</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>fxaaQualitySubpix</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="0.01" min="0" max="1" value="0.75" id="fxaaQualitySubpixRange" oninput="fxaaQualitySubpixValue.value = parseFloat(this.value).toFixed(2)">
+		</td>
+		<td style="text-align: center;">
+			<output id="fxaaQualitySubpixValue">0.75</output>
+		</td>
+		<td>
+			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('fxaaQualitySubpixExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+		</td>
+	</tr>
+	<tr>
+		<td class="precolumn" colspan=4>
+		<pre id="fxaaQualitySubpixExplanation" style="display: none;">
 Choose the amount of sub-pixel aliasing removal.
 This can effect sharpness.
   1.00 - upper limit (softer)
   0.75 - default amount of filtering
   0.50 - lower limit (sharper, less sub-pixel aliasing removal)
   0.25 - almost off
-  0.00 - completely off
-</pre>
-
-<div class="slider">
-    <div class="row">
-        <code>fxaaQualityEdgeThreshold</code>
-        <input type="range" step="0.001" min="0" max="1" value="0.166" id="fxaaQualityEdgeThresholdRange" oninput="fxaaQualityEdgeThresholdValue.value = parseFloat(this.value).toFixed(3)">
-		<output id="fxaaQualityEdgeThresholdValue">0.166</output>
-        <button style="border-radius: 64px; font-weight: 600" onclick="var element = document.getElementById('fxaaQualityEdgeThresholdExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
-    </div>
-</div>
-<pre id="fxaaQualityEdgeThresholdExplanation" style="display: none;">
+  0.00 - completely off</pre>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>fxaaQualityEdgeThreshold</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>fxaaQualityEdgeThreshold</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="0.001" min="0" max="1" value="0.166" id="fxaaQualityEdgeThresholdRange" oninput="fxaaQualityEdgeThresholdValue.value = parseFloat(this.value).toFixed(3)">
+		</td>
+		<td style="text-align: center;">
+			<output id="fxaaQualityEdgeThresholdValue">0.166</output>
+		</td>
+		<td>
+			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('fxaaQualityEdgeThresholdExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+		</td>
+	</tr>
+	<tr>
+		<td class="precolumn" colspan=4>
+		<pre id="fxaaQualityEdgeThresholdExplanation" style="display: none;">
 The minimum amount of local contrast required to apply algorithm.
   0.333 - too little (faster)
   0.250 - low quality
   0.166 - default
   0.125 - high quality 
-  0.063 - overkill (slower)
-</pre>
-
-<div class="slider">
-    <div class="row">
-        <code>fxaaQualityEdgeThresholdMin</code>
-        <input type="range" step="0.0001" min="0" max="1" value="0.0833" id="fxaaQualityEdgeThresholdMinRange" oninput="fxaaQualityEdgeThresholdMinValue.value = parseFloat(this.value).toFixed(4)">
-        <output id="fxaaQualityEdgeThresholdMinValue">0.0833</output>
-		<button style="border-radius: 64px; font-weight: 600" onclick="var element = document.getElementById('fxaaQualityEdgeThresholdMinExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
-    </div>
-</div>
-<pre id="fxaaQualityEdgeThresholdMinExplanation" style="display: none;">
+  0.063 - overkill (slower)</pre>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>fxaaQualityEdgeThresholdMin</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>fxaaQualityEdgeThresholdMin</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="0.0001" min="0" max="1" value="0.0833" id="fxaaQualityEdgeThresholdMinRange" oninput="fxaaQualityEdgeThresholdMinValue.value = parseFloat(this.value).toFixed(4)">
+		</td>
+		<td style="text-align: center;">
+			<output id="fxaaQualityEdgeThresholdMinValue">0.0833</output>
+		</td>
+		<td>
+			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('fxaaQualityEdgeThresholdMinExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="precolumn" colspan=4>
+		<pre id="fxaaQualityEdgeThresholdMinExplanation" style="display: none;">
 Trims the algorithm from processing darks.
   0.0833 - upper limit (default, the start of visible unfiltered edges)
   0.0625 - high quality (faster)
@@ -506,8 +590,10 @@ Special notes when using FXAA_GREEN_AS_LUMA,
   As colors that are mostly not-green
   will appear very dark in the green channel!
   Tune by looking at mostly non-green content,
-  then start at zero and increase until aliasing is a problem.
-</pre>
+  then start at zero and increase until aliasing is a problem.</pre>
+		</td>
+	</tr>
+</table>
 
 
 <blockquote>
@@ -516,31 +602,32 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 <!-- ![image](screenshot_passthrough.jpg) -->
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="circle.vs">circle.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a href="FXAA-interactive.vs">FXAA-interactive.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}
+{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.vs" %}
 ```
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="circle.fs">circle.fs</a></summary>
+<summary>WebGL Fragment Shader <a href="FXAA-interactive.fs">FXAA-interactive.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}
+{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.fs" %}
 ```
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="circle.js">circle.js</a></summary>
+<summary>WebGL Javascript <a href="FXAA-interactive.js">FXAA-interactive.js</a></summary>
 
 ```javascript
-{% rawFile "posts/analytical-anti-aliasing/circle.js" %}
+{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.js" %}
 ```
 
 </details>
 </blockquote>
 
+<script id="vertexBlitSimple" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/blitSimple.vs" %}</script>
 <script src="FXAA-interactive.js"></script>
 <script>setupFXAAInteractive("canvasFXAAInteractive", "vertexInteractive", "fragmentInteractive", "vertexLuma", "fragmentLuma", "vertexBlitSimple", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
 
@@ -571,7 +658,6 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 <script src="circleAnalytical.js"></script>
 
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasAnalytical"></canvas>
-<!-- <script>setup("canvasAnalytical", "vertex_0", "fragmentAnalytical", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script> -->
 <script>setupAnalytical("canvasAnalytical", "vertex_0", "fragmentAnalytical", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resAnalytical");</script>
 
 <blockquote>
@@ -588,18 +674,18 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="circle.fs">circle.fs</a></summary>
+<summary>WebGL Fragment Shader <a href="circle-analytical.fs">circle-analytical.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}
+{% rawFile "posts/analytical-anti-aliasing/circle-analytical.fs" %}
 ```
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="circle.js">circle.js</a></summary>
+<summary>WebGL Javascript <a href="circleAnalytical.js">circleAnalytical.js</a></summary>
 
 ```javascript
-{% rawFile "posts/analytical-anti-aliasing/circle.js" %}
+{% rawFile "posts/analytical-anti-aliasing/circleAnalytical.js" %}
 ```
 
 </details>

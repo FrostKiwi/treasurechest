@@ -21,7 +21,7 @@ void main()
 	/* Make Circle smaller and correct aspect ratio */
 	vec2 vertex = vtx;
 	vertex.x *= aspect_ratio;
-	vertex *= 0.7;
+	vertex *= 0.69;
 
 	/* Make the circle move in a circle */
 	vertex += offset;
