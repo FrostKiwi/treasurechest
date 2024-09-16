@@ -401,10 +401,9 @@ The one sentence version is: This is possible under the condition of [forward re
         font-size: larger;
         z-index: 10;
     ">
-        Loading... 0% (0 / 29)
+        Loading... 0%
     </div>
 </div>
-
 <table class="settingsTable" style="width: 100%; max-width: 100%;">
 	<tr class="noborder">
 		<td colspan=4 style="width:100%">
