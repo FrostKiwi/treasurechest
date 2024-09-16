@@ -20,14 +20,40 @@ async function loadFrame(gl, path) {
 
 async function loadAllFrames(gl, start, end) {
 	const framePromises = [];
-	for (let i = start; i <= end; i++) {
-		const path = `frames/${i}.png`;
-		framePromises.push(loadFrame(gl, path));
+	const totalFrames = end - start + 1;
+	let loadedFrames = 0;
+
+	// Get the loading overlay element
+	const loadingOverlay = document.getElementById('loading-overlay');
+
+	loadingOverlay.style.display = 'flex';
+	function updateLoadingProgress() {
+		const percentage = Math.floor((loadedFrames / totalFrames) * 100);
+		loadingOverlay.textContent = `Loading... ${percentage}%`;
+		if (loadedFrames === totalFrames) {
+			loadingOverlay.style.display = 'none';
+		}
 	}
 
+	for (let i = start; i <= end; i++) {
+		const path = `frames/${i}.png`;
+
+		// Each frame is loaded and tracked asynchronously
+		const framePromise = loadFrame(gl, path).then(texture => {
+			loadedFrames++;
+			updateLoadingProgress();
+			return texture;
+		});
+
+		framePromises.push(framePromise);
+	}
+
+	// Wait for all frames to finish loading
 	const textures = await Promise.all(framePromises);
+
 	return textures;
 }
+
 
 function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaSrc, lumaFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc) {
 	/* Init */

@@ -387,7 +387,24 @@ The one sentence version is: This is possible under the condition of [forward re
 		padding: 0px;
 	}
 </style>
-<canvas width="100%" style="aspect-ratio: 1.425" id="canvasFXAAInteractive"></canvas>
+<div id="canvas-container" style="position: relative; display: inline-block;">
+    <canvas width="100%" style="aspect-ratio: 1.425" id="canvasFXAAInteractive"></canvas>
+    <div id="loading-overlay" style="
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: larger;
+        z-index: 10;
+    ">
+        Loading... 0% (0 / 29)
+    </div>
+</div>
+
 <table class="settingsTable" style="width: 100%; max-width: 100%;">
 	<tr class="noborder">
 		<td colspan=4 style="width:100%">
