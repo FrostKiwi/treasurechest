@@ -55,9 +55,9 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 <script>setupSimple("canvasSimple", "vertex_0", "fragment_0", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resSimple");</script>
 
 <blockquote>
-<details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a href="screenshots/simple.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
-<!-- ![image](screenshot_passthrough.jpg) -->
+![image](screenshots/simple.png)
 
 </details>
 <details><summary>WebGL Vertex Shader <a href="circle.vs">circle.vs</a></summary>
@@ -126,9 +126,9 @@ SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Sup
 <script>setupSSAA("canvasSSAA", "vertex_0", "fragment_0", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resSSAA");</script>
 
 <blockquote>
-<details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a href="screenshots/ssaa.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
-<!-- ![image](screenshot_passthrough.jpg) -->
+![image](screenshots/ssaa.png)
 
 </details>
 <details><summary>WebGL Vertex Shader <a href="circle.vs">circle.vs</a></summary>
@@ -663,7 +663,7 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
 
-<!-- ![image](screenshot_passthrough.jpg) -->
+![image](screenshots/simple.png)
 
 </details>
 <details><summary>WebGL Vertex Shader <a href="circle.vs">circle.vs</a></summary>

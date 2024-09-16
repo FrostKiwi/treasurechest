@@ -101,6 +101,7 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, circleSimpleFragSrc, p
 		gl.deleteRenderbuffer(renderbuffer);
 		renderbuffer = gl.createRenderbuffer();
 		gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
+		const errorMessageElement = document.getElementById('sampleErrorMessage');
 		if (samples != 1) {
 			gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, canvas.width / resDiv, canvas.height / resDiv);
 			gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, renderbuffer);
@@ -109,13 +110,14 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, circleSimpleFragSrc, p
 				gl.RENDERBUFFER,
 				gl.RENDERBUFFER_SAMPLES
 			);
-			const errorMessageElement = document.getElementById('sampleErrorMessage');
 			if (samples !== actualSamples) {
 				errorMessageElement.style.display = 'block';
-				errorMessageElement.textContent = `⚠️You chose MSAAx${samples}, but the graphics driver forced it to MSAAx${actualSamples}. You are probably on a smartphone, where this behavior is expected, due to MSAAx${actualSamples} being performance-free.`;
+				errorMessageElement.textContent = `⚠️ You chose MSAAx${samples}, but the graphics driver forced it to MSAAx${actualSamples}. You are probably on a mobile GPU, where this behavior is expected.`;
 			} else {
 				errorMessageElement.style.display = 'none';
 			}
+		} else {
+			errorMessageElement.style.display = 'none';
 		}
 
 		gl.deleteFramebuffer(resolveFramebuffer);
