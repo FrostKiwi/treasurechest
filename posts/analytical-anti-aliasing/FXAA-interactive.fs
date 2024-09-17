@@ -7,63 +7,9 @@ uniform float u_fxaaQualitySubpix;
 uniform float u_fxaaQualityEdgeThreshold;
 uniform float u_fxaaQualityEdgeThresholdMin;
 
-
-/*==========================================================================*/
-    //
-    // For those using non-linear color,
-    // and either not able to get luma in alpha, or not wanting to,
-    // this enables FXAA to run using green as a proxy for luma.
-    // So with this enabled, no need to pack luma in alpha.
-    //
-    // This will turn off AA on anything which lacks some amount of green.
-    // Pure red and blue or combination of only R and B, will get no AA.
-    //
-    // Might want to lower the settings for both,
-    //    fxaaConsoleEdgeThresholdMin
-    //    fxaaQualityEdgeThresholdMin
-    // In order to insure AA does not get turned off on colors 
-    // which contain a minor amount of green.
-    //
-    // 1 = On.
-    // 0 = Off.
-    //
-
 /*============================================================================
-                        FXAA QUALITY - TUNING KNOBS
-------------------------------------------------------------------------------
-NOTE the other tuning knobs are now in the shader function inputs!
-============================================================================*/
-#ifndef FXAA_QUALITY_PRESET
-    //
-    // Choose the quality preset.
-    // This needs to be compiled into the shader as it effects code.
-    // Best option to include multiple presets is to 
-    // in each shader define the preset, then include this file.
-    // 
-    // OPTIONS
-    // -----------------------------------------------------------------------
-    // 10 to 15 - default medium dither (10=fastest, 15=highest quality)
-    // 20 to 29 - less dither, more expensive (20=fastest, 29=highest quality)
-    // 39       - no dither, very expensive 
-    //
-    // NOTES
-    // -----------------------------------------------------------------------
-    // 12 = slightly faster then FXAA 3.9 and higher edge quality (default)
-    // 13 = about same speed as FXAA 3.9 and better than 12
-    // 23 = closest to FXAA 3.9 visually and performance wise
-    //  _ = the lowest digit is directly related to performance
-    // _  = the highest digit is directly related to style
-    // 
-    #define FXAA_QUALITY_PRESET 12
-#endif
-
-
-/*============================================================================
-
                            FXAA QUALITY - PRESETS
-
 ============================================================================*/
-
 /*============================================================================
                      FXAA QUALITY - MEDIUM DITHER PRESETS
 ============================================================================*/
@@ -271,11 +217,8 @@ NOTE the other tuning knobs are now in the shader function inputs!
     float FxaaLuma(vec4 rgba) { return rgba.y; }
 #endif    
 
-
 /*============================================================================
-
                              FXAA3 QUALITY - PC
-
 ============================================================================*/
 vec4 FxaaPixelShader(
     //

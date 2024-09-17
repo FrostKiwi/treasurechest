@@ -374,7 +374,6 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 		}
 	}
 
-
 	async function handleIntersection(entries) {
 		for (const entry of entries) {
 			if (entry.isIntersecting) {
@@ -414,7 +413,6 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 			}
 		}
 	}
-
 
 	/* Only render when the canvas is actually on screen */
 	let observer = new IntersectionObserver(handleIntersection);

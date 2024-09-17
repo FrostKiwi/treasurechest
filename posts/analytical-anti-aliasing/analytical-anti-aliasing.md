@@ -648,7 +648,7 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 <script>setupFXAAInteractive("canvasFXAAInteractive", "vertexInteractive", "fragmentInteractive", "vertexLuma", "fragmentLuma", "vertexBlitSimple", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
 
 
-## What makes it analytical?
+## Analytical Anti Aliasing
 
 <div class="toggleRes">
 	<div>
@@ -670,6 +670,7 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 </div>
 
 <script id="fragmentAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analytical.fs" %}</script>
+<script id="fragment3D" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/3DAnalytical.fs" %}</script>
 
 <script src="circleAnalytical.js"></script>
 
@@ -708,6 +709,76 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 </blockquote>
 
 ![image](compare.png)
+
+## Implementation comparison
+
+<div class="toggleRes">
+	<div>
+	  <input type="radio" id="nativeCompare" name="resCompare" value="1" checked />
+	  <label for="nativeCompare">Native<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="halfCompare" name="resCompare" value="2" />
+	  <label for="halfCompare">½<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="quarterCompare" name="resCompare" value="4" />
+	  <label for="quarterCompare">¼<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="eightCompare" name="resCompare" value="8" />
+	  <label for="eightCompare">⅛<div>Resolution</div></label>
+	</div>
+</div>
+
+<canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasCompare"></canvas>
+
+<script>setupAnalytical("canvasCompare", "vertex_0", "fragmentAnalytical", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resCompare");</script>
+
+<pre id="compareShader">{% rawFile "posts/analytical-anti-aliasing/circle-analyticalCompare.fs" %}</pre>
+<script src="/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    var editor = ace.edit("compareShader");
+    editor.setTheme("ace/theme/gruvbox_dark_hard");
+    editor.session.setMode("ace/mode/glsl");
+	editor.session.setOptions({
+        useWorker: false
+    });
+	editor.renderer.setOptions({
+		showFoldWidgets: false,
+        fontSize: "smaller",
+        fontFamily: "Consolas, Monaco, \"Andale Mono\", monospace;",
+		showPrintMargin: false,
+		maxLines: 50
+    })
+</script>
+
+<div class="center-child"><button id="shaderReload">Reload Shader</button></div>
+
+## 3D
+<div class="toggleRes">
+	<div>
+	  <input type="radio" id="native3D" name="res3D" value="1" checked />
+	  <label for="native3D">Native<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="half3D" name="res3D" value="2" />
+	  <label for="half3D">½<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="quarter3D" name="res3D" value="4" />
+	  <label for="quarter3D">¼<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="eight3D" name="res3D" value="8" />
+	  <label for="eight3D">⅛<div>Resolution</div></label>
+	</div>
+</div>
+<script src="3DAnalytical.js"></script>
+
+<canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvas3D"></canvas>
+
+<script>setup3D("canvas3D", "vertex_0", "fragment3D", "vertexBlit", "fragmentBlit", "res3D");</script>
 
 ## Signed distance field rendering
 [Signed distance functions](https://en.wikipedia.org/wiki/Signed_distance_function#Applications)

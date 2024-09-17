@@ -1,4 +1,4 @@
-function setupAnalytical(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc, radioName) {
+function setup3D(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFragSrc, radioName) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	let circleDrawFramebuffer, frameTexture;
@@ -32,20 +32,11 @@ function setupAnalytical(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blit
 	const circleShd = compileAndLinkShader(gl, circleVtxSrc, circleFragSrc);
 	const aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
 	const offsetLocationCircle = gl.getUniformLocation(circleShd, "offset");
-	const pixelSizeCircle = gl.getUniformLocation(circleShd, "pixelSize");
 
 	/* Blit Shader */
 	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);
 	const transformLocation = gl.getUniformLocation(blitShd, "transform");
 	const offsetLocationPost = gl.getUniformLocation(blitShd, "offset");
-
-	/* Simple Red Box */
-	const redShd = compileAndLinkShader(gl, redVtxSrc, redFragSrc);
-	const transformLocationRed = gl.getUniformLocation(redShd, "transform");
-	const offsetLocationRed = gl.getUniformLocation(redShd, "offset");
-	const aspect_ratioLocationRed = gl.getUniformLocation(redShd, "aspect_ratio");
-	const thicknessLocation = gl.getUniformLocation(redShd, "thickness");
-	const pixelsizeLocation = gl.getUniformLocation(redShd, "pixelsize");
 
 	const vertex_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
@@ -85,14 +76,13 @@ function setupAnalytical(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blit
 		last_time = time;
 
 		/* Setup PostProcess Framebuffer */
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 		gl.viewport(0, 0, canvas.width / resDiv, canvas.height / resDiv);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.useProgram(circleShd);
 
 		/* Draw Circle Animation */
-		gl.uniform1f(pixelSizeCircle, (2.0 / (canvas.height / resDiv)) / 0.69);
-
 		gl.uniform1f(aspect_ratioLocation, aspect_ratio);
 		var radius = 0.1;
 		var speed = (time / 10000) % Math.PI * 2;
@@ -112,26 +102,7 @@ function setupAnalytical(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blit
 		gl.uniform2f(offsetLocationPost, 0.0, 0.0);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
-		/* Scaled image in the bottom left */
-		gl.uniform4f(transformLocation, 0.25, 0.25, -0.75, -0.75);
-		gl.uniform2fv(offsetLocationPost, circleOffsetAnim);
-		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-
 		/* Draw Red box for viewport illustration */
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-		gl.useProgram(redShd);
-		gl.uniform1f(aspect_ratioLocationRed, (1.0 / aspect_ratio) - 1.0);
-		gl.uniform1f(thicknessLocation, 0.2);
-		gl.uniform1f(pixelsizeLocation, (1.0 / canvas.width) * 50);
-		gl.uniform4f(transformLocationRed, 0.25, 0.25, -0.75, -0.75);
-		gl.uniform2fv(offsetLocationRed, circleOffsetAnim);
-		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-
-		gl.uniform1f(thicknessLocation, 0.1);
-		gl.uniform1f(pixelsizeLocation, 0.0);
-		gl.uniform4f(transformLocationRed, 0.5, 0.5, 0.0, 0.0);
-		gl.uniform2f(offsetLocationRed, -0.75, -0.75);
-		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 		redrawActive = false;
 	}
 

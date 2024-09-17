@@ -151,7 +151,6 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 	window.addEventListener('resize', onResize, true);
 	onResize();
 
-
 	function renderLoop(time) {
 		if (isRendering) {
 			redraw(time);

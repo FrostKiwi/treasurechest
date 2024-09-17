@@ -221,7 +221,6 @@ function setupFXAA(canvasId, circleVtxSrc, circleFragSrc, postVtxSrc, postFragSr
 		});
 	}
 
-
 	/* Only render when the canvas is actually on screen */
 	let observer = new IntersectionObserver(handleIntersection);
 	observer.observe(canvas);
