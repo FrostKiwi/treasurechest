@@ -255,6 +255,7 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 
 	const fps = 30;
 	const frameDuration = 1000 / fps;
+	const waitBetweenFramesMs = 1000;
 	let frameIndex = 0;
 	let lastFrameTime = 0;
 	let forward = true;
@@ -327,10 +328,10 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 
 	function renderLoop(time) {
 		if (isRendering) {
-			if (time - lastFrameTime >= frameDuration) {
-				
+			const elapsed = time - lastFrameTime;
+			if (elapsed >= frameDuration) {
+				lastFrameTime = time - (elapsed % frameDuration);
 				redraw();
-				lastFrameTime = performance.now();
 
 				if (forward) {
 					if (!pause)
@@ -344,7 +345,7 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 							setTimeout(() => {
 								delayActive = false;
 								if (isRendering) requestAnimationFrame(renderLoop);
-							}, 1000);
+							}, waitBetweenFramesMs);
 							return;
 						}
 					}
@@ -360,7 +361,7 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 							setTimeout(() => {
 								delayActive = false;
 								if (isRendering) requestAnimationFrame(renderLoop);
-							}, 1000);
+							}, waitBetweenFramesMs);
 							return;
 						}
 					}

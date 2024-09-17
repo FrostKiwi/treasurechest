@@ -32,6 +32,7 @@ function setupAnalytical(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blit
 	const circleShd = compileAndLinkShader(gl, circleVtxSrc, circleFragSrc);
 	const aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
 	const offsetLocationCircle = gl.getUniformLocation(circleShd, "offset");
+	const pixelSizeCircle = gl.getUniformLocation(circleShd, "pixelSize");
 
 	/* Blit Shader */
 	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);
@@ -90,6 +91,8 @@ function setupAnalytical(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blit
 		gl.useProgram(circleShd);
 
 		/* Draw Circle Animation */
+		gl.uniform1f(pixelSizeCircle, (2.0 / (canvas.height / resDiv)) / 0.69);
+
 		gl.uniform1f(aspect_ratioLocation, aspect_ratio);
 		var radius = 0.1;
 		var speed = (time / 10000) % Math.PI * 2;
