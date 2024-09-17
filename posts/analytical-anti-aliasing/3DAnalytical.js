@@ -30,8 +30,7 @@ function setup3D(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFragSrc,
 	/* Shaders */
 	/* Circle Shader */
 	const circleShd = compileAndLinkShader(gl, circleVtxSrc, circleFragSrc);
-	const aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
-	const offsetLocationCircle = gl.getUniformLocation(circleShd, "offset");
+	const viewProjectionLocation = gl.getUniformLocation(circleShd, "perspective");
 
 	/* Blit Shader */
 	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);
@@ -48,10 +47,6 @@ function setup3D(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFragSrc,
 
 	setupTextureBuffers();
 
-	const circleOffsetAnim = new Float32Array([
-		0.0, 0.0
-	]);
-
 	let aspect_ratio = 0;
 	let last_time = 0;
 	let redrawActive = false;
@@ -66,6 +61,13 @@ function setup3D(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFragSrc,
 		buffersInitialized = true;
 	}
 
+	let viewMatrix = Mat4.create();
+	let projectionMatrix = Mat4.create();
+
+	let eye = [1.5, 1.5, 1.5];
+	let target = [0, 0, 0];
+	let up = [0, 0, 1];
+
 	gl.enable(gl.BLEND);
 
 	function redraw(time) {
@@ -75,20 +77,22 @@ function setup3D(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFragSrc,
 		}
 		last_time = time;
 
+		Mat4.lookAt(viewMatrix, eye, target, up);
+
+		let fov = 75 * Math.PI / 180;
+		Mat4.perspectiveNO(projectionMatrix, fov, aspect_ratio, 1, Infinity);
+
+		Mat4.multiply(projectionMatrix, projectionMatrix, viewMatrix);
+
 		/* Setup PostProcess Framebuffer */
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 		gl.viewport(0, 0, canvas.width / resDiv, canvas.height / resDiv);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.useProgram(circleShd);
+		gl.uniformMatrix4fv(viewProjectionLocation, false, projectionMatrix);
 
 		/* Draw Circle Animation */
-		gl.uniform1f(aspect_ratioLocation, aspect_ratio);
-		var radius = 0.1;
-		var speed = (time / 10000) % Math.PI * 2;
-		circleOffsetAnim[0] = radius * Math.cos(speed) + 0.1;
-		circleOffsetAnim[1] = radius * Math.sin(speed);
-		gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		gl.viewport(0, 0, canvas.width, canvas.height);
@@ -119,7 +123,7 @@ function setup3D(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFragSrc,
 			canvas.height = height;
 
 			setupTextureBuffers();
-			aspect_ratio = 1.0 / (width / height);
+			aspect_ratio = width / height;
 			stopRendering();
 			startRendering();
 		}
