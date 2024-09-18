@@ -77,6 +77,11 @@ function setup3D(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFragSrc,
 		}
 		last_time = time;
 
+		const radius = 5 + 4 * Math.sin(time / 2000);
+		var speed = (time / 5000) % Math.PI * 2;
+		eye[0] = radius * Math.cos(speed) + 0.1;
+		eye[1] = radius * Math.sin(speed);
+
 		Mat4.lookAt(viewMatrix, eye, target, up);
 
 		let fov = 75 * Math.PI / 180;
