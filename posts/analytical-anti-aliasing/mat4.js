@@ -131,11 +131,6 @@ class Mat4 extends Float32Array {
         const centerx = center[0];
         const centery = center[1];
         const centerz = center[2];
-        if (Math.abs(eyex - centerx) < 0.000001 &&
-            Math.abs(eyey - centery) < 0.000001 &&
-            Math.abs(eyez - centerz) < 0.000001) {
-            return Mat4.identity(out);
-        }
         let z0 = eyex - centerx;
         let z1 = eyey - centery;
         let z2 = eyez - centerz;
