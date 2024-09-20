@@ -671,6 +671,7 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 	</div>
 </div>
 
+<script id="vertexAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analytical.vs" %}</script>
 <script id="fragmentAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analytical.fs" %}</script>
 <script id="fragment3D" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/3DAnalytical.fs" %}</script>
 <script id="vertex3D" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/3DAnalytical.vs" %}</script>
@@ -678,7 +679,7 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 <script src="circleAnalytical.js"></script>
 
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasAnalytical"></canvas>
-<script>setupAnalytical("canvasAnalytical", "vertex_0", "fragmentAnalytical", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resAnalytical");</script>
+<script>setupAnalytical("canvasAnalytical", "vertexAnalytical", "fragmentAnalytical", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resAnalytical");</script>
 
 <blockquote>
 <details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
@@ -686,10 +687,10 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 ![image](screenshots/simple.png)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="circle.vs">circle.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a href="circle-analytical.vs">circle-analytical.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}
+{% rawFile "posts/analytical-anti-aliasing/circle-analytical.vs" %}
 ```
 
 </details>
@@ -734,9 +735,10 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 	</div>
 </div>
 
+<script src="circleAnalyticalComparison.js"></script>
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasCompare"></canvas>
 
-<script>setupAnalytical("canvasCompare", "vertex_0", "fragmentAnalytical", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resCompare");</script>
+<script>setupAnalyticalComparison("canvasCompare", "vertex_0", "fragmentAnalytical", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resCompare");</script>
 
 <pre id="compareShader">{% rawFile "posts/analytical-anti-aliasing/circle-analyticalCompare.fs" %}</pre>
 <script src="/ace/ace.js" type="text/javascript" charset="utf-8"></script>

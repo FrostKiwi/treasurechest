@@ -1,4 +1,4 @@
-function setupAnalytical(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc, radioName) {
+function setupAnalyticalComparison(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc, radioName) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	let circleDrawFramebuffer, frameTexture;
@@ -91,7 +91,7 @@ function setupAnalytical(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blit
 		gl.useProgram(circleShd);
 
 		/* Draw Circle Animation */
-		gl.uniform1f(pixelSizeCircle, 2.0 / (canvas.height / resDiv));
+		gl.uniform1f(pixelSizeCircle, (2.0 / (canvas.height / resDiv)) / 0.69);
 
 		gl.uniform1f(aspect_ratioLocation, aspect_ratio);
 		var radius = 0.1;

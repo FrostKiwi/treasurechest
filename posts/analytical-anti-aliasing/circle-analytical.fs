@@ -2,18 +2,17 @@
 precision mediump float;
 varying vec2 uv;
 varying vec3 color;
-uniform float pixelSize;
+varying float pixelSizeAdjusted;
 
 void main(void)
 {
-
-	float dist = length(uv) - 1.0 + pixelSize;
+	float dist = length(uv) - 1.0 + pixelSizeAdjusted;
 	//float dist = length(uv) - 1.0 + fwidth(uv.x) * 1.5;
 	
 	/* Fade out near the edge of the circle */
 	// float alpha = smoothstep(1.0, 1.0 - 0.01, dist);
     // float alpha = dist / length(vec2(dFdx(dist), dFdy(dist))) + 1.0;
-	float alpha = dist / pixelSize;
+	float alpha = dist / pixelSizeAdjusted;
 	//float alpha = dist / fwidth(dist);
 
 	/* Clamped and scaled uv.y added to color simply to make the bottom of the
