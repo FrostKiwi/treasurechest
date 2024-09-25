@@ -18,7 +18,7 @@ From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/
 <blockquote class="reaction"><div class="reaction_text">Having <a href=https://mirrorball.frost.kiwi>implemented</a> it multiple times over the years, I'll also share some juicy secrets I have never read anywhere before.</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
 
 ## The Setup
-To understand the Anti-Aliasing algorithms, we will implement them along the way! That's what the WebGL + Source code boxes are for. Each [WebGL canvas](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL) draws a moving circle. Anti-Aliasing cannot be fully understood with just images, movement is *essential* to see pixel crawling and sub-pixel filtering. The red box shows the circle's border with 4x zoom. Rendering is done without scaling at **native** resolution of your device, important to judge sharpness. Results will depend on screen resolution.
+To understand the Anti-Aliasing algorithms, we will implement them along the way! Each following [WebGL canvas](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL) draws a moving circle. Anti-Aliasing _cannot_ be fully understood with just images, movement is *essential* to see pixel crawling and sub-pixel filtering. The red box shows the circle's border with 4x zoom. Rendering is done without scaling at [native](https://en.wikipedia.org/wiki/1:1_pixel_mapping) resolution of your device, important to judge sharpness.
 <blockquote class="reaction"><div class="reaction_text">Please pixel-peep and judge sharpness and aliasing closely. Resolution of your screen too high to see aliasing? Lower the resolution with the following buttons, which will <a href="https://tanalin.com/en/articles/integer-scaling/">integer-scale</a> the rendering.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 <script src="utility.js"></script>
@@ -87,22 +87,25 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 
 Let's start out simple. Using [GLSL](https://en.wikipedia.org/wiki/OpenGL_Shading_Language) Shaders we tell the GPU of your device to draw a circle in the most simple and naive way possible, as seen in [circle.fs](circle.fs) above: If the [`length()`](https://docs.gl/sl4/length) from the middle point is bigger than 1.0, we [`discard`](https://www.khronos.org/opengl/wiki/Fragment_Shader#Special_operations) the pixel.
 
+The circle looks very blocky at smaller resolutions. More painfully, there is strong "pixel crawling", an artifact that's very obvious when there is any kind of movement. As the circle moves, rows of pixels pop in and out of existence and the stair steps of the pixelation move along the side of the circle like beads with different speeds.
+
+At lower resolutions these artifacts come together to destroy the circular form. The combination of slow movement and low resolution causes one side's pixels to come into existence, before the other side's pixels disappear, causing a wobble. Axis-alignment with the pixel grid causes "plateaus" of pixels at every 90° and 45° position.
 ### Technical breakdown
 
 <blockquote class="reaction"><div class="reaction_text">Understanding the GPU code is not necessary to follow this article, but will help to grasp whats happening when we get to the analytical bits.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
-4 vertices making up a quad are sent to the GPU in the vertex shader [circle.vs](circle.vs), where they are received as `attribute vec2 vtx`. The coordinates are of a unit quad, meaning the coordinates look like the following image. With [one famous exception](https://www.copetti.org/writings/consoles/sega-saturn/#segas-offering), all GPUs use triangles, so the quad is actually made up of two triangles.
+4 vertices making up a quad are sent to the GPU in the vertex shader [circle.vs](circle.vs), where they are received as `attribute vec2 vtx`. The coordinates are of a "unit quad", meaning the coordinates look like the following image. With [one famous exception](https://www.copetti.org/writings/consoles/sega-saturn/#segas-offering), all GPUs use triangles, so the quad is actually made up of two triangles.
 
 ![](unit.svg)
 
-The vertices are given to the fragment shader [circle.fs](circle.fs) via `varying vec2 uv`. The fragment shader is called per [fragment](https://www.khronos.org/opengl/wiki/Fragment) (here fragments are pixel-sized) and the `varying` is interpolated linearly with [perspective corrected](https://en.wikipedia.org/wiki/Texture_mapping#Affine_texture_mapping), [barycentric coordinates](https://en.wikipedia.org/wiki/Barycentric_coordinate_system), giving us a `uv` coordinate per pixel from `-1` to `+1` with zero at the center.
+The vertices are given to the fragment shader [circle.fs](circle.fs) via `varying vec2 uv`. The fragment shader is called per [fragment](https://www.khronos.org/opengl/wiki/Fragment) (here fragments are pixel-sized) and the [`varying`](http://learnwebgl.brown37.net/12_shader_language/glsl_data_types.html#storage-qualifiers) is interpolated linearly with [perspective corrected](https://en.wikipedia.org/wiki/Texture_mapping#Affine_texture_mapping), [barycentric coordinates](https://en.wikipedia.org/wiki/Barycentric_coordinate_system), giving us a `uv` coordinate per pixel from `-1` to `+1` with zero at the center.
 
 By performing the check `if (length(uv) < 1.0)` we draw our color for fragments inside the circle and reject fragments outside of it. What we are doing is known as "Alpha testing". Without diving too deeply and just to hint at what's to come, what we have created with `length(uv)` is the [signed distance field](https://en.wikipedia.org/wiki/Signed_distance_function#Applications) of a point.
 
 <blockquote class="reaction"><div class="reaction_text">Just to clarify, the circle isn't "drawn with geometry", which would have finite resolution of the shape, depending on how many vertices we use. It is "drawn by the shader".</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 
 ## SSAA
-SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Supersampling). Render it bigger, downsample to be smaller. Implemented in mere seconds. Easy, right?
+SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Supersampling). Render it bigger, downsample to be smaller. Implemented in mere seconds. ***Easy***, right?
 <div class="toggleRes">
 	<div>
 	  <input type="radio" id="nativeSSAA" name="resSSAA" value="1" checked />
@@ -131,18 +134,11 @@ SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Sup
 ![image](screenshots/ssaa.png)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="circle.vs">circle.vs</a></summary>
-
-```glsl
-{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}
-```
-
-</details>
 <details>	
-<summary>WebGL Fragment Shader <a href="circle.fs">circle.fs</a></summary>
+<summary>SSAA buffer Fragment Shader <a href="post.fs">post.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}
+{% rawFile "posts/analytical-anti-aliasing/post.fs" %}
 ```
 
 </details>
@@ -155,38 +151,30 @@ SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Sup
 
 </details>
 </blockquote>
-We draw at twice the resolution, so we have we have 4 input pixels for every 1 output pixel we draw to the screen. But it's somewhat strange: There is definitely Anti-Aliasing happening, but not enough. 
+
+[circleSSAA.js](circleSSAA.js) draws at twice the resolution to a texture, which fragment shader [post.fs](post.fs) reads from at standard resolution with [GL_LINEAR](https://docs.gl/es2/glTexParameter) to perform SSAA. So we have *four* input pixels for every *one* output pixel we draw to the screen. But it's somewhat strange: There is definitely Anti-Aliasing happening, but less than expected.
 
 <blockquote class="reaction"><div class="reaction_text">There should be 4 steps of transparency, but we only get two!</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-Especially with at lower resolutions, we can see the circle having 4 steps of transparency at the "diagonals" of the circle. A circle has of course no sides, but at the axis-aligned "bottom" there are only 2 steps of transparency: Fully Opaque and 50% transparent, 25% and 75% transparency steps are missing.
+Especially at lower resolutions, we can see the circle having 4 steps of transparency at the 45° "diagonals" of the circle. A circle has of course no sides, but at the axis-aligned "bottom" there are only 2 steps of transparency: Fully Opaque and 50% transparent, the 25% and 75% transparency steps are missing.
 
 ### Conceptually simple - actually hard
 We aren't sampling against the circle shape at twice the resolution, we are sampling against the quantized result of the circle shape. Twice the resolution, but discrete pixels nonetheless. The combination of pixelation and sample placement doesn't hold enough information where we need it the most: at the axis-aligned "flat parts". 
 
 <blockquote class="reaction"><div class="reaction_text">Four times the memory <b>and</b> four times the calculation requirement, but only a half-assed result.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
-Implementing SSAA properly is minute craft. Here we are drawing to a 2x resolution texture and down-sampling it with linear interpolation. So actually, this implementation needs 5x the amount of VRAM of the no-AA approach. A proper implementation samples the scene multiple times and combines the result without an intermediary step. 4x the processing power but no extra memory needed.
+Implementing SSAA properly is a minute craft. Here we are drawing to a 2x resolution texture and down-sampling it with linear interpolation. So actually, this implementation needs 5x the amount of VRAM. A proper implementation samples the scene multiple times and combines the result without an intermediary buffer.
 
-To combat axis-alignment artifacts like with our circle above, we need to place our SSAA samples better. There are [multiple ways to sample with SSAA](https://en.wikipedia.org/wiki/Supersampling#Supersampling_patterns), all with pros and cons. So in reality, to implement SSAA properly, we need deep integration with the rendering pipeline.
+<blockquote class="reaction"><div class="reaction_text">With our implementation, we can't even do more than 2xSSAA with one texture read, as linear interpolation happens <a href="https://stackoverflow.com/questions/53896032/">only with 2x2 samples</a>.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
-Modern video games use dynamic resolution scaling, where they pass
+To combat axis-alignment artifacts like with our circle above, we need to place our SSAA samples better. There are [multiple ways to sample with SSAA](https://en.wikipedia.org/wiki/Supersampling#Supersampling_patterns), all with pros and cons. To implement SSAA properly, we need deep integration with the rendering pipeline. This happens below API or engine, in the realm of vendors and drivers.
 
-And some of the biggest ones were even discovered on accident.
-```
-https://web.archive.org/web/20180716171211/https://naturalviolence.webs.com/sgssaa.htm
-```
+<figure>
+	<img src="sample-patterns.svg" alt="SAA sample patterns" />
+	<figcaption>SSAA sample patterns. <a href="https://en.wikipedia.org/wiki/Supersampling#Supersampling_patterns">Source</a></figcaption>
+</figure>
 
-There are so many ways to do a seemingly simple task.
-
-There is more: Bilinear interpolation is based on a 2x2 texel read, so you won't be able to downscale beyond 50%, without new aliasing being introduced.
-
-#### The dreaded blur
-There are ways that SSAA can make your scene look *worse*. Depending on implementation, SSAA messes with [mip-map](https://en.wikipedia.org/wiki/Mipmap) calculations and upsets the way the graphics driver is tuned to sample textures. As a result, unless the graphics driver is aware and corrects for it, the mip-map lod-bias will need adjustment, as explained in the [SGSSAA article above](https://web.archive.org/web/20180716171211/https://naturalviolence.webs.com/sgssaa.htm).
-
-Modern video games often which use TAA in combination dynamic resolution scaling, a concoction resulting in blurriness. These AA algorithms come with post-process sharpening built-in to combat this. I find this a bit of graphics programming sin. 
-
-Whole communities rally around fixing this, like the reddit communities "[r/MotionClarity](https://www.reddit.com/r/MotionClarity/)" or lovely titled "[r/FuckTAA](https://www.reddit.com/r/FuckTAA)".
+In fact, some of the best implementations were [discovered by vendors on accident](https://web.archive.org/web/20180716171211/https://naturalviolence.webs.com/sgssaa.htm), like [SGSSAA](https://www.youtube.com/watch?v=ntlYwrbUlWo). There are ways that SSAA can make your scene look *worse*. Depending on implementation, SSAA messes with [mip-map](https://en.wikipedia.org/wiki/Mipmap) calculations. As a result the mip-map lod-bias may need adjustment, as explained in the [article above](https://web.archive.org/web/20180716171211/https://naturalviolence.webs.com/sgssaa.htm).
 
 ## MSAA
 Choose MSAA sample count. Your hardware [may support up to MSAA x64](https://opengl.gpuinfo.org/displaycapability.php?name=GL_MAX_SAMPLES), but what is available to WebGL is implementation defined. WebGL 1 doesn't support MSAA at all, which is why the next windows will initialize a WebGL 2 context. NVIDIA limits the maximum Sample count to 4x, even if more is supported. On smartphones you will most likely get 4x.
@@ -941,3 +929,7 @@ Capsule shadows
 https://github.com/godotengine/godot-proposals/issues/5262
 https://docs.unrealengine.com/4.27/en-US/BuildingWorlds/LightingAndShadows/CapsuleShadows/Overview/
 ```
+
+Modern video games often which use TAA in combination dynamic resolution scaling, a concoction resulting in blurriness. These AA algorithms come with post-process sharpening built-in to combat this. I find this a bit of graphics programming sin. 
+
+Whole communities rally around fixing this, like the reddit communities "[r/MotionClarity](https://www.reddit.com/r/MotionClarity/)" or lovely titled "[r/FuckTAA](https://www.reddit.com/r/FuckTAA)".
