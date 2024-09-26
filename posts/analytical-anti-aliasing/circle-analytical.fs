@@ -1,19 +1,25 @@
-//#extension GL_OES_standard_derivatives : enable
 precision mediump float;
+/* uv coordinates from the vertex shader */
 varying vec2 uv;
+/* color from the vertex shader */
 varying vec3 color;
+/* pixel size from the vertex shader, corrected for influence from of the 1px
+   dialation */
 varying float pixelSizeAdjusted;
 
 void main(void)
 {
-	float dist = length(uv) - 1.0 + pixelSizeAdjusted;
-	//float dist = length(uv) - 1.0 + fwidth(uv.x) * 1.5;
+	/* We shrink the cirle by 1px (pixelSizeAdjusted) to prevent cut-off.
 	
-	/* Fade out near the edge of the circle */
-	// float alpha = smoothstep(1.0, 1.0 - 0.01, dist);
-    // float alpha = dist / length(vec2(dFdx(dist), dFdy(dist))) + 1.0;
+	   We actually shrink by 1.5px to move the border into the pixel center, so
+	   mathematically it has the same size as the noAA circle. This * 1.5 isn't
+	   actually required and a bit pedantic, but when flicking between noAA this
+	   corrects for a tiny mis-allignment seen at very small resolutions. */
+	float dist = length(uv) - 1.0 + pixelSizeAdjusted * 1.5;
+	
+	/* Fade out the pixels near the edge of the circle with exactly the size of
+	   one pixel, so we get pixel perfect Anti-Aliasing. */
 	float alpha = dist / pixelSizeAdjusted;
-	//float alpha = dist / fwidth(dist);
 
 	/* Clamped and scaled uv.y added to color simply to make the bottom of the
 	   circle white, so the contrast is high and you can see strong aliasing */

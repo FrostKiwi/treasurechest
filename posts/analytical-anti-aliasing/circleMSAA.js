@@ -54,9 +54,12 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, circleSimpleFragSrc, p
 	const circleShd = compileAndLinkShader(gl, circleVtxSrc, circleFragSrc);
 	const aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
 	const offsetLocationCircle = gl.getUniformLocation(circleShd, "offset");
+	const pixelSizeCircle = gl.getUniformLocation(circleShd, "pixelSize");
+	const sizeLocationCircle = gl.getUniformLocation(circleShd, "size");
 	const circleShd_step = compileAndLinkShader(gl, circleVtxSrc, circleSimpleFragSrc);
 	const aspect_ratioLocation_step = gl.getUniformLocation(circleShd_step, "aspect_ratio");
 	const offsetLocationCircle_step = gl.getUniformLocation(circleShd_step, "offset");
+	const sizeLocationCircle_step = gl.getUniformLocation(circleShd_step, "size");
 
 	/* Blit Shader */
 	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);
@@ -102,6 +105,10 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, circleSimpleFragSrc, p
 		renderbuffer = gl.createRenderbuffer();
 		gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
 		const errorMessageElement = document.getElementById('sampleErrorMessage');
+		/* Here we need two branches because of implementation specific
+		   shenanigans. Mobile chips will always force any call to 
+		   renderbufferStorageMultisample() to be 4x MSAA, so to have a noAA
+		   comparison, we split the Framebuffer setup */
 		if (samples != 1) {
 			gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, canvas.width / resDiv, canvas.height / resDiv);
 			gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, renderbuffer);
@@ -129,6 +136,7 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, circleSimpleFragSrc, p
 		buffersInitialized = true;
 	}
 
+	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	function redraw(time) {
 		redrawActive = true;
 		if (!buffersInitialized) {
@@ -156,12 +164,19 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, circleSimpleFragSrc, p
 		circleOffsetAnim[0] = radius * Math.cos(speed) + 0.1;
 		circleOffsetAnim[1] = radius * Math.sin(speed);
 		if (samples == 1) {
+			/* Here we need two branches because of implementation specific
+   			   shenanigans. Mobile chips will always force any call to 
+   			   renderbufferStorageMultisample() to be 4x MSAA, so to have a noAA
+   			   comparison, we split the demo across two shaders */
 			gl.uniform2fv(offsetLocationCircle_step, circleOffsetAnim);
 			gl.uniform1f(aspect_ratioLocation_step, aspect_ratio);
+			gl.uniform1f(sizeLocationCircle_step, circleSize);
 		}
 		else {
 			gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
 			gl.uniform1f(aspect_ratioLocation, aspect_ratio);
+			gl.uniform1f(sizeLocationCircle, circleSize);
+			gl.uniform1f(pixelSizeCircle, 2.0 / (canvas.height / resDiv) / circleSize);
 		}
 
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);

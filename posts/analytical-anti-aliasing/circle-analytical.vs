@@ -1,16 +1,23 @@
 /* Our Vertex data for the Quad */
 attribute vec2 vtx;
 attribute vec3 col;
+
 /* The coordinates that will be used to for our drawing operations */
 varying vec2 uv;
+/* Color for the fragment shader */
 varying vec3 color;
+/* Fragment shader needs to know the pixel size and since we mess with the quad
+   to expand it by 1 pixel to not change the final pixel size, we need to give
+   the fragment shader the corrected pixel size */
 varying float pixelSizeAdjusted;
 
 /* Aspect ratio */
 uniform float aspect_ratio;
 /* Position offset for the animation */
 uniform vec2 offset;
-/* PixelSize */
+/* Size of the Unit Quad */
+uniform float size;
+/* Pixel size in regards to the Quad */
 uniform float pixelSize;
 
 void main()
@@ -18,17 +25,19 @@ void main()
 	/* Assign the verticies to be used as the distance field for drawing. This
 	   will be linearly interpolated before going to the fragment shader */
 	uv = vtx;
-	/* Some nice color */
+	/* Sending some nice color to the fragment shader */
 	color = col;
 
-	/* Make Circle smaller and correct aspect ratio */
 	vec2 vertex = vtx;
+	/* correct for aspect ratio  */
 	vertex.x *= aspect_ratio;
-	vertex *= 0.67 + pixelSize;
-	pixelSizeAdjusted = pixelSize / (0.67 + pixelSize);
-
-	/* Make the circle move in a circle */
+	/* Shrink the Quad and thus the "canvas", that the circle is drawn on */
+	vertex *= size + pixelSize;
+	/* Calculate the true pixel size, after we messed with the quad's size */
+	pixelSizeAdjusted = pixelSize / (size + pixelSize);
+	/* Make the circle move in a circle, heh :] */
 	vertex += offset;
 
+	/* Vertex Output */
 	gl_Position = vec4(vertex, 0.0, 1.0);
 }

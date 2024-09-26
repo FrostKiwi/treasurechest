@@ -1,4 +1,7 @@
 "use strict";
+/* Make the circle smaller */
+const circleSize = 0.68;
+
 /* Vertex Buffer of a simple Quad with some colors */
 const unitQuad = new Float32Array([
 	-1.0, 1.0, 1.0, 1.0, 0.0,
@@ -7,6 +10,7 @@ const unitQuad = new Float32Array([
 	-1.0, -1.0, 1.0, 1.0, 1.0
 ]);
 
+/* Standard shader compilation */
 function compileAndLinkShader(gl, vtxShdSrc, FragShdSrc, FragPrefix) {
 	/* Vertex Shader Compilation */
 	const vtxShd = gl.createShader(gl.VERTEX_SHADER);
@@ -41,6 +45,7 @@ function compileAndLinkShader(gl, vtxShdSrc, FragShdSrc, FragPrefix) {
 	return LinkedShd;
 }
 
+/* Standard Texture loading */
 function setupTexture(gl, width, height, target, filter) {
 	gl.deleteTexture(target);
 	target = gl.createTexture();

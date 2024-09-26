@@ -2,6 +2,7 @@
 precision mediump float;
 varying vec2 uv;
 varying vec3 color;
+varying float pixelSizeAdjusted;
 uniform float pixelSize;
 
 void main(void)

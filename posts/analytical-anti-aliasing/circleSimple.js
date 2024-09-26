@@ -30,6 +30,7 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 	const circleShd = compileAndLinkShader(gl, circleVtxSrc, circleFragSrc);
 	const aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
 	const offsetLocationCircle = gl.getUniformLocation(circleShd, "offset");
+	const sizeLocationCircle = gl.getUniformLocation(circleShd, "size");
 
 	/* Blit Shader */
 	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);
@@ -95,6 +96,7 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 		circleOffsetAnim[0] = radius * Math.cos(speed) + 0.1;
 		circleOffsetAnim[1] = radius * Math.sin(speed);
 		gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
+		gl.uniform1f(sizeLocationCircle, circleSize);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		gl.viewport(0, 0, canvas.width, canvas.height);

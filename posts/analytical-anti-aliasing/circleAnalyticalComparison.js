@@ -33,6 +33,7 @@ function setupAnalyticalComparison(canvasId, circleVtxSrc, circleFragSrc, blitVt
 	const aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
 	const offsetLocationCircle = gl.getUniformLocation(circleShd, "offset");
 	const pixelSizeCircle = gl.getUniformLocation(circleShd, "pixelSize");
+	const sizeLocationCircle = gl.getUniformLocation(circleShd, "size");
 
 	/* Blit Shader */
 	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);
@@ -91,7 +92,7 @@ function setupAnalyticalComparison(canvasId, circleVtxSrc, circleFragSrc, blitVt
 		gl.useProgram(circleShd);
 
 		/* Draw Circle Animation */
-		gl.uniform1f(pixelSizeCircle, (2.0 / (canvas.height / resDiv)) / 0.69);
+		gl.uniform1f(pixelSizeCircle, (2.0 / (canvas.height / resDiv)) / circleSize);
 
 		gl.uniform1f(aspect_ratioLocation, aspect_ratio);
 		var radius = 0.1;
@@ -99,6 +100,7 @@ function setupAnalyticalComparison(canvasId, circleVtxSrc, circleFragSrc, blitVt
 		circleOffsetAnim[0] = radius * Math.cos(speed) + 0.1;
 		circleOffsetAnim[1] = radius * Math.sin(speed);
 		gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
+		gl.uniform1f(sizeLocationCircle, circleSize);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		gl.viewport(0, 0, canvas.width, canvas.height);

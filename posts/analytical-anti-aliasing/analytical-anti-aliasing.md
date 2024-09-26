@@ -13,7 +13,7 @@ image: thumbnail.png
 ---
 Today's journey is [Anti-Aliasing](https://en.wikipedia.org/wiki/Spatial_anti-aliasing) and the destination is **Analytical Anti-Aliasing**. Getting rid of rasterization [jaggies](https://en.wikipedia.org/wiki/Jaggies) is an art-form with decades upon decades of maths, creative techniques and non-stop innovation. With so many years of research and development, there are many flavors.
 
-From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/Supersampling), over theory dense [**SMAA**](https://www.iryoku.com/smaa/), to using machine learning with [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). Same goal - ***vastly*** different approaches. We'll take a look at how they work, before introducing a new way to look a the problem - the ✨***analytical***🌟 way. The perfect Anti-Aliasing exists and is simpler than you think. Let's find out when and if you should use it.
+From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/Supersampling), over theory dense [**SMAA**](https://www.iryoku.com/smaa/), to using machine learning with [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). Same goal - ***vastly*** different approaches. We'll take a look at how they work, before introducing a new way to look a the problem - the ✨***analytical***🌟 way. The perfect Anti-Aliasing exists and is simpler than you think.
 
 <blockquote class="reaction"><div class="reaction_text">Having <a href=https://mirrorball.frost.kiwi>implemented</a> it multiple times over the years, I'll also share some juicy secrets I have never read anywhere before.</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
 
@@ -105,7 +105,18 @@ By performing the check `if (length(uv) < 1.0)` we draw our color for fragments 
 <blockquote class="reaction"><div class="reaction_text">Just to clarify, the circle isn't "drawn with geometry", which would have finite resolution of the shape, depending on how many vertices we use. It is "drawn by the shader".</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 
 ## SSAA
-SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Supersampling). Render it bigger, downsample to be smaller. Implemented in mere seconds. ***Easy***, right?
+SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Supersampling). Render it bigger, downsample to be smaller. The idea is as old as 3D rendering itself. In fact, the first movies with CGI all relied on this. One example is the 1986 movie "[Flight of the Navigator](https://en.wikipedia.org/wiki/Flight_of_the_Navigator)", as covered by [Captain Disillusion](https://www.youtube.com/@CaptainDisillusion) in the video below.
+
+<figure>
+	<video width="960" height="540" controls><source src="flight.mp4" type="video/mp4"></video>
+	<figcaption>SSAA as used in "Flight of the Navigator" (1986)
+	<br>
+	Excerpt from <a href="https://www.youtube.com/watch?v=tyixMpuGEL8">"Flight of the Navigator | VFXcool"</a><br>YouTube Video by <a href="https://www.youtube.com/@CaptainDisillusion">Captain Disillusion</a>
+	</figcaption>
+</figure>
+
+<blockquote class="reaction"><div class="reaction_text">1986 did it, so can we. Implemented in mere seconds. <b>Easy</b>, right?</div><img class="kiwi" src="/assets/kiwis/ice.svg"></blockquote>
+
 <div class="toggleRes">
 	<div>
 	  <input type="radio" id="nativeSSAA" name="resSSAA" value="1" checked />
@@ -156,9 +167,9 @@ SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Sup
 
 <blockquote class="reaction"><div class="reaction_text">There should be 4 steps of transparency, but we only get two!</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-Especially at lower resolutions, we can see the circle having 4 steps of transparency at the 45° "diagonals" of the circle. A circle has of course no sides, but at the axis-aligned "bottom" there are only 2 steps of transparency: Fully Opaque and 50% transparent, the 25% and 75% transparency steps are missing.
+Especially at lower resolutions, we can see the circle *does* actually have 4 steps of transparency, but only at the 45° "diagonals" of the circle. A circle has of course no sides, but at the axis-aligned "bottom" there are only 2 steps of transparency: Fully Opaque and 50% transparent, the 25% and 75% transparency steps are missing.
 
-### Conceptually simple - actually hard
+### Conceptually simple, actually hard
 We aren't sampling against the circle shape at twice the resolution, we are sampling against the quantized result of the circle shape. Twice the resolution, but discrete pixels nonetheless. The combination of pixelation and sample placement doesn't hold enough information where we need it the most: at the axis-aligned "flat parts". 
 
 <blockquote class="reaction"><div class="reaction_text">Four times the memory <b>and</b> four times the calculation requirement, but only a half-assed result.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
@@ -174,13 +185,12 @@ To combat axis-alignment artifacts like with our circle above, we need to place 
 	<figcaption>SSAA sample patterns. <a href="https://en.wikipedia.org/wiki/Supersampling#Supersampling_patterns">Source</a></figcaption>
 </figure>
 
-In fact, some of the best implementations were [discovered by vendors on accident](https://web.archive.org/web/20180716171211/https://naturalviolence.webs.com/sgssaa.htm), like [SGSSAA](https://www.youtube.com/watch?v=ntlYwrbUlWo). There are ways that SSAA can make your scene look *worse*. Depending on implementation, SSAA messes with [mip-map](https://en.wikipedia.org/wiki/Mipmap) calculations. As a result the mip-map lod-bias may need adjustment, as explained in the [article above](https://web.archive.org/web/20180716171211/https://naturalviolence.webs.com/sgssaa.htm).
+In fact, some of the best implementations were [discovered by vendors on accident](https://web.archive.org/web/20180716171211/https://naturalviolence.webs.com/sgssaa.htm), like [SGSSAA](https://www.youtube.com/watch?v=ntlYwrbUlWo). There are also ways in which SSAA can make your scene look *worse*. Depending on implementation, SSAA messes with [mip-map](https://en.wikipedia.org/wiki/Mipmap) calculations. As a result the mip-map lod-bias may need adjustment, as explained in the [article above](https://web.archive.org/web/20180716171211/https://naturalviolence.webs.com/sgssaa.htm).
 
 ## MSAA
-Choose MSAA sample count. Your hardware [may support up to MSAA x64](https://opengl.gpuinfo.org/displaycapability.php?name=GL_MAX_SAMPLES), but what is available to WebGL is implementation defined. WebGL 1 doesn't support MSAA at all, which is why the next windows will initialize a WebGL 2 context. NVIDIA limits the maximum Sample count to 4x, even if more is supported. On smartphones you will most likely get 4x.
-```
-https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msaa#color-resolve
-```
+[MSAA](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) is super sampling, but only at the edges of triangles or textures edges if "[Alpha to Coverage](https://bgolus.medium.com/anti-aliased-alpha-test-the-esoteric-alpha-to-coverage-8b177335ae4f)" is enabled. MSAA is implemented by the graphics card in-hardware by the graphics vendors and what is supported depends on hardware. In the select box below you can choose different MSAA levels to Anti-Alias our circle.
+
+Your hardware [may support up to MSAA x64](https://opengl.gpuinfo.org/displaycapability.php?name=GL_MAX_SAMPLES), but what is available here is implementation defined. WebGL 1 doesn't support MSAA at all, which is why the next windows will initialize a [WebGL 2](https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext) context. In WebGL NVIDIA limits MSAA to 8x, even if more is supported. On smartphones you will most likely get 4x.
 
 <div class="center-child">
 <select id="MSAA">.
@@ -196,9 +206,8 @@ https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msa
 
 <blockquote id="sampleErrorMessage" style="display: none" class="reaction"></blockquote>
 
-<script id="vertexMSAA" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.vs" %}</script>
-<script id="fragmentMSAA" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.fs" %}</script>
-<script id="fragmentMSAA_step" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-MSAA_step.fs" %}</script>
+<script id="vertexAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analytical.vs" %}</script>
+<script id="fragmentAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analytical.fs" %}</script>
 <div class="toggleRes">
 	<div>
 	  <input type="radio" id="nativeMSAA" name="resMSAA" value="1" checked />
@@ -219,25 +228,25 @@ https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msa
 </div>
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasMSAA"></canvas>
 <script src="circleMSAA.js"></script>
-<script>setupMSAA("canvasMSAA", "vertexMSAA", "fragmentMSAA", "fragmentMSAA_step", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resMSAA");</script>
+<script>setupMSAA("canvasMSAA", "vertexAnalytical", "fragmentAnalytical", "fragment_0", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resMSAA");</script>
 <blockquote>
-<details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a href="screenshots/msaa.png">MSAA 4x Screenshot</a>, in case WebGL doesn't work</summary>
 
-<!-- ![image](screenshot_passthrough.jpg) -->
+![image](screenshots/msaa.png)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="circle-MSAA.vs">circle-MSAA.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a href="circle-analytical.vs">circle-analytical.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.vs" %}
+{% rawFile "posts/analytical-anti-aliasing/circle-analytical.vs" %}
 ```
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="circle-MSAA.fs">circle-MSAA.fs</a></summary>
+<summary>WebGL Fragment Shader <a href="circle-analytical.fs">circle-analytical.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/circle-MSAA.fs" %}
+{% rawFile "posts/analytical-anti-aliasing/circle-analytical.fs" %}
 ```
 
 </details>
@@ -251,14 +260,12 @@ https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msa
 </details>
 </blockquote>
 
-This requires a more modern device supporting [WebGL2](https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext). MSAA predates even WebGL 1, but wasn't standardized until WebGL 2.
-
 ### Implementation specific headaches
-We rely on hardware to do the Anti-Aliasing, which obviously leads to the problem that the hardware may not support what we expect. And the sampling patterns that MSAA uses may in-fact do things you don't expect. Depending on what your hardware does, you may see the circle's edge transparency steps appearing seemingly "Out of Order".
+We rely on hardware to do the Anti-Aliasing, which obviously leads to the problem that the hardware may not support what we expect. And the sampling patterns that MSAA uses may do things you don't expect. Depending on what your hardware does, you may see the circle's edge transparency steps appearing seemingly "Out of Order".
 
 Before standardization during the OpenGL 3, DirectX 10 era of graphics hardware, MSAA support was especially hit and miss. Eg. Intel iGPUs of GM45 laptops expose the OpenGL extension [`EXT_framebuffer_multisample`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_framebuffer_multisample.txt), but don't in-fact support MSAA, [which led to confusion](https://community.khronos.org/t/yet-another-intel-multisample-thread/69614).
 
-On mobile chips weird things happen, which usually support up-to 4xMSAA. Android phones will let you pick 2xMSAA, but the graphics driver will force your choice to 4xMSAA. iPhones and iPads do something quite frankly dumb: Choosing 2xMSAA will make it 4xMSAA, but the transparency will be rounded to nearest 50% multiple, leading to double transparent edges in our example. Luckily there is a good hardware related reason for this...
+On mobile chips weird things happen, which usually support *exactly* 4xMSAA. Android phones will let you pick 2xMSAA, but the graphics driver will force your choice to 4xMSAA. iPhones and iPads do something quite frankly stupid: Choosing 2xMSAA will make it 4xMSAA, but the transparency will be rounded to nearest 50% multiple, leading to double transparent edges in our example. Luckily there is a good hardware related reason for this...
 ### Performance cost: (maybe) Zero 
 ...looking at modern video games, one might be led to believe that this technique is of the past. Enabling it usually brings a hefty performance penalty after all. Surprisingly, it's still the king under certain circumstances and in very specific situations, even performance free.
 
@@ -283,7 +290,7 @@ As explained by [Rahul Prasad](https://www.linkedin.com/in/rahulprasad2/) in the
 	</figcaption>
 </figure>
 
-The one sentence version is: This is possible under the condition of [forward rendering](https://gamedevelopment.tutsplus.com/forward-rendering-vs-deferred-rendering--gamedev-12342a) with geometry that is not too dense and the GPU having [tiled-based rendering architecture](https://developer.arm.com/documentation/102662/0100/Tile-based-GPUs), which allows the GPU to perform MSAA calculations without heavy memory access and thus [latency hiding](/WebGL-LUTS-made-simple/#performance-cost%3A-zero) the cost of the calculation.
+In short, this is possible under the condition of [forward rendering](https://gamedevelopment.tutsplus.com/forward-rendering-vs-deferred-rendering--gamedev-12342a) with geometry that is not too dense and the GPU having [tiled-based rendering architecture](https://developer.arm.com/documentation/102662/0100/Tile-based-GPUs), which allows the GPU to perform MSAA calculations without heavy memory access and thus [latency hiding](/WebGL-LUTS-made-simple/#performance-cost%3A-zero) the cost of the calculation. Here's [deep dive](https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msaa#color-resolve), if you are interested.
 
 ### A complex toolbox
 MSAA gives you access to the samples, making [custom MSAA filtering curves](https://therealmjp.github.io/posts/msaa-resolve-filters/) a possibility. It also allows you to [merge both standard mesh-based and signed-distance-field rendering](https://bgolus.medium.com/rendering-a-sphere-on-a-quad-13c92025570c) via [sample to coverage](https://bgolus.medium.com/anti-aliased-alpha-test-the-esoteric-alpha-to-coverage-8b177335ae4f), as mentioned above. 
@@ -291,10 +298,6 @@ MSAA gives you access to the samples, making [custom MSAA filtering curves](http
 Some of the most out-of-the-box thinking I ever witnessed in graphics programming is how [Assassin's Creed Unity](https://en.wikipedia.org/wiki/Assassin%27s_Creed_Unity) used MSAA to render at half resolution but reconstruct the full resolution image from MSAA samples, as described on page 48 of the talk "[GPU-Driven Rendering Pipelines](https://advances.realtimerendering.com/s2015/aaltonenhaar_siggraph2015_combined_final_footer_220dpi.pdf)" by [Ulrich Haar](https://www.linkedin.com/in/ulrich-haar-730407218) and [Sebastian Aaltonen](https://x.com/SebAaltonen). Kinda like [variable rate shading](https://developer.nvidia.com/vrworks/graphics/variablerateshading), but implemented with duct-tape and without vendor support.
 
 <blockquote class="reaction"><div class="reaction_text">The brain-melting lengths to which graphics programmers go to utilize hardware acceleration to the last drop has me sometimes in awe.</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
-
-### MSAA - Conclusion
-- ✅ No extra framebuffer needed
-- ✅❌ Performance cheap in certain cirumstances
 
 ## Post-Process Anti-Aliasing
 In 2009 a [paper](https://web.archive.org/web/20141205052029/http://visual-computing.intel-research.net/publications/papers/2009/mlaa/mlaa.pdf) by [Alexander Reshetov](https://research.nvidia.com/person/alexander-reshetov) struck the graphics programming world like a ton of bricks: take the blocky, aliased result of the rendered image, find edges and classify the pixels into tetris-like shapes to filter them and remove the blocky edge. Anti-Aliasing based on the [morphology](https://en.wikipedia.org/wiki/Mathematical_morphology) of pixels - "Morphological antialiasing". [MLAA](https://www.iryoku.com/mlaa/) was born.
@@ -687,6 +690,7 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 <script src="FXAA-interactive.js"></script>
 <script>setupFXAAInteractive("canvasFXAAInteractive", "vertexInteractive", "fragmentInteractive", "vertexLuma", "fragmentLuma", "vertexBlitSimple", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
 
+It may be performance cheap, but only if you already have post-processing in place. In mobile graphics, memory access is expensive, so saving the framebuffer to perform post processing is not always a given. If you need to setup render-to-texture in order to have FXAA, then this will be very much a performance smack to the face and the "F" in FXAA evaporates.
 
 ## Analytical Anti Aliasing
 
@@ -709,8 +713,6 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 	</div>
 </div>
 
-<script id="vertexAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analytical.vs" %}</script>
-<script id="fragmentAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analytical.fs" %}</script>
 <script id="fragment3D" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/3DAnalytical.fs" %}</script>
 <script id="vertex3D" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/3DAnalytical.vs" %}</script>
 
@@ -777,7 +779,7 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 <script src="circleAnalyticalComparison.js"></script>
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasCompare"></canvas>
 
-<script>setupAnalyticalComparison("canvasCompare", "vertex_0", "fragmentAnalytical", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resCompare");</script>
+<script>setupAnalyticalComparison("canvasCompare", "vertexAnalytical", "fragmentAnalytical", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resCompare");</script>
 
 <pre id="compareShader">{% rawFile "posts/analytical-anti-aliasing/circle-analyticalCompare.fs" %}</pre>
 <script src="/ace/ace.js" type="text/javascript" charset="utf-8"></script>
