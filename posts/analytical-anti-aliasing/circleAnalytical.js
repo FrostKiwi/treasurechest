@@ -76,7 +76,6 @@ function setupAnalytical(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blit
 
 	gl.enable(gl.BLEND);
 
-	gl.clearColor(0, 0, 0, 1);
 	function redraw(time) {
 		redrawActive = true;
 		if (!buffersInitialized) {
@@ -91,7 +90,7 @@ function setupAnalytical(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blit
 		gl.useProgram(circleShd);
 
 		/* Draw Circle Animation */
-		gl.uniform1f(pixelSizeCircle, 2.0 / (canvas.height / resDiv) / circleSize);
+		gl.uniform1f(pixelSizeCircle, 2.0 / (canvas.height / resDiv));
 
 		gl.uniform1f(aspect_ratioLocation, aspect_ratio);
 		var radius = 0.1;

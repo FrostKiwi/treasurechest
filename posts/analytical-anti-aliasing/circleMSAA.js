@@ -1,9 +1,10 @@
-function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, circleSimpleFragSrc, postVtxSrc, postFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc, radioName) {
+function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, circleSimpleFragSrc, postVtxSrc, postFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc, radioName, radioSmoothSize) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
-	let frameTexture, circleDrawFramebuffer, frameTextureLinear;
+	let frameTexture, circleDrawFramebuffer;
 	let buffersInitialized = false;
 	let resDiv = 1;
+	let pixelSmoothSize = 1;
 	const gl = canvas.getContext('webgl2',
 		{
 			preserveDrawingBuffer: false,
@@ -44,6 +45,20 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, circleSimpleFragSrc, p
 			radio.checked = true;
 		radio.addEventListener('change', (event) => {
 			resDiv = event.target.value;
+			stopRendering();
+			startRendering();
+		});
+	});
+
+	/* Smooth Size */
+	const radiosSmooth = document.querySelectorAll(`input[name="${radioSmoothSize}"]`);
+	radiosSmooth.forEach(radio => {
+		/* Force set to 1 to fix a reload bug in Firefox Android */
+		if (radio.value === "1")
+			radio.checked = true;
+		radio.addEventListener('change', (event) => {
+			pixelSmoothSize = event.target.value;
+			console.log(pixelSmoothSize);
 			stopRendering();
 			startRendering();
 		});
@@ -176,7 +191,7 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, circleSimpleFragSrc, p
 			gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
 			gl.uniform1f(aspect_ratioLocation, aspect_ratio);
 			gl.uniform1f(sizeLocationCircle, circleSize);
-			gl.uniform1f(pixelSizeCircle, 2.0 / (canvas.height / resDiv) / circleSize);
+			gl.uniform1f(pixelSizeCircle, (2.0 / (canvas.height / resDiv)) * pixelSmoothSize);
 		}
 
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
