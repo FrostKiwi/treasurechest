@@ -1,6 +1,6 @@
 ---
 wip: true
-title: Analytical Anti-Aliasing
+title: AAA - Analytical Anti-Aliasing
 permalink: "/{{ page.fileSlug }}/"
 date: 2999-12-09
 last_modified:
