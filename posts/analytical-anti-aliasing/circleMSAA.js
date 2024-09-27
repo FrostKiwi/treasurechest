@@ -58,7 +58,6 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, circleSimpleFragSrc, p
 			radio.checked = true;
 		radio.addEventListener('change', (event) => {
 			pixelSmoothSize = event.target.value;
-			console.log(pixelSmoothSize);
 			stopRendering();
 			startRendering();
 		});
@@ -151,7 +150,6 @@ function setupMSAA(canvasId, circleVtxSrc, circleFragSrc, circleSimpleFragSrc, p
 		buffersInitialized = true;
 	}
 
-	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	function redraw(time) {
 		redrawActive = true;
 		if (!buffersInitialized) {
