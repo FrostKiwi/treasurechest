@@ -11,14 +11,20 @@ publicTags:
   - GameDev
 image: thumbnail.png
 ---
+
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
+
 Today's journey is [Anti-Aliasing](https://en.wikipedia.org/wiki/Spatial_anti-aliasing) and the destination is **Analytical Anti-Aliasing**. Getting rid of rasterization [jaggies](https://en.wikipedia.org/wiki/Jaggies) is an art-form with decades upon decades of maths, creative techniques and non-stop innovation. With so many years of research and development, there are many flavors.
 
-From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/Supersampling), over theory dense [**SMAA**](https://www.iryoku.com/smaa/), to using machine learning with [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). Same goal - ***vastly*** different approaches. We'll take a look at how they work, before introducing a new way to look a the problem - the ✨***analytical***🌟 way. The perfect Anti-Aliasing exists and is simpler than you think.
+From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/Supersampling), over theory dense [**SMAA**](https://www.iryoku.com/smaa/), to using machine learning with [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). Same goal - **_vastly_** different approaches. We'll take a look at how they work, before introducing a new way to look a the problem - the ✨**_analytical_**🌟 way. The perfect Anti-Aliasing exists and is simpler than you think.
 
 <blockquote class="reaction"><div class="reaction_text">Having <a href=https://mirrorball.frost.kiwi>implemented</a> it multiple times over the years, I'll also share some juicy secrets I have never read anywhere before.</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
 
 ## The Setup
-To understand the Anti-Aliasing algorithms, we will implement them along the way! Each following [WebGL canvas](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL) draws a moving circle. Anti-Aliasing _cannot_ be fully understood with just images, movement is *essential* to see pixel crawling and sub-pixel filtering. The red box shows the circle's border with 4x zoom. Rendering is done without scaling at [native](https://en.wikipedia.org/wiki/1:1_pixel_mapping) resolution of your device, important to judge sharpness.
+
+To understand the Anti-Aliasing algorithms, we will implement them along the way! Each following [WebGL canvas](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL) draws a moving circle. Anti-Aliasing _cannot_ be fully understood with just images, movement is _essential_ to see pixel crawling and sub-pixel filtering. The red box shows the circle's border with 4x zoom. Rendering is done without scaling at [native](https://en.wikipedia.org/wiki/1:1_pixel_mapping) resolution of your device, important to judge sharpness.
+
 <blockquote class="reaction"><div class="reaction_text">Please pixel-peep and judge sharpness and aliasing closely. Resolution of your screen too high to see aliasing? Lower the resolution with the following buttons, which will <a href="https://tanalin.com/en/articles/integer-scaling/">integer-scale</a> the rendering.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 <script src="utility.js"></script>
@@ -90,6 +96,7 @@ Let's start out simple. Using [GLSL](https://en.wikipedia.org/wiki/OpenGL_Shadin
 The circle looks very blocky at smaller resolutions. More painfully, there is strong "pixel crawling", an artifact that's very obvious when there is any kind of movement. As the circle moves, rows of pixels pop in and out of existence and the stair steps of the pixelation move along the side of the circle like beads with different speeds.
 
 At lower resolutions these artifacts come together to destroy the circular form. The combination of slow movement and low resolution causes one side's pixels to come into existence, before the other side's pixels disappear, causing a wobble. Axis-alignment with the pixel grid causes "plateaus" of pixels at every 90° and 45° position.
+
 ### Technical breakdown
 
 <blockquote class="reaction"><div class="reaction_text">Understanding the GPU code is not necessary to follow this article, but will help to grasp whats happening when we get to the analytical bits.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
@@ -105,10 +112,11 @@ By performing the check `if (length(uv) < 1.0)` we draw our color for fragments 
 <blockquote class="reaction"><div class="reaction_text">Just to clarify, the circle isn't "drawn with geometry", which would have finite resolution of the shape, depending on how many vertices we use. It is "drawn by the shader".</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 
 ## SSAA
+
 SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Supersampling). Render it bigger, downsample to be smaller. The idea is as old as 3D rendering itself. In fact, the first movies with CGI all relied on this. One example is the 1986 movie "[Flight of the Navigator](https://en.wikipedia.org/wiki/Flight_of_the_Navigator)", as covered by [Captain Disillusion](https://www.youtube.com/@CaptainDisillusion) in the video below.
 
 <figure>
-	<video width="960" height="540" controls><source src="flight.mp4" type="video/mp4"></video>
+	<video poster="flight_thumb.jpg" width="960" height="540" controls><source src="flight.mp4" type="video/mp4"></video>
 	<figcaption>SSAA as used in "Flight of the Navigator" (1986)
 	<br>
 	Excerpt from <a href="https://www.youtube.com/watch?v=tyixMpuGEL8">"Flight of the Navigator | VFXcool"</a><br>YouTube Video by <a href="https://www.youtube.com/@CaptainDisillusion">Captain Disillusion</a>
@@ -163,14 +171,15 @@ SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Sup
 </details>
 </blockquote>
 
-[circleSSAA.js](circleSSAA.js) draws at twice the resolution to a texture, which fragment shader [post.fs](post.fs) reads from at standard resolution with [GL_LINEAR](https://docs.gl/es2/glTexParameter) to perform SSAA. So we have *four* input pixels for every *one* output pixel we draw to the screen. But it's somewhat strange: There is definitely Anti-Aliasing happening, but less than expected.
+[circleSSAA.js](circleSSAA.js) draws at twice the resolution to a texture, which fragment shader [post.fs](post.fs) reads from at standard resolution with [GL_LINEAR](https://docs.gl/es2/glTexParameter) to perform SSAA. So we have _four_ input pixels for every _one_ output pixel we draw to the screen. But it's somewhat strange: There is definitely Anti-Aliasing happening, but less than expected.
 
 <blockquote class="reaction"><div class="reaction_text">There should be 4 steps of transparency, but we only get two!</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-Especially at lower resolutions, we can see the circle *does* actually have 4 steps of transparency, but only at the 45° "diagonals" of the circle. A circle has of course no sides, but at the axis-aligned "bottom" there are only 2 steps of transparency: Fully Opaque and 50% transparent, the 25% and 75% transparency steps are missing.
+Especially at lower resolutions, we can see the circle _does_ actually have 4 steps of transparency, but only at the 45° "diagonals" of the circle. A circle has of course no sides, but at the axis-aligned "bottom" there are only 2 steps of transparency: Fully Opaque and 50% transparent, the 25% and 75% transparency steps are missing.
 
 ### Conceptually simple, actually hard
-We aren't sampling against the circle shape at twice the resolution, we are sampling against the quantized result of the circle shape. Twice the resolution, but discrete pixels nonetheless. The combination of pixelation and sample placement doesn't hold enough information where we need it the most: at the axis-aligned "flat parts". 
+
+We aren't sampling against the circle shape at twice the resolution, we are sampling against the quantized result of the circle shape. Twice the resolution, but discrete pixels nonetheless. The combination of pixelation and sample placement doesn't hold enough information where we need it the most: at the axis-aligned "flat parts".
 
 <blockquote class="reaction"><div class="reaction_text">Four times the memory <b>and</b> four times the calculation requirement, but only a half-assed result.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
@@ -185,12 +194,13 @@ To combat axis-alignment artifacts like with our circle above, we need to place 
 	<figcaption>SSAA sample patterns. <a href="https://en.wikipedia.org/wiki/Supersampling#Supersampling_patterns">Source</a></figcaption>
 </figure>
 
-In fact, some of the best implementations were [discovered by vendors on accident](https://web.archive.org/web/20180716171211/https://naturalviolence.webs.com/sgssaa.htm), like [SGSSAA](https://www.youtube.com/watch?v=ntlYwrbUlWo). There are also ways in which SSAA can make your scene look *worse*. Depending on implementation, SSAA messes with [mip-map](https://en.wikipedia.org/wiki/Mipmap) calculations. As a result the mip-map lod-bias may need adjustment, as explained in the [article above](https://web.archive.org/web/20180716171211/https://naturalviolence.webs.com/sgssaa.htm).
+In fact, some of the best implementations were [discovered by vendors on accident](https://web.archive.org/web/20180716171211/https://naturalviolence.webs.com/sgssaa.htm), like [SGSSAA](https://www.youtube.com/watch?v=ntlYwrbUlWo). There are also ways in which SSAA can make your scene look _worse_. Depending on implementation, SSAA messes with [mip-map](https://en.wikipedia.org/wiki/Mipmap) calculations. As a result the mip-map lod-bias may need adjustment, as explained in the [article above](https://web.archive.org/web/20180716171211/https://naturalviolence.webs.com/sgssaa.htm).
 
 ## MSAA
+
 [MSAA](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) is super sampling, but only at the edges of triangles or textures edges if "[Alpha to Coverage](https://bgolus.medium.com/anti-aliased-alpha-test-the-esoteric-alpha-to-coverage-8b177335ae4f)" is enabled. MSAA is implemented by the graphics card in-hardware by the graphics vendors and what is supported depends on hardware. In the select box below you can choose different MSAA levels to Anti-Alias our circle.
 
-Your hardware [may support up to MSAA x64](https://opengl.gpuinfo.org/displaycapability.php?name=GL_MAX_SAMPLES), but what is available here is implementation defined. WebGL 1 doesn't support MSAA at all, which is why the next windows will initialize a [WebGL 2](https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext) context. In WebGL NVIDIA limits MSAA to 8x, even if more is supported. On smartphones you will most likely get 4x.
+Your hardware [may support up to MSAA x64](https://opengl.gpuinfo.org/displaycapability.php?name=GL_MAX_SAMPLES), but what is available here is implementation defined. WebGL 1 doesn't support MSAA at all, which is why the next windows will initialize a [WebGL 2](https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext) context. In WebGL NVIDIA limits MSAA to 8x on Windows, even if more is supported, whilst on Linux no such limit is in place. On smartphones you will get exactly 4x, as discussed below.
 
 <div class="center-child">
 <select id="MSAA">.
@@ -271,17 +281,32 @@ Your hardware [may support up to MSAA x64](https://opengl.gpuinfo.org/displaycap
 </blockquote>
 
 ### Implementation specific headaches
+
 We rely on hardware to do the Anti-Aliasing, which obviously leads to the problem that the hardware may not support what we expect. And the sampling patterns that MSAA uses may do things you don't expect. Depending on what your hardware does, you may see the circle's edge transparency steps appearing seemingly "Out of Order".
+
+<figure>
+	<img src="outoforder.png" alt="Sample pattern and intended shape clash, pixels are seemingly 'In the wrong order'" />
+	<figcaption>Sample pattern and intended shape clash, pixels are seemingly "In the wrong order"</figcaption>
+</figure>
+
+Freeze Frame, MSAA 2X a worst cause scenario, that is usually not so visible in actual usage.
 
 Before standardization during the OpenGL 3, DirectX 10 era of graphics hardware, MSAA support was especially hit and miss. Eg. Intel iGPUs of GM45 laptops expose the OpenGL extension [`EXT_framebuffer_multisample`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_framebuffer_multisample.txt), but don't in-fact support MSAA, [which led to confusion](https://community.khronos.org/t/yet-another-intel-multisample-thread/69614).
 
-On mobile chips weird things happen, which usually support *exactly* 4xMSAA. Android phones will let you pick 2xMSAA, but the graphics driver will force your choice to 4xMSAA. iPhones and iPads do something quite frankly stupid: Choosing 2xMSAA will make it 4xMSAA, but the transparency will be rounded to nearest 50% multiple, leading to double transparent edges in our example. Luckily there is a good hardware related reason for this...
-### Performance cost: (maybe) Zero 
+<figure>
+	<img src="iOSroundedMSAA.png" alt="iOS 2xMSAA, created by rounding transparency of 4xMSAA" />
+	<figcaption>iOS 2xMSAA, created by rounding transparency of 4xMSAA</figcaption>
+</figure>
+
+On mobile chips weird things happen, which usually support _exactly_ 4xMSAA. Android phones will let you pick 2xMSAA, but the graphics driver will force your choice to 4xMSAA. iPhones and iPads do something quite frankly stupid: Choosing 2xMSAA will make it 4xMSAA, but the transparency will be rounded to nearest 50% multiple, leading to double transparent edges in our example. Luckily there is a good hardware related reason for this...
+
+### Performance cost: (maybe) Zero
+
 ...looking at modern video games, one might be led to believe that this technique is of the past. Enabling it usually brings a hefty performance penalty after all. Surprisingly, it's still the king under certain circumstances and in very specific situations, even performance free.
 
 <blockquote class="reaction"><div class="reaction_text">As a gamer, this goes against instinct...</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 <figure>
-	<video width="960" height="540" controls><source src="MSAA-PerformanceFree.mp4" type="video/mp4"></video>
+	<video poster="MSAA-PerformanceFree_thumb.jpg" width="960" height="540" controls><source src="MSAA-PerformanceFree.mp4" type="video/mp4"></video>
 	<figcaption>Video: MSAA 4x is performance free in certain contexts
 	<br>
 	Excerpt from <a href="https://gdcvault.com/play/1024538">"Developing High Performance Games for Different Mobile VR Platforms"</a><br> GDC 2017 talk by <a href="https://www.linkedin.com/in/rahulprasad2/	">Rahul Prasad</a>
@@ -293,7 +318,7 @@ On mobile chips weird things happen, which usually support *exactly* 4xMSAA. And
 As explained by [Rahul Prasad](https://www.linkedin.com/in/rahulprasad2/) in the above talk, in VR 4xMSAA is a must and may come free on certain mobile GPUs. The specific reason would derail the blog post, but in case you want to go down that particular rabbit hole, here is Epic Games' [Niklas Smedberg](https://www.linkedin.com/in/niklas-smedberg-a96466/) explaining giving a run-down.
 
 <figure>
-	<video width="960" height="540" controls><source src="tile-based-gpus.mp4" type="video/mp4"></video>
+	<video poster="tile-based-gpus_thumb.jpg" width="960" height="540" controls><source src="tile-based-gpus.mp4" type="video/mp4"></video>
 	<figcaption>Video: Tiled based rendering GPU architecture
 	<br>
 	Excerpt from <a href="https://gdcvault.com/play/1020756">"Next-Generation AAA Mobile Rendering"</a><br> GDC 2014 talk by <a href="https://www.linkedin.com/in/niklas-smedberg-a96466/">Niklas Smedberg</a> and <a href="https://twitter.com/NOTimothyLottes">Timothy Lottes</a>
@@ -303,18 +328,21 @@ As explained by [Rahul Prasad](https://www.linkedin.com/in/rahulprasad2/) in the
 In short, this is possible under the condition of [forward rendering](https://gamedevelopment.tutsplus.com/forward-rendering-vs-deferred-rendering--gamedev-12342a) with geometry that is not too dense and the GPU having [tiled-based rendering architecture](https://developer.arm.com/documentation/102662/0100/Tile-based-GPUs), which allows the GPU to perform MSAA calculations without heavy memory access and thus [latency hiding](/WebGL-LUTS-made-simple/#performance-cost%3A-zero) the cost of the calculation. Here's [deep dive](https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msaa#color-resolve), if you are interested.
 
 ### A complex toolbox
-MSAA gives you access to the samples, making [custom MSAA filtering curves](https://therealmjp.github.io/posts/msaa-resolve-filters/) a possibility. It also allows you to [merge both standard mesh-based and signed-distance-field rendering](https://bgolus.medium.com/rendering-a-sphere-on-a-quad-13c92025570c) via [sample to coverage](https://bgolus.medium.com/anti-aliased-alpha-test-the-esoteric-alpha-to-coverage-8b177335ae4f), as mentioned above. 
+
+MSAA gives you access to the samples, making [custom MSAA filtering curves](https://therealmjp.github.io/posts/msaa-resolve-filters/) a possibility. It also allows you to [merge both standard mesh-based and signed-distance-field rendering](https://bgolus.medium.com/rendering-a-sphere-on-a-quad-13c92025570c) via [sample to coverage](https://bgolus.medium.com/anti-aliased-alpha-test-the-esoteric-alpha-to-coverage-8b177335ae4f), as mentioned above.
 
 Some of the most out-of-the-box thinking I ever witnessed in graphics programming is how [Assassin's Creed Unity](https://en.wikipedia.org/wiki/Assassin%27s_Creed_Unity) used MSAA to render at half resolution but reconstruct the full resolution image from MSAA samples, as described on page 48 of the talk "[GPU-Driven Rendering Pipelines](https://advances.realtimerendering.com/s2015/aaltonenhaar_siggraph2015_combined_final_footer_220dpi.pdf)" by [Ulrich Haar](https://www.linkedin.com/in/ulrich-haar-730407218) and [Sebastian Aaltonen](https://x.com/SebAaltonen). Kinda like [variable rate shading](https://developer.nvidia.com/vrworks/graphics/variablerateshading), but implemented with duct-tape and without vendor support.
 
 <blockquote class="reaction"><div class="reaction_text">The brain-melting lengths to which graphics programmers go to utilize hardware acceleration to the last drop has me sometimes in awe.</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
 
 ## Post-Process Anti-Aliasing
+
 In 2009 a [paper](https://web.archive.org/web/20141205052029/http://visual-computing.intel-research.net/publications/papers/2009/mlaa/mlaa.pdf) by [Alexander Reshetov](https://research.nvidia.com/person/alexander-reshetov) struck the graphics programming world like a ton of bricks: take the blocky, aliased result of the rendered image, find edges and classify the pixels into tetris-like shapes to filter them and remove the blocky edge. Anti-Aliasing based on the [morphology](https://en.wikipedia.org/wiki/Mathematical_morphology) of pixels - "Morphological antialiasing". [MLAA](https://www.iryoku.com/mlaa/) was born.
 
 Computationally cheap, easy to implement. Later it was refined with more emphasis on removing sub-pixel artifacts to become [SMAA](https://www.iryoku.com/smaa/). It became a fan favorite, with [an injector being developed early on](https://mrhaandi.blogspot.com/p/injectsmaa.html?m=1) to put SMAA into games that didn't even support it. Though equally many considered these techniques too blurry, coining the term "vaseline" on the screen.
 
 ### FXAA
+
 We'll take a close look at an algorithm that was inspired by MLAA, developed by [Timothy Lottes](https://x.com/NOTimothyLottes). "Fast approximate anti-aliasing" - [FXAA](https://developer.download.nvidia.com/assets/gamedev/files/sdk/11/FXAA_WhitePaper.pdf). In fact, when FXAA came into wide circulation, it received some incredibly praising press releases. [Among others](https://www.realtimerendering.com/blog/fxaa-rules-ok/), [Jeff Atwood](https://blog.codinghorror.com/about-me/) pulled neither bold fonts nor punches in his [2011 blog post](https://blog.codinghorror.com/fast-approximate-anti-aliasing-fxaa/) about FXAA, which was later [republished by Kotaku](http://kotaku.com/5866780/).
 
 > [**Jeff Atwood**](https://blog.codinghorror.com/about-me/): The FXAA method is so good, in fact, it makes all other forms of full-screen anti-aliasing pretty much obsolete overnight. **If you have an FXAA option in your game, you should enable it immediately** and ignore any other AA options.
@@ -371,7 +399,7 @@ A bit of a weird result. It looks really good if the circle wouldn't move. Perfe
 
 FXAA considers a 3x3 pixel grid when it does it's edge detection. It can't possibly know that the small area it works on is part of the round shape.
 
-A little history tour, since this information is almost lost due to [link rot](https://en.wikipedia.org/wiki/Link_rot) so severe, that graphics researcher were forced to [use archive links](http://behindthepixels.io/assets/files/TemporalAA.pdf#page=14). By that time [Timothy Lottes](https://x.com/NOTimothyLottes) was already experimenting with temporal anti-aliasing, a technique of 
+A little history tour, since this information is almost lost due to [link rot](https://en.wikipedia.org/wiki/Link_rot) so severe, that graphics researcher were forced to [use archive links](http://behindthepixels.io/assets/files/TemporalAA.pdf#page=14). By that time [Timothy Lottes](https://x.com/NOTimothyLottes) was already experimenting with temporal anti-aliasing, a technique of
 In fact, FXAA was supposed to [evole into FXXA v4](https://web.archive.org/web/20120120082725/http://timothylottes.blogspot.com/2011/12/fxaa-40-stills-and-features.html) and [incorporate temporal anti aliasing](https://web.archive.org/web/20120120070945/http://timothylottes.blogspot.com/2011/12/big-fxaa-update-soon.html), but instead it evolved and rebranded into [TXAA](https://web.archive.org/web/20210116205348/https://www.nvidia.com/en-gb/geforce/technologies/txaa/technology/).
 
 ```
@@ -384,9 +412,11 @@ https://web.archive.org/web/20120120072820/http://timothylottes.blogspot.com/201
 https://web.archive.org/web/20120120085634/http://timothylottes.blogspot.com/2011/12/fxaa-40-development-update-stills.html
 https://web.archive.org/web/20120120075218/http://timothylottes.blogspot.com/2011/12/fxaa-40-with-178x-ssaa.html
 ```
+
 We didn't do FXAA justice with our example. FXAA was created for another use case and has many settings and presets. It was created to anti-alias more complex scenes. Let's give it a fair shot!
 
 #### FXAA full demo
+
 A more appropriate example, from probably my favorite piece of software in existence: [NeoTokyo°](https://store.steampowered.com/app/244630/NEOTOKYO/). I created a bright area light in an NT° map and moved a bench to create an area of strong aliasing. The following demo uses the aliased output from [NeoTokyo°](https://store.steampowered.com/app/244630/NEOTOKYO/), calculates the required luminance channel and applies FXAA. All FXAA presets and settings at your finger tips.
 
 <blockquote class="reaction"><div class="reaction_text">This has fixed resolution and will only be at you device's native resolution, if your device has no dpi scaling and the browser is at 100% zoom.</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
@@ -664,7 +694,6 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 	</tr>
 </table>
 
-
 <blockquote>
 <details><summary><a href="screenshots/fxaainteractive.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
@@ -730,6 +759,7 @@ It may be performance cheap, but only if you already have post-processing in pla
 <script src="circleAnalytical.js"></script>
 
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasAnalytical"></canvas>
+
 <div class="toggleRes">
 	<div>
 	  <input type="radio" id="1pxAAA" name="pxSizeAAA" value="1" checked />
@@ -775,7 +805,7 @@ It may be performance cheap, but only if you already have post-processing in pla
 
 ![image](compare.png)
 
-## Implementation comparison
+### Implementation comparison
 
 <div class="toggleRes">
 	<div>
@@ -797,31 +827,116 @@ It may be performance cheap, but only if you already have post-processing in pla
 </div>
 
 <script src="circleAnalyticalComparison.js"></script>
+
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasCompare"></canvas>
 
+<table class="settingsTable" style="width: 100%; max-width: 100%;">
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>Pixel&nbsp;size&nbsp;method</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>Pixel&nbsp;size&nbsp;method</code>
+		</td>
+		<td colspan=2 style="width:100%">
+<select id="pixelSizeMethod" style="width: 100%; margin-bottom: unset">
+	<optgroup label="Screen-Space Derivatives">
+		<option value="FWIDTH">fwidth</option>
+		<option value="FWIDTH">length + dFdx + dFdy</option>
+	</optgroup>
+	<optgroup label="No Screen-Space Derivatives">
+		<option checked value="SIMPLE">Pre-calculate pixel size</option>
+</select>
+		</td>
+		<td>
+			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('pixelSizeMethodExplain'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+		</td>
+	</tr>
+	<tr>
+		<td class="precolumn" colspan=4>
+		<pre id="pixelSizeMethodExplain" style="display: none;">Now</pre>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>Blend&nbsp;method</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>Blend&nbsp;method</code>
+		</td>
+		<td colspan=2 style="width:100%">
+<select id="BLENDMETHOD" style="width: 100%; margin-bottom: unset">
+		<option value="division">Simple division</option>
+		<option value="smoothstep">Smooth step</option>
+		<option value="linstep">Linear step</option>
+</select>
+		</td>
+		<td>
+			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('BLENDMETHODExplain'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+		</td>
+	</tr>
+	<tr>
+		<td class="precolumn" colspan=4>
+		<pre id="BLENDMETHODExplain" style="display: none;">Now</pre>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>Smoothing</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>Smoothing</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="0.1" min="0" max="10" value="1" id="SmoothingPxRange" oninput="SmoothingPxValue.value = parseFloat(this.value).toFixed(1)">
+		</td>
+		<td style="text-align: center;">
+			<output id="SmoothingPxValue">1</output> px
+		</td>
+		<td>
+			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('SmoothingPxExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+		</td>
+	</tr>
+	<tr>
+		<td class="precolumn" colspan=4>
+		<pre id="SmoothingPxExplanation" style="display: none;">Now</pre>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>Circle&nbsp;shrink&nbsp;amount</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>Circle&nbsp;shrink&nbsp;amount</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="0.1" min="0" max="10" value="1" id="ShrinkAmountRange" oninput="ShrinkAmountValue.value = parseFloat(this.value).toFixed(1)">
+		</td>
+		<td style="text-align: center;">
+			<output id="ShrinkAmountValue">1</output> px
+		</td>
+		<td>
+			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('ShrinkAmountExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="precolumn" colspan=4>
+		<pre id="ShrinkAmountExplanation" style="display: none;">Now</pre>
+		</td>
+	</tr>
+</table>
 <script>setupAnalyticalComparison("canvasCompare", "vertexAnalytical", "fragmentAnalytical", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resCompare");</script>
 
-<pre id="compareShader">{% rawFile "posts/analytical-anti-aliasing/circle-analyticalCompare.fs" %}</pre>
-<script src="/ace/ace.js" type="text/javascript" charset="utf-8"></script>
-<script>
-    var editor = ace.edit("compareShader");
-    editor.setTheme("ace/theme/gruvbox_dark_hard");
-    editor.session.setMode("ace/mode/glsl");
-	editor.session.setOptions({
-        useWorker: false
-    });
-	editor.renderer.setOptions({
-		showFoldWidgets: false,
-        fontSize: "smaller",
-        fontFamily: "Consolas, Monaco, \"Andale Mono\", monospace;",
-		showPrintMargin: false,
-		maxLines: 50
-    })
-</script>
-
-<div class="center-child"><button id="shaderReload">Reload Shader</button></div>
-
 ## 3D
+
 <div class="toggleRes">
 	<div>
 	  <input type="radio" id="native3D" name="res3D" value="1" checked />
@@ -843,6 +958,7 @@ It may be performance cheap, but only if you already have post-processing in pla
 <script src="3DAnalytical.js"></script>
 
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvas3D"></canvas>
+
 <blockquote>
 <details><summary><a href="screenshots/simple.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
@@ -876,34 +992,41 @@ It may be performance cheap, but only if you already have post-processing in pla
 <script>setup3D("canvas3D", "vertex3D", "fragment3D", "vertexBlit", "fragmentBlit", "res3D");</script>
 
 ## Signed distance field rendering
+
 [Signed distance functions](https://en.wikipedia.org/wiki/Signed_distance_function#Applications)
+
 ### [Valve Software](https://www.valvesoftware.com/)'s implementation
-Valve introduced extensive use of signed distance field rendering to the [Source engine](https://en.wikipedia.org/wiki/Source_(game_engine)) during the development of the [Orange Box](https://en.wikipedia.org/wiki/The_Orange_Box). Most prominently in [Team Fortress 2](https://www.teamfortress.com/), where it was used to create smooth yet sharp UI elements on the HUD and decals in the game world. It received even its own [Developer Commentary](https://wiki.teamfortress.com/wiki/Developer_commentary) entry.
+
+Valve introduced extensive use of signed distance field rendering to the [Source engine](<https://en.wikipedia.org/wiki/Source_(game_engine)>) during the development of the [Orange Box](https://en.wikipedia.org/wiki/The_Orange_Box). Most prominently in [Team Fortress 2](https://www.teamfortress.com/), where it was used to create smooth yet sharp UI elements on the HUD and decals in the game world. It received even its own [Developer Commentary](https://wiki.teamfortress.com/wiki/Developer_commentary) entry.
 
 ![](tf2hud.png)
 
 <audio controls><source src="tf2-dev-commentary.mp3" type="audio/mpeg"></audio>
+
 > **Alden Kroll:** Two-dimensional HUD elements present a particular art problem, because they have to look good and sharp no matter what resolution the user is running their game at. Given today's availability of high resolution wide-screen displays, this can require a lot of texture memory and a lot of work anticipating different display resolutions. The problem for Team Fortress 2 was even more daunting because of our desire to include a lot of smooth curved elements in our HUD. We developed a new shader system for drawing 'line art' images. The system allows us to create images at a fixed resolution that produced smooth silhouettes even when scaled up to a very high resolution. This shader system also handles outlining and drop-shadows, and can be applied in the 3D space to world elements such as signs.
 
 They also released [a paper](https://steamcdn-a.akamaihd.net/apps/valve/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf) describing the specific implementation.
 
-Added as a mere footnote to the paper, was described a way to do perform this 
+Added as a mere footnote to the paper, was described a way to do perform this
+
 ### The future of all things font?
+
 Picking up on that foot note and bringing the technique to its logical conclusion was the most thorough and well composed Master Thesis I ever read: "[Shape Decomposition for Multi-channel
 Distance Fields](https://github.com/Chlumsky/msdfgen/files/3050967/thesis.pdf)" by [Viktor Chlumský](https://github.com/Chlumsky).
-
 
 This technique is built with either the use of GLSL's [`fwidth()`](https://docs.gl/sl4/fwidth) or a combination of [`length()`](https://docs.gl/sl4/length) + [`dFdx()`](https://docs.gl/sl4/dFdx) + [`dFdy()`](https://docs.gl/sl4/dFdy).
 This has been documented many times over, by many people in different forms. I use it so often, that I wanna write it down myself.
 
-
 Mention connection to Freya the stray and https://acegikmo.com/shapes/
 
-
 ## Secret sauce 💦
+
 When following graphics programming literature while implementing analytical anti-aliasing in various shaders, I discovered many implementation details that I don't agree with. So from here on out, we'll go into the nitty gritty, as I spill the tea on some juicy GPU code secrets.
+
 ### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
+
 Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliasing in `GLSL`, but its use doesn't make sense. It performs a hermite interpolation, but the we are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here.
+
 <blockquote class="reaction"><div class="reaction_text">To be precise, both sampling and blending witness the smoothstep curve in the sub-pixel make-up of the edge, but even after pixel peeping, it just doesn't make any difference.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 Though the slight performance difference doesn't particularly matter on modern graphics cards so wasting cycles on performing the hermite interpolation doesn't make sense to me.
@@ -916,16 +1039,17 @@ implement
 
 But wait! If all we want know is the pixel size, then most of this cancels out! Infact, we don't need any kind of step function.
 
+### We gotta talk
 
-
-### We gotta talk 
 See my Stackoverflow question '[How to ensure screen space derivatives are present on triangle edges?](https://stackoverflow.com/questions/73903568/how-to-ensure-screen-space-derivatives-are-present-on-triangle-edges)' for more details around the case of using this under 3D perspectives, not just 2D.
+
 ```glsl
 	float dist = length(vtx_fs) - 0.9;
 	float smoothedAlpha = dist / length(vec2(dFdx(dist), dFdy(dist)));
 	/* float smoothedAlpha = dist / fwidth(dist); */
 	gl_FragColor = vec4(color, alpha - smoothedAlpha);
 ```
+
 ```glsl
 void main()
 {
@@ -935,6 +1059,7 @@ void main()
     gl_FragColor = vec4(color, alpha - smoothedAlpha);
 }
 ```
+
 ```glsl
 void main()
 {
@@ -946,21 +1071,23 @@ void main()
 ```
 
 ### fwidth vs length + dFdx + dFdy
+
 `length(vec2(dFdx(dist), dFdy(dist)))`
 
- https://acegikmo.com/shapes/
- https://acegikmo.com/shapes/docs/#anti-aliasing
- 
- > The difference between Fast and Corrected LAA is subtle - Fast LAA has a slight bias in the diagonal directions, making circular shapes appear ever so slightly rhombous and have a slightly sharper curvature in the orthogonal directions, especially when small.
+https://acegikmo.com/shapes/
+https://acegikmo.com/shapes/docs/#anti-aliasing
 
- Screen space derivatives are free, but what we do with them is not. Things are shaded in 2x2 fragment packs to get screen space derivatives. That's one of the reasons using [a full-screen triangle is faster than using a full-screen quad](https://wallisc.github.io/rendering/2021/04/18/Fullscreen-Pass.html), because the triangle diagonals are shaded more than needed.
+> The difference between Fast and Corrected LAA is subtle - Fast LAA has a slight bias in the diagonal directions, making circular shapes appear ever so slightly rhombous and have a slightly sharper curvature in the orthogonal directions, especially when small.
 
- But wait a moment, wouldn't it be smarter to draw the shapes on a triangle instead of a quad, saving the double shaded diagonals in the middle? As per usual, the true answer is *it depends*, but long story short: no. The full screen triangle isn't shaded beyond the screen's borders, because the GPU's rasterization step that happens before the fragment shader is invoked, will clip the triangle and prevent calculations which aren't visible in the first place. That is not the case with shapes that move within the confines of screen, leading to lots of overdraw in the invisible parts outside the shape.
+Screen space derivatives are free, but what we do with them is not. Things are shaded in 2x2 fragment packs to get screen space derivatives. That's one of the reasons using [a full-screen triangle is faster than using a full-screen quad](https://wallisc.github.io/rendering/2021/04/18/Fullscreen-Pass.html), because the triangle diagonals are shaded more than needed.
+
+But wait a moment, wouldn't it be smarter to draw the shapes on a triangle instead of a quad, saving the double shaded diagonals in the middle? As per usual, the true answer is _it depends_, but long story short: no. The full screen triangle isn't shaded beyond the screen's borders, because the GPU's rasterization step that happens before the fragment shader is invoked, will clip the triangle and prevent calculations which aren't visible in the first place. That is not the case with shapes that move within the confines of screen, leading to lots of overdraw in the invisible parts outside the shape.
+
 ### OpenGL and WebGL compatibility
-This is compatible with all OpenGL and GLSL versions that use shaders. For OpenGL ***ES*** 2.0 and WebGL 1.0 you have to check for the existance of [OES_standard_derivatives](https://registry.khronos.org/OpenGL/extensions/OES/OES_standard_derivatives.txt) and perform `#extension GL_OES_standard_derivatives : enable`, though I have never seen a device OpenGL ES 2.0 device, that did not support screen space derivatives.
+
+This is compatible with all OpenGL and GLSL versions that use shaders. For OpenGL **_ES_** 2.0 and WebGL 1.0 you have to check for the existance of [OES_standard_derivatives](https://registry.khronos.org/OpenGL/extensions/OES/OES_standard_derivatives.txt) and perform `#extension GL_OES_standard_derivatives : enable`, though I have never seen a device OpenGL ES 2.0 device, that did not support screen space derivatives.
 
 Advanced font rendering uses `GL_EXT_blend_func_extended` sometimes to perform advanced blending, but that is not required for our Anti-Aliasing case.
-
 
 ```
 https://www.youtube.com/watch?v=1J6aAHLCbWg
@@ -972,7 +1099,7 @@ http://miciwan.com/SIGGRAPH2013/Lighting%20Technology%20of%20The%20Last%20Of%20U
 TSSAA http://web.archive.org/web/20120120082628/http://timothylottes.blogspot.com/2011_04_01_archive.html
 ```
 
-April 2011 
+April 2011
 
 Capsule shadows
 
@@ -981,6 +1108,6 @@ https://github.com/godotengine/godot-proposals/issues/5262
 https://docs.unrealengine.com/4.27/en-US/BuildingWorlds/LightingAndShadows/CapsuleShadows/Overview/
 ```
 
-Modern video games often which use TAA in combination dynamic resolution scaling, a concoction resulting in blurriness. These AA algorithms come with post-process sharpening built-in to combat this. I find this a bit of graphics programming sin. 
+Modern video games often which use TAA in combination dynamic resolution scaling, a concoction resulting in blurriness. These AA algorithms come with post-process sharpening built-in to combat this. I find this a bit of graphics programming sin.
 
 Whole communities rally around fixing this, like the reddit communities "[r/MotionClarity](https://www.reddit.com/r/MotionClarity/)" or lovely titled "[r/FuckTAA](https://www.reddit.com/r/FuckTAA)".
