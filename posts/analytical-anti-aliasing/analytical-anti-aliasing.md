@@ -11,10 +11,6 @@ publicTags:
   - GameDev
 image: thumbnail.png
 ---
-
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
-
 Today's journey is [Anti-Aliasing](https://en.wikipedia.org/wiki/Spatial_anti-aliasing) and the destination is **Analytical Anti-Aliasing**. Getting rid of rasterization [jaggies](https://en.wikipedia.org/wiki/Jaggies) is an art-form with decades upon decades of maths, creative techniques and non-stop innovation. With so many years of research and development, there are many flavors.
 
 From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/Supersampling), over theory dense [**SMAA**](https://www.iryoku.com/smaa/), to using machine learning with [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). Same goal - **_vastly_** different approaches. We'll take a look at how they work, before introducing a new way to look a the problem - the ✨**_analytical_**🌟 way. The perfect Anti-Aliasing exists and is simpler than you think.
@@ -39,6 +35,7 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 
 <script id="vertex_0" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}</script>
 <script id="fragment_0" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}</script>
+<script id="fragment_SimpleColor" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/simpleColor.fs" %}</script>
 <div class="toggleRes">
 	<div>
 	  <input type="radio" id="native" name="resSimple" value="1" checked />
@@ -58,7 +55,17 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 	</div>
 </div>
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasSimple"></canvas>
-<script>setupSimple("canvasSimple", "vertex_0", "fragment_0", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resSimple");</script>
+<div class="toggleRes">
+	<div>
+	  <input type="radio" id="showCirclelabel" name="showQuad" value="false" checked />
+	  <label for="showCirclelabel">Draw Circle</label>
+	</div>
+	<div>
+	  <input type="radio" id="showQuadlabel" name="showQuad" value="true" />
+	  <label for="showQuadlabel">Show Quad</label>
+	</div>
+</div>
+<script>setupSimple("canvasSimple", "vertex_0", "fragment_0", "fragment_SimpleColor", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resSimple", "showQuad");</script>
 
 <blockquote>
 <details><summary><a href="screenshots/simple.png">Screenshot</a>, in case WebGL doesn't work</summary>
@@ -465,6 +472,7 @@ A more appropriate example, from probably my favorite piece of software in exist
     	overflow-x: auto;
     	max-width: 100%;
     	white-space: pre-wrap;
+		overflow-wrap: anywhere;
 	}
 	.precolumn {
 		padding: 0px;
@@ -844,7 +852,7 @@ It may be performance cheap, but only if you already have post-processing in pla
 <select id="pixelSizeMethod" style="width: 100%; margin-bottom: unset">
 	<optgroup label="Screen-Space Derivatives">
 		<option value="FWIDTH">fwidth</option>
-		<option value="FWIDTH">length + dFdx + dFdy</option>
+		<option value="dFd">length + dFdx + dFdy</option>
 	</optgroup>
 	<optgroup label="No Screen-Space Derivatives">
 		<option checked value="SIMPLE">Pre-calculate pixel size</option>
@@ -894,7 +902,7 @@ It may be performance cheap, but only if you already have post-processing in pla
 			<code>Smoothing</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="0.1" min="0" max="10" value="1" id="SmoothingPxRange" oninput="SmoothingPxValue.value = parseFloat(this.value).toFixed(1)">
+			<input class="slider" type="range" step="0.1" min="0" max="9.9" value="1" id="SmoothingPxRange" oninput="SmoothingPxValue.value = parseFloat(this.value).toFixed(1)">
 		</td>
 		<td style="text-align: center;">
 			<output id="SmoothingPxValue">1</output> px
@@ -918,7 +926,7 @@ It may be performance cheap, but only if you already have post-processing in pla
 			<code>Circle&nbsp;shrink&nbsp;amount</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="0.1" min="0" max="10" value="1" id="ShrinkAmountRange" oninput="ShrinkAmountValue.value = parseFloat(this.value).toFixed(1)">
+			<input class="slider" type="range" step="0.1" min="0" max="9.9" value="1" id="ShrinkAmountRange" oninput="ShrinkAmountValue.value = parseFloat(this.value).toFixed(1)">
 		</td>
 		<td style="text-align: center;">
 			<output id="ShrinkAmountValue">1</output> px
@@ -958,7 +966,16 @@ It may be performance cheap, but only if you already have post-processing in pla
 <script src="3DAnalytical.js"></script>
 
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvas3D"></canvas>
-
+<div class="toggleRes">
+	<div>
+	  <input type="radio" id="showCirclelabel3D" name="showQuad3D" value="false" checked />
+	  <label for="showCirclelabel3D">Draw Circle</label>
+	</div>
+	<div>
+	  <input type="radio" id="showQuadlabel3D" name="showQuad3D" value="true" />
+	  <label for="showQuadlabel3D">Show Quad</label>
+	</div>
+</div>
 <blockquote>
 <details><summary><a href="screenshots/simple.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
@@ -989,7 +1006,7 @@ It may be performance cheap, but only if you already have post-processing in pla
 
 </details>
 </blockquote>
-<script>setup3D("canvas3D", "vertex3D", "fragment3D", "vertexBlit", "fragmentBlit", "res3D");</script>
+<script>setup3D("canvas3D", "vertex3D", "fragment3D", "fragment_SimpleColor", "vertexBlit", "fragmentBlit", "res3D", "showQuad3D");</script>
 
 ## Signed distance field rendering
 

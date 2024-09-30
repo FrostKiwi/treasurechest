@@ -1,8 +1,9 @@
-function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc, radioName) {
+function setupSimple(canvasId, circleVtxSrc, circleFragSrc, simpleColorFragSrc, blitVtxSrc, blitFragSrc, redVtxSrc, redFragSrc, radioName, showQuadOpt) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	let circleDrawFramebuffer, frameTexture;
 	let buffersInitialized = false;
+	let showQuad = false;
 	let resDiv = 1;
 	const gl = canvas.getContext('webgl',
 		{
@@ -25,12 +26,31 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 		});
 	});
 
+	/* Show Quad instead of circle choise */
+	const showQuadOption = document.querySelectorAll(`input[name="${showQuadOpt}"]`);
+	showQuadOption.forEach(radio => {
+		/* Force set to 1 to fix a reload bug in Firefox Android */
+		if (radio.value === "false")
+			radio.checked = true;
+		radio.addEventListener('change', (event) => {
+			showQuad = (event.target.value === "true");
+			stopRendering();
+			startRendering();
+		});
+	});
+
 	/* Shaders */
 	/* Circle Shader */
 	const circleShd = compileAndLinkShader(gl, circleVtxSrc, circleFragSrc);
 	const aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
 	const offsetLocationCircle = gl.getUniformLocation(circleShd, "offset");
 	const sizeLocationCircle = gl.getUniformLocation(circleShd, "size");
+
+	/* SimpleColor Shader */
+	const simpleColorShd = compileAndLinkShader(gl, circleVtxSrc, simpleColorFragSrc);
+	const aspect_ratioLocationSimple = gl.getUniformLocation(simpleColorShd, "aspect_ratio");
+	const offsetLocationCircleSimple = gl.getUniformLocation(simpleColorShd, "offset");
+	const sizeLocationCircleSimple = gl.getUniformLocation(simpleColorShd, "size");
 
 	/* Blit Shader */
 	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);
@@ -98,6 +118,14 @@ function setupSimple(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFrag
 		gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
 		gl.uniform1f(sizeLocationCircle, circleSize);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+		if (showQuad) {
+			gl.useProgram(simpleColorShd);
+			gl.uniform1f(aspect_ratioLocationSimple, aspect_ratio);
+			gl.uniform2fv(offsetLocationCircleSimple, circleOffsetAnim);
+			gl.uniform1f(sizeLocationCircleSimple, circleSize);
+			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+		}
 
 		gl.viewport(0, 0, canvas.width, canvas.height);
 

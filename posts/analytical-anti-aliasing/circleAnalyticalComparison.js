@@ -27,6 +27,25 @@ function setupAnalyticalComparison(canvasId, circleVtxSrc, circleFragSrc, blitVt
 		});
 	});
 
+	const pixelSizeMethod = document.getElementById('pixelSizeMethod');
+	pixelSizeMethod.addEventListener('change', function () {
+		console.log(pixelSizeMethod.value);
+	});
+	const BLENDMETHOD = document.getElementById('BLENDMETHOD');
+	BLENDMETHOD.addEventListener('change', function () {
+		console.log(BLENDMETHOD.value);
+	});
+
+	const SmoothingPxRange = document.getElementById('SmoothingPxRange');
+	const ShrinkAmountRange = document.getElementById('ShrinkAmountRange');
+
+	SmoothingPxRange.addEventListener('input', function () {
+		console.log(SmoothingPxRange.value);
+	});
+	ShrinkAmountRange.addEventListener('input', function () {
+		console.log(ShrinkAmountRange.value);
+	});
+
 	/* Shaders */
 	/* Circle Shader */
 	const circleShd = compileAndLinkShader(gl, circleVtxSrc, circleFragSrc);

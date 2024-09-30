@@ -1,8 +1,9 @@
-function setup3D(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFragSrc, radioName) {
+function setup3D(canvasId, circleVtxSrc, circleFragSrc, simpleColorFragSrc, blitVtxSrc, blitFragSrc, radioName, showQuadOpt) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	let circleDrawFramebuffer, frameTexture;
 	let buffersInitialized = false;
+	let showQuad = false;
 	let resDiv = 1;
 	const gl = canvas.getContext('webgl',
 		{
@@ -27,10 +28,27 @@ function setup3D(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFragSrc,
 		});
 	});
 
+	/* Show Quad instead of circle choise */
+	const showQuadOption = document.querySelectorAll(`input[name="${showQuadOpt}"]`);
+	showQuadOption.forEach(radio => {
+		/* Force set to 1 to fix a reload bug in Firefox Android */
+		if (radio.value === "false")
+			radio.checked = true;
+		radio.addEventListener('change', (event) => {
+			showQuad = (event.target.value === "true");
+			stopRendering();
+			startRendering();
+		});
+	});
+
 	/* Shaders */
 	/* Circle Shader */
 	const circleShd = compileAndLinkShader(gl, circleVtxSrc, circleFragSrc);
 	const viewProjectionLocation = gl.getUniformLocation(circleShd, "perspective");
+
+	/* SimpleColor Shader */
+	const simpleColorShd = compileAndLinkShader(gl, circleVtxSrc, simpleColorFragSrc);
+	const viewProjectionLocationSimple = gl.getUniformLocation(simpleColorShd, "perspective");
 
 	/* Blit Shader */
 	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);
@@ -99,6 +117,12 @@ function setup3D(canvasId, circleVtxSrc, circleFragSrc, blitVtxSrc, blitFragSrc,
 
 		/* Draw Circle Animation */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+		if(showQuad){
+			gl.useProgram(simpleColorShd);
+			gl.uniformMatrix4fv(viewProjectionLocationSimple, false, projectionMatrix);
+			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+		}
 
 		gl.viewport(0, 0, canvas.width, canvas.height);
 
