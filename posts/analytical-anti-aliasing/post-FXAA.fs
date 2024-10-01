@@ -8,12 +8,12 @@ uniform vec2 RcpFrame;
 /* FXAA 3.11 code, after passing through the preprocessor with settings:
     - FXAA PC QUALITY
 	  - FXAA_PC 1
-	- EXTREME QUALITY
-	  - FXAA_QUALITY_PRESET 39
+	- Default QUALITY
+	  - FXAA_QUALITY_PRESET 12
 	- Optimizations disabled for WebGL 1
 	  - FXAA_GLSL_120 1
 	  - FXAA_FAST_PIXEL_OFFSET 0
-	  - Optimizations possible with WebGL 2 or by enabling extension
+	  - Further optimizations possible with WebGL 2 or by enabling extension
 	    GL_EXT_shader_texture_lod
 	- GREEN_AS_LUMA is disabled
 	  - FXAA_GREEN_AS_LUMA 0

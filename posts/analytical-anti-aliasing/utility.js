@@ -1,7 +1,4 @@
 "use strict";
-/* Make the circle smaller */
-const circleSize = 0.68;
-
 /* Vertex Buffer of a simple Quad with some colors */
 const unitQuad = new Float32Array([
 	-1.0, 1.0, 1.0, 1.0, 0.0,
@@ -9,6 +6,9 @@ const unitQuad = new Float32Array([
 	1.0, -1.0, 0.0, 1.0, 1.0,
 	-1.0, -1.0, 1.0, 1.0, 1.0
 ]);
+
+/* Make the circle smaller */
+const circleSize = 0.68;
 
 /* Standard shader compilation */
 function compileAndLinkShader(gl, vtxShdSrc, FragShdSrc, FragPrefix) {
