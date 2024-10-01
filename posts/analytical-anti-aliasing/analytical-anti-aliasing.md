@@ -55,7 +55,7 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 	</div>
 </div>
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasSimple"></canvas>
-<div class="toggleRes">
+<div class="toggleRes" style="border-radius: 50px">
 	<div>
 	  <input type="radio" id="showCirclelabel" name="showQuad" value="false" checked />
 	  <label for="showCirclelabel">Draw Circle</label>
@@ -712,7 +712,9 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 <script src="FXAA-interactive.js"></script>
 <script>setupFXAAInteractive("canvasFXAAInteractive", "vertexInteractive", "fragmentInteractive", "vertexLuma", "fragmentLuma", "vertexBlitSimple", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
 
-Just looking at the algorithm you can see how much energy and love 
+Just looking at the [full FXAA 3.11 source](https://github.com/FrostKiwi/treasurechest/blob/main/posts/analytical-anti-aliasing/FXAA-3.11.glsl), you can see the passion in every line. Portable [across OpenGL and DirectX](https://github.com/FrostKiwi/treasurechest/blob/e7f29c27c034b02a1af18e162c1b779d999ccbd4/posts/analytical-anti-aliasing/FXAA-3.11.glsl#L611), a [PC version](https://github.com/FrostKiwi/treasurechest/blob/e7f29c27c034b02a1af18e162c1b779d999ccbd4/posts/analytical-anti-aliasing/FXAA-3.11.glsl#L716), a [XBOX 360](https://github.com/FrostKiwi/treasurechest/blob/e7f29c27c034b02a1af18e162c1b779d999ccbd4/posts/analytical-anti-aliasing/FXAA-3.11.glsl#L1341) version, two finely optimized [PS3 version](https://github.com/FrostKiwi/treasurechest/blob/e7f29c27c034b02a1af18e162c1b779d999ccbd4/posts/analytical-anti-aliasing/FXAA-3.11.glsl#L1437) fighting for every GPU cycle, [including shader disassambly](https://github.com/FrostKiwi/treasurechest/blob/e7f29c27c034b02a1af18e162c1b779d999ccbd4/posts/analytical-anti-aliasing/FXAA-3.11.glsl#L1450). Such level of professionalism and dedication, shared with the world in plain text.
+
+<blockquote class="reaction"><div class="reaction_text">The sharing and openess is why I'm in love with graphics programming.</div><img class="kiwi" src="/assets/kiwis/love.svg"></blockquote>
 
 It may be performance cheap, but only if you already have post-processing in place or do [deffered rendering](https://en.wikipedia.org/wiki/Deferred_shading). Especially in mobile graphics, memory access is expensive, so saving the framebuffer to perform post processing is not always a given. If you need to setup render-to-texture in order to have FXAA, then the "F" in FXAA evaporates.
 
