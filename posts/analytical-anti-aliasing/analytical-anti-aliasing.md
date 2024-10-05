@@ -230,6 +230,7 @@ In fact, some of the best implementations were [discovered by vendors on acciden
 
 <script id="vertexAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analytical.vs" %}</script>
 <script id="fragmentAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analytical.fs" %}</script>
+<script id="fragmentAnalyticalCompare" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analyticalCompare.fs" %}</script>
 <div class="toggleRes">
 	<div>
 	  <input type="radio" id="nativeMSAA" name="resMSAA" value="1" checked />
@@ -862,6 +863,7 @@ In this article we won't jump into modern [temporal anti-aliasing](https://sugul
 		<option value="division">Simple division</option>
 		<option value="smoothstep">Smooth step</option>
 		<option value="linstep">Linear step</option>
+		<option value="linstepNoClamp">Linear step, No Clamp</option>
 </select>
 		</td>
 		<td>
@@ -922,9 +924,10 @@ In this article we won't jump into modern [temporal anti-aliasing](https://sugul
 		</td>
 	</tr>
 </table>
-<script>setupAnalyticalComparison("canvasCompare", "vertexAnalytical", "fragmentAnalytical", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resCompare");</script>
+<script>setupAnalyticalComparison("canvasCompare", "vertexAnalytical", "fragmentAnalyticalCompare", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resCompare");</script>
 
 ## 3D
+Everything we talked about extends to the 3D case as well.
 
 <div class="toggleRes">
 	<div>
@@ -947,10 +950,10 @@ In this article we won't jump into modern [temporal anti-aliasing](https://sugul
 <script src="3DAnalytical.js"></script>
 
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvas3D"></canvas>
-<div class="toggleRes">
+<div class="toggleRes" style="border-radius: 50px">
 	<div>
 	  <input type="radio" id="showCirclelabel3D" name="showQuad3D" value="false" checked />
-	  <label for="showCirclelabel3D">Draw Circle</label>
+	  <label for="showCirclelabel3D">Draw Rounded Square</label>
 	</div>
 	<div>
 	  <input type="radio" id="showQuadlabel3D" name="showQuad3D" value="true" />
@@ -988,6 +991,8 @@ In this article we won't jump into modern [temporal anti-aliasing](https://sugul
 </details>
 </blockquote>
 <script>setup3D("canvas3D", "vertex3D", "fragment3D", "fragment_SimpleColor", "vertexBlit", "fragmentBlit", "res3D", "showQuad3D");</script>
+
+With the 3D camera and resulting perspective matrix multiplication, we use the realiable screen space derivatives again to get the pixel size. But in reality, [we can still do without](https://web.archive.org/web/20150521050627/https://www.opengl.org/wiki/Compute_eye_space_from_window_space)! This would require us to multiply the inverse perspective matrix with the fragment coordinates _**per pixel**_. In this article, we won't go there though.
 
 ## Signed distance field rendering
 

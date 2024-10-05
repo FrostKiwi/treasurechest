@@ -25,7 +25,6 @@ float sdBox( in vec2 p, in vec2 b )
 }
 
 void main() {
-    //float dist = sdBox(uv, vec2(1.0 + (thickness * 0.5 * aspect_ratio), 1.0));
     float dist = sdBox(uv, vec2(1.0, 1.0));
     float alpha2 = linearstep(pixelsize, 0.0, -dist);
 	dist = sdBox(uv, vec2(1.0 + (thickness * 0.5 * aspect_ratio), 1.0));

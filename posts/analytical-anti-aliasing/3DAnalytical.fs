@@ -11,13 +11,14 @@ float roundedBoxSDF(vec2 uv, float Size, float Radius)
 void main(void)
 {
 	/* Pixel Size, but missing Perspective correction */
-	float pixelsize = length(vec2(dFdx(uv.x), dFdy(uv.y)));
-	float dist = roundedBoxSDF(uv, 1.0 - pixelsize, 0.25);
+	//float pixelsize = length(vec2(dFdx(uv.x), dFdy(uv.y)));
+	float dist = roundedBoxSDF(uv, 1.0, 0.4);
 
 	/* Fade out near the edge of the circle */
-	float alpha = dist / length(vec2(dFdx(dist), dFdy(dist)));
+	float pixelSize = length(vec2(dFdx(dist), dFdy(dist)));
+	float alpha = -dist / (pixelSize * 1.4142135623730950488016887242097);
 
 	/* Clamped and scaled uv.y added to color simply to make the bottom of the
 	   circle white, so the contrast is high and you can see strong aliasing */
-    gl_FragColor = vec4(color + clamp( - uv.y * 0.4, 0.0, 1.0), 1.0 - alpha);
+    gl_FragColor = vec4(color + clamp( - uv.y * 0.4, 0.0, 1.0), alpha);
 }

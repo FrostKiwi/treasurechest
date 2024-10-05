@@ -4,6 +4,8 @@ function setupAnalyticalComparison(canvasId, circleVtxSrc, circleFragSrc, blitVt
 	let circleDrawFramebuffer, frameTexture;
 	let buffersInitialized = false;
 	let resDiv = 1;
+	let shrinkAmount = 1;
+	let smoothingAmount = 1;
 	const gl = canvas.getContext('webgl',
 		{
 			preserveDrawingBuffer: false,
@@ -40,10 +42,10 @@ function setupAnalyticalComparison(canvasId, circleVtxSrc, circleFragSrc, blitVt
 	const ShrinkAmountRange = document.getElementById('ShrinkAmountRange');
 
 	SmoothingPxRange.addEventListener('input', function () {
-		console.log(SmoothingPxRange.value);
+		smoothingAmount = SmoothingPxRange.value;
 	});
 	ShrinkAmountRange.addEventListener('input', function () {
-		console.log(ShrinkAmountRange.value);
+		shrinkAmount = ShrinkAmountRange.value;
 	});
 
 	/* Shaders */
@@ -51,6 +53,8 @@ function setupAnalyticalComparison(canvasId, circleVtxSrc, circleFragSrc, blitVt
 	const circleShd = compileAndLinkShader(gl, circleVtxSrc, circleFragSrc);
 	const aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
 	const offsetLocationCircle = gl.getUniformLocation(circleShd, "offset");
+	const shrinkAmountLocation = gl.getUniformLocation(circleShd, "shrinkAmount");
+	const smoothingAmountLocation = gl.getUniformLocation(circleShd, "smoothingAmount");
 	const pixelSizeCircle = gl.getUniformLocation(circleShd, "pixelSize");
 	const sizeLocationCircle = gl.getUniformLocation(circleShd, "size");
 
@@ -120,6 +124,8 @@ function setupAnalyticalComparison(canvasId, circleVtxSrc, circleFragSrc, blitVt
 		circleOffsetAnim[1] = radius * Math.sin(speed);
 		gl.uniform2fv(offsetLocationCircle, circleOffsetAnim);
 		gl.uniform1f(sizeLocationCircle, circleSize);
+		gl.uniform1f(shrinkAmountLocation, shrinkAmount);
+		gl.uniform1f(smoothingAmountLocation, smoothingAmount);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		gl.viewport(0, 0, canvas.width, canvas.height);
