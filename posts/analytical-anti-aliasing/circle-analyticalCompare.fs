@@ -1,6 +1,6 @@
-//#if defined(FWIDTH) || defined(dFd)
-//	#extension GL_OES_standard_derivatives : enable
-//#endif
+#if defined(FWIDTH) || defined(DFD)
+	#extension GL_OES_standard_derivatives : enable
+#endif
 
 precision mediump float;
 /* uv coordinates from the vertex shader */
@@ -24,19 +24,30 @@ float linearstepNoclamp(float edge0, float edge1, float x) {
 
 void main(void)
 {
+	float dist = length(uv);
+	
+	/* Pixel size method */
+	#if defined(SIMPLE)
+	    float pixelSize = pixelSizeAdjusted;
+	#elif defined(DFD)
+	    float pixelSize = length(vec2(dFdx(dist), dFdy(dist)));
+	#elif defined(FWIDTH)
+	    float pixelSize = fwidth(dist);
+	#endif
 
-	float dist = length(uv) + pixelSizeAdjusted * shrinkAmount;
-	//float dist = length(uv) - 1.0 + fwidth(uv.x) * 1.5;
-	
-	/* Fade out near the edge of the circle */
-	// float alpha = smoothstep(1.0, 1.0 - 0.01, dist);
-    // float alpha = dist / length(vec2(dFdx(dist), dFdy(dist))) + 1.0;
-	
-	float alpha = (1.0 - dist) / (pixelSizeAdjusted * smoothingAmount);
-	
-	//float alpha = smoothstep(1.0, 1.0 - pixelSizeAdjusted * smoothingAmount, length(uv));
-	
-	//float alpha = dist / fwidth(dist);
+	/* Radius Adjust */
+	dist += pixelSize * shrinkAmount;
+
+	/* Blend method */	
+	#if defined(DIVISION)
+	    float alpha = (1.0 - dist) / (pixelSize * smoothingAmount);
+	#elif defined(SMOOTHSTEP)
+	    float alpha = smoothstep(1.0, 1.0 - pixelSize * smoothingAmount, dist);
+	#elif defined(LINSTEP)
+	    float alpha = linearstep(1.0, 1.0 - pixelSize * smoothingAmount, dist);
+	#elif defined(LINSTEP_NO_CLAMP)
+	    float alpha = linearstepNoclamp(1.0, 1.0 - pixelSize * smoothingAmount, dist);
+	#endif
 
 	/* Clamped and scaled uv.y added to color simply to make the bottom of the
 	   circle white, so the contrast is high and you can see strong aliasing */

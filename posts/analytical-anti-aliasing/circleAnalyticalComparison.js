@@ -6,6 +6,8 @@ function setupAnalyticalComparison(canvasId, circleVtxSrc, circleFragSrc, blitVt
 	let resDiv = 1;
 	let shrinkAmount = 1;
 	let smoothingAmount = 1;
+	let pixelSizeMethod = "SIMPLE";
+	let blendMethod = "DIVISION";
 	const gl = canvas.getContext('webgl',
 		{
 			preserveDrawingBuffer: false,
@@ -29,13 +31,16 @@ function setupAnalyticalComparison(canvasId, circleVtxSrc, circleFragSrc, blitVt
 		});
 	});
 
-	const pixelSizeMethod = document.getElementById('pixelSizeMethod');
-	pixelSizeMethod.addEventListener('change', function () {
-		console.log(pixelSizeMethod.value);
+	const pixelSizeMethodSwitch = document.getElementById('pixelSizeMethod');
+	pixelSizeMethodSwitch.addEventListener('change', function () {
+		pixelSizeMethod = pixelSizeMethodSwitch.value;
+		updateShader();
 	});
-	const BLENDMETHOD = document.getElementById('BLENDMETHOD');
-	BLENDMETHOD.addEventListener('change', function () {
-		console.log(BLENDMETHOD.value);
+
+	const blendMethodSwitch = document.getElementById('BLENDMETHOD');
+	blendMethodSwitch.addEventListener('change', function () {
+		blendMethod = blendMethodSwitch.value;
+		updateShader();
 	});
 
 	const SmoothingPxRange = document.getElementById('SmoothingPxRange');
@@ -50,13 +55,34 @@ function setupAnalyticalComparison(canvasId, circleVtxSrc, circleFragSrc, blitVt
 
 	/* Shaders */
 	/* Circle Shader */
-	const circleShd = compileAndLinkShader(gl, circleVtxSrc, circleFragSrc);
-	const aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
-	const offsetLocationCircle = gl.getUniformLocation(circleShd, "offset");
-	const shrinkAmountLocation = gl.getUniformLocation(circleShd, "shrinkAmount");
-	const smoothingAmountLocation = gl.getUniformLocation(circleShd, "smoothingAmount");
-	const pixelSizeCircle = gl.getUniformLocation(circleShd, "pixelSize");
-	const sizeLocationCircle = gl.getUniformLocation(circleShd, "size");
+	let circleShd;
+	let aspect_ratioLocation;
+	let offsetLocationCircle;
+	let shrinkAmountLocation;
+	let smoothingAmountLocation;
+	let pixelSizeCircle;
+	let sizeLocationCircle;
+
+	function updateShader() {
+		if (circleShd) {
+			gl.deleteProgram(circleShd);
+		}
+
+		const prefix = `
+        #define ${pixelSizeMethod}
+        #define ${blendMethod}
+	    `;
+
+		circleShd = compileAndLinkShader(gl, circleVtxSrc, circleFragSrc, prefix);
+
+		aspect_ratioLocation = gl.getUniformLocation(circleShd, "aspect_ratio");
+		offsetLocationCircle = gl.getUniformLocation(circleShd, "offset");
+		shrinkAmountLocation = gl.getUniformLocation(circleShd, "shrinkAmount");
+		smoothingAmountLocation = gl.getUniformLocation(circleShd, "smoothingAmount");
+		pixelSizeCircle = gl.getUniformLocation(circleShd, "pixelSize");
+		sizeLocationCircle = gl.getUniformLocation(circleShd, "size");
+	}
+	updateShader();
 
 	/* Blit Shader */
 	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);

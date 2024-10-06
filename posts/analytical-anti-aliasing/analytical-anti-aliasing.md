@@ -724,6 +724,7 @@ It may be performance cheap, but only if you already have post-processing in pla
 In this article we won't jump into modern [temporal anti-aliasing](https://sugulee.wordpress.com/2021/06/21/temporal-anti-aliasingtaa-tutorial/), but before FXAA was even developed, [TAA was already experimented](https://x.com/NOTimothyLottes/status/1756732098402992584) with. In fact, FXAA was supposed to [evole into FXXA v4](https://web.archive.org/web/20120120082725/http://timothylottes.blogspot.com/2011/12/fxaa-40-stills-and-features.html) and [incorporate temporal anti aliasing](https://web.archive.org/web/20120120070945/http://timothylottes.blogspot.com/2011/12/big-fxaa-update-soon.html) in addition [to the standard spatial one](https://web.archive.org/web/20120120072820/http://timothylottes.blogspot.com/2011/12/fxaa-40-will-have-new-spatial-only.html), but instead it evolved and rebranded into [TXAA](https://web.archive.org/web/20210116205348/https://www.nvidia.com/en-gb/geforce/technologies/txaa/technology/).
 
 ## Analytical Anti Aliasing
+Now we get to the good stuff. Analytical Anti-Aliasing approaches the problem backwards - it knows the shape you need and draws the pixel Anti-Aliased to the screen. Whilst drawing the 2D or 3D shape you need, it fades the border by exactly one pixel.
 
 <div class="toggleRes">
 	<div>
@@ -795,7 +796,31 @@ In this article we won't jump into modern [temporal anti-aliasing](https://sugul
 </details>
 </blockquote>
 
+Analytical Anti-
+
 ![image](compare.png)
+
+### What even *is* "Analytical"?
+In graphics programming, *Analytical* refers to any effect or information created by knowing the make-up of the intended shape beforehand. A picture is worth a thousand words, but an interactive demo is worth at least a million.
+
+<figure>
+	<img src="analytical.png" alt="" />
+	<figcaption><a href="https://www.shadertoy.com/view/4djSDy">Shadertoy demo</a> for Analytical Ambient Occlusion by <a href="https://iquilezles.org/">Inigo Quilez</a></figcaption>
+</figure>
+
+<figure>
+	<img src="lastOfUs.jpg" alt="" />
+	<figcaption><a href="http://miciwan.com/SIGGRAPH2013/Lighting%20Technology%20of%20The%20Last%20Of%20Us.pdf">Paper</a></figcaption>
+</figure>
+
+An improved implementation with shader code can be seen in a [Shadertoy demo](https://www.shadertoy.com/view/3stcD4) by [romainguy](https://www.shadertoy.com/user/romainguy).
+
+<figure>
+	<video poster="capsule-lastofus_thumb.jpg" width="960" height="540" controls><source src="capsule-lastofus.mp4" type="video/mp4"></video>
+	<figcaption><a href="https://www.youtube.com/watch?v=1J6aAHLCbWg">YouTube Video</a> by <a href="https://www.youtube.com/@MaxLebled_ALT">Max Lebled's 2nd channel</a></figcaption>
+</figure>
+
+Integral part of modern game engines, [like in Unreal Engine](http://dev.epicgames.com/documentation/en-us/unreal-engine/capsule-shadows-overview-in-unreal-engine)
 
 ### Implementation comparison
 
@@ -833,14 +858,15 @@ In this article we won't jump into modern [temporal anti-aliasing](https://sugul
 			<code>Pixel&nbsp;size&nbsp;method</code>
 		</td>
 		<td colspan=2 style="width:100%">
-<select id="pixelSizeMethod" style="width: 100%; margin-bottom: unset">
-	<optgroup label="Screen-Space Derivatives">
-		<option value="FWIDTH">fwidth</option>
-		<option value="dFd">length + dFdx + dFdy</option>
-	</optgroup>
-	<optgroup label="No Screen-Space Derivatives">
-		<option checked value="SIMPLE">Pre-calculate pixel size</option>
-</select>
+			<select id="pixelSizeMethod" style="width: 100%; margin-bottom: unset">
+				<optgroup label="No Screen-Space Derivatives">
+					<option checked value="SIMPLE">Pre-calculate pixel size</option>
+				</optgroup>
+				<optgroup label="Screen-Space Derivatives">
+					<option value="FWIDTH">fwidth</option>
+					<option value="DFD">length + dFdx + dFdy</option>
+				</optgroup>
+			</select>
 		</td>
 		<td>
 			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('pixelSizeMethodExplain'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
@@ -862,10 +888,10 @@ In this article we won't jump into modern [temporal anti-aliasing](https://sugul
 		</td>
 		<td colspan=2 style="width:100%">
 <select id="BLENDMETHOD" style="width: 100%; margin-bottom: unset">
-		<option value="division">Simple division</option>
-		<option value="smoothstep">Smooth step</option>
-		<option value="linstep">Linear step</option>
-		<option value="linstepNoClamp">Linear step, No Clamp</option>
+		<option checked value="DIVISION">Simple division</option>
+		<option value="LINSTEP">Linear step</option>
+		<option value="LINSTEP_NO_CLAMP">Linear step, No Clamp</option>
+		<option value="SMOOTHSTEP">Smooth step</option>
 </select>
 		</td>
 		<td>
@@ -890,7 +916,7 @@ In this article we won't jump into modern [temporal anti-aliasing](https://sugul
 			<input class="slider" type="range" step="0.1" min="0" max="9.9" value="1" id="SmoothingPxRange" oninput="SmoothingPxValue.value = parseFloat(this.value).toFixed(1)">
 		</td>
 		<td style="text-align: center;">
-			<output id="SmoothingPxValue">1</output> px
+			<output id="SmoothingPxValue">1.0</output> px
 		</td>
 		<td>
 			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('SmoothingPxExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
@@ -903,18 +929,18 @@ In this article we won't jump into modern [temporal anti-aliasing](https://sugul
 	</tr>
 	<tr class="variable-name-row noborder">
 		<td colspan=4>
-			<code>Circle&nbsp;shrink&nbsp;amount</code>
+			<code>Radius&nbsp;adjust&nbsp;</code>
 		</td>
 	</tr>
 	<tr class="noborder">
 		<td class="variable-name-cell">
-			<code>Circle&nbsp;shrink&nbsp;amount</code>
+			<code>Radius&nbsp;adjust&nbsp;</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="0.1" min="0" max="9.9" value="1" id="ShrinkAmountRange" oninput="ShrinkAmountValue.value = parseFloat(this.value).toFixed(1)">
+			<input class="slider" type="range" step="0.1" min="0" max="20" value="1" id="ShrinkAmountRange" oninput="let dec = 1; if(ShrinkAmountValue.value >= 10) dec = 0; ShrinkAmountValue.value = parseFloat(this.value).toFixed(dec)">
 		</td>
 		<td style="text-align: center;">
-			<output id="ShrinkAmountValue">1</output> px
+			<output id="ShrinkAmountValue">1.0</output> px
 		</td>
 		<td>
 			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('ShrinkAmountExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
@@ -922,10 +948,11 @@ In this article we won't jump into modern [temporal anti-aliasing](https://sugul
 	</tr>
 	<tr class="noborder">
 		<td class="precolumn" colspan=4>
-		<pre id="ShrinkAmountExplanation" style="display: none;">Now</pre>
+			<pre id="ShrinkAmountExplanation" style="display: none;">Now</pre>
 		</td>
 	</tr>
 </table>
+
 <script>setupAnalyticalComparison("canvasCompare", "vertexAnalytical", "fragmentAnalyticalCompare", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resCompare");</script>
 
 ## 3D
@@ -1094,24 +1121,8 @@ This is compatible with all OpenGL and GLSL versions that use shaders. For OpenG
 
 Advanced font rendering uses `GL_EXT_blend_func_extended` sometimes to perform advanced blending, but that is not required for our Anti-Aliasing case.
 
-```
-https://www.youtube.com/watch?v=1J6aAHLCbWg
-https://www.shadertoy.com/view/3stcD4
-http://miciwan.com/SIGGRAPH2013/Lighting%20Technology%20of%20The%20Last%20Of%20Us.pdf
-```
-
-```
-TSSAA http://web.archive.org/web/20120120082628/http://timothylottes.blogspot.com/2011_04_01_archive.html
-```
-
 April 2011
 
-Capsule shadows
-
-```
-https://github.com/godotengine/godot-proposals/issues/5262
-https://docs.unrealengine.com/4.27/en-US/BuildingWorlds/LightingAndShadows/CapsuleShadows/Overview/
-```
 
 Modern video games often which use TAA in combination dynamic resolution scaling, a concoction resulting in blurriness. These AA algorithms come with post-process sharpening built-in to combat this. I find this a bit of graphics programming sin.
 

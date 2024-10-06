@@ -178,7 +178,6 @@ function setupFXAAInteractive(canvasId, simpleVtxSrc, simpleFragSrc, vertexLumaS
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, blitTexture, 0);
 	}
 
-	/* Not working :[ Maybe pass it in as a param */
 	const fxaaCheckbox = document.getElementById('fxaaCheck');
 	fxaaCheckbox.addEventListener('change', () => {
 		enableFXAA = fxaaCheckbox.checked;

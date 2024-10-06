@@ -26,7 +26,7 @@ function compileAndLinkShader(gl, vtxShdSrc, FragShdSrc, FragPrefix) {
 
 	if (FragPrefix)
 		fragmentSource = FragPrefix + '\n' + fragmentSource;
-
+	
 	gl.shaderSource(FragShd, fragmentSource);
 	gl.compileShader(FragShd);
 
