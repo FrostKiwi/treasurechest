@@ -7,23 +7,26 @@ precision mediump float;
 varying vec2 uv;
 /* color from the vertex shader */
 varying vec3 color;
-/* pixel size from the vertex shader, corrected for influence from of the 1px
-   dialation */
+/* pixel size from the vertex shader, corrected for resizing */
 varying float pixelSizeAdjusted;
-
+/* How many pixels to shrink */
 uniform float shrinkAmount;
+/* How many pixels to smooth */
 uniform float smoothingAmount;
 
+/* Step function with Linear Interpolation, instead of Hermite Interpolation */
 float linearstep(float edge0, float edge1, float x) {
     return clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
 }
 
+/* Step function with Linear Interpolation, but no clamping */
 float linearstepNoclamp(float edge0, float edge1, float x) {
     return (x - edge0) / (edge1 - edge0);
 }
 
 void main(void)
 {
+	/* The basic signed distance field of a point */
 	float dist = length(uv);
 	
 	/* Pixel size method */
