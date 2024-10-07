@@ -187,7 +187,7 @@ SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Sup
 
 <blockquote class="reaction"><div class="reaction_text">There should be 4 steps of transparency, but we only get two!</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-Especially at lower resolutions, we can see the circle _does_ actually have 4 steps of transparency, but only at the 45° "diagonals" of the circle. A circle has of course no sides, but at the axis-aligned "bottom" there are only 2 steps of transparency: Fully Opaque and 50% transparent, the 25% and 75% transparency steps are missing.
+Especially at lower resolutions, we can see the circle _does_ actually have 4 steps of transparency, but mainly at the 45° "diagonals" of the circle. A circle has of course no sides, but at the axis-aligned "bottom" there are only 2 steps of transparency: Fully Opaque and 50% transparent, the 25% and 75% transparency steps are missing.
 
 ### Conceptually simple, actually hard
 
@@ -719,12 +719,12 @@ Just looking at the [full FXAA 3.11 source](https://github.com/FrostKiwi/treasur
 
 <blockquote class="reaction"><div class="reaction_text">The sharing and openess is why I'm in love with graphics programming.</div><img class="kiwi" src="/assets/kiwis/love.svg"></blockquote>
 
-It may be performance cheap, but only if you already have post-processing in place or do [deffered rendering](https://en.wikipedia.org/wiki/Deferred_shading). Especially in mobile graphics, memory access is expensive, so saving the framebuffer to perform post processing is not always a given. If you need to setup render-to-texture in order to have FXAA, then the "F" in FXAA evaporates.
+It may be performance cheap, but only if you already have post-processing in place or do [deferred shading](https://en.wikipedia.org/wiki/Deferred_shading). Especially in mobile graphics, memory access is expensive, so saving the framebuffer to perform post processing is not always a given. If you need to setup render-to-texture in order to have FXAA, then the "F" in FXAA evaporates.
 
-In this article we won't jump into modern [temporal anti-aliasing](https://sugulee.wordpress.com/2021/06/21/temporal-anti-aliasingtaa-tutorial/), but before FXAA was even developed, [TAA was already experimented](https://x.com/NOTimothyLottes/status/1756732098402992584) with. In fact, FXAA was supposed to [evole into FXXA v4](https://web.archive.org/web/20120120082725/http://timothylottes.blogspot.com/2011/12/fxaa-40-stills-and-features.html) and [incorporate temporal anti aliasing](https://web.archive.org/web/20120120070945/http://timothylottes.blogspot.com/2011/12/big-fxaa-update-soon.html) in addition [to the standard spatial one](https://web.archive.org/web/20120120072820/http://timothylottes.blogspot.com/2011/12/fxaa-40-will-have-new-spatial-only.html), but instead it evolved and rebranded into [TXAA](https://web.archive.org/web/20210116205348/https://www.nvidia.com/en-gb/geforce/technologies/txaa/technology/).
+In this article we won't jump into modern [temporal anti-aliasing](https://sugulee.wordpress.com/2021/06/21/temporal-anti-aliasingtaa-tutorial/), but before FXAA was even developed, [TAA was already experimented](https://x.com/NOTimothyLottes/status/1756732098402992584) with. In fact, FXAA was supposed to [evole into FXAA v4](https://web.archive.org/web/20120120082725/http://timothylottes.blogspot.com/2011/12/fxaa-40-stills-and-features.html) and [incorporate temporal anti aliasing](https://web.archive.org/web/20120120070945/http://timothylottes.blogspot.com/2011/12/big-fxaa-update-soon.html) in addition [to the standard spatial one](https://web.archive.org/web/20120120072820/http://timothylottes.blogspot.com/2011/12/fxaa-40-will-have-new-spatial-only.html), but instead it evolved and rebranded into [TXAA](https://web.archive.org/web/20210116205348/https://www.nvidia.com/en-gb/geforce/technologies/txaa/technology/).
 
 ## Analytical Anti Aliasing
-Now we get to the good stuff. Analytical Anti-Aliasing approaches the problem backwards - it knows the shape you need and draws the pixel Anti-Aliased to the screen. Whilst drawing the 2D or 3D shape you need, it fades the border by exactly one pixel.
+Now we get to the good stuff. Analytical Anti-Aliasing approaches the problem backwards - it knows the shape you need and draws the pixel already Anti-Aliased to the screen. Whilst drawing the 2D or 3D shape you need, it fades the shape's border by exactly one pixel.
 
 <div class="toggleRes">
 	<div>
@@ -796,31 +796,42 @@ Now we get to the good stuff. Analytical Anti-Aliasing approaches the problem ba
 </details>
 </blockquote>
 
-Analytical Anti-
+Always smooth, no pixelation and you can adjust the amount of smoothing. Perserves shape even at low resolutions. No extra buffers, no artifacts. Code has no extra hardware requirements and even runs on basic WebGL 1.0, OpenGLES 2.0, without any extenions.
+
+This style of Anti-Aliasing is usually implemented with 3 ingredients:
+- Enabling Screen Space Derivatives
+- A pixel-size calculation with fwidth or length + dFdx + dFdy
+- Blending with Smoothstep
+
+If you look at the code, you will find **none** of these. Let's take a look at how the sausage is made.
 
 ![image](compare.png)
 
 ### What even *is* "Analytical"?
-In graphics programming, *Analytical* refers to any effect or information created by knowing the make-up of the intended shape beforehand. A picture is worth a thousand words, but an interactive demo is worth at least a million.
-
-<figure>
-	<img src="analytical.png" alt="" />
-	<figcaption><a href="https://www.shadertoy.com/view/4djSDy">Shadertoy demo</a> for Analytical Ambient Occlusion by <a href="https://iquilezles.org/">Inigo Quilez</a></figcaption>
-</figure>
+In graphics programming, *Analytical* refers to effects created by knowing the make-up of the intended shape before. This term is used very loosely across computer graphics, similar to super sampling refering to multiple things, depending on context. A picture is worth a thousand words, so let's look at some examples.
 
 <figure>
 	<img src="lastOfUs.jpg" alt="" />
 	<figcaption><a href="http://miciwan.com/SIGGRAPH2013/Lighting%20Technology%20of%20The%20Last%20Of%20Us.pdf">Paper</a></figcaption>
 </figure>
 
-An improved implementation with shader code can be seen in a [Shadertoy demo](https://www.shadertoy.com/view/3stcD4) by [romainguy](https://www.shadertoy.com/user/romainguy).
+An improved implementation with shader code can be seen in a [Shadertoy demo](https://www.shadertoy.com/view/3stcD4) by [romainguy](https://www.shadertoy.com/user/romainguy). Integral part of modern game engines, [like in Unreal Engine](http://dev.epicgames.com/documentation/en-us/unreal-engine/capsule-shadows-overview-in-unreal-engine). As opposed to [standard shadow mapping](https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping), we don't render the scene from the perspective of the light with finite resolution. We evaluate the shadow per-pixel against the mathematical equation of the stretched sphere or capsule. This make capsule shadows "analytical". A video is worth a thousand words, but 30 times a second.
 
 <figure>
 	<video poster="capsule-lastofus_thumb.jpg" width="960" height="540" controls><source src="capsule-lastofus.mp4" type="video/mp4"></video>
 	<figcaption><a href="https://www.youtube.com/watch?v=1J6aAHLCbWg">YouTube Video</a> by <a href="https://www.youtube.com/@MaxLebled_ALT">Max Lebled's 2nd channel</a></figcaption>
 </figure>
 
-Integral part of modern game engines, [like in Unreal Engine](http://dev.epicgames.com/documentation/en-us/unreal-engine/capsule-shadows-overview-in-unreal-engine)
+Staying with the Last of Us, [The Last of Us Part II](https://en.wikipedia.org/wiki/The_Last_of_Us_Part_II) uses the same logic for blurry real-time reflections of the main character, where [Screen Space Reflections](https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html) aren't defined, making this analytical approach, against the shape of the capsule. An online demo is worth at least a million words.
+
+<figure>
+	<img src="analytical.png" alt="" />
+	<figcaption><a href="https://www.shadertoy.com/view/4djSDy">Shadertoy demo</a> for Analytical Ambient Occlusion by <a href="https://iquilezles.org/">Inigo Quilez</a></figcaption>
+</figure>
+
+[Ambient Occlusion](https://learnopengl.com/Advanced-Lighting/SSAO) is an integral part of modern rendering, bringing contact shadows and approximating global illumination. Another topic as deep as the ocean, with so many implementations. Usually implemented by some 
+
+Modern graphics is very much embracing these approaches, with research papers finding [analytical approaches](https://research.nvidia.com/sites/default/files/pubs/2010-06_Ambient-Occlusion-Volumes/McGuire10AOV.pdf) for Ambient Occlusion and Unreal Engine having distance field approaches for [Soft Shadows]() and [Ambient Occlusion]().
 
 ### Implementation comparison
 
@@ -863,8 +874,8 @@ Integral part of modern game engines, [like in Unreal Engine](http://dev.epicgam
 					<option checked value="SIMPLE">Pre-calculate pixel size</option>
 				</optgroup>
 				<optgroup label="Screen-Space Derivatives">
-					<option value="FWIDTH">fwidth</option>
 					<option value="DFD">length + dFdx + dFdy</option>
+					<option value="FWIDTH">fwidth</option>
 				</optgroup>
 			</select>
 		</td>
@@ -955,8 +966,14 @@ Integral part of modern game engines, [like in Unreal Engine](http://dev.epicgam
 
 <script>setupAnalyticalComparison("canvasCompare", "vertexAnalytical", "fragmentAnalyticalCompare", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resCompare");</script>
 
+### 
+
+We'll talk about professional implementations futher below in a moment, but using fwidth is what like Unity's [Shapes](https://acegikmo.com/shapes/docs/#anti-aliasing) by [Freya Holmér](https://twitter.com/FreyaHolmer/) calls "[Fast Local Anti-Aliasing](https://acegikmo.com/shapes/docs#anti-aliasing)" with the following text:
+
+> Fast LAA has a slight bias in the diagonal directions, making circular shapes appear ever so slightly rhombous and have a slightly sharper curvature in the orthogonal directions, especially when small. Sometimes the edges in the diagonals are slightly fuzzy as well.
+
 ## 3D
-Everything we talked about extends to the 3D case as well.
+Everything we talked about extends to the 3D case as well. We won't dig into 3D shapes themselves, but
 
 <div class="toggleRes">
 	<div>
@@ -1021,7 +1038,7 @@ Everything we talked about extends to the 3D case as well.
 </blockquote>
 <script>setup3D("canvas3D", "vertex3D", "fragment3D", "fragment_SimpleColor", "vertexBlit", "fragmentBlit", "res3D", "showQuad3D");</script>
 
-With the 3D camera and resulting perspective matrix multiplication, we use the realiable screen space derivatives again to get the pixel size. But in reality, [we can still do without](https://web.archive.org/web/20150521050627/https://www.opengl.org/wiki/Compute_eye_space_from_window_space)! This would require us to multiply the inverse perspective matrix with the fragment coordinates _**per pixel**_. In this article, we won't go there though.
+With the 3D camera and resulting perspective matrix multiplication, we use the realiable screen space derivatives again to get the pixel size. But in reality, [we can still do without](https://web.archive.org/web/20150521050627/https://www.opengl.org/wiki/Compute_eye_space_from_window_space)! This would require us to multiply of the inverse perspective matrix with the fragment coordinates _**per pixel**_. Performance-painful, yet possible.
 
 ## Signed distance field rendering
 

@@ -3,12 +3,12 @@ precision mediump float;
 varying vec2 uv;
 /* color from the vertex shader */
 varying vec3 color;
-/* pixel size from the vertex shader, corrected for influence from of the 1px
-   dialation */
+/* pixel size from the vertex shader, corrected for influence of size changes */
 varying float pixelSizeAdjusted;
 
 void main(void)
 {
+	/* Our signed distance field of a point */
 	float dist = length(uv);
 
 	/* We add half a pixel of breathing room. This is only required for the MSAA
