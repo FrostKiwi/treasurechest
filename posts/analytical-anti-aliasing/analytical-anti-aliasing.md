@@ -25,17 +25,17 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 
 <script src="utility.js"></script>
 <script src="circleSimple.js"></script>
-<script id="vertexBlit" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/blit.vs" %}</script>
-<script id="fragmentBlit" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/blit.fs" %}</script>
-<script id="vertexPost" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/post.vs" %}</script>
-<script id="fragmentPost" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/post.fs" %}</script>
-<script id="vertexRedBox" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/red.vs" %}</script>
-<script id="fragmentRedBox" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/red.fs" %}</script>
-<script id="fragmentPostFXAA" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/post-FXAA.fs" %}</script>
+<script id="vertexBlit" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/shader/blit.vs" %}</script>
+<script id="fragmentBlit" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/blit.fs" %}</script>
+<script id="vertexPost" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/shader/post.vs" %}</script>
+<script id="fragmentPost" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/post.fs" %}</script>
+<script id="vertexRedBox" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/shader/red.vs" %}</script>
+<script id="fragmentRedBox" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/shader/red.fs" %}</script>
+<script id="fragmentPostFXAA" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/post-FXAA.fs" %}</script>
 
-<script id="vertex_0" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}</script>
-<script id="fragment_0" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}</script>
-<script id="fragment_SimpleColor" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/simpleColor.fs" %}</script>
+<script id="vertex_0" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/shader/circle.vs" %}</script>
+<script id="fragment_0" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/circle.fs" %}</script>
+<script id="fragment_SimpleColor" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/simpleColor.fs" %}</script>
 <div class="toggleRes">
 	<div>
 	  <input type="radio" id="native" name="resSimple" value="1" checked />
@@ -73,18 +73,18 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 ![image](screenshots/simple.png)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="circle.vs">circle.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a href="shader/circle.vs">circle.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/circle.vs" %}
+{% rawFile "posts/analytical-anti-aliasing/shader/circle.vs" %}
 ```
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="circle.fs">circle.fs</a></summary>
+<summary>WebGL Fragment Shader <a href="shader/circle.fs">circle.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/circle.fs" %}
+{% rawFile "posts/analytical-anti-aliasing/shader/circle.fs" %}
 ```
 
 </details>
@@ -113,7 +113,7 @@ At lower resolutions these artifacts come together to destroy the circular form.
 4 vertices making up a quad are sent to the GPU in the vertex shader [circle.vs](circle.vs), where they are received as `attribute vec2 vtx`. The coordinates are of a "unit quad", meaning the coordinates look like the following image. With [one famous exception](https://www.copetti.org/writings/consoles/sega-saturn/#segas-offering), all GPUs use triangles, so the quad is actually made up of two triangles.
 
 <figure>
-	<img src="unit.svg" alt="Schematic make-up of the unit quad" />
+	<img src="img/unit.svg" alt="Schematic make-up of the unit quad" />
 	<figcaption>Schematic make-up of the unit quad</figcaption>
 </figure>
 
@@ -128,7 +128,7 @@ By performing the check `if (length(uv) < 1.0)` we draw our color for fragments 
 SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Supersampling). Render it bigger, downsample to be smaller. The idea is as old as 3D rendering itself. In fact, the first movies with CGI all relied on this. One example is the 1986 movie "[Flight of the Navigator](https://en.wikipedia.org/wiki/Flight_of_the_Navigator)", as covered by [Captain Disillusion](https://www.youtube.com/@CaptainDisillusion) in the video below.
 
 <figure>
-	<video poster="flight_thumb.jpg" width="960" height="540" controls><source src="flight.mp4" type="video/mp4"></video>
+	<video poster="vid/flight_thumb.jpg" width="960" height="540" controls><source src="vid/flight.mp4" type="video/mp4"></video>
 	<figcaption>SSAA as used in "Flight of the Navigator" (1986)
 	<br>
 	Excerpt from <a href="https://www.youtube.com/watch?v=tyixMpuGEL8">"Flight of the Navigator | VFXcool"</a><br>YouTube Video by <a href="https://www.youtube.com/@CaptainDisillusion">Captain Disillusion</a>
@@ -166,10 +166,10 @@ SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Sup
 
 </details>
 <details>	
-<summary>SSAA buffer Fragment Shader <a href="post.fs">post.fs</a></summary>
+<summary>SSAA buffer Fragment Shader <a href="shader/post.fs">post.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/post.fs" %}
+{% rawFile "posts/analytical-anti-aliasing/shader/post.fs" %}
 ```
 
 </details>
@@ -202,7 +202,7 @@ Implementing SSAA properly is a minute craft. Here we are drawing to a 2x resolu
 To combat axis-alignment artifacts like with our circle above, we need to place our SSAA samples better. There are [multiple ways to sample with SSAA](https://en.wikipedia.org/wiki/Supersampling#Supersampling_patterns), all with pros and cons. To implement SSAA properly, we need deep integration with the rendering pipeline. This happens below API or engine, in the realm of vendors and drivers.
 
 <figure>
-	<img src="sample-patterns.svg" alt="SAA sample patterns" />
+	<img src="img/sample-patterns.svg" alt="SAA sample patterns" />
 	<figcaption>SSAA sample patterns. <a href="https://en.wikipedia.org/wiki/Supersampling#Supersampling_patterns">Source</a></figcaption>
 </figure>
 
@@ -228,9 +228,9 @@ In fact, some of the best implementations were [discovered by vendors on acciden
 
 <blockquote id="sampleErrorMessage" style="display: none" class="reaction"></blockquote>
 
-<script id="vertexAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analytical.vs" %}</script>
-<script id="fragmentAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analytical.fs" %}</script>
-<script id="fragmentAnalyticalCompare" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/circle-analyticalCompare.fs" %}</script>
+<script id="vertexAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/circle-analytical.vs" %}</script>
+<script id="fragmentAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/circle-analytical.fs" %}</script>
+<script id="fragmentAnalyticalCompare" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/circle-analyticalCompare.fs" %}</script>
 <div class="toggleRes">
 	<div>
 	  <input type="radio" id="nativeMSAA" name="resMSAA" value="1" checked />
@@ -285,18 +285,18 @@ In fact, some of the best implementations were [discovered by vendors on acciden
 We rely on hardware to do the Anti-Aliasing, which obviously leads to the problem that user hardware may not support what we need. The sampling patterns MSAA uses may also do things we don't expect. Depending on what your hardware does, you may see the circle's edge transparency steps appearing "in the wrong order".
 
 <figure>
-	<img src="outoforder.png" alt="Sample pattern + circle shape clash: pixels are seemingly 'checkerboxed'" />
+	<img src="img/outoforder.png" alt="Sample pattern + circle shape clash: pixels are seemingly 'checkerboxed'" />
 	<figcaption>Sample pattern + circle shape clash: pixels are seemingly "checkerboxed"</figcaption>
 </figure>
 
 When MSAA became required with [OpenGL 3](https://en.wikipedia.org/wiki/OpenGL#OpenGL_3.0) & [DirectX 10](https://en.wikipedia.org/wiki/DirectX#DirectX_10) era of hardware, support was especially hit & miss. Even latest [Intel GMA](https://en.wikipedia.org/wiki/Intel_GMA#GMA_4500) iGPUs expose the OpenGL extension [`EXT_framebuffer_multisample`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_framebuffer_multisample.txt), but don't in-fact support MSAA, [which led to confusion](https://community.khronos.org/t/yet-another-intel-multisample-thread/69614/2). Also in more recent smartphones, support just [wasn't that clear-cut](https://issues.chromium.org/issues/40114751).
 
 <figure>
-	<img src="iOSroundedMSAA.png" alt="iOS 2xMSAA, created by rounding transparency of 4xMSAA" />
-	<figcaption>Double edges - iOS 2xMSAA, created by rounding transparency of 4xMSAA</figcaption>
+	<img src="img/iOSroundedMSAA.png" alt="iOS 2xMSAA, created by rounding transparency of 4xMSAA" />
+	<figcaption>Double edges - iOS 2xMSAA, created by iOS rounding transparency of 4xMSAA</figcaption>
 </figure>
 
-On mobile chips weird things happen, as they usually support _exactly_ 4xMSAA. Android will let you pick 2x, but the driver will force 4x anyways. iPhones & iPads do something rather stupid: Choosing 2x will make it 4x, but transparency will be rounded to nearest 50% multiple, leading to double edges in our example.
+Mobile chips support *exactly* MSAAx4 and things are weird. Android will let you pick 2x, but the driver will force 4x anyways. iPhones & iPads do something rather stupid: Choosing 2x will make it 4x, but transparency will be rounded to nearest 50% multiple, leading to double edges in our example. There is hardware specific reason:
 
 ### Performance cost: (maybe) Zero
 
@@ -304,7 +304,7 @@ Looking at modern video games, one might believe that MSAA is of the past. It us
 
 <blockquote class="reaction"><div class="reaction_text">As a gamer, this goes against instinct...</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 <figure>
-	<video poster="MSAA-PerformanceFree_thumb.jpg" width="960" height="540" controls><source src="MSAA-PerformanceFree.mp4" type="video/mp4"></video>
+	<video poster="vid/MSAA-PerformanceFree_thumb.jpg" width="960" height="540" controls><source src="vid/MSAA-PerformanceFree.mp4" type="video/mp4"></video>
 	<figcaption>Video: MSAA 4x is performance free in certain contexts
 	<br>
 	Excerpt from <a href="https://gdcvault.com/play/1024538">"Developing High Performance Games for Different Mobile VR Platforms"</a><br> GDC 2017 talk by <a href="https://www.linkedin.com/in/rahulprasad2/	">Rahul Prasad</a>
@@ -316,7 +316,7 @@ Looking at modern video games, one might believe that MSAA is of the past. It us
 As explained by [Rahul Prasad](https://www.linkedin.com/in/rahulprasad2/) in the above talk, in VR 4xMSAA is a must and may come free on certain mobile GPUs. The specific reason would derail the blog post, but in case you want to go down that particular rabbit hole, here is Epic Games' [Niklas Smedberg](https://www.linkedin.com/in/niklas-smedberg-a96466/) giving a run-down.
 
 <figure>
-	<video poster="tile-based-gpus_thumb.jpg" width="960" height="540" controls><source src="tile-based-gpus.mp4" type="video/mp4"></video>
+	<video poster="vid/tile-based-gpus_thumb.jpg" width="960" height="540" controls><source src="vid/tile-based-gpus.mp4" type="video/mp4"></video>
 	<figcaption>Video: Tiled based rendering GPU architecture
 	<br>
 	Excerpt from <a href="https://gdcvault.com/play/1020756">"Next-Generation AAA Mobile Rendering"</a><br> GDC 2014 talk by <a href="https://www.linkedin.com/in/niklas-smedberg-a96466/">Niklas Smedberg</a> and <a href="https://twitter.com/NOTimothyLottes">Timothy Lottes</a>
@@ -337,13 +337,15 @@ MSAA [gives you access](https://docs.gl/gl3/glGetMultisample) to the samples, ma
 
 In 2009 a [paper](https://web.archive.org/web/20141205052029/http://visual-computing.intel-research.net/publications/papers/2009/mlaa/mlaa.pdf) by [Alexander Reshetov](https://research.nvidia.com/person/alexander-reshetov) struck the graphics programming world like a ton of bricks: take the blocky, aliased result of the rendered image, find edges and classify the pixels into tetris-like shapes with per-shape filtering rules and remove the blocky edge. Anti-Aliasing based on the [morphology](https://en.wikipedia.org/wiki/Mathematical_morphology) of pixels - [MLAA](https://www.iryoku.com/mlaa/) was born.
 
+
+
 Computationally cheap, easy to implement. Later it was refined with more emphasis on removing sub-pixel artifacts to become [SMAA](https://www.iryoku.com/smaa/). It became a fan favorite, with [an injector being developed early on](https://mrhaandi.blogspot.com/p/injectsmaa.html?m=1) to put SMAA into games that didn't support it. Some considered these too blurry, the saying "vaseline on the screen" was coined.
 
 <blockquote class="reaction"><div class="reaction_text">It was the future, a sign of things to come. No more shaky hardware support. Like <a href="https://en.wikipedia.org/wiki/Fixed-function">Fixed-Function pipelines</a> died in favor of programmable shaders Anti-Aliasing too became "shader based".</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
 
 ### FXAA
 
-We'll take a close look at an algorithm that was inspired by MLAA, developed by [Timothy Lottes](https://x.com/NOTimothyLottes). "Fast approximate anti-aliasing", [FXAA](https://developer.download.nvidia.com/assets/gamedev/files/sdk/11/FXAA_WhitePaper.pdf). In fact, when it came into wide circulation, it received some incredibly press. [Among others](https://www.realtimerendering.com/blog/fxaa-rules-ok/), [Jeff Atwood](https://blog.codinghorror.com/about-me/) pulled neither bold fonts nor punches in his [2011 blog post](https://blog.codinghorror.com/fast-approximate-anti-aliasing-fxaa/), later [republished by Kotaku](http://kotaku.com/5866780/).
+We'll take a close look at an algorithm that was inspired by MLAA, developed by [Timothy Lottes](https://x.com/NOTimothyLottes). "Fast approximate anti-aliasing", [FXAA](https://developer.download.nvidia.com/assets/gamedev/files/sdk/11/FXAA_WhitePaper.pdf). In fact, when it came into wide circulation, it received some incredible press. [Among others](https://www.realtimerendering.com/blog/fxaa-rules-ok/), [Jeff Atwood](https://blog.codinghorror.com/about-me/) pulled neither bold fonts nor punches in his [2011 blog post](https://blog.codinghorror.com/fast-approximate-anti-aliasing-fxaa/), later [republished by Kotaku](http://kotaku.com/5866780/).
 
 > [**Jeff Atwood**](https://blog.codinghorror.com/about-me/): The FXAA method is so good, in fact, it makes all other forms of full-screen anti-aliasing pretty much obsolete overnight. **If you have an FXAA option in your game, you should enable it immediately** and ignore any other AA options.
 
@@ -378,10 +380,10 @@ Let's see what the hype was about. The final version publicly released was FXAA 
 
 </details>
 <details>	
-<summary>WebGL FXAA Shader <a href="post-FXAA.fs">post-FXAA.fs</a></summary>
+<summary>WebGL FXAA Shader <a href="shader/post-FXAA.fs">post-FXAA.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/post-FXAA.fs" %}
+{% rawFile "posts/analytical-anti-aliasing/shader/post-FXAA.fs" %}
 ```
 
 </details>
@@ -406,10 +408,10 @@ A scene from my favorite piece of software in existence: [NeoTokyo°](https://st
 
 <blockquote class="reaction"><div class="reaction_text">This has fixed resolution and will only be at you device's native resolution, if your device has no dpi scaling and the browser is at 100% zoom.</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 
-<script id="vertexInteractive" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.vs" %}</script>
-<script id="fragmentInteractive" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.fs" %}</script>
-<script id="vertexLuma" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/FXAA-Luma.vs" %}</script>
-<script id="fragmentLuma" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/FXAA-Luma.fs" %}</script>
+<script id="vertexInteractive" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/shader/FXAA-interactive.vs" %}</script>
+<script id="fragmentInteractive" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/FXAA-interactive.fs" %}</script>
+<script id="vertexLuma" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/FXAA-Luma.vs" %}</script>
+<script id="fragmentLuma" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/FXAA-Luma.fs" %}</script>
 <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; justify-content: space-around;">
     <span style="display: flex; gap: 8px; white-space: nowrap">
         <label style="display: flex; gap: 8px; align-items: center;">
@@ -686,18 +688,18 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 ![image](screenshots/fxaainteractive.png)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="FXAA-interactive.vs">FXAA-interactive.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a href="shader/FXAA-interactive.vs">FXAA-interactive.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.vs" %}
+{% rawFile "posts/analytical-anti-aliasing/shader/FXAA-interactive.vs" %}
 ```
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="FXAA-interactive.fs">FXAA-interactive.fs</a></summary>
+<summary>WebGL Fragment Shader <a href="shader/FXAA-interactive.fs">FXAA-interactive.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.fs" %}
+{% rawFile "posts/analytical-anti-aliasing/shader/FXAA-interactive.fs" %}
 ```
 
 </details>
@@ -711,7 +713,7 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 </details>
 </blockquote>
 
-<script id="vertexBlitSimple" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/blitSimple.vs" %}</script>
+<script id="vertexBlitSimple" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/shader/blitSimple.vs" %}</script>
 <script src="FXAA-interactive.js"></script>
 <script>setupFXAAInteractive("canvasFXAAInteractive", "vertexInteractive", "fragmentInteractive", "vertexLuma", "fragmentLuma", "vertexBlitSimple", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
 
@@ -745,8 +747,8 @@ Now we get to the good stuff. Analytical Anti-Aliasing approaches the problem ba
 	</div>
 </div>
 
-<script id="fragment3D" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/3DAnalytical.fs" %}</script>
-<script id="vertex3D" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/3DAnalytical.vs" %}</script>
+<script id="fragment3D" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/3DAnalytical.fs" %}</script>
+<script id="vertex3D" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/3DAnalytical.vs" %}</script>
 
 <script src="mat4.js"></script>
 <script src="circleAnalytical.js"></script>
@@ -771,18 +773,18 @@ Now we get to the good stuff. Analytical Anti-Aliasing approaches the problem ba
 ![image](screenshots/analytical.png)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="circle-analytical.vs">circle-analytical.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a href="shader/circle-analytical.vs">circle-analytical.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/circle-analytical.vs" %}
+{% rawFile "posts/analytical-anti-aliasing/shader/circle-analytical.vs" %}
 ```
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="circle-analytical.fs">circle-analytical.fs</a></summary>
+<summary>WebGL Fragment Shader <a href="shader/circle-analytical.fs">circle-analytical.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/circle-analytical.fs" %}
+{% rawFile "posts/analytical-anti-aliasing/shader/circle-analytical.fs" %}
 ```
 
 </details>
@@ -796,36 +798,42 @@ Now we get to the good stuff. Analytical Anti-Aliasing approaches the problem ba
 </details>
 </blockquote>
 
-Always smooth, no pixelation and you can adjust the amount of smoothing. Perserves shape even at low resolutions. No extra buffers, no artifacts. Code has no extra hardware requirements and even runs on basic WebGL 1.0, OpenGLES 2.0, without any extenions.
+Always smooth without artifacts and you can adjust the amount of filtering. Perserves shape even at low resolutions. No extra buffers or extra hardware requirements.
 
-This style of Anti-Aliasing is usually implemented with 3 ingredients:
-- Enabling Screen Space Derivatives
-- A pixel-size calculation with fwidth or length + dFdx + dFdy
-- Blending with Smoothstep
+<blockquote class="reaction"><div class="reaction_text">Even runs on basic WebGL 1.0 or OpenGLES 2.0, without any extenions.</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
 
-If you look at the code, you will find **none** of these. Let's take a look at how the sausage is made.
+With the above buttons, you can set the smoothing to be equal to one pixel. This gives a sharp result, but comes with the caveat that axis-aligned 90° sides may still be perseved as "flat" in specific combinations of screen resolution, size and circle position.
 
-![image](compare.png)
+Filtering based on the diagonal pixel size of `√2 px = 1.4142...`, ensures the "tip" of the circle in axis-aligned pixel rows and columns is always non-opaque. This removes the perception of flatness, but makes it shape ever so slightly more blurry.
+
+<blockquote class="reaction"><div class="reaction_text">Or in other words: as soon as the border has an opaque pixel, there is already a transparent pixel "in front" of it.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
+
+This style of Anti-Aliasing is [usually implemented](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with 3 ingredients:
+- Enabled [Screen Space Derivative](https://gamedev.stackexchange.com/a/130933) extension or having a modern graphics context
+- Pixel-size calculated via [`length`](https://docs.gl/sl4/length)+[`dFdx`](https://docs.gl/sl4/dFdx)+[`dFdy`](https://docs.gl/sl4/dFdy) or approximated with [`fwidth`](https://docs.gl/sl4/fwidth)
+- Blending with [`smoothstep`](https://en.wikipedia.org/wiki/Smoothstep)
+
+But if you look at the code box above, you will find [circle-analytical.fs](shader/circle-analytical.fs) having **none** of those. Before we dive into the implementation, let's clear the elephants in the room...
 
 ### What even *is* "Analytical"?
-In graphics programming, *Analytical* refers to effects created by knowing the make-up of the intended shape before. This term is used very loosely across computer graphics, similar to super sampling refering to multiple things, depending on context. A picture is worth a thousand words, so let's look at some examples.
+In graphics programming, *Analytical* refers to effects created by knowing the make-up of the intended shape before. This term is used ***very*** loosely across computer graphics, similar to super sampling refering to multiple things, depending on context. A picture is worth a thousand words, so let's look at some examples.
 
 <figure>
-	<img src="lastOfUs.jpg" alt="" />
+	<img src="img/lastOfUs.jpg" alt="" />
 	<figcaption><a href="http://miciwan.com/SIGGRAPH2013/Lighting%20Technology%20of%20The%20Last%20Of%20Us.pdf">Paper</a></figcaption>
 </figure>
 
 An improved implementation with shader code can be seen in a [Shadertoy demo](https://www.shadertoy.com/view/3stcD4) by [romainguy](https://www.shadertoy.com/user/romainguy). Integral part of modern game engines, [like in Unreal Engine](http://dev.epicgames.com/documentation/en-us/unreal-engine/capsule-shadows-overview-in-unreal-engine). As opposed to [standard shadow mapping](https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping), we don't render the scene from the perspective of the light with finite resolution. We evaluate the shadow per-pixel against the mathematical equation of the stretched sphere or capsule. This make capsule shadows "analytical". A video is worth a thousand words, but 30 times a second.
 
 <figure>
-	<video poster="capsule-lastofus_thumb.jpg" width="960" height="540" controls><source src="capsule-lastofus.mp4" type="video/mp4"></video>
+	<video poster="vid/capsule-lastofus_thumb.jpg" width="960" height="540" controls><source src="vid/capsule-lastofus.mp4" type="video/mp4"></video>
 	<figcaption><a href="https://www.youtube.com/watch?v=1J6aAHLCbWg">YouTube Video</a> by <a href="https://www.youtube.com/@MaxLebled_ALT">Max Lebled's 2nd channel</a></figcaption>
 </figure>
 
 Staying with the Last of Us, [The Last of Us Part II](https://en.wikipedia.org/wiki/The_Last_of_Us_Part_II) uses the same logic for blurry real-time reflections of the main character, where [Screen Space Reflections](https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html) aren't defined, making this analytical approach, against the shape of the capsule. An online demo is worth at least a million words.
 
 <figure>
-	<img src="analytical.png" alt="" />
+	<img src="img/analytical.png" alt="" />
 	<figcaption><a href="https://www.shadertoy.com/view/4djSDy">Shadertoy demo</a> for Analytical Ambient Occlusion by <a href="https://iquilezles.org/">Inigo Quilez</a></figcaption>
 </figure>
 
@@ -972,6 +980,8 @@ We'll talk about professional implementations futher below in a moment, but usin
 
 > Fast LAA has a slight bias in the diagonal directions, making circular shapes appear ever so slightly rhombous and have a slightly sharper curvature in the orthogonal directions, especially when small. Sometimes the edges in the diagonals are slightly fuzzy as well.
 
+![image](compare.png)
+
 ## 3D
 Everything we talked about extends to the 3D case as well. We won't dig into 3D shapes themselves, but
 
@@ -1012,18 +1022,18 @@ Everything we talked about extends to the 3D case as well. We won't dig into 3D 
 ![image](screenshots/simple.png)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="3DAnalytical.vs">3DAnalytical.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a href="shader/3DAnalytical.vs">3DAnalytical.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/3DAnalytical.vs" %}
+{% rawFile "posts/analytical-anti-aliasing/shader/3DAnalytical.vs" %}
 ```
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="3DAnalytical.fs">3DAnalytical.fs</a></summary>
+<summary>WebGL Fragment Shader <a href="shader/3DAnalytical.fs">3DAnalytical.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/3DAnalytical.fs" %}
+{% rawFile "posts/analytical-anti-aliasing/shader/3DAnalytical.fs" %}
 ```
 
 </details>
