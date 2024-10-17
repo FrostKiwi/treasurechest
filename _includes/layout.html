@@ -57,11 +57,11 @@
 	<header>
 		<div class="top-bar">
 			<div class="left_group">
-				<img class="kiwi" src="/assets/kiwis/detective.svg">
+				<img class="kiwi" alt="Cute Kiwi doing cute things" src="/assets/kiwis/detective.svg">
 				<script>
 					(() => {
 						const kiwis = [
-							'detective', 'facepalm', 'happy', 'ice', 'love', 'miffed', 'party', 'sad', 'surprised', 'teach', 'think', 'book', 'cyber', 'dead', 'laugh', 'sleep'
+							'detective', 'facepalm', 'happy', 'ice', 'love', 'miffed', 'party', 'sad', 'surprised', 'dead', 'teach', 'think', 'book', 'cyber', 'laugh', 'sleep'
 						].map(name => `/assets/kiwis/${name}.svg`);
 						let currentKiwi = Math.floor(Math.random() * kiwis.length);
 						const nextKiwi = () => document.querySelector('.kiwi').src = kiwis[++currentKiwi % kiwis.length];
@@ -79,10 +79,10 @@
 					About
 				</a>
 				<div class="social">
-					<a href="https://www.youtube.com/@FrostKiwi/"><img class="social_icon"
+					<a aria-label="Author YouTube Channel Link" href="https://www.youtube.com/@FrostKiwi/"><img class="social_icon"
 							src="/assets/icons/youtube.svg"></a>
-					<a href="https://github.com/FrostKiwi"><img class="social_icon" src="/assets/icons/github.svg"></a>
-					<a href="/feed.xml"><img class="social_icon" src="/assets/icons/rss.svg"></a>
+					<a aria-label="Author GitHub Link" href="https://github.com/FrostKiwi"><img class="social_icon" src="/assets/icons/github.svg"></a>
+					<a aria-label="Blog RSS Feed Link" href="/feed.xml"><img class="social_icon" src="/assets/icons/rss.svg"></a>
 				</div>
 			</div>
 		</div>
