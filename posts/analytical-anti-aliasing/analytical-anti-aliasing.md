@@ -615,7 +615,11 @@ This can effect sharpness.
   0.75 - default amount of filtering
   0.50 - lower limit (sharper, less sub-pixel aliasing removal)
   0.25 - almost off
-  0.00 - completely off</pre>
+  0.00 - completely off
+----
+In the whitepaper described as a lowpass filter:
+The lowpass value used to filter sub-pixel aliasing at the end of the algorithm is a box filter of the complete 3x3 pixel neighborhood.
+</pre>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
@@ -725,7 +729,7 @@ Just looking at the [full FXAA 3.11 source](https://github.com/FrostKiwi/treasur
 
 It may be performance cheap, but only if you already have post-processing in place or do [deferred shading](https://en.wikipedia.org/wiki/Deferred_shading). Especially in mobile graphics, memory access is expensive, so saving the framebuffer to perform post processing is not always a given. If you need to setup render-to-texture in order to have FXAA, then the "F" in FXAA evaporates.
 
-In this article we won't jump into modern [temporal anti-aliasing](https://sugulee.wordpress.com/2021/06/21/temporal-anti-aliasingtaa-tutorial/), but before FXAA was even developed, [TAA was already experimented](https://x.com/NOTimothyLottes/status/1756732098402992584) with. In fact, FXAA was supposed to [evole into FXAA v4](https://web.archive.org/web/20120120082725/http://timothylottes.blogspot.com/2011/12/fxaa-40-stills-and-features.html) and [incorporate temporal anti aliasing](https://web.archive.org/web/20120120070945/http://timothylottes.blogspot.com/2011/12/big-fxaa-update-soon.html) in addition [to the standard spatial one](https://web.archive.org/web/20120120072820/http://timothylottes.blogspot.com/2011/12/fxaa-40-will-have-new-spatial-only.html), but instead it evolved and rebranded into [TXAA](https://web.archive.org/web/20210116205348/https://www.nvidia.com/en-gb/geforce/technologies/txaa/technology/).
+In this article we won't jump into modern [temporal anti-aliasing](https://sugulee.wordpress.com/2021/06/21/temporal-anti-aliasingtaa-tutorial/), but before FXAA was even developed, [TAA was already experimented](https://x.com/NOTimothyLottes/status/1756732098402992584) with. In fact, FXAA was supposed to [get a new version 4](https://web.archive.org/web/20120120082725/http://timothylottes.blogspot.com/2011/12/fxaa-40-stills-and-features.html) and [incorporate temporal anti aliasing](https://web.archive.org/web/20120120070945/http://timothylottes.blogspot.com/2011/12/big-fxaa-update-soon.html) in addition [to the standard spatial one](https://web.archive.org/web/20120120072820/http://timothylottes.blogspot.com/2011/12/fxaa-40-will-have-new-spatial-only.html), but instead it evolved further and rebranded into [TXAA](https://web.archive.org/web/20210116205348/https://www.nvidia.com/en-gb/geforce/technologies/txaa/technology/).
 
 ## Analytical Anti Aliasing
 Now we get to the good stuff. Analytical Anti-Aliasing approaches the problem backwards - it knows the shape you need and draws the pixel already Anti-Aliased to the screen. Whilst drawing the 2D or 3D shape you need, it fades the shape's border by exactly one pixel.
@@ -815,33 +819,44 @@ This style of Anti-Aliasing is [usually implemented](http://www.numb3r23.net/201
 - Pixel-size calculated via [`length`](https://docs.gl/sl4/length)+[`dFdx`](https://docs.gl/sl4/dFdx)+[`dFdy`](https://docs.gl/sl4/dFdy) or approximated with [`fwidth`](https://docs.gl/sl4/fwidth)
 - Blending with [`smoothstep`](https://en.wikipedia.org/wiki/Smoothstep)
 
-But if you look at the code box above, you will find [circle-analytical.fs](shader/circle-analytical.fs) having **none** of those. Before we dive into the implementation, let's clear the elephants in the room...
+But if you look at the code box above, you will find [circle-analytical.fs](shader/circle-analytical.fs) having **none** of those. And this is the secret sauce we will look at. Before we dive into the implementation, let's clear the elephants in the room...
 
 ### What even *is* "Analytical"?
-In graphics programming, *Analytical* refers to effects created by knowing the make-up of the intended shape before. This term is used ***very*** loosely across computer graphics, similar to super sampling refering to multiple things, depending on context. A picture is worth a thousand words, so let's look at some examples.
+In graphics programming, *Analytical* refers to effects created by knowing the make-up of the intended shape before. This term is used ***very*** loosely across computer graphics, similar to super sampling refering to multiple things, depending on context.
 
+<blockquote class="reaction"><div class="reaction_text">A picture is worth a thousand words...</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 <figure>
-	<img src="img/lastOfUs.jpg" alt="" />
-	<figcaption><a href="http://miciwan.com/SIGGRAPH2013/Lighting%20Technology%20of%20The%20Last%20Of%20Us.pdf">Paper</a></figcaption>
+	<img src="img/lastOfUs.jpg" alt="Character soft-shadow from stretched spheres in The Last Of Us." />
+	<figcaption>Character soft-shadow from stretched spheres in The Last Of Us.<br><a href="http://miciwan.com/SIGGRAPH2013/Lighting%20Technology%20of%20The%20Last%20Of%20Us.pdf">Lighting Technology of "The Last Of Us"</a>, Siggraph 2013 talk by <a href="http://miciwan.com/">Michał Iwanicki</a></figcaption>
 </figure>
 
-An improved implementation with shader code can be seen in a [Shadertoy demo](https://www.shadertoy.com/view/3stcD4) by [romainguy](https://www.shadertoy.com/user/romainguy). Integral part of modern game engines, [like in Unreal Engine](http://dev.epicgames.com/documentation/en-us/unreal-engine/capsule-shadows-overview-in-unreal-engine). As opposed to [standard shadow mapping](https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping), we don't render the scene from the perspective of the light with finite resolution. We evaluate the shadow per-pixel against the mathematical equation of the stretched sphere or capsule. This makes capsule shadows "analytical". A video is worth a thousand words, 30 times per second.
+Very soft soft-shadows which include [contact-hardening](http://wscg.zcu.cz/WSCG2012/short/B37-full.pdf), implemented by algorithms like [percentage-closer soft shadows](https://developer.download.nvidia.com/shaderlibrary/docs/shadow_PCSS.pdf) are very computaionally intense and require both high resolution shadow maps and/or very aggressive filtering to not produce shimering during movement.
 
+This is why [Naughty Dog](https://en.wikipedia.org/wiki/Naughty_Dog)'s [The Last of Us](https://en.wikipedia.org/wiki/The_Last_of_Us) relied on getting soft-shadows on the main character by calculating the shadow from a rigidly defined forumla of a stretched sphere, multiple of which were arranged in the shape of the main character, shown in red. An improved implementation with shader code can be seen in a [Shadertoy demo](https://www.shadertoy.com/view/3stcD4) by [romainguy](https://www.shadertoy.com/user/romainguy), with the more modern [capsule](https://en.wikipedia.org/wiki/Capsule_(geometry)), as opoosed a stretched sphere.
+
+This is now an integral part of modern game engines, [like in Unreal Engine](http://dev.epicgames.com/documentation/en-us/unreal-engine/capsule-shadows-overview-in-unreal-engine). As opposed to [standard shadow mapping](https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping), we don't render the scene from the perspective of the light with finite resolution. We evaluate the shadow *per-pixel* against the mathematical equation of the stretched sphere or capsule. This makes capsule shadows ***analytical***.
+
+<blockquote class="reaction"><div class="reaction_text">A video is worth a thousand words, 30 times a second.</div><img class="kiwi" src="/assets/kiwis/laugh.svg"></blockquote>
 <figure>
 	<video poster="vid/capsule-lastofus_thumb.jpg" width="960" height="540" controls><source src="vid/capsule-lastofus.mp4" type="video/mp4"></video>
-	<figcaption><a href="https://www.youtube.com/watch?v=1J6aAHLCbWg">YouTube Video</a> by <a href="https://www.youtube.com/@MaxLebled_ALT">Max Lebled's 2nd channel</a></figcaption>
+	<figcaption>Capsule representation of characters in The Last of Us Part II<br><a href="https://www.youtube.com/watch?v=1J6aAHLCbWg">YouTube Video</a> by <a href="https://www.youtube.com/@MaxLebled_ALT">"Max Lebled's 2nd channel"</a></figcaption>
 </figure>
 
-Staying with the Last of Us, [The Last of Us Part II](https://en.wikipedia.org/wiki/The_Last_of_Us_Part_II) uses the same logic for blurry real-time reflections of the main character, where [Screen Space Reflections](https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html) aren't defined, making this analytical approach, against the shape of the capsule. An online demo with available source code is worth at least a million words.
+Staying with the Last of Us, [The Last of Us Part II](https://en.wikipedia.org/wiki/The_Last_of_Us_Part_II) uses the same logic for blurry real-time reflections of the main character, where [Screen Space Reflections](https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html) aren't defined. Other options like [raytracing against the scene](https://docs.unity3d.com/Packages/com.unity.render-pipelines.high-definition@8.2/manual/Ray-Traced-Reflections.html), or using a [real-time cubemap](https://www.adriancourreges.com/blog/2015/11/02/gta-v-graphics-study/#environment-cubemap) like in [GTA V](https://en.wikipedia.org/wiki/Grand_Theft_Auto_V) are either noisy and low resolution or high resolution, but low performance.
 
+Here the reflection calculation is part of the material shader, rendering against the rigidly defined mathematical shape of the capsule *per-pixel*, multiple of which are aranged in the shape of the main character. This makes capsule reflections ***analytical***.
+
+<blockquote class="reaction"><div class="reaction_text">An online demo with is worth at least a million...<br>...yeah the joke is getting old.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 <figure>
 	<img src="img/analytical.png" alt="" />
 	<figcaption><a href="https://www.shadertoy.com/view/4djSDy">Shadertoy demo</a> for Analytical Ambient Occlusion by <a href="https://iquilezles.org/">Inigo Quilez</a></figcaption>
 </figure>
 
-[Ambient Occlusion](https://learnopengl.com/Advanced-Lighting/SSAO) is an integral part of modern rendering, bringing contact shadows and approximating global illumination. Another topic as deep as the ocean, with so many implementations. Usually implemented by some 
+[Ambient Occlusion](https://learnopengl.com/Advanced-Lighting/SSAO) is an integral part of modern rendering, bringing contact shadows and approximating global illumination. Another topic as deep as the ocean, with so many implementations. Usually implemented by some form of "raytrace a bunch of rays and blur the result".
 
-Modern graphics is very much embracing these approaches, with research papers finding [analytical approaches](https://research.nvidia.com/sites/default/files/pubs/2010-06_Ambient-Occlusion-Volumes/McGuire10AOV.pdf) for Ambient Occlusion and Unreal Engine having distance field approaches for [Soft Shadows]() and [Ambient Occlusion]().
+In this [Shadertoy demo](https://www.shadertoy.com/view/4djSDy) the floor is evaluted *per-pixel* against the rigidly defined mathematical description of the sphere to get a soft, non-noisy, non-flickering occlusion contribution from the hovering ball. This implementation is ***analytical***. Not just spheres, there are [analytical approaches](https://research.nvidia.com/sites/default/files/pubs/2010-06_Ambient-Occlusion-Volumes/McGuire10AOV.pdf) also for complex geometry.
+
+By extension, Unreal Engine has distance field approaches for [Soft Shadows]() and [Ambient Occlusion](), though one may argue signed distance field rendering doesn't fit the description, considering the distance field is precalculated into a volume texture.
 
 ### Implementation comparison
 
