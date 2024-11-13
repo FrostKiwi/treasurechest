@@ -822,7 +822,7 @@ This style of Anti-Aliasing is [usually implemented](http://www.numb3r23.net/201
 But if you look at the code box above, you will find [circle-analytical.fs](shader/circle-analytical.fs) having **none** of those. And this is the secret sauce we will look at. Before we dive into the implementation, let's clear the elephants in the room...
 
 ### What even *is* "Analytical"?
-In graphics programming, *Analytical* refers to effects created by knowing the make-up of the intended shape before. This term is used ***very*** loosely across computer graphics, similar to super sampling refering to multiple things, depending on context.
+In graphics programming, *Analytical* refers to effects created by knowing the make-up of the intended shape beforehand and performing calculations against the rigid mathematical definition of said shape. This term is used ***very*** loosely across computer graphics, similar to super sampling refering to multiple things, depending on context.
 
 <blockquote class="reaction"><div class="reaction_text">A picture is worth a thousand words...</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 <figure>
@@ -832,9 +832,9 @@ In graphics programming, *Analytical* refers to effects created by knowing the m
 
 Very soft soft-shadows which include [contact-hardening](http://wscg.zcu.cz/WSCG2012/short/B37-full.pdf), implemented by algorithms like [percentage-closer soft shadows](https://developer.download.nvidia.com/shaderlibrary/docs/shadow_PCSS.pdf) are very computaionally intense and require both high resolution shadow maps and/or very aggressive filtering to not produce shimering during movement.
 
-This is why [Naughty Dog](https://en.wikipedia.org/wiki/Naughty_Dog)'s [The Last of Us](https://en.wikipedia.org/wiki/The_Last_of_Us) relied on getting soft-shadows on the main character by calculating the shadow from a rigidly defined forumla of a stretched sphere, multiple of which were arranged in the shape of the main character, shown in red. An improved implementation with shader code can be seen in a [Shadertoy demo](https://www.shadertoy.com/view/3stcD4) by [romainguy](https://www.shadertoy.com/user/romainguy), with the more modern [capsule](https://en.wikipedia.org/wiki/Capsule_(geometry)), as opoosed a stretched sphere.
+This is why [Naughty Dog](https://en.wikipedia.org/wiki/Naughty_Dog)'s [The Last of Us](https://en.wikipedia.org/wiki/The_Last_of_Us) relied on getting soft-shadows on the main character by calculating the shadow from a rigidly defined forumla of a stretched sphere, multiple of which were arranged in the shape of the main character, shown in red. An improved implementation with shader code can be seen in this [Shadertoy demo](https://www.shadertoy.com/view/3stcD4) by [romainguy](https://www.shadertoy.com/user/romainguy), with the more modern [capsule](https://en.wikipedia.org/wiki/Capsule_(geometry)), as opoosed a stretched sphere.
 
-This is now an integral part of modern game engines, [like in Unreal Engine](http://dev.epicgames.com/documentation/en-us/unreal-engine/capsule-shadows-overview-in-unreal-engine). As opposed to [standard shadow mapping](https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping), we don't render the scene from the perspective of the light with finite resolution. We evaluate the shadow *per-pixel* against the mathematical equation of the stretched sphere or capsule. This makes capsule shadows ***analytical***.
+This is now an integral part of modern game engines, [like Unreal](http://dev.epicgames.com/documentation/en-us/unreal-engine/capsule-shadows-overview-in-unreal-engine). As opposed to [standard shadow mapping](https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping), we don't render the scene from the perspective of the light with finite resolution. We evaluate the shadow *per-pixel* against the mathematical equation of the stretched sphere or capsule. This makes capsule shadows ***analytical***.
 
 <blockquote class="reaction"><div class="reaction_text">A video is worth a thousand words, 30 times a second.</div><img class="kiwi" src="/assets/kiwis/laugh.svg"></blockquote>
 <figure>
@@ -854,12 +854,12 @@ Here the reflection calculation is part of the material shader, rendering agains
 
 [Ambient Occlusion](https://learnopengl.com/Advanced-Lighting/SSAO) is an integral part of modern rendering, bringing contact shadows and approximating global illumination. Another topic as deep as the ocean, with so many implementations. Usually implemented by some form of "raytrace a bunch of rays and blur the result".
 
-In this [Shadertoy demo](https://www.shadertoy.com/view/4djSDy) the floor is evaluted *per-pixel* against the rigidly defined mathematical description of the sphere to get a soft, non-noisy, non-flickering occlusion contribution from the hovering ball. This implementation is ***analytical***. Not just spheres, there are [analytical approaches](https://research.nvidia.com/sites/default/files/pubs/2010-06_Ambient-Occlusion-Volumes/McGuire10AOV.pdf) also for complex geometry.
+In this [Shadertoy demo](https://www.shadertoy.com/view/4djSDy), the floor is evaluated *per-pixel* against the rigidly defined mathematical description of the sphere to get a soft, non-noisy, non-flickering occlusion contribution from the hovering ball. This implementation is ***analytical***. Not just spheres, there are [analytical approaches](https://research.nvidia.com/sites/default/files/pubs/2010-06_Ambient-Occlusion-Volumes/McGuire10AOV.pdf) also for complex geometry.
 
-By extension, Unreal Engine has distance field approaches for [Soft Shadows]() and [Ambient Occlusion](), though one may argue signed distance field rendering doesn't fit the description, considering the distance field is precalculated into a volume texture.
+By extension, Unreal Engine has distance field approaches for [Soft Shadows](https://dev.epicgames.com/documentation/en-us/unreal-engine/distance-field-soft-shadows-in-unreal-engine) and [Ambient Occlusion](https://dev.epicgames.com/documentation/en-us/unreal-engine/using-distance-field-ambient-occlusion-in-unreal-engine), though one may argue signed distance field rendering doesn't fit the description, considering the distance field is precalculated into a volume texture.
 
 ### Implementation comparison
-
+Now let's take a look 
 <div class="toggleRes">
 	<div>
 	  <input type="radio" id="nativeCompare" name="resCompare" value="1" checked />
@@ -991,7 +991,9 @@ By extension, Unreal Engine has distance field approaches for [Soft Shadows]() a
 
 <script>setupAnalyticalComparison("canvasCompare", "vertexAnalytical", "fragmentAnalyticalCompare", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resCompare");</script>
 
-### 
+
+
+### What are the big boys doing?
 
 We'll talk about professional implementations futher below in a moment, but using fwidth is what like Unity's [Shapes](https://acegikmo.com/shapes/docs/#anti-aliasing) by [Freya Holmér](https://twitter.com/FreyaHolmer/) calls "[Fast Local Anti-Aliasing](https://acegikmo.com/shapes/docs#anti-aliasing)" with the following text:
 
