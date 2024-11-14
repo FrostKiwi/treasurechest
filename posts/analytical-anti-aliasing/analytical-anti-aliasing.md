@@ -856,7 +856,7 @@ Here the reflection calculation is part of the material shader, rendering agains
 
 In this [Shadertoy demo](https://www.shadertoy.com/view/4djSDy), the floor is evaluated *per-pixel* against the rigidly defined mathematical description of the sphere to get a soft, non-noisy, non-flickering occlusion contribution from the hovering ball. This implementation is ***analytical***. Not just spheres, there are [analytical approaches](https://research.nvidia.com/sites/default/files/pubs/2010-06_Ambient-Occlusion-Volumes/McGuire10AOV.pdf) also for complex geometry.
 
-By extension, Unreal Engine has distance field approaches for [Soft Shadows](https://dev.epicgames.com/documentation/en-us/unreal-engine/distance-field-soft-shadows-in-unreal-engine) and [Ambient Occlusion](https://dev.epicgames.com/documentation/en-us/unreal-engine/using-distance-field-ambient-occlusion-in-unreal-engine), though one may argue, that this type of signed distance field rendering doesn't fit the description, considering the distance field is precalculated into a 3D texture.
+By extension, Unreal Engine has distance field approaches for [Soft Shadows](https://dev.epicgames.com/documentation/en-us/unreal-engine/distance-field-soft-shadows-in-unreal-engine) and [Ambient Occlusion](https://dev.epicgames.com/documentation/en-us/unreal-engine/using-distance-field-ambient-occlusion-in-unreal-engine), though one may argue, that this type of signed distance field rendering doesn't fit the description of *analytical*, considering the distance field is precalculated into a 3D texture.
 
 ### Implementation
 Let's dive into the sauce. We work with [signed distance fields](https://www.youtube.com/watch?v=62-pRVZuS5c), where for every point that we sample, we know the distance to the desired shape. This information may be baked into a texture as done for [SDF text rendering](https://github.com/Chlumsky/msdf-atlas-gen) or maybe be derived *per-pixel* from a mathematical formula for simpler shapes like [bezier curves or hearts](https://iquilezles.org/articles/distfunctions2d/).
@@ -995,6 +995,28 @@ Based on that distance, we fade out the border of the shape. If we fade by the s
 
 <script>setupAnalyticalComparison("canvasCompare", "vertexAnalytical", "fragmentAnalyticalCompare", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resCompare");</script>
 
+We'll talk about professional implementations futher below in a moment, but using fwidth is what like Unity's [Shapes](https://acegikmo.com/shapes/docs/#anti-aliasing) by [Freya Holmér](https://twitter.com/FreyaHolmer/) calls "[Fast Local Anti-Aliasing](https://acegikmo.com/shapes/docs#anti-aliasing)" with the following text:
+
+> Fast LAA has a slight bias in the diagonal directions, making circular shapes appear ever so slightly rhombous and have a slightly sharper curvature in the orthogonal directions, especially when small. Sometimes the edges in the diagonals are slightly fuzzy as well.
+
+### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
+
+Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliasing in `GLSL`, but its use doesn't make sense. It performs a hermite interpolation, but the we are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here.
+
+<blockquote class="reaction"><div class="reaction_text">To be precise, both sampling and blending witness the smoothstep curve in the sub-pixel make-up of the edge, but even after pixel peeping, it just doesn't make any difference.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+Though the slight performance difference doesn't particularly matter on modern graphics cards so wasting cycles on performing the hermite interpolation doesn't make sense to me.
+
+We can implement it ourselves, without the hermite interpolation
+
+```
+implement
+```
+
+But wait! If all we want know is the pixel size, then most of this cancels out! Infact, we don't need any kind of step function.
+
+### fwidth vs length + dFdx + dFdy
+
 ### 3D
 Everything we talked about extends to the 3D case as well. We won't dig [into 3D shapes themselves](https://iquilezles.org/articles/distfunctions/) and will stick to a 2D rounded square in 3D perspective with a moving camera. I use this a lot when graphics programming to create a scene with a "ground floor" where my objects live on.
 
@@ -1030,9 +1052,9 @@ Everything we talked about extends to the 3D case as well. We won't dig [into 3D
 	</div>
 </div>
 <blockquote>
-<details><summary><a href="screenshots/simple.png">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a href="screenshots/3d.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
-![image](screenshots/simple.png)
+![image](screenshots/3d.png)
 
 </details>
 <details><summary>WebGL Vertex Shader <a href="shader/3DAnalytical.vs">3DAnalytical.vs</a></summary>
@@ -1066,23 +1088,17 @@ With the 3D camera and resulting perspective matrix multiplication, we use the r
 There is something I have not explained yet, a persistent misunderstanding I held until [Yakov Galka](https://stannum.io/) explained [the deetz to me on stackoverflow](https://stackoverflow.com/questions/73903568). Depending on how we setup the blending math, to perform the smoooting we may remove pixel alpha on the inside of the shape, add it to the outside or center it.
 
 ## What are the big boys doing?
-This rendering approach has found it's way into many professional products. Let's finish of by looking at some of them.
+This rendering approach has found its way into many professional products. Let's finish by looking at some of them.
 
 ### ["Shapes"](https://acegikmo.com/shapes) for Unity
-Feature-wise the most complete implementation of this approach is in Unity extension [Shapes](https://acegikmo.com/shapes/docs/#anti-aliasing) by [Freya Holmér](https://twitter.com/FreyaHolmer/). There the distance fields are either anti-aliased by MSAA or are blended like in this blog post, though it's referred to as [Local Anti-Aliasing](https://acegikmo.com/shapes/docs/#anti-aliasing).
+Feature-wise the most complete implementation of this approach is in Unity extension [Shapes](https://acegikmo.com/shapes) by [Freya Holmér](https://twitter.com/FreyaHolmer/). There the distance fields are either anti-aliased by MSAA or are blended like in this blog post, though it's referred to as "[Local Anti-Aliasing](https://acegikmo.com/shapes/docs/#anti-aliasing)" there.
 
 <figure>
-	<video poster="vid/shapes.jpg" width="960" height="540" controls><source src="vid/shapes.mp4" type="video/mp4"></video>
+	<video poster="vid/shapes_thumb.jpg" width="960" height="540" controls><source src="vid/shapes.mp4" type="video/mp4"></video>
 	<figcaption>Trailer for <a href="https://acegikmo.com/shapes">"Shapes"</a> by <a href="https://twitter.com/FreyaHolmer/">Freya Holmér</a></figcaption>
 </figure>
 
-With motion-blur, color gradients and 
-
-We'll talk about professional implementations futher below in a moment, but using fwidth is what like Unity's [Shapes](https://acegikmo.com/shapes/docs/#anti-aliasing) by [Freya Holmér](https://twitter.com/FreyaHolmer/) calls "[Fast Local Anti-Aliasing](https://acegikmo.com/shapes/docs#anti-aliasing)" with the following text:
-
-> Fast LAA has a slight bias in the diagonal directions, making circular shapes appear ever so slightly rhombous and have a slightly sharper curvature in the orthogonal directions, especially when small. Sometimes the edges in the diagonals are slightly fuzzy as well.
-
-![image](compare.png)
+With motion-blur, [shape-respecting color gradients](https://acegikmo.com/shapes/docs/#shapes-feature-table) and lines [below 1px being opacity faded](https://acegikmo.com/shapes/docs/#anti-aliasing) to prevent further aliasing, this is signed-distance field rendering as discussed in the context of this blog post implemented to its logical conclusion.
 
 ### [Valve Software](https://www.valvesoftware.com/)'s implementation
 
@@ -1099,52 +1115,34 @@ Valve introduced extensive use of signed distance field rendering to the [Source
 
 They also released [a paper](https://steamcdn-a.akamaihd.net/apps/valve/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf) describing the specific implementation, including a showcase with for use in the 3D game world, though I have never seen it used in the game world itself in production. Added as a mere footnote to the paper, was a to improve this tech to get sharp text rendering with sharp corners...
 
-## The future of all things font?
+<figure>
+	<img src="img/valve.png" alt="Hud elements in Team Fortress 2" />
+	<figcaption>Hud elements in <a href="https://www.teamfortress.com/">Team Fortress 2</a></figcaption>
+</figure>
+
+### The future of all things font?
+If you save a signed distance field into a texture and sample it with linear interpolation, you will get perfectly sharp characters at any size, but the limited resolution will result in clipped or rounded corners, depending on implementation math.
+
+Picking up on that foot note and bringing the technique to its logical conclusion was the most thorough and well composed Master Thesis I ever read: "[Shape Decomposition for Multi-channel Distance Fields](https://github.com/Chlumsky/msdfgen/files/3050967/thesis.pdf)" by [Viktor Chlumský](https://github.com/Chlumsky).
+
+Basically, use RGB to solve this and get perfectly sharp text at any size, including an Alpha channel with the classical SDF for effects like glows and drop shadows, all done on the GPU with no extra baking or intense processing. If you dig around in video games, you will find SDF based font rendering based from time to time!
+
+<figure>
+	<img src="img/msdf.png" alt="Hud elements in Team Fortress 2" />
+	<figcaption>Hud elements in <a href="https://www.teamfortress.com/">Team Fortress 2</a></figcaption>
+</figure>
+
 You may be wondering, if we can get the [analytical solution for a bezier curve](https://www.shadertoy.com/view/MlKcDD), why bake into textures instead? We may know the solution for **one** segment, but to get the full shape we need to sum up all the contributions from all segments. This works, but performance tanks hard, as we solve *every* bezier curve segment **per pixel**.
 
-Picking up on that foot note and bringing the technique to its logical conclusion was the most thorough and well composed Master Thesis I ever read: "[Shape Decomposition for Multi-channel
-Distance Fields](https://github.com/Chlumsky/msdfgen/files/3050967/thesis.pdf)" by [Viktor Chlumský](https://github.com/Chlumsky).
+From experience I can tell you, that there are more implementation headaches. Chinese, Japanese, Korean characters require bigger textures to resolve their minute details. Bigger textures means you'll often minimize during rendering, but minimizing may introduce artifacts on its own...
 
-### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
-
-Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliasing in `GLSL`, but its use doesn't make sense. It performs a hermite interpolation, but the we are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here.
-
-<blockquote class="reaction"><div class="reaction_text">To be precise, both sampling and blending witness the smoothstep curve in the sub-pixel make-up of the edge, but even after pixel peeping, it just doesn't make any difference.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
-
-Though the slight performance difference doesn't particularly matter on modern graphics cards so wasting cycles on performing the hermite interpolation doesn't make sense to me.
-
-We can implement it ourselves, without the hermite interpolation
-
-```
-implement
-```
-
-But wait! If all we want know is the pixel size, then most of this cancels out! Infact, we don't need any kind of step function.
-
-### fwidth vs length + dFdx + dFdy
-
-`length(vec2(dFdx(dist), dFdy(dist)))`
-
-https://acegikmo.com/shapes/
-https://acegikmo.com/shapes/docs/#anti-aliasing
-
-> The difference between Fast and Corrected LAA is subtle - Fast LAA has a slight bias in the diagonal directions, making circular shapes appear ever so slightly rhombous and have a slightly sharper curvature in the orthogonal directions, especially when small.
-
-Screen space derivatives are free, but what we do with them is not. Things are shaded in 2x2 fragment packs to get screen space derivatives. That's one of the reasons using [a full-screen triangle is faster than using a full-screen quad](https://wallisc.github.io/rendering/2021/04/18/Fullscreen-Pass.html), because the triangle diagonals are shaded more than needed.
-
-But wait a moment, wouldn't it be smarter to draw the shapes on a triangle instead of a quad, saving the double shaded diagonals in the middle? As per usual, the true answer is _it depends_, but long story short: no. The full screen triangle isn't shaded beyond the screen's borders, because the GPU's rasterization step that happens before the fragment shader is invoked, will clip the triangle and prevent calculations which aren't visible in the first place. That is not the case with shapes that move within the confines of screen, leading to lots of overdraw in the invisible parts outside the shape.
-
-### OpenGL and WebGL compatibility
-
-This is compatible with all OpenGL and GLSL versions that use shaders. For OpenGL **_ES_** 2.0 and WebGL 1.0 you have to check for the existance of [OES_standard_derivatives](https://registry.khronos.org/OpenGL/extensions/OES/OES_standard_derivatives.txt) and perform `#extension GL_OES_standard_derivatives : enable`, though I have never seen a device OpenGL ES 2.0 device, that did not support screen space derivatives.
-
-Advanced font rendering uses `GL_EXT_blend_func_extended` sometimes to perform advanced blending, but that is not required for our Anti-Aliasing case.
-
-April 2011
+But considering the current state of browser font-rendering and the *pure insanity* of edge-cases covered via baking text to pixel texture atlases, including [synthetic fallbacks for missing italic or bold variants](https://faultlore.com/blah/text-hates-you/) and or 
 
 ## Clarity should not be a luxury
-Modern video games often which use TAA in combination dynamic resolution scaling, a concoction resulting in blurriness. These AA algorithms come with post-process sharpening built-in to combat this. I find this a bit of graphics programming sin.
+Modern video games often use TAA in combination dynamic resolution scaling, a concoction guaranteed to result in blurriness. These AA algorithms come with post-process sharpening built-in to combat this, as is done in [FSR](https://gpuopen.com/fidelityfx-cas/) or [TAA](https://docs.unity3d.com/Packages/com.unity.postprocessing@3.4/manual/Anti-aliasing.html#temporal-anti-aliasing). Fixing blurring by sharpening, I find this a bit of graphics programming sin.
 
-Though Timothy Lottes mentioned, that this is [solvable with adjustments to filtering](https://x.com/NOTimothyLottes/status/1756733156877578611).
+Whole communities rally around fixing this, like the reddit communities "[r/MotionClarity](https://www.reddit.com/r/MotionClarity/)" or the lovingly titled "[r/FuckTAA](https://www.reddit.com/r/FuckTAA)", all with the understanding, that Anti-Aliasing should not come at the cost of clarity. FXAA creator Timothy Lottes mentioned, that this is [solvable to some degree with adjustments to filtering](https://x.com/NOTimothyLottes/status/1756733156877578611), though even the most modern titles suffer from this.
 
-Whole communities rally around fixing this, like the reddit communities "[r/MotionClarity](https://www.reddit.com/r/MotionClarity/)" or lovely titled "[r/FuckTAA](https://www.reddit.com/r/FuckTAA)".
+What we have not talked about are the newer machine learning approaches as done for instance with NVIDIA's [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing), as that is really outside the scope of this post. Suffice to say Timothy Lottes is [not a fan](https://x.com/NOTimothyLottes/status/1756746848402800785). As for AAA, it's lovely being able to draw smooth yet sharp, motion-stable shapes of any size at native resolutions.
+
+<blockquote class="reaction"><div class="reaction_text">Please feel free to use these techniques in your projects.</div><img class="kiwi" src="/assets/kiwis/love.svg"></blockquote>
