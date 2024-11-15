@@ -50,7 +50,7 @@ function setupAnalyticalComparison(canvasId, circleVtxSrc, circleFragSrc, blitVt
 		smoothingAmount = SmoothingPxRange.value;
 	});
 	ShrinkAmountRange.addEventListener('input', function () {
-		shrinkAmount = ShrinkAmountRange.value;
+		shrinkAmount = -ShrinkAmountRange.value;
 	});
 
 	/* Shaders */

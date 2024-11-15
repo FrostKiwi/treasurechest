@@ -11,6 +11,7 @@ publicTags:
   - GameDev
 image: thumbnail.png
 ---
+
 Today's journey is [Anti-Aliasing](https://en.wikipedia.org/wiki/Spatial_anti-aliasing) and the destination is **Analytical Anti-Aliasing**. Getting rid of rasterization [jaggies](https://en.wikipedia.org/wiki/Jaggies) is an art-form with decades upon decades of maths, creative techniques and non-stop innovation. With so many years of research and development, there are many flavors.
 
 From the simple but resource intensive [**SSAA**](https://en.wikipedia.org/wiki/Supersampling), over theory dense [**SMAA**](https://www.iryoku.com/smaa/), to using machine learning with [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing). Same goal - **_vastly_** different approaches. We'll take a look at how they work, before introducing a new way to look a the problem - the ✨***analytical***🌟 way. The perfect Anti-Aliasing exists and is simpler than you think.
@@ -339,8 +340,6 @@ MSAA [gives you access](https://docs.gl/gl3/glGetMultisample) to the samples, ma
 
 In 2009 a [paper](https://web.archive.org/web/20141205052029/http://visual-computing.intel-research.net/publications/papers/2009/mlaa/mlaa.pdf) by [Alexander Reshetov](https://research.nvidia.com/person/alexander-reshetov) struck the graphics programming world like a ton of bricks: take the blocky, aliased result of the rendered image, find edges and classify the pixels into tetris-like shapes with per-shape filtering rules and remove the blocky edge. Anti-Aliasing based on the [morphology](https://en.wikipedia.org/wiki/Mathematical_morphology) of pixels - [MLAA](https://www.iryoku.com/mlaa/) was born.
 
-
-
 Computationally cheap, easy to implement. Later it was refined with more emphasis on removing sub-pixel artifacts to become [SMAA](https://www.iryoku.com/smaa/). It became a fan favorite, with [an injector being developed early on](https://mrhaandi.blogspot.com/p/injectsmaa.html?m=1) to put SMAA into games that didn't support it. Some considered these too blurry, the saying "vaseline on the screen" was coined.
 
 <blockquote class="reaction"><div class="reaction_text">It was the future, a sign of things to come. No more shaky hardware support. Like <a href="https://en.wikipedia.org/wiki/Fixed-function">Fixed-Function pipelines</a> died in favor of programmable shaders Anti-Aliasing too became "shader based".</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
@@ -406,6 +405,7 @@ Per-pixel, FXAA considers only the 3x3 neighborhood, so it can't possibly know t
 For our demo here, wrong tool for the job. Really, we didn't do FXAA justice with our example. FXAA was created for another use case and has many settings and presets. It was created to anti-alias more complex scenes. Let's give it a fair shot!
 
 #### FXAA full demo
+
 A scene from my favorite piece of software in existence: [NeoTokyo°](https://store.steampowered.com/app/244630/NEOTOKYO/). I created a bright area light in an NT° map and moved a bench to create an area of strong aliasing. The following demo uses the aliased output from [NeoTokyo°](https://store.steampowered.com/app/244630/NEOTOKYO/), calculates the required luminance channel and applies FXAA. All FXAA presets and settings at your finger tips.
 
 <blockquote class="reaction"><div class="reaction_text">This has fixed resolution and will only be at you device's native resolution, if your device has no dpi scaling and the browser is at 100% zoom.</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
@@ -732,6 +732,7 @@ It may be performance cheap, but only if you already have post-processing in pla
 In this article we won't jump into modern [temporal anti-aliasing](https://sugulee.wordpress.com/2021/06/21/temporal-anti-aliasingtaa-tutorial/), but before FXAA was even developed, [TAA was already experimented](https://x.com/NOTimothyLottes/status/1756732098402992584) with. In fact, FXAA was supposed to [get a new version 4](https://web.archive.org/web/20120120082725/http://timothylottes.blogspot.com/2011/12/fxaa-40-stills-and-features.html) and [incorporate temporal anti aliasing](https://web.archive.org/web/20120120070945/http://timothylottes.blogspot.com/2011/12/big-fxaa-update-soon.html) in addition [to the standard spatial one](https://web.archive.org/web/20120120072820/http://timothylottes.blogspot.com/2011/12/fxaa-40-will-have-new-spatial-only.html), but instead it evolved further and rebranded into [TXAA](https://web.archive.org/web/20210116205348/https://www.nvidia.com/en-gb/geforce/technologies/txaa/technology/).
 
 ## Analytical Anti Aliasing
+
 Now we get to the good stuff. Analytical Anti-Aliasing approaches the problem backwards - it knows the shape you need and draws the pixel already Anti-Aliased to the screen. Whilst drawing the 2D or 3D shape you need, it fades the shape's border by exactly one pixel.
 
 <div class="toggleRes">
@@ -815,14 +816,16 @@ Filtering based on the diagonal pixel size of `√2 px = 1.4142...`, ensures the
 <blockquote class="reaction"><div class="reaction_text">Or in other words: as soon as the border has an opaque pixel, there is already a transparent pixel "in front" of it.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
 This style of Anti-Aliasing is [usually implemented](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with 3 ingredients:
+
 - Enabled [Screen Space Derivative](https://gamedev.stackexchange.com/a/130933) extension or having a modern graphics context
 - Pixel-size calculated via [`length`](https://docs.gl/sl4/length)+[`dFdx`](https://docs.gl/sl4/dFdx)+[`dFdy`](https://docs.gl/sl4/dFdy) or approximated with [`fwidth`](https://docs.gl/sl4/fwidth)
 - Blending with [`smoothstep`](https://en.wikipedia.org/wiki/Smoothstep)
 
 But if you look at the code box above, you will find [circle-analytical.fs](shader/circle-analytical.fs) having **none** of those. And this is the secret sauce we will look at. Before we dive into the implementation, let's clear the elephants in the room...
 
-### What even *is* "Analytical"?
-In graphics programming, *Analytical* refers to effects created by knowing the make-up of the intended shape beforehand and performing calculations against the rigid mathematical definition of said shape. This term is used ***very*** loosely across computer graphics, similar to super sampling referring to multiple things, depending on context.
+### What even _is_ "Analytical"?
+
+In graphics programming, _Analytical_ refers to effects created by knowing the make-up of the intended shape beforehand and performing calculations against the rigid mathematical definition of said shape. This term is used **_very_** loosely across computer graphics, similar to super sampling referring to multiple things, depending on context.
 
 <blockquote class="reaction"><div class="reaction_text">A picture is worth a thousand words...</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 <figure>
@@ -832,9 +835,9 @@ In graphics programming, *Analytical* refers to effects created by knowing the m
 
 Very soft soft-shadows which include [contact-hardening](http://wscg.zcu.cz/WSCG2012/short/B37-full.pdf), implemented by algorithms like [percentage-closer soft shadows](https://developer.download.nvidia.com/shaderlibrary/docs/shadow_PCSS.pdf) are very computationally intense and require both high resolution shadow maps and/or very aggressive filtering to not produce shimmering during movement.
 
-This is why [Naughty Dog](https://en.wikipedia.org/wiki/Naughty_Dog)'s [The Last of Us](https://en.wikipedia.org/wiki/The_Last_of_Us) relied on getting soft-shadows on the main character by calculating the shadow from a rigidly defined forumla of a stretched sphere, multiple of which were arranged in the shape of the main character, shown in red. An improved implementation with shader code can be seen in this [Shadertoy demo](https://www.shadertoy.com/view/3stcD4) by [romainguy](https://www.shadertoy.com/user/romainguy), with the more modern [capsule](https://en.wikipedia.org/wiki/Capsule_(geometry)), as opoosed a stretched sphere.
+This is why [Naughty Dog](https://en.wikipedia.org/wiki/Naughty_Dog)'s [The Last of Us](https://en.wikipedia.org/wiki/The_Last_of_Us) relied on getting soft-shadows on the main character by calculating the shadow from a rigidly defined formula of a stretched sphere, multiple of which were arranged in the shape of the main character, shown in red. An improved implementation with shader code can be seen in this [Shadertoy demo](https://www.shadertoy.com/view/3stcD4) by [romainguy](https://www.shadertoy.com/user/romainguy), with the more modern [capsule](<https://en.wikipedia.org/wiki/Capsule_(geometry)>), as opposed a stretched sphere.
 
-This is now an integral part of modern game engines, [like Unreal](http://dev.epicgames.com/documentation/en-us/unreal-engine/capsule-shadows-overview-in-unreal-engine). As opposed to [standard shadow mapping](https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping), we don't render the scene from the perspective of the light with finite resolution. We evaluate the shadow *per-pixel* against the mathematical equation of the stretched sphere or capsule. This makes capsule shadows ***analytical***.
+This is now an integral part of modern game engines, [like Unreal](http://dev.epicgames.com/documentation/en-us/unreal-engine/capsule-shadows-overview-in-unreal-engine). As opposed to [standard shadow mapping](https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping), we don't render the scene from the perspective of the light with finite resolution. We evaluate the shadow _per-pixel_ against the mathematical equation of the stretched sphere or capsule. This makes capsule shadows **_analytical_**.
 
 <blockquote class="reaction"><div class="reaction_text">A video is worth a thousand words, 30 times a second.</div><img class="kiwi" src="/assets/kiwis/laugh.svg"></blockquote>
 <figure>
@@ -844,7 +847,7 @@ This is now an integral part of modern game engines, [like Unreal](http://dev.ep
 
 Staying with the Last of Us, [The Last of Us Part II](https://en.wikipedia.org/wiki/The_Last_of_Us_Part_II) uses the same logic for blurry real-time reflections of the main character, where [Screen Space Reflections](https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html) aren't defined. Other options like [raytracing against the scene](https://docs.unity3d.com/Packages/com.unity.render-pipelines.high-definition@8.2/manual/Ray-Traced-Reflections.html), or using a [real-time cubemap](https://www.adriancourreges.com/blog/2015/11/02/gta-v-graphics-study/#environment-cubemap) like in [GTA V](https://en.wikipedia.org/wiki/Grand_Theft_Auto_V) are either noisy and low resolution or high resolution, but low performance.
 
-Here the reflection calculation is part of the material shader, rendering against the rigidly defined mathematical shape of the capsule *per-pixel*, multiple of which are aranged in the shape of the main character. This makes capsule reflections ***analytical***.
+Here the reflection calculation is part of the material shader, rendering against the rigidly defined mathematical shape of the capsule _per-pixel_, multiple of which are arranged in the shape of the main character. This makes capsule reflections **_analytical_**.
 
 <blockquote class="reaction"><div class="reaction_text">An online demo with is worth at least a million...<br>...yeah the joke is getting old.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 <figure>
@@ -854,14 +857,15 @@ Here the reflection calculation is part of the material shader, rendering agains
 
 [Ambient Occlusion](https://learnopengl.com/Advanced-Lighting/SSAO) is essential in modern rendering, bringing contact shadows and approximating global illumination. Another topic as deep as the ocean, with so many implementations. Usually implemented by some form of "raytrace a bunch of rays and blur the result".
 
-In this [Shadertoy demo](https://www.shadertoy.com/view/4djSDy), the floor is evaluated *per-pixel* against the rigidly defined mathematical description of the sphere to get a soft, non-noisy, non-flickering occlusion contribution from the hovering ball. This implementation is ***analytical***. Not just spheres, there are [analytical approaches](https://research.nvidia.com/sites/default/files/pubs/2010-06_Ambient-Occlusion-Volumes/McGuire10AOV.pdf) also for complex geometry.
+In this [Shadertoy demo](https://www.shadertoy.com/view/4djSDy), the floor is evaluated _per-pixel_ against the rigidly defined mathematical description of the sphere to get a soft, non-noisy, non-flickering occlusion contribution from the hovering ball. This implementation is **_analytical_**. Not just spheres, there are [analytical approaches](https://research.nvidia.com/sites/default/files/pubs/2010-06_Ambient-Occlusion-Volumes/McGuire10AOV.pdf) also for complex geometry.
 
-By extension, Unreal Engine has distance field approaches for [Soft Shadows](https://dev.epicgames.com/documentation/en-us/unreal-engine/distance-field-soft-shadows-in-unreal-engine) and [Ambient Occlusion](https://dev.epicgames.com/documentation/en-us/unreal-engine/using-distance-field-ambient-occlusion-in-unreal-engine), though one may argue, that this type of signed distance field rendering doesn't fit the description of *analytical*, considering the distance field is precalculated into a 3D texture.
+By extension, Unreal Engine has distance field approaches for [Soft Shadows](https://dev.epicgames.com/documentation/en-us/unreal-engine/distance-field-soft-shadows-in-unreal-engine) and [Ambient Occlusion](https://dev.epicgames.com/documentation/en-us/unreal-engine/using-distance-field-ambient-occlusion-in-unreal-engine), though one may argue, that this type of signed distance field rendering doesn't fit the description of _analytical_, considering the distance field is precalculated into a 3D texture.
 
 ### Implementation
-Let's dive into the sauce. We work with [signed distance fields](https://www.youtube.com/watch?v=62-pRVZuS5c), where for every point that we sample, we know the distance to the desired shape. This information may be baked into a texture as done for [SDF text rendering](https://github.com/Chlumsky/msdf-atlas-gen) or maybe be derived *per-pixel* from a mathematical formula for simpler shapes like [bezier curves or hearts](https://iquilezles.org/articles/distfunctions2d/).
 
-Based on that distance, we fade out the border of the shape. If we fade by the size of one pixel, we get perfectly smooth edges, without any strange side effects. The secret sauce is in the implementation and [under the sauce](https://www.youtube.com/watch?v=bRL8v6--bW4) is where the magic is. *How* does the shader know the size of pixel? *How* do we blend based on distance?
+Let's dive into the sauce. We work with [signed distance fields](https://www.youtube.com/watch?v=62-pRVZuS5c), where for every point that we sample, we know the distance to the desired shape. This information may be baked into a texture as done for [SDF text rendering](https://github.com/Chlumsky/msdf-atlas-gen) or maybe be derived _per-pixel_ from a mathematical formula for simpler shapes like [bezier curves or hearts](https://iquilezles.org/articles/distfunctions2d/).
+
+Based on that distance, we fade out the border of the shape. If we fade by the size of one pixel, we get perfectly smooth edges, without any strange side effects. The secret sauce is in the implementation and [under the sauce](https://www.youtube.com/watch?v=bRL8v6--bW4) is where the magic is. _How_ does the shader know the size of pixel? _How_ do we blend based on distance?
 
 <blockquote class="reaction"><div class="reaction_text">This approach gives motion-stable pixel-perfection, but doesn't work with traditional rasterization. The <b>full</b> shape requires a signed distance field.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 <div class="toggleRes">
@@ -914,7 +918,8 @@ Based on that distance, we fade out the border of the shape. If we fade by the s
 	</tr>
 	<tr>
 		<td class="precolumn" colspan=4>
-		<pre id="pixelSizeMethodExplain" style="display: none;">Now</pre>
+		<pre id="pixelSizeMethodExplain" style="display: none;">
+The shader code works in NDC space with no concept of how big a pixel is. How do we get that information?</pre>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
@@ -940,7 +945,7 @@ Based on that distance, we fade out the border of the shape. If we fade by the s
 	</tr>
 	<tr>
 		<td class="precolumn" colspan=4>
-		<pre id="BLENDMETHODExplain" style="display: none;">Now</pre>
+		<pre id="BLENDMETHODExplain" style="display: none;">How does the shader code know how to fade out the 1.0 alpha in a smooth fashion towards zero just at the edge?</pre>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
@@ -964,7 +969,7 @@ Based on that distance, we fade out the border of the shape. If we fade by the s
 	</tr>
 	<tr>
 		<td class="precolumn" colspan=4>
-		<pre id="SmoothingPxExplanation" style="display: none;">Now</pre>
+		<pre id="SmoothingPxExplanation" style="display: none;">What is the distance that fading from 1.0 alpha to 0.0 alpha occurs over?</pre>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
@@ -977,10 +982,10 @@ Based on that distance, we fade out the border of the shape. If we fade by the s
 			<code>Radius&nbsp;adjust&nbsp;</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="0.1" min="0" max="20" value="1" id="ShrinkAmountRange" oninput="let dec = 1; if(ShrinkAmountValue.value >= 10) dec = 0; ShrinkAmountValue.value = parseFloat(this.value).toFixed(dec)">
+<input class="slider" type="range" step="0.1" min="-20" max="20" value="1" id="ShrinkAmountRange" oninput="let dec = (Math.abs(parseFloat(this.value)) >= 10) ? 0 : 1; ShrinkAmountValue.value = parseFloat(this.value).toFixed(dec)">
 		</td>
 		<td style="text-align: center;">
-			<output id="ShrinkAmountValue">1.0</output> px
+			<output id="ShrinkAmountValue">0.0</output> px
 		</td>
 		<td>
 			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('ShrinkAmountExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
@@ -988,18 +993,74 @@ Based on that distance, we fade out the border of the shape. If we fade by the s
 	</tr>
 	<tr class="noborder">
 		<td class="precolumn" colspan=4>
-			<pre id="ShrinkAmountExplanation" style="display: none;">Now</pre>
+			<pre id="ShrinkAmountExplanation" style="display: none;">Radius adjustment of the signed distance field. Only here for illustrative purposes.</pre>
 		</td>
 	</tr>
 </table>
 
 <script>setupAnalyticalComparison("canvasCompare", "vertexAnalytical", "fragmentAnalyticalCompare", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resCompare");</script>
 
+<blockquote>
+<details><summary><a href="screenshots/analytical.png">Screenshot</a>, in case WebGL doesn't work</summary>
+
+![image](screenshots/analytical.png)
+
+</details>
+<details><summary>WebGL Vertex Shader <a href="shader/circle-analytical.vs">circle-analytical.vs</a></summary>
+
+```glsl
+{% rawFile "posts/analytical-anti-aliasing/shader/circle-analytical.vs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a href="shader/circle-analyticalCompare.fs">circle-analyticalCompare.fs</a></summary>
+
+```glsl
+{% rawFile "posts/analytical-anti-aliasing/shader/circle-analyticalCompare.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a href="circleAnalyticalComparison.js">circleAnalyticalComparison.js</a></summary>
+
+```javascript
+{% rawFile "posts/analytical-anti-aliasing/circleAnalyticalComparison.js" %}
+```
+
+</details>
+</blockquote>
+
+#### Blend by how much?
+
+The first central question from the view of the shader is by how much to we fade the border? If we hardcode a static value, eg. fade out at 95% of the circle's radius, we may get a pleasing result for that circle size at that screen resolution, but as soon as these values change, we too much smoothing when the circle is bigger or closer to the camera and aliasing if the circle becomes small.
+
+<figure>
+	<img src="img/fade.png" alt="Too much edge fading relative to this circle size" />
+	<figcaption>Too much edge fading relative to this circle size</figcaption>
+</figure>
+
+To solve this, we need to know the size of a pixel. This is what Screen Space derivatives are created for. These shader functions allow you to get the size of a screen pixel relative to what variable you want to change.
+
+#### Blend how?
+
+<figure>
+	<img src="img/rhobus.png" alt="Rhombous warping at small shape sizes due to use of fwidth()" />
+	<figcaption>Rhombous warping at small shape sizes due to use of <code>fwidth()</code></figcaption>
+</figure>
+
 We'll talk about professional implementations futher below in a moment, but using fwidth is what like Unity's [Shapes](https://acegikmo.com/shapes/docs/#anti-aliasing) by [Freya Holmér](https://twitter.com/FreyaHolmer/) calls "[Fast Local Anti-Aliasing](https://acegikmo.com/shapes/docs#anti-aliasing)" with the following text:
 
 > Fast LAA has a slight bias in the diagonal directions, making circular shapes appear ever so slightly rhombous and have a slightly sharper curvature in the orthogonal directions, especially when small. Sometimes the edges in the diagonals are slightly fuzzy as well.
 
-### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
+#### Shrinking needed?
+
+<figure>
+	<img src="img/hardEdgeBug.png" alt="Hard edge bug with MSAA on select hardware" />
+	<figcaption>Hard edge bug with MSAA on select hardware</figcaption>
+</figure>
+
+#### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
 
 Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliasing in `GLSL`, but its use doesn't make sense. It performs a hermite interpolation, but the we are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here.
 
@@ -1015,9 +1076,14 @@ implement
 
 But wait! If all we want know is the pixel size, then most of this cancels out! Infact, we don't need any kind of step function.
 
-### fwidth vs length + dFdx + dFdy
+#### fwidth vs length + dFdx + dFdy
+
+#### Drawing multiple?
+
+As [shown in the code here](https://github.com/FrostKiwi/Mirrorball/blob/main/src/shd/project_antialias.fs#L64)
 
 ### 3D
+
 Everything we talked about extends to the 3D case as well. We won't dig [into 3D shapes themselves](https://iquilezles.org/articles/distfunctions/) and will stick to a 2D rounded square in 3D perspective with a moving camera. I use this a lot when graphics programming to create a scene with a "ground floor" where my objects live on.
 
 <div class="toggleRes">
@@ -1041,6 +1107,7 @@ Everything we talked about extends to the 3D case as well. We won't dig [into 3D
 <script src="3DAnalytical.js"></script>
 
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvas3D"></canvas>
+
 <div class="toggleRes" style="border-radius: 50px">
 	<div>
 	  <input type="radio" id="showCirclelabel3D" name="showQuad3D" value="false" checked />
@@ -1088,9 +1155,11 @@ With the 3D camera and resulting perspective matrix multiplication, we use the r
 There is something I have not explained yet, a persistent misunderstanding I held until [Yakov Galka](https://stannum.io/) explained [the deetz to me on stackoverflow](https://stackoverflow.com/questions/73903568). Depending on how we setup the blending math, to perform the smoooting we may remove pixel alpha on the inside of the shape, add it to the outside or center it.
 
 ## What are the big boys doing?
+
 This rendering approach has found its way into many professional products. Let's finish by looking at some of them.
 
 ### ["Shapes"](https://acegikmo.com/shapes) for Unity
+
 Feature-wise the most complete implementation of this approach is in Unity extension [Shapes](https://acegikmo.com/shapes) by [Freya Holmér](https://twitter.com/FreyaHolmer/). There the distance fields are either anti-aliased by MSAA or are blended like in this blog post, though it's referred to as "[Local Anti-Aliasing](https://acegikmo.com/shapes/docs/#anti-aliasing)" there.
 
 <figure>
@@ -1113,33 +1182,37 @@ Valve introduced extensive use of signed distance field rendering to the [Source
 
 > **Alden Kroll:** Two-dimensional HUD elements present a particular art problem, because they have to look good and sharp no matter what resolution the user is running their game at. Given today's availability of high resolution wide-screen displays, this can require a lot of texture memory and a lot of work anticipating different display resolutions. The problem for Team Fortress 2 was even more daunting because of our desire to include a lot of smooth curved elements in our HUD. We developed a new shader system for drawing 'line art' images. The system allows us to create images at a fixed resolution that produced smooth silhouettes even when scaled up to a very high resolution. This shader system also handles outlining and drop-shadows, and can be applied in the 3D space to world elements such as signs.
 
-They also released [a paper](https://steamcdn-a.akamaihd.net/apps/valve/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf) describing the specific implementation, including a showcase with for use in the 3D game world, though I have never seen it used in the game world itself in production. Added as a mere footnote to the paper, was a to improve this tech to get sharp text rendering with sharp corners...
-
 <figure>
-	<img src="img/valve.png" alt="Hud elements in Team Fortress 2" />
-	<figcaption>Hud elements in <a href="https://www.teamfortress.com/">Team Fortress 2</a></figcaption>
+	<img src="img/valve.png" alt="64x64 Texture: Alpha blended, Alpha Tested and SDF rendering" />
+	<figcaption>64x64 Texture: Alpha blended, Alpha Tested and SDF rendering<br>Paper: <a href="https://steamcdn-a.akamaihd.net/apps/valve/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf">Improved Alpha-Tested Magnification for Vector Textures and Special Effect</a></figcaption>
 </figure>
+
+They also released [a paper](https://steamcdn-a.akamaihd.net/apps/valve/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf) describing the specific implementation, including a showcase for use in the 3D game world, though I have never seen it used in the game world itself in production. Added as a mere footnote to the paper, was a to improve this tech to get sharp text rendering with sharp corners...
 
 ### The future of all things font?
+
 If you save a signed distance field into a texture and sample it with linear interpolation, you will get perfectly sharp characters at any size, but the limited resolution will result in clipped or rounded corners, depending on implementation math.
 
-Picking up on that foot note and bringing the technique to its logical conclusion was the most thorough and well composed Master Thesis I ever read: "[Shape Decomposition for Multi-channel Distance Fields](https://github.com/Chlumsky/msdfgen/files/3050967/thesis.pdf)" by [Viktor Chlumský](https://github.com/Chlumsky).
+Picking up on that foot note and bringing the technique to its logical conclusion was the most thorough and well composed Master Thesis I ever read: "[Shape Decomposition for Multi-channel Distance Fields](https://github.com/Chlumsky/msdfgen/files/3050967/thesis.pdf)" by [Viktor Chlumský](https://github.com/Chlumsky), which included code for the [font-file to SDF conversion](https://github.com/Chlumsky/msdfgen) and a full [font atlas generator](https://github.com/Chlumsky/msdf-atlas-gen?tab=readme-ov-file).
 
-Basically, use RGB to solve this and get perfectly sharp text at any size, including an Alpha channel with the classical SDF for effects like glows and drop shadows, all done on the GPU with no extra baking or intense processing. If you dig around in video games, you will find SDF based font rendering based from time to time!
+Basically, use RGB and a median term to get perfectly sharp text at any size, including an Alpha channel with the classical SDF for effects like glows and drop shadows, all done on the GPU with no run-time baking or intense processing. If you dig around in video games, you will find SDF based font rendering based from time to time!
 
 <figure>
-	<img src="img/msdf.png" alt="Hud elements in Team Fortress 2" />
-	<figcaption>Hud elements in <a href="https://www.teamfortress.com/">Team Fortress 2</a></figcaption>
+	<img src="img/msdf.png" alt="Multi-Channel SDF demo from msdf-atlas-gen" />
+	<figcaption>Multi-Channel SDF demo from <a href="https://github.com/Chlumsky/msdf-atlas-gen?tab=readme-ov-file">msdf-atlas-gen</a></figcaption>
 </figure>
-
-You may be wondering, if we can get the [analytical solution for a bezier curve](https://www.shadertoy.com/view/MlKcDD), why bake into textures instead? We may know the solution for **one** segment, but to get the full shape we need to sum up all the contributions from all segments. This works, but performance tanks hard, as we solve *every* bezier curve segment **per pixel**.
 
 From experience I can tell you, that there are more implementation headaches. Chinese, Japanese, Korean characters require bigger textures to resolve their minute details. Bigger textures means you'll often minimize during rendering, but minimizing may introduce artifacts on its own...
 
-But considering the current state of browser font-rendering and the *pure insanity* of edge-cases covered via baking text to pixel texture atlases, including [synthetic fallbacks for missing italic or bold variants](https://faultlore.com/blah/text-hates-you/) and or 
+But considering the current state of browser font baking + rendering and the _pure insanity_ of edge-cases covered, including [synthetic fallbacks for missing italic or bold variants](https://faultlore.com/blah/text-hates-you/) and baking 4 variants with 0.25px offsets to account for minute sampling issues, I think SDF text rendering has not been given enough serious consideration.
+
+<blockquote class="reaction"><div class="reaction_text">"<a href="https://faultlore.com/blah/text-hates-you/">Text rendering hates you</a>" is a recommended read if you want to see how crushingly complex this topic gets.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
+
+You may be wondering, if we can get the [analytical solution for a bezier curve](https://www.shadertoy.com/view/MlKcDD), why bake into textures instead? We may know the solution for **one** segment, but to get the full shape we need to sum up all the contributions from all segments. This works, but performance tanks hard, as we solve _every_ bezier curve segment **per pixel**.
 
 ## Clarity should not be a luxury
-Modern video games often use TAA in combination dynamic resolution scaling, a concoction guaranteed to result in blurriness. These AA algorithms come with post-process sharpening built-in to combat this, as is done in [FSR](https://gpuopen.com/fidelityfx-cas/) or [TAA](https://docs.unity3d.com/Packages/com.unity.postprocessing@3.4/manual/Anti-aliasing.html#temporal-anti-aliasing). Fixing blurring by sharpening, I find this a bit of graphics programming sin.
+
+Modern video games often use TAA in combination with dynamic resolution scaling, a concoction guaranteed to result in blurriness. These AA algorithms come with post-process sharpening built-in to combat this, as is done in [FSR](https://gpuopen.com/fidelityfx-cas/) or [TAA](https://docs.unity3d.com/Packages/com.unity.postprocessing@3.4/manual/Anti-aliasing.html#temporal-anti-aliasing). Fixing blurring by sharpening, I find this a bit of graphics programming sin.
 
 Whole communities rally around fixing this, like the reddit communities "[r/MotionClarity](https://www.reddit.com/r/MotionClarity/)" or the lovingly titled "[r/FuckTAA](https://www.reddit.com/r/FuckTAA)", all with the understanding, that Anti-Aliasing should not come at the cost of clarity. FXAA creator Timothy Lottes mentioned, that this is [solvable to some degree with adjustments to filtering](https://x.com/NOTimothyLottes/status/1756733156877578611), though even the most modern titles suffer from this.
 
