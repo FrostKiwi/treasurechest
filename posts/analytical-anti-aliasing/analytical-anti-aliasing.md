@@ -1040,21 +1040,31 @@ Specifically, by how much do we fade the border? If we hardcode a static value, 
 	<figcaption>Too much edge fading relative to this circle size</figcaption>
 </figure>
 
-We need to know the size of a pixel. This is in part what [Screen Space derivatives](https://gamedev.stackexchange.com/a/130933) are created for. Shader functions like [`dFdx`](https://docs.gl/sl4/dFdx), [`dFdy`](https://docs.gl/sl4/dFdy) and [`fwidth`](https://docs.gl/sl4/fwidth) allow you to get the size of a screen pixel relative to some vector. Specifically in the above [circle-analyticalCompare.fs](shader/circle-analyticalCompare.fs), we determine by how much the distance changes per pixel via `pixelSize = fwidth(dist);` or `pixelSize = length(vec2(dFdx(dist), dFdy(dist)));`.
+We need to know the size of a pixel. This is in part what [Screen Space derivatives](https://gamedev.stackexchange.com/a/130933) were created for. Shader functions like [`dFdx`](https://docs.gl/sl4/dFdx), [`dFdy`](https://docs.gl/sl4/dFdy) and [`fwidth`](https://docs.gl/sl4/fwidth) allow you to get the size of a screen pixel relative to some vector. In the above [circle-analyticalCompare.fs](shader/circle-analyticalCompare.fs) we determine by how much the distance changes via two methods:
 
-Relying on Screen Space derivatives has the benefit, that we get the pixel size delivered to us by graphics pipeline. It properly respects any transformations we might throw at it. The down side is that it is not supported by the WebGL 1 standard and has to be pulled in via the extension `GL_OES_standard_derivatives` or requires the jump to WebGL 2. Luckily I have never witnessed any device that supported WebGL 1, but not the Screen Space derivatives. Even the GMA based [Thinkpad T500 & X200](https://www.youtube.com/watch?v=Fs4GjDiOie8) do.
+```glsl
+pixelSize = fwidth(dist);
+/* or */
+pixelSize = length(vec2(dFdx(dist), dFdy(dist)));
+```
+
+Relying on Screen Space derivatives has the benefit, that we get the pixel size delivered to us by graphics pipeline. It properly respects any transformations we might throw at it.
+
+The down side is that it is not supported by the WebGL 1 standard and has to be pulled in via the extension `GL_OES_standard_derivatives` or requires the jump to WebGL 2.
+
+<blockquote class="reaction"><div class="reaction_text">Luckily I have never witnessed any device that supported WebGL 1, but not the Screen Space derivatives. Even the GMA based <a href="https://www.youtube.com/watch?v=Fs4GjDiOie8">Thinkpad T500 & X200</a> do.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
 ##### Possibly painful
 Generally, there are some nasty pitfalls when using Screen Space derivatives: how the calculation happens is up to the implementation. This led to the split into `dFdxFine()` and `dFdxCoarse()` in later OpenGL revisions. The default case can be set via [`GL_FRAGMENT_SHADER_DERIVATIVE_HINT`](https://docs.gl/gl4/glHint), but the standard hates you:
 
-> [**OpenGL Docs**](https://docs.gl/sl4/dFdx): The implementation **may** choose which calculation to perform based upon factors such as performance or the value of the API `GL_FRAGMENT_SHADER_DERIVATIVE_HINT` hint.
+> [**OpenGL Docs**](https://docs.gl/sl4/dFdx): The implementation ***may*** choose which calculation to perform based upon factors such as performance or the value of the API `GL_FRAGMENT_SHADER_DERIVATIVE_HINT` hint.
 
-<blockquote class="reaction"><div class="reaction_text">As a graphics programmer, anything with <code>hint</code> has me traumatized.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Why do we have standards again? As a graphics programmer, anything with <code>hint</code> has me traumatized.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
 
 Luckily, neither case concerns us, as the difference doesn't show itself in the context of Anti-Aliasing. Performance technically [`dFdx`](https://docs.gl/sl4/dFdx) and [`dFdy`](https://docs.gl/sl4/dFdy) are free, though the pixel size calculation using `length()` or `fwidth()` is not. It is performed *per-pixel*.
 
 ##### [`dFdx`](https://docs.gl/sl4/dFdx) + [`dFdy`](https://docs.gl/sl4/dFdy) + [`length()`](https://docs.gl/sl4/length) vs [`fwidth()`](https://docs.gl/sl4/fwidth)
-This is why there exist two ways of doing this: getting the `length()` of the vector `dFdx` and `dFdy` make up, a step involving the historically performance expensive `sqrt()` function or using `fwidth()`, with the approximation `abs(dFdx()) + abs(dFdy())`.
+This is why there exist two ways of doing this: getting the `length()` of the vector `dFdx` and `dFdy` make up, a step involving the historically performance expensive `sqrt()` function or using `fwidth()`, which is the approximation `abs(dFdx()) + abs(dFdy())` of the above.
 
 <blockquote class="reaction"><div class="reaction_text">It depends on context, but on semi-modern hardware a call to <code>length()</code> should be performance trivial though, even per-pixel.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
@@ -1065,22 +1075,34 @@ To showcase the difference, the above `Radius adjust` slider scale works of the 
 	<figcaption>Rhombous warping at small shape sizes due to use of <code>fwidth()</code></figcaption>
 </figure>
 
-The diagonals shrink more than they should, as the pixel size approximation addition scales too much diagonally. We'll talk about professional implementations further below in a moment, but using `fwidth()` is what Unity extension "[Shapes](https://acegikmo.com/shapes/docs/#anti-aliasing)" by [Freya Holmér](https://twitter.com/FreyaHolmer/) calls "[Fast Local Anti-Aliasing](https://acegikmo.com/shapes/docs#anti-aliasing)" with the following text:
+The diagonals shrink more than they should, as the approximation using addition scales too much diagonally. We'll talk about professional implementations further below in a moment, but using `fwidth()` for AAA is what Unity extension "[Shapes](https://acegikmo.com/shapes/docs/#anti-aliasing)" by [Freya Holmér](https://twitter.com/FreyaHolmer/) calls "[Fast Local Anti-Aliasing](https://acegikmo.com/shapes/docs#anti-aliasing)" with the following text:
 
 > Fast LAA has a slight bias in the diagonal directions, making circular shapes appear ever so slightly rhombous and have a slightly sharper curvature in the orthogonal directions, especially when small. Sometimes the edges in the diagonals are slightly fuzzy as well.
 
-This affects our fading, which will fade more on diagonals. Luckily, we fade by the amount of one pixel and thus the difference is really only visible when flicking between the methods. What to choose depends on what you care more about: Performance or Accuracy. But what if I told you can have you cake and eat it to...
+This effects our fading, which will fade more on diagonals. Luckily, we fade by the amount of one pixel and thus the difference is really only visible when flicking between the methods. What to choose depends on what you care more about: Performance or Accuracy? But what if I told you can have your cake and eat it too...
 
 ##### DIY
 
-...Calculate it yourself! For the 2D case, this is trivial and easily abstracted away. We know the size our context is rendering at, we know how big our Quad is that we draw on, as we are issuing the draw calls. Calculating the size of the pixel is thus done per-object, not per-pixel. This is what happens in the above [circleAnalyticalComparison.js](circleAnalyticalComparison.js) `gl.uniform1f(pixelSizeCircle, (2.0 / (canvas.height / resDiv)));`.
+...Calculate it yourself! For the 2D case, this is trivial and easily abstracted away. We know the size our context is rendering at, we know how big our Quad is that we draw on. Calculating the size of the pixel is thus done per-object, not per-pixel. This is what happens in the above [circleAnalyticalComparison.js](circleAnalyticalComparison.js).
 
-The results are identical to the `dFdx` + `dFdy` + `length()` case, with the benefit of fully skipping this calculation. This does become more involved, once the quad is stretched or performance-painful when perspective is involved. Thus most implementations stick to Screen Space derivatives.
+```js
+/* Calculate pixel size based on height.
+   Simple case: Assumes Square pixels and a square quad. */
+gl.uniform1f(pixelSizeCircle, (2.0 / (canvas.height / resDiv)));
+```
+
+<blockquote class="reaction"><div class="reaction_text">No WebGL 2, no extensions, works on ancient hardware.</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
+
+The results are identical to the `dFdx` + `dFdy` + `length()` case, with the benefit of fully skipping the per-pixel calculation. This does become more involved, once the quad is stretched or performance-painful when perspective is involved. Thus most implementations stick to Screen Space derivatives.
 
 #### How do do we blend?
-Ok, now we have the amount we want to blend by. The next step is to perform the adjustment of opacity. If we are in the
+Ok, now we have the amount we want to blend by. The next step is to perform the adjustment of opacity. If we are doing 2D, then Alpha blending is the way to go. Straight forward, will never betray you.
 
-Normally, this is done with [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep). We input
+Another options is using MSAA + [Alpha to Coverage](https://bgolus.medium.com/anti-aliased-alpha-test-the-esoteric-alpha-to-coverage-8b177335ae4f). There are pit falls with the latter, as discussed previously and more headaches to follow below. The reason you would need this is for depth-buffer writes [for correct blending in 3D scenes](https://bgolus.medium.com/rendering-a-sphere-on-a-quad-13c92025570c).
+
+<blockquote class="reaction"><div class="reaction_text">For the MSAA and AAA demos above, merely an API level switch. In both cases, the shaders are 100% <a href="shader/circle-analytical.fs">identical</a>!</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
+
+Still the alpha itself has to be faded based on distance. Here
 
 #### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
 Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliasing in `GLSL`, but its use doesn't make sense. It performs a hermite interpolation, but the we are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here.
