@@ -865,7 +865,7 @@ By extension, Unreal Engine has distance field approaches for [Soft Shadows](htt
 
 Let's dive into the sauce. We work with [signed distance fields](https://www.youtube.com/watch?v=62-pRVZuS5c), where for every point that we sample, we know the distance to the desired shape. This information may be baked into a texture as done for [SDF text rendering](https://github.com/Chlumsky/msdf-atlas-gen) or maybe be derived _per-pixel_ from a mathematical formula for simpler shapes like [bezier curves or hearts](https://iquilezles.org/articles/distfunctions2d/).
 
-Based on that distance, we fade out the border of the shape. If we fade by the size of one pixel, we get perfectly smooth edges, without any strange side effects. The secret sauce is in the implementation and [under the sauce](https://www.youtube.com/watch?v=bRL8v6--bW4) is where the magic is. _How_ does the shader know the size of pixel? _How_ do we blend based on distance?
+Based on that distance we fade out the border of the shape. If we fade by the size of one pixel, we get perfectly smooth edges, without any strange side effects. The secret sauce is in the implementation and [under the sauce](https://www.youtube.com/watch?v=bRL8v6--bW4) is where the magic is. _How_ does the shader know the size of pixel? _How_ do we blend based on distance?
 
 <blockquote class="reaction"><div class="reaction_text">This approach gives motion-stable pixel-perfection, but doesn't work with traditional rasterization. The <b>full</b> shape requires a signed distance field.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 <div class="toggleRes">
@@ -1031,56 +1031,111 @@ The shader code works in NDC space with no concept of how big a pixel is. How do
 </details>
 </blockquote>
 
-#### Blend by how much?
+#### How big is a pixel?
 
-The first central question from the view of the shader is by how much to we fade the border? If we hardcode a static value, eg. fade out at 95% of the circle's radius, we may get a pleasing result for that circle size at that screen resolution, but as soon as these values change, we too much smoothing when the circle is bigger or closer to the camera and aliasing if the circle becomes small.
+Specifically, by how much do we fade the border? If we hardcode a static value, eg. fade at 95% of the circle's radius, we may get a pleasing result for that circle size at that screen resolution, but too much smoothing when the circle is bigger or closer to the camera and aliasing if the circle becomes small.
 
 <figure>
 	<img src="img/fade.png" alt="Too much edge fading relative to this circle size" />
 	<figcaption>Too much edge fading relative to this circle size</figcaption>
 </figure>
 
-To solve this, we need to know the size of a pixel. This is what Screen Space derivatives are created for. These shader functions allow you to get the size of a screen pixel relative to what variable you want to change.
+We need to know the size of a pixel. This is in part what [Screen Space derivatives](https://gamedev.stackexchange.com/a/130933) are created for. Shader functions like [`dFdx`](https://docs.gl/sl4/dFdx), [`dFdy`](https://docs.gl/sl4/dFdy) and [`fwidth`](https://docs.gl/sl4/fwidth) allow you to get the size of a screen pixel relative to some vector. Specifically in the above [circle-analyticalCompare.fs](shader/circle-analyticalCompare.fs), we determine by how much the distance changes per pixel via `pixelSize = fwidth(dist);` or `pixelSize = length(vec2(dFdx(dist), dFdy(dist)));`.
 
-#### Blend how?
+Relying on Screen Space derivatives has the benefit, that we get the pixel size delivered to us by graphics pipeline. It properly respects any transformations we might throw at it. The down side is that it is not supported by the WebGL 1 standard and has to be pulled in via the extension `GL_OES_standard_derivatives` or requires the jump to WebGL 2. Luckily I have never witnessed any device that supported WebGL 1, but not the Screen Space derivatives. Even the GMA based [Thinkpad T500 & X200](https://www.youtube.com/watch?v=Fs4GjDiOie8) do.
+
+##### Possibly painful
+Generally, there are some nasty pitfalls when using Screen Space derivatives: how the calculation happens is up to the implementation. This led to the split into `dFdxFine()` and `dFdxCoarse()` in later OpenGL revisions. The default case can be set via [`GL_FRAGMENT_SHADER_DERIVATIVE_HINT`](https://docs.gl/gl4/glHint), but the standard hates you:
+
+> [**OpenGL Docs**](https://docs.gl/sl4/dFdx): The implementation **may** choose which calculation to perform based upon factors such as performance or the value of the API `GL_FRAGMENT_SHADER_DERIVATIVE_HINT` hint.
+
+<blockquote class="reaction"><div class="reaction_text">As a graphics programmer, anything with <code>hint</code> has me traumatized.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
+
+Luckily, neither case concerns us, as the difference doesn't show itself in the context of Anti-Aliasing. Performance technically [`dFdx`](https://docs.gl/sl4/dFdx) and [`dFdy`](https://docs.gl/sl4/dFdy) are free, though the pixel size calculation using `length()` or `fwidth()` is not. It is performed *per-pixel*.
+
+##### [`dFdx`](https://docs.gl/sl4/dFdx) + [`dFdy`](https://docs.gl/sl4/dFdy) + [`length()`](https://docs.gl/sl4/length) vs [`fwidth()`](https://docs.gl/sl4/fwidth)
+This is why there exist two ways of doing this: getting the `length()` of the vector `dFdx` and `dFdy` make up, a step involving the historically performance expensive `sqrt()` function or using `fwidth()`, with the approximation `abs(dFdx()) + abs(dFdy())`.
+
+<blockquote class="reaction"><div class="reaction_text">It depends on context, but on semi-modern hardware a call to <code>length()</code> should be performance trivial though, even per-pixel.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
+
+To showcase the difference, the above `Radius adjust` slider scale works of the `Pixel size method` and adjusts the SDF distance. If you go with `fwidth()` and a strong radius shrink, you'll see something weird.
 
 <figure>
 	<img src="img/rhobus.png" alt="Rhombous warping at small shape sizes due to use of fwidth()" />
 	<figcaption>Rhombous warping at small shape sizes due to use of <code>fwidth()</code></figcaption>
 </figure>
 
-We'll talk about professional implementations futher below in a moment, but using fwidth is what like Unity's [Shapes](https://acegikmo.com/shapes/docs/#anti-aliasing) by [Freya Holmér](https://twitter.com/FreyaHolmer/) calls "[Fast Local Anti-Aliasing](https://acegikmo.com/shapes/docs#anti-aliasing)" with the following text:
+The diagonals shrink more than they should, as the pixel size approximation addition scales too much diagonally. We'll talk about professional implementations further below in a moment, but using `fwidth()` is what Unity extension "[Shapes](https://acegikmo.com/shapes/docs/#anti-aliasing)" by [Freya Holmér](https://twitter.com/FreyaHolmer/) calls "[Fast Local Anti-Aliasing](https://acegikmo.com/shapes/docs#anti-aliasing)" with the following text:
 
 > Fast LAA has a slight bias in the diagonal directions, making circular shapes appear ever so slightly rhombous and have a slightly sharper curvature in the orthogonal directions, especially when small. Sometimes the edges in the diagonals are slightly fuzzy as well.
 
-#### Shrinking needed?
+This affects our fading, which will fade more on diagonals. Luckily, we fade by the amount of one pixel and thus the difference is really only visible when flicking between the methods. What to choose depends on what you care more about: Performance or Accuracy. But what if I told you can have you cake and eat it to...
+
+##### DIY
+
+...Calculate it yourself! For the 2D case, this is trivial and easily abstracted away. We know the size our context is rendering at, we know how big our Quad is that we draw on, as we are issuing the draw calls. Calculating the size of the pixel is thus done per-object, not per-pixel. This is what happens in the above [circleAnalyticalComparison.js](circleAnalyticalComparison.js) `gl.uniform1f(pixelSizeCircle, (2.0 / (canvas.height / resDiv)));`.
+
+The results are identical to the `dFdx` + `dFdy` + `length()` case, with the benefit of fully skipping this calculation. This does become more involved, once the quad is stretched or performance-painful when perspective is involved. Thus most implementations stick to Screen Space derivatives.
+
+#### How do do we blend?
+Ok, now we have the amount we want to blend by. The next step is to perform the adjustment of opacity. If we are in the
+
+Normally, this is done with [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep). We input
+
+#### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
+Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliasing in `GLSL`, but its use doesn't make sense. It performs a hermite interpolation, but the we are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here.
+
+<blockquote class="reaction"><div class="reaction_text">To be precise, both sampling and blending witness the smoothstep curve in the sub-pixel make-up of the edge, but the difference is tiny and can be corrected using an adjusted smoothing amount.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+Even though the slight performance difference doesn't particularly matter on modern graphics cards, wasting cycles on performing the hermite interpolation doesn't make sense to me. Let's DIY it! The implementation of [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep) is up to the vendor, but for the `float` case it's essentially just :
+
+```glsl
+float smoothstep(float edge0, float edge1, float x) {
+    t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+	return t * t * (3.0 - 2.0 * t);
+}
+...
+float alpha = smoothstep(1.0, 1.0 - pixelSize * smoothingAmount, dist);
+```
+
+We can rip out the hermite interpolation and stick to simple linear one. If you flick between the two in the above demo, you'll see only a slight change. At pixel size, the difference can easily be counter acted with an adjustment to the smoothing factor if you like one method over the other.
+
+```glsl
+/* Step function with Linear Interpolation
+   instead of the Hermite Interpolation */
+float linearstep(float edge0, float edge1, float x) {
+    return clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+}
+...
+float alpha = linearstep(1.0, 1.0 - pixelSize * smoothingAmount, dist);
+```
+
+But why even clamp? Alpha values below 0.0 or above 1.0 will be taken care of by the rendering pipeline during the blending step and thus no clamping is required. It *is* required when having multiple shapes on one quad, something I'll go into below. But in the one shape per quad case, we can delete it.
+```glsl
+/* Step function with Linear Interpolation, but no clamping */
+float linearstepNoclamp(float edge0, float edge1, float x) {
+    return (x - edge0) / (edge1 - edge0);
+}
+...
+float alpha = linearstepNoclamp(1.0, 1.0 - pixelSize * smoothingAmount, dist);
+```
+
+But wait a moment... When doing Anti-Aliasing we wish to affect the border of the shape, specifically distance 1.0, so most of this function cancels out! In fact, we **don't** need a step function. The blending can be performed by a simple division.
+
+```glsl
+float alpha = (1.0 - dist) / (pixelSize * smoothingAmount);
+```
+
+##### Drawing multiple?
+As [shown in the code here](https://github.com/FrostKiwi/Mirrorball/blob/main/src/shd/project_antialias.fs#L64)
+
+##### Shrinking needed?
+There is an illusive implementation interaction with MSAA and the rasterizer. *Only* implementing this with MSAA + Alpha to Coverage, there will be exactly one side of the quad with a missing 0.5 pixels, on **some** hardware. This is why there is this weird 0.5 px breathing room being added. 
 
 <figure>
 	<img src="img/hardEdgeBug.png" alt="Hard edge bug with MSAA on select hardware" />
 	<figcaption>Hard edge bug with MSAA on select hardware</figcaption>
 </figure>
-
-#### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
-
-Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliasing in `GLSL`, but its use doesn't make sense. It performs a hermite interpolation, but the we are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here.
-
-<blockquote class="reaction"><div class="reaction_text">To be precise, both sampling and blending witness the smoothstep curve in the sub-pixel make-up of the edge, but even after pixel peeping, it just doesn't make any difference.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
-
-Though the slight performance difference doesn't particularly matter on modern graphics cards so wasting cycles on performing the hermite interpolation doesn't make sense to me.
-
-We can implement it ourselves, without the hermite interpolation
-
-```
-implement
-```
-
-But wait! If all we want know is the pixel size, then most of this cancels out! Infact, we don't need any kind of step function.
-
-#### fwidth vs length + dFdx + dFdy
-
-#### Drawing multiple?
-
-As [shown in the code here](https://github.com/FrostKiwi/Mirrorball/blob/main/src/shd/project_antialias.fs#L64)
 
 ### 3D
 
@@ -1152,7 +1207,11 @@ Everything we talked about extends to the 3D case as well. We won't dig [into 3D
 
 With the 3D camera and resulting perspective matrix multiplication, we use the realiable screen space derivatives again to get the pixel size. But in reality, [we can still do without](https://web.archive.org/web/20150521050627/https://www.opengl.org/wiki/Compute_eye_space_from_window_space)! This would require us to multiply of the inverse perspective matrix with the fragment coordinates _**per pixel**_. Performance-painful, yet possible.
 
-There is something I have not explained yet, a persistent misunderstanding I held until [Yakov Galka](https://stannum.io/) explained [the deetz to me on stackoverflow](https://stackoverflow.com/questions/73903568). Depending on how we setup the blending math, to perform the smoooting we may remove pixel alpha on the inside of the shape, add it to the outside or center it.
+There is something I have not explained yet, a persistent misunderstanding I held until [Yakov Galka](https://stannum.io/) explained [the deetz to me on stackoverflow](https://stackoverflow.com/questions/73903568). Depending on how we setup the blending math, to perform the smooothing we may remove pixel alpha on the inside of the shape, add it to the outside or center it.
+
+For the 2D case, we could implement it ourselves, by growing the quad in the vertex shader by one pixel and shrink the signed distance field by one pixel in the fragment shader. And this *is* exactly what's happening in the demos on this page. 
+
+<blockquote class="reaction"><div class="reaction_text">Not messing up gamma and multiplied vs premultiplied alpha are important for all forms of AA, but are very context dependant. This blog post is about AAA specifically, thus we ignore these.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 ## What are the big boys doing?
 
@@ -1167,7 +1226,7 @@ Feature-wise the most complete implementation of this approach is in Unity exten
 	<figcaption>Trailer for <a href="https://acegikmo.com/shapes">"Shapes"</a> by <a href="https://twitter.com/FreyaHolmer/">Freya Holmér</a></figcaption>
 </figure>
 
-With motion-blur, [shape-respecting color gradients](https://acegikmo.com/shapes/docs/#shapes-feature-table) and lines [below 1px being opacity faded](https://acegikmo.com/shapes/docs/#anti-aliasing) to prevent further aliasing, this is signed-distance field rendering as discussed in the context of this blog post implemented to its logical conclusion.
+With motion-blur, [shape-respecting color gradients](https://acegikmo.com/shapes/docs/#shapes-feature-table) and lines [below 1px being opacity faded](https://acegikmo.com/shapes/docs/#anti-aliasing) to prevent further aliasing, this is signed-distance field rendering and AAA by extension implemented, to its logical conclusion.
 
 ### [Valve Software](https://www.valvesoftware.com/)'s implementation
 
