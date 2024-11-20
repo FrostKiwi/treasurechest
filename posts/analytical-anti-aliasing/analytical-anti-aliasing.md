@@ -1371,6 +1371,11 @@ You may be wondering, if we can get the [analytical solution for a bezier curve]
 
 Modern video games often use TAA in combination with dynamic resolution scaling, a concoction guaranteed to result in blurriness. These AA algorithms come with post-process sharpening built-in to combat this, as is done in [FSR](https://gpuopen.com/fidelityfx-cas/) or [TAA](https://docs.unity3d.com/Packages/com.unity.postprocessing@3.4/manual/Anti-aliasing.html#temporal-anti-aliasing). Fixing blurring by sharpening, I find this a bit of graphics programming sin.
 
+<figure>
+	<img src="img/warframetaa.png" alt="TAA Sharpening in Warframe" />
+	<figcaption>TAA Sharpening in <a href="https://www.warframe.com/">Warframe</a></figcaption>
+</figure>
+
 Whole communities rally around fixing this, like the reddit communities "[r/MotionClarity](https://www.reddit.com/r/MotionClarity/)" or the lovingly titled "[r/FuckTAA](https://www.reddit.com/r/FuckTAA)", all with the understanding, that Anti-Aliasing should not come at the cost of clarity. FXAA creator Timothy Lottes mentioned, that this is [solvable to some degree with adjustments to filtering](https://x.com/NOTimothyLottes/status/1756733156877578611), though even the most modern titles suffer from this.
 
 What we have not talked about are the newer machine learning approaches as done for instance with NVIDIA's [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing), as that is really outside the scope of this post. Suffice to say Timothy Lottes is [not a fan](https://x.com/NOTimothyLottes/status/1756746848402800785). As for AAA, it's lovely being able to draw smooth yet sharp, motion-stable shapes of any size at native resolutions.
