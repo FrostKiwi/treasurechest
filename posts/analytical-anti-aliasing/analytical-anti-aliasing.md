@@ -1,8 +1,7 @@
 ---
-wip: true
 title: AAA - Analytical Anti-Aliasing
 permalink: "/{{ page.fileSlug }}/"
-date: 2999-12-09
+date: 2024-11-20
 last_modified:
 description: How to fix jaggies the analytical way with some juicy secrets
 publicTags:
@@ -1048,11 +1047,11 @@ pixelSize = fwidth(dist);
 pixelSize = length(vec2(dFdx(dist), dFdy(dist)));
 ```
 
-Relying on Screen Space derivatives has the benefit, that we get the pixel size delivered to us by graphics pipeline. It properly respects any transformations we might throw at it.
+Relying on Screen Space derivatives has the benefit, that we get the pixel size delivered to us by the graphics pipeline. It properly respects any transformations we might throw at it, including 3D perspective.
 
 The down side is that it is not supported by the WebGL 1 standard and has to be pulled in via the extension `GL_OES_standard_derivatives` or requires the jump to WebGL 2.
 
-<blockquote class="reaction"><div class="reaction_text">Luckily I have never witnessed any device that supported WebGL 1, but not the Screen Space derivatives. Even the GMA based <a href="https://www.youtube.com/watch?v=Fs4GjDiOie8">Thinkpad T500 & X200</a> do.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Luckily I have never witnessed any device that supported WebGL 1, but not the Screen Space derivatives. Even the GMA based <a href="https://www.youtube.com/watch?v=Fs4GjDiOie8">Thinkpad X200 & T500</a> I hardware modded do.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
 ##### Possibly painful
 Generally, there are some nasty pitfalls when using Screen Space derivatives: how the calculation happens is up to the implementation. This led to the split into `dFdxFine()` and `dFdxCoarse()` in later OpenGL revisions. The default case can be set via [`GL_FRAGMENT_SHADER_DERIVATIVE_HINT`](https://docs.gl/gl4/glHint), but the standard hates you:
@@ -1061,14 +1060,14 @@ Generally, there are some nasty pitfalls when using Screen Space derivatives: ho
 
 <blockquote class="reaction"><div class="reaction_text">Why do we have standards again? As a graphics programmer, anything with <code>hint</code> has me traumatized.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
 
-Luckily, neither case concerns us, as the difference doesn't show itself in the context of Anti-Aliasing. Performance technically [`dFdx`](https://docs.gl/sl4/dFdx) and [`dFdy`](https://docs.gl/sl4/dFdy) are free, though the pixel size calculation using `length()` or `fwidth()` is not. It is performed *per-pixel*.
+Luckily, neither case concerns us, as the difference doesn't show itself in the context of Anti-Aliasing. Performance technically [`dFdx`](https://docs.gl/sl4/dFdx) and [`dFdy`](https://docs.gl/sl4/dFdy) are free (or rather, their cost is already part of the rendering pipeline), though the pixel size calculation using `length()` or `fwidth()` is not. It is performed *per-pixel*.
 
 ##### [`dFdx`](https://docs.gl/sl4/dFdx) + [`dFdy`](https://docs.gl/sl4/dFdy) + [`length()`](https://docs.gl/sl4/length) vs [`fwidth()`](https://docs.gl/sl4/fwidth)
-This is why there exist two ways of doing this: getting the `length()` of the vector `dFdx` and `dFdy` make up, a step involving the historically performance expensive `sqrt()` function or using `fwidth()`, which is the approximation `abs(dFdx()) + abs(dFdy())` of the above.
+This is why there exist two ways of doing this: getting the `length()` of the vector that `dFdx` and `dFdy` make up, a step involving the historically performance expensive `sqrt()` function or using `fwidth()`, which is the approximation `abs(dFdx()) + abs(dFdy())` of the above.
 
 <blockquote class="reaction"><div class="reaction_text">It depends on context, but on semi-modern hardware a call to <code>length()</code> should be performance trivial though, even per-pixel.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
-To showcase the difference, the above `Radius adjust` slider scale works of the `Pixel size method` and adjusts the SDF distance. If you go with `fwidth()` and a strong radius shrink, you'll see something weird.
+To showcase the difference, the above `Radius adjust` slider works off of the `Pixel size method` and adjusts the SDF distance. If you go with `fwidth()` and a strong radius shrink, you'll see something weird.
 
 <figure>
 	<img src="img/rhobus.png" alt="Rhombous warping at small shape sizes due to use of fwidth()" />
@@ -1083,7 +1082,7 @@ This effects our fading, which will fade more on diagonals. Luckily, we fade by 
 
 ##### DIY
 
-...Calculate it yourself! For the 2D case, this is trivial and easily abstracted away. We know the size our context is rendering at, we know how big our Quad is that we draw on. Calculating the size of the pixel is thus done per-object, not per-pixel. This is what happens in the above [circleAnalyticalComparison.js](circleAnalyticalComparison.js).
+...Calculate it yourself! For the 2D case, this is trivial and easily abstracted away. We know the size our context is rendering at and how big our quad is that we draw on. Calculating the size of the pixel is thus done per-object, not per-pixel. This is what happens in the above [circleAnalyticalComparison.js](circleAnalyticalComparison.js).
 
 ```js
 /* Calculate pixel size based on height.
@@ -1093,21 +1092,26 @@ gl.uniform1f(pixelSizeCircle, (2.0 / (canvas.height / resDiv)));
 
 <blockquote class="reaction"><div class="reaction_text">No WebGL 2, no extensions, works on ancient hardware.</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
 
-The results are identical to the `dFdx` + `dFdy` + `length()` case, with the benefit of fully skipping the per-pixel calculation. This does become more involved, once the quad is stretched or performance-painful when perspective is involved. Thus most implementations stick to Screen Space derivatives.
+The results are identical to the `dFdx` + `dFdy` + `length()` case, with the benefit of fully skipping the per-pixel calculation. This does become more involved, once the quad is stretched and performance-painful when perspective is involved.
 
-#### How do do we blend?
+#### How do we blend?
 Ok, now we have the amount we want to blend by. The next step is to perform the adjustment of opacity. If we are doing 2D, then Alpha blending is the way to go. Straight forward, will never betray you.
 
-Another options is using MSAA + [Alpha to Coverage](https://bgolus.medium.com/anti-aliased-alpha-test-the-esoteric-alpha-to-coverage-8b177335ae4f). There are pit falls with the latter, as discussed previously and more headaches to follow below. The reason you would need this is for depth-buffer writes [for correct blending in 3D scenes](https://bgolus.medium.com/rendering-a-sphere-on-a-quad-13c92025570c).
+Another option is using MSAA + [Alpha to Coverage](https://bgolus.medium.com/anti-aliased-alpha-test-the-esoteric-alpha-to-coverage-8b177335ae4f), as is done in the MSAA demo above. There are pit falls with the latter, as discussed previously and more headaches to follow below. The reason you would need this is for depth-buffer writes for [correct blending in 3D scenes](https://bgolus.medium.com/rendering-a-sphere-on-a-quad-13c92025570c).
 
 <blockquote class="reaction"><div class="reaction_text">For the MSAA and AAA demos above, merely an API level switch. In both cases, the shaders are 100% <a href="shader/circle-analytical.fs">identical</a>!</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
-Still the alpha itself has to be faded based on distance. Here
+Still the alpha itself has to be faded based on distance. Here is where a "step" function comes in. We can input a start, an end point and the function will fade between them. [Usually](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/), this is where the graphics programmer's favorite `smoothstep()` comes in and where this blog post's hot take begins:
 
-#### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
-Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliasing in `GLSL`, but its use doesn't make sense. It performs a hermite interpolation, but the we are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here.
+##### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
+Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliasing in `GLSL`, but its use doesn't make sense in this context. It performs a [hermite interpolation](https://en.wikipedia.org/wiki/Smoothstep), but the we 
+are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here.
 
 <blockquote class="reaction"><div class="reaction_text">To be precise, both sampling and blending witness the smoothstep curve in the sub-pixel make-up of the edge, but the difference is tiny and can be corrected using an adjusted smoothing amount.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+<figure>
+	<img src="img/smoothstep.svg" alt="Smoothstep and linear comparison" />
+	<figcaption>Smoothstep and linear comparison</figcaption>
+</figure>
 
 Even though the slight performance difference doesn't particularly matter on modern graphics cards, wasting cycles on performing the hermite interpolation doesn't make sense to me. Let's DIY it! The implementation of [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep) is up to the vendor, but for the `float` case it's essentially just :
 
@@ -1120,7 +1124,7 @@ float smoothstep(float edge0, float edge1, float x) {
 float alpha = smoothstep(1.0, 1.0 - pixelSize * smoothingAmount, dist);
 ```
 
-We can rip out the hermite interpolation and stick to simple linear one. If you flick between the two in the above demo, you'll see only a slight change. At pixel size, the difference can easily be counter acted with an adjustment to the smoothing factor if you like one method over the other.
+We can rip out the hermite interpolation and stick to the simple linear one. If you flick between the two in the above demo, you'll see only a slight change, with pixel sized smoothing. At pixel size, the difference can easily be counter acted with an adjustment to the smoothing factor if you like one method over the other.
 
 ```glsl
 /* Step function with Linear Interpolation
@@ -1148,16 +1152,50 @@ But wait a moment... When doing Anti-Aliasing we wish to affect the border of th
 float alpha = (1.0 - dist) / (pixelSize * smoothingAmount);
 ```
 
-##### Drawing multiple?
-As [shown in the code here](https://github.com/FrostKiwi/Mirrorball/blob/main/src/shd/project_antialias.fs#L64)
+I have been using this simplified term in different places for years. Performance wise, the most expensive thing still remains: the per-pixel division. Modern cards should also have no issues optimizing the hermite interpolation's multiplication and addition down to a few [Fused Multiply-Add](https://en.wikipedia.org/wiki/Multiply%E2%80%93accumulate_operation#Fused_multiply%E2%80%93add) instructions. Still, I prefer the simplicity.
 
-##### Shrinking needed?
-There is an illusive implementation interaction with MSAA and the rasterizer. *Only* implementing this with MSAA + Alpha to Coverage, there will be exactly one side of the quad with a missing 0.5 pixels, on **some** hardware. This is why there is this weird 0.5 px breathing room being added. 
+##### What's with the shrinking?
+There is an illusive implementation interaction with MSAA and the rasterizer. *Only* when using this with MSAA + Alpha to Coverage (regardless of sample count), there will be exactly one side of the quad with a missing 0.5 pixels, on **some** hardware. This is why there is this weird 0.5 px breathing room being added. 
 
 <figure>
 	<img src="img/hardEdgeBug.png" alt="Hard edge bug with MSAA on select hardware" />
 	<figcaption>Hard edge bug with MSAA on select hardware</figcaption>
 </figure>
+
+Our circle is drawn to the very edge of the quad, which works, but only as long the graphics card doesn't surprise us with edge cases. Specifically modern NVIDIA cards seems to eat one side of the quad too soon, though I have never seen this occur with alpha blending. To combat this, we give our SDF 0.5px of breathing room:
+
+```glsl
+/* We add half a pixel of breathing room. This is only required for the MSAA
+   case. Depending on Hardware implementation, rasterization, MSAA sample
+   count and placement, one row pixels may or may not disappear too soon,
+   when the circle's edge is right up against the unit quad's border */
+dist += pixelSizeAdjusted * 0.5;
+```
+
+<blockquote class="reaction"><div class="reaction_text">An edge case.</div><img class="kiwi" src="/assets/kiwis/laugh.svg"></blockquote>
+
+##### Drawing multiple?
+You can draw multiple shapes in one Quad and both will be Anti-Aliased, though blending will start to get more involved. In that case both shapes will need to be evaluated per-pixel and their results will need to be clamped, weighted and summed, otherwise there won't be Anti-Aliasing when they intersect.
+
+<figure>
+	<img src="img/multiple.jpg" alt="Aliasing free blending of multiple circle visualizations from mirrorball.frost.kiwi" />
+	<figcaption>Aliasing free blending of multiple visualizations<br>From <a href="https://mirrorball.frost.kiwi">🔮 Mathematical Magic Mirrorball</a></figcaption>
+</figure>
+
+Here is what blending looks like in my WebApp [🔮 Mathematical Magic Mirrorball](https://mirrorball.frost.kiwi), a WebApp which pulls 360° panoramic projections from photos, videos and live-streams of mirror balls. There I have multiple visualizations and color overlays explaining resolution distribution of the projection. [The code](https://github.com/FrostKiwi/Mirrorball/blob/main/src/shd/crop.fs#L35) to keep all this anti-aliased is:
+
+```glsl
+float factorGreen = area_toggle * clamp((area_f - lenCircle) * pxsize_rcp, 0.0, 1.0);
+float factorRed = area_toggle * clamp((lenCircle - area_b) * pxsize_rcp, 0.0, 1.0) * smoothedAlpha;
+float factorBlack = mask_toggle * (1.0 - smoothedAlpha);
+
+vec3 finalColor = baseColor * (1.0 - factorGreen - factorRed - factorBlack) +
+                  greenColor * factorGreen +
+                  redColor * factorRed +
+                  blackColor * factorBlack;
+```
+
+All this additional stuff ... why not draw color overlays in an additional pass? The cost of drawing across that area again is an order of magnitude higher than just coloring the output in the shape we need as we go. Tinting in an Anti-Aliased fashion in one draw-call is the cleanest way to do this I think.
 
 ### 3D
 
@@ -1227,11 +1265,49 @@ Everything we talked about extends to the 3D case as well. We won't dig [into 3D
 </blockquote>
 <script>setup3D("canvas3D", "vertex3D", "fragment3D", "fragment_SimpleColor", "vertexBlit", "fragmentBlit", "res3D", "showQuad3D");</script>
 
-With the 3D camera and resulting perspective matrix multiplication, we use the realiable screen space derivatives again to get the pixel size. But in reality, [we can still do without](https://web.archive.org/web/20150521050627/https://www.opengl.org/wiki/Compute_eye_space_from_window_space)! This would require us to multiply of the inverse perspective matrix with the fragment coordinates _**per pixel**_. Performance-painful, yet possible.
+With the 3D camera and resulting perspective matrix multiplication, we use the reliable screen space derivatives again to get the pixel size. But in reality, [we can still do without](https://web.archive.org/web/20150521050627/https://www.opengl.org/wiki/Compute_eye_space_from_window_space)! This would require us to multiply of the inverse perspective matrix with the fragment coordinates _**per pixel**_. Performance-painful, yet possible.
 
-There is something I have not explained yet, a persistent misunderstanding I held until [Yakov Galka](https://stannum.io/) explained [the deetz to me on stackoverflow](https://stackoverflow.com/questions/73903568). Depending on how we setup the blending math, to perform the smooothing we may remove pixel alpha on the inside of the shape, add it to the outside or center it.
+### Unmentioned challenges
+There is something I have not explained yet, a persistent misunderstanding I held until [Yakov Galka](https://stannum.io/) explained [the deetz to me on stackoverflow](https://stackoverflow.com/questions/73903568). Depending on how we setup the blending math, to perform the smoothing we may remove pixel alpha on the inside of the shape, add it to the outside or center it.
 
-For the 2D case, we could implement it ourselves, by growing the quad in the vertex shader by one pixel and shrink the signed distance field by one pixel in the fragment shader. And this *is* exactly what's happening in the demos on this page. 
+Adding or subtracting would mess with the shape every so slightly, especially at small sizes or under strong perspective. So centering is the way to go. Unfortunately, centering the fade on the border can put the edge outside our quad and lead to hard edges or clipping.
+
+<figure>
+	<img src="img/cut.png" alt="Clipping of the border" />
+	<figcaption>Clipping of the border. (Overdone for emphasis)</figcaption>
+</figure>
+
+In 3D this is especially painful, as there is no amount of safety margin that would solve this, with the camera at oblique angles. Nvidia introduced the vendor specific extension [`NV_conservative_raster_dilate`](https://registry.khronos.org/OpenGL/extensions/NV/NV_conservative_raster_dilate.txt) to always give you an extra pixel at the border. Unfortunately it's not available in WebGL and specific to NVIDIA hardware.
+
+<figure>
+	<img src="img/missing_raster_by_yakov-galka.png" alt="Border pixels not rasterized due to fading overshooting the quad" />
+	<figcaption>Border pixels not rasterized due to fading overshooting the quad<br>Source: <a href="https://stackoverflow.com/questions/73903568">Explanation</a> on Stack overflow by <a href="https://stannum.io/">Yakov Galka</a></figcaption>
+</figure>
+
+So we are forced to shrink the border in all cases. This leads to smooth edges even under strong perspective, but technically influences the shape. This is absolutely *not* visible in isolation, but may lead to mismatches or unexpected behavior, as even perspective has now an influence on the shape.
+
+<figure>
+	<img src="img/inside_raster_by_yakov-galka.png" alt="Border pixels rasterized with shrunken border" />
+	<figcaption>Border pixels rasterized with shrunken border<br>Source: <a href="https://stackoverflow.com/questions/73903568">Explanation</a> on Stack overflow by <a href="https://stannum.io/">Yakov Galka</a></figcaption>
+</figure>
+
+For the 2D case, we could implement a kind of [`NV_conservative_raster_dilate`](https://registry.khronos.org/OpenGL/extensions/NV/NV_conservative_raster_dilate.txt) ourselves, by growing the quad in the vertex shader by one pixel and shrink the signed distance field by one pixel in the fragment shader. And this *is* exactly what's happening in the 2D demos on this page!
+
+<blockquote class="reaction"><div class="reaction_text">This is really pedantic and just here for correctness. In most cases, you don't need to be so precise.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
+
+That is the reason the red box always lines up with the border, at all resolution switches and with all 2D demos on this page. Specifically in the vertex shader, the line responsible for this is:
+
+```glsl
+/* Grow the Quad and thus the "canvas", that the circle is drawn on. The
+   pixelSize is added for two reasons: 0.5px to get the original circle size
+   again, as the AAA fading is set to fade the edge on the circle inside,
+   preventing hard edges due to unrasterized pixels. And another 0.5px is
+   to correct the "breathing room" added in the fragment shader,
+   specifically for the MSAA sampling case, as hardware specific issues
+   around MSAA sampling may or may not result in transparent pixels
+   disappearing too soon. */
+vertex *= size + pixelSize;
+```
 
 <blockquote class="reaction"><div class="reaction_text">Not messing up gamma and multiplied vs premultiplied alpha are important for all forms of AA, but are very context dependant. This blog post is about AAA specifically, thus we ignore these.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
@@ -1241,14 +1317,14 @@ This rendering approach has found its way into many professional products. Let's
 
 ### ["Shapes"](https://acegikmo.com/shapes) for Unity
 
-Feature-wise the most complete implementation of this approach is in Unity extension [Shapes](https://acegikmo.com/shapes) by [Freya Holmér](https://twitter.com/FreyaHolmer/). There the distance fields are either anti-aliased by MSAA or are blended like in this blog post, though it's referred to as "[Local Anti-Aliasing](https://acegikmo.com/shapes/docs/#anti-aliasing)" there.
+Feature-wise the most complete implementation of this approach is in Unity extension [Shapes](https://acegikmo.com/shapes) by [Freya Holmér](https://twitter.com/FreyaHolmer/). There the distance fields are either anti-aliased by MSAA or are blended like in this blog post, though it's referred to as "[Fast Local Anti-Aliasing](https://acegikmo.com/shapes/docs/#anti-aliasing)" and "[Corrected Local Anti-Aliasing](https://acegikmo.com/shapes/docs/#anti-aliasing)" there.
 
 <figure>
 	<video poster="vid/shapes_thumb.jpg" width="960" height="540" controls><source src="vid/shapes.mp4" type="video/mp4"></video>
 	<figcaption>Trailer for <a href="https://acegikmo.com/shapes">"Shapes"</a> by <a href="https://twitter.com/FreyaHolmer/">Freya Holmér</a></figcaption>
 </figure>
 
-With motion-blur, [shape-respecting color gradients](https://acegikmo.com/shapes/docs/#shapes-feature-table) and lines [below 1px being opacity faded](https://acegikmo.com/shapes/docs/#anti-aliasing) to prevent further aliasing, this is signed-distance field rendering and AAA by extension implemented, to its logical conclusion.
+With motion-blur, [shape-respecting color gradients](https://acegikmo.com/shapes/docs/#shapes-feature-table) and lines [below 1px being opacity faded](https://acegikmo.com/shapes/docs/#anti-aliasing) to prevent further aliasing, this is signed-distance field rendering and AAA by extension, implemented to its logical conclusion.
 
 ### [Valve Software](https://www.valvesoftware.com/)'s implementation
 
@@ -1268,7 +1344,7 @@ Valve introduced extensive use of signed distance field rendering to the [Source
 	<figcaption>64x64 Texture: Alpha blended, Alpha Tested and SDF rendering<br>Paper: <a href="https://steamcdn-a.akamaihd.net/apps/valve/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf">Improved Alpha-Tested Magnification for Vector Textures and Special Effect</a></figcaption>
 </figure>
 
-They also released [a paper](https://steamcdn-a.akamaihd.net/apps/valve/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf) describing the specific implementation, including a showcase for use in the 3D game world, though I have never seen it used in the game world itself in production. Added as a mere footnote to the paper, was a to improve this tech to get sharp text rendering with sharp corners...
+They also released [a paper](https://steamcdn-a.akamaihd.net/apps/valve/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf) describing the specific implementation, including a showcase for use in the 3D game world, though I have never seen it used in the game world itself in Valve titles. Added as a mere footnote to the paper, was a way to improve rendering with sharp corners...
 
 ### The future of all things font?
 

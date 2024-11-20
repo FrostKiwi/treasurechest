@@ -31,7 +31,7 @@ void main()
 	vec2 vertex = vtx;
 	/* correct for aspect ratio  */
 	vertex.x *= aspect_ratio;
-	/* Shrink the Quad and thus the "canvas", that the circle is drawn on. The
+	/* Grow the Quad and thus the "canvas", that the circle is drawn on. The
 	   pixelSize is added for two reasons: 0.5px to get the original circle size
 	   again, as the AAA fading is set to fade the edge on the circle inside,
 	   preventing hard edges due to unrasterized pixels. And another 0.5px is

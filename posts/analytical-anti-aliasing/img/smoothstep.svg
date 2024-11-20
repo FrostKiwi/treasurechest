@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="3400" height="1350" version="1.1" viewBox="0 0 3400 1350" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <link id="dark-mode" href="" rel="stylesheet" type="text/css"/>
+ <style id="dark-mode-custom-style" type="text/css"/>
+ <desc>Produced by GNUPLOT 4.4 patchlevel 3, tweaked by hand</desc>
+ <g fill="#d9d8dc">
+  <g stroke="#d9d8dc">
+   <g color="#000000" stroke-width="2">
+    <g fill="#d9d8dc">
+     <path d="m164 1092h27m1334 0h-27"/>
+     <g transform="translate(139 1106)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0</tspan></text>
+     </g>
+     <path d="m164 988h27m1334 0h-27"/>
+     <g transform="translate(139 1e3)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.1</tspan></text>
+     </g>
+     <path d="m164 884h27m1334 0h-27"/>
+     <g transform="translate(139 897)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.2</tspan></text>
+     </g>
+     <path d="m164 780h27m1334 0h-27"/>
+     <g transform="translate(139 793)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.3</tspan></text>
+     </g>
+     <path d="m164 675h27m1334 0h-27"/>
+     <g transform="translate(139 689)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.4</tspan></text>
+     </g>
+     <path d="m164 571h27m1334 0h-27"/>
+     <g transform="translate(139 585)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.5</tspan></text>
+     </g>
+     <path d="m164 467h27m1334 0h-27"/>
+     <g transform="translate(139 481)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.6</tspan></text>
+     </g>
+     <path d="m164 363h27m1334 0h-27"/>
+     <g transform="translate(139 376)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.7</tspan></text>
+     </g>
+     <path d="m164 259h27m1334 0h-27"/>
+     <g transform="translate(139 272)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.8</tspan></text>
+     </g>
+     <path d="m164 155h27m1334 0h-27"/>
+     <g transform="translate(139 168)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.9</tspan></text>
+     </g>
+     <path d="m164 50.5h27m1334 0h-27"/>
+     <g transform="translate(139 64)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">1</tspan></text>
+     </g>
+     <path d="m164 1092v-27m0-1014v27"/>
+     <g transform="translate(164 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0</tspan></text>
+     </g>
+     <path d="m300 1092v-27m0-1014v27"/>
+     <g transform="translate(300 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.1</tspan></text>
+     </g>
+     <path d="m436 1092v-27m0-1014v27"/>
+     <g transform="translate(436 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.2</tspan></text>
+     </g>
+     <path d="m572 1092v-27m0-1014v27"/>
+     <g transform="translate(572 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.3</tspan></text>
+     </g>
+     <path d="m708 1092v-27m0-1014v27"/>
+     <g transform="translate(708 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.4</tspan></text>
+     </g>
+     <path d="m844 1092v-27m0-1014v27"/>
+     <g transform="translate(844 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.5</tspan></text>
+     </g>
+     <path d="m980 1092v-27m0-1014v27"/>
+     <g transform="translate(980 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.6</tspan></text>
+     </g>
+     <path d="m1116 1092v-27m0-1014v27"/>
+     <g transform="translate(1116 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.7</tspan></text>
+     </g>
+     <path d="m1252 1092v-27m0-1014v27"/>
+     <g transform="translate(1252 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.8</tspan></text>
+     </g>
+     <path d="m1388 1092v-27m0-1014v27"/>
+     <g transform="translate(1388 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.9</tspan></text>
+     </g>
+     <path d="m1524 1092v-27m0-1014v27"/>
+     <g transform="translate(1524 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">1</tspan></text>
+     </g>
+    </g>
+    <path d="m164 50.5v1042h1360v-1042z" fill="none"/>
+   </g>
+   <a xlink:title="Plot #1">
+    <g color="#154fd5" fill="#d9d8dc" stroke="#d9d8dc" stroke-width="3">
+     <path d="m164 1092 13.7-0.3 13.8-1 13.7-1.5 13.8-2.2 13.7-2.7 13.8-3.3 13.7-3.9 13.7-4.4 13.8-5 13.7-5.4 13.8-6 13.7-6.5 13.8-7 13.7-7.4 13.7-7.9 13.8-8.3 13.7-8.8 13.8-9.2 13.7-9.6 13.7-9.9 13.8-10.4 13.7-10.7 13.8-11.1 13.7-11.4 13.8-11.8 13.7-12.1 13.7-12.3 13.8-12.7 13.7-12.9 13.8-13.3 13.7-13.4 13.8-13.7 13.7-13.9 13.7-14.1 13.8-14.4 13.7-14.5 13.8-14.7 13.7-14.8 13.8-15 27.4-30.4 13.8-15.4 13.7-15.5 13.8-15.5 13.7-15.6 13.8-15.7 13.7-15.7 13.7-15.8 27.5-31.5 13.8-15.8 13.7-15.8 13.7-15.7 27.5-31.3 13.8-15.5 13.7-15.5 13.8-15.4 27.4-30.4 13.8-15 13.7-14.8 13.8-14.7 13.7-14.5 13.8-14.4 13.7-14.1 13.7-13.9 13.8-13.7 13.7-13.4 13.8-13.3 13.7-12.9 13.8-12.7 13.7-12.3 13.7-12.1 13.8-11.8 13.7-11.4 13.8-11.1 13.7-10.7 13.8-10.4 13.7-9.9 13.7-9.6 13.8-9.2 13.7-8.8 13.8-8.3 13.7-7.9 13.7-7.4 13.8-7 13.7-6.5 13.8-6 13.7-5.4 13.8-5 13.7-4.4 13.7-3.9 13.8-3.3 13.7-2.7 13.8-2.2 13.7-1.5 13.8-1 13.7-0.3" fill="none" stroke="#eb99a1" stroke-width="8"/>
+    </g>
+   </a>
+   <g color="#000000">
+    <path d="m164 50.5v1042h1360v-1042z" fill="none" stroke="#d9d8dc"/>
+   </g>
+  </g>
+  <text x="807.80145" y="1311.4332" clip-rule="evenodd" fill-rule="evenodd" font-family="sans-serif" font-size="96px" font-weight="400" image-rendering="optimizeQuality" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="line-height:1.25" xml:space="preserve"><tspan x="807.80145" y="1311.4332" fill="#d9d8dc" font-size="96px" text-align="center" text-anchor="middle">smoothstep</tspan></text>
+  <g stroke="#d9d8dc">
+   <a xlink:title="Plot #1">
+    <g color="#154fd5" fill="#d9d8dc" stroke="#d9d8dc" stroke-width="3">
+     <path d="m164 1092 13.7-0.3 13.8-1 13.7-1.5 13.8-2.2 13.7-2.7 13.8-3.3 13.7-3.9 13.7-4.4 13.8-5 13.7-5.4 13.8-6 13.7-6.5 13.8-7 13.7-7.4 13.7-7.9 13.8-8.3 13.7-8.8 13.8-9.2 13.7-9.6 13.7-9.9 13.8-10.4 13.7-10.7 13.8-11.1 13.7-11.4 13.8-11.8 13.7-12.1 13.7-12.3 13.8-12.7 13.7-12.9 13.8-13.3 13.7-13.4 13.8-13.7 13.7-13.9 13.7-14.1 13.8-14.4 13.7-14.5 13.8-14.7 13.7-14.8 13.8-15 27.4-30.4 13.8-15.4 13.7-15.5 13.8-15.5 13.7-15.6 13.8-15.7 13.7-15.7 13.7-15.8 27.5-31.5 13.8-15.8 13.7-15.8 13.7-15.7 27.5-31.3 13.8-15.5 13.7-15.5 13.8-15.4 27.4-30.4 13.8-15 13.7-14.8 13.8-14.7 13.7-14.5 13.8-14.4 13.7-14.1 13.7-13.9 13.8-13.7 13.7-13.4 13.8-13.3 13.7-12.9 13.8-12.7 13.7-12.3 13.7-12.1 13.8-11.8 13.7-11.4 13.8-11.1 13.7-10.7 13.8-10.4 13.7-9.9 13.7-9.6 13.8-9.2 13.7-8.8 13.8-8.3 13.7-7.9 13.7-7.4 13.8-7 13.7-6.5 13.8-6 13.7-5.4 13.8-5 13.7-4.4 13.7-3.9 13.8-3.3 13.7-2.7 13.8-2.2 13.7-1.5 13.8-1 13.7-0.3" fill="none" stroke="#eb99a1" stroke-width="12"/>
+    </g>
+   </a>
+   <g transform="translate(1738)" color="#000000" stroke-width="2">
+    <g fill="#d9d8dc">
+     <path d="m164 1092h27m1334 0h-27"/>
+     <g transform="translate(139 1106)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0</tspan></text>
+     </g>
+     <path d="m164 988h27m1334 0h-27"/>
+     <g transform="translate(139 1e3)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.1</tspan></text>
+     </g>
+     <path d="m164 884h27m1334 0h-27"/>
+     <g transform="translate(139 897)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.2</tspan></text>
+     </g>
+     <path d="m164 780h27m1334 0h-27"/>
+     <g transform="translate(139 793)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.3</tspan></text>
+     </g>
+     <path d="m164 675h27m1334 0h-27"/>
+     <g transform="translate(139 689)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.4</tspan></text>
+     </g>
+     <path d="m164 571h27m1334 0h-27"/>
+     <g transform="translate(139 585)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.5</tspan></text>
+     </g>
+     <path d="m164 467h27m1334 0h-27"/>
+     <g transform="translate(139 481)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.6</tspan></text>
+     </g>
+     <path d="m164 363h27m1334 0h-27"/>
+     <g transform="translate(139 376)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.7</tspan></text>
+     </g>
+     <path d="m164 259h27m1334 0h-27"/>
+     <g transform="translate(139 272)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.8</tspan></text>
+     </g>
+     <path d="m164 155h27m1334 0h-27"/>
+     <g transform="translate(139 168)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.9</tspan></text>
+     </g>
+     <path d="m164 50.5h27m1334 0h-27"/>
+     <g transform="translate(139 64)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="end">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">1</tspan></text>
+     </g>
+     <path d="m164 1092v-27m0-1014v27"/>
+     <g transform="translate(164 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0</tspan></text>
+     </g>
+     <path d="m300 1092v-27m0-1014v27"/>
+     <g transform="translate(300 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.1</tspan></text>
+     </g>
+     <path d="m436 1092v-27m0-1014v27"/>
+     <g transform="translate(436 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.2</tspan></text>
+     </g>
+     <path d="m572 1092v-27m0-1014v27"/>
+     <g transform="translate(572 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.3</tspan></text>
+     </g>
+     <path d="m708 1092v-27m0-1014v27"/>
+     <g transform="translate(708 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.4</tspan></text>
+     </g>
+     <path d="m844 1092v-27m0-1014v27"/>
+     <g transform="translate(844 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.5</tspan></text>
+     </g>
+     <path d="m980 1092v-27m0-1014v27"/>
+     <g transform="translate(980 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.6</tspan></text>
+     </g>
+     <path d="m1116 1092v-27m0-1014v27"/>
+     <g transform="translate(1116 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.7</tspan></text>
+     </g>
+     <path d="m1252 1092v-27m0-1014v27"/>
+     <g transform="translate(1252 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.8</tspan></text>
+     </g>
+     <path d="m1388 1092v-27m0-1014v27"/>
+     <g transform="translate(1388 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">0.9</tspan></text>
+     </g>
+     <path d="m1524 1092v-27m0-1014v27"/>
+     <g transform="translate(1524 1160)" font-family="'Bitstream Vera Sans'" font-size="48px" text-anchor="middle">
+      <text fill="#d9d8dc" stroke="#d9d8dc"><tspan fill="#d9d8dc" stroke="#d9d8dc">1</tspan></text>
+     </g>
+    </g>
+    <path d="m164 50.5v1042h1360v-1042z" fill="none"/>
+   </g>
+   <a transform="translate(1738)" xlink:title="Plot #1">
+    <g color="#154fd5" fill="#d9d8dc" stroke="#d9d8dc" stroke-width="3">
+     <path d="m164 1092 1360-1042" fill="none" stroke="#eb99a1" stroke-width="12"/>
+    </g>
+   </a>
+   <g transform="translate(1738)" color="#000000">
+    <path d="m164 50.5v1042h1360v-1042z" fill="none" stroke="#d9d8dc"/>
+   </g>
+  </g>
+  <text x="2545.6255" y="1311.4332" clip-rule="evenodd" fill-rule="evenodd" font-family="sans-serif" font-size="96px" font-weight="400" image-rendering="optimizeQuality" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" style="line-height:1.25" xml:space="preserve"><tspan x="2545.6255" y="1311.4332" fill="#d9d8dc" font-size="96px" text-align="center" text-anchor="middle">linear</tspan></text>
+  <g transform="translate(1738)" color="#000000" stroke="#d9d8dc">
+   <path d="m164 50.5v1042h1360v-1042z" fill="none" stroke="#d9d8dc"/>
+  </g>
+ </g>
+</svg>
