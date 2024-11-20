@@ -1155,7 +1155,7 @@ float alpha = (1.0 - dist) / (pixelSize * smoothingAmount);
 I have been using this simplified term in different places for years. Performance wise, the most expensive thing still remains: the per-pixel division. Modern cards should also have no issues optimizing the hermite interpolation's multiplication and addition down to a few [Fused Multiply-Add](https://en.wikipedia.org/wiki/Multiply%E2%80%93accumulate_operation#Fused_multiply%E2%80%93add) instructions. Still, I prefer the simplicity.
 
 ##### What's with the shrinking?
-There is an illusive implementation interaction with MSAA and the rasterizer. *Only* when using this with MSAA + Alpha to Coverage (regardless of sample count), there will be exactly one side of the quad with a missing 0.5 pixels, on **some** hardware. This is why there is this weird 0.5 px breathing room being added. 
+There is an ellusive implementation interaction with MSAA and the rasterizer. *Only* when using this with MSAA + Alpha to Coverage (regardless of sample count), there will be exactly one side of the quad with a missing 0.5 pixels, on **some** hardware. This is why there is this weird 0.5 px breathing room being added. 
 
 <figure>
 	<img src="img/hardEdgeBug.png" alt="Hard edge bug with MSAA on select hardware" />
