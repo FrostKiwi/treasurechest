@@ -1104,7 +1104,7 @@ Another option is using MSAA + [Alpha to Coverage](https://bgolus.medium.com/ant
 Still the alpha itself has to be faded based on distance. Here is where a "step" function comes in. We can input a start, an end point and the function will fade between them. [Usually](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/), this is where the graphics programmer's favorite `smoothstep()` comes in and where this blog post's hot take begins:
 
 ##### Don't use [`smoothstep()`](https://en.wikipedia.org/wiki/Smoothstep)
-Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliasing in `GLSL`, but its use doesn't make sense in this context. It performs a [hermite interpolation](https://en.wikipedia.org/wiki/Smoothstep), but the we 
+Its use is [often associated](http://www.numb3r23.net/2015/08/17/using-fwidth-for-distance-based-anti-aliasing/) with implementing anti-aliasing in `GLSL`, but its use doesn't make sense in this context. It performs a [hermite interpolation](https://en.wikipedia.org/wiki/Smoothstep), but we 
 are dealing with a function applied across 2 pixels or just inside 1. There is no curve to be witnessed here.
 
 <blockquote class="reaction"><div class="reaction_text">To be precise, both sampling and blending witness the smoothstep curve in the sub-pixel make-up of the edge, but the difference is tiny and can be corrected using an adjusted smoothing amount.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
