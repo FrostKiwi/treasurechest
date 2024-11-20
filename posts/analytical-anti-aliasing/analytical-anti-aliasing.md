@@ -1317,7 +1317,7 @@ This rendering approach has found its way into many professional products. Let's
 
 ### ["Shapes"](https://acegikmo.com/shapes) for Unity
 
-Feature-wise the most complete implementation of this approach is in Unity extension [Shapes](https://acegikmo.com/shapes) by [Freya Holmér](https://twitter.com/FreyaHolmer/). There the distance fields are either anti-aliased by MSAA or are blended like in this blog post, though it's referred to as "[Fast Local Anti-Aliasing](https://acegikmo.com/shapes/docs/#anti-aliasing)" and "[Corrected Local Anti-Aliasing](https://acegikmo.com/shapes/docs/#anti-aliasing)" there.
+Feature-wise the most complete implementation of this approach is in Unity extension [Shapes](https://acegikmo.com/shapes) by [Freya Holmér](https://twitter.com/FreyaHolmer/). There the SDFs are either anti-aliased by MSAA or are blended like in this blog post, though it's referred to as "[Fast Local Anti-Aliasing](https://acegikmo.com/shapes/docs/#anti-aliasing)" for the `fwidth()` case and "[Corrected Local Anti-Aliasing](https://acegikmo.com/shapes/docs/#anti-aliasing)" for the `length()` case.
 
 <figure>
 	<video poster="vid/shapes_thumb.jpg" width="960" height="540" controls><source src="vid/shapes.mp4" type="video/mp4"></video>
