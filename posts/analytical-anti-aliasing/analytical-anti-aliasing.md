@@ -1352,7 +1352,7 @@ If you save a signed distance field into a texture and sample it with linear int
 
 Picking up on that foot note and bringing the technique to its logical conclusion was the most thorough and well composed Master Thesis I ever read: "[Shape Decomposition for Multi-channel Distance Fields](https://github.com/Chlumsky/msdfgen/files/3050967/thesis.pdf)" by [Viktor Chlumský](https://github.com/Chlumsky), which included code for the [font-file to SDF conversion](https://github.com/Chlumsky/msdfgen) and a full [font atlas generator](https://github.com/Chlumsky/msdf-atlas-gen?tab=readme-ov-file).
 
-Basically, use RGB and a median term to get perfectly sharp text at any size, including an Alpha channel with the classical SDF for effects like glows and drop shadows, all done on the GPU with no run-time baking or intense processing. If you dig around in video games, you will find SDF based font rendering based from time to time!
+Basically, use RGB and a median term to get perfectly sharp text at any size, including an Alpha channel with the classical SDF for effects like glows and drop shadows, all done on the GPU with no run-time baking or intense processing. If you dig around in video games, you will find SDF based font rendering from time to time!
 
 <figure>
 	<img src="img/msdf.png" alt="Multi-Channel SDF demo from msdf-atlas-gen" />
