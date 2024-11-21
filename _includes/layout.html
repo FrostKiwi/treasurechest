@@ -132,16 +132,13 @@
 			theme="gruvbox-dark" crossorigin="anonymous" async>
 		</script>
 		<script>
-			(() => {
-				const spinner = document.querySelector('.spinner');
-				spinner.style.display = 'block';
-				const interval = setInterval(() => {
-					if (document.querySelector('.utterances').offsetHeight > 0) {
-						spinner.style.display = 'none';
-						clearInterval(interval);
-					}
-				}, 100);
-			})();
+			const spinner = document.querySelector('.spinner');
+			spinner.style.display = 'block';
+			window.addEventListener('message', (event) => {
+				if (event.origin.startsWith('https://utteranc.es') && event.data?.type === 'resize') {
+					spinner.style.display = 'none';
+				}
+			});
 		</script>
 	</footer>
 	{% endif %}
