@@ -2,7 +2,7 @@
 title: AAA - Analytical Anti-Aliasing
 permalink: "/{{ page.fileSlug }}/"
 date: 2024-11-20
-last_modified:
+last_modified: 2024-11-21
 description: How to fix jaggies the analytical way with some juicy secrets
 publicTags:
   - Graphics
@@ -1366,6 +1366,8 @@ But considering the current state of browser font baking + rendering and the _pu
 <blockquote class="reaction"><div class="reaction_text">"<a href="https://faultlore.com/blah/text-hates-you/">Text rendering hates you</a>" is a recommended read if you want to see how crushingly complex this topic gets.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
 
 You may be wondering, if we can get the [analytical solution for a bezier curve](https://www.shadertoy.com/view/MlKcDD), why bake into textures instead? We may know the solution for **one** segment, but to get the full shape we need to sum up all the contributions from all segments. This works, but performance tanks hard, as we solve _every_ bezier curve segment **per pixel**.
+
+<blockquote class="reaction"><div class="reaction_text">This post is already long enough, but there <b>are</b> new text rendering approaches going the analytical route, like <a href="http://sluglibrary.com/">Slug</a>.</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
 
 ## Clarity should not be a luxury
 
