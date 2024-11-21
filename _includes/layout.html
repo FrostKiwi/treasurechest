@@ -79,10 +79,12 @@
 					About
 				</a>
 				<div class="social">
-					<a aria-label="Author YouTube Channel Link" href="https://www.youtube.com/@FrostKiwi/"><img class="social_icon"
-							src="/assets/icons/youtube.svg"></a>
-					<a aria-label="Author GitHub Link" href="https://github.com/FrostKiwi"><img class="social_icon" src="/assets/icons/github.svg"></a>
-					<a aria-label="Blog RSS Feed Link" href="/feed.xml"><img class="social_icon" src="/assets/icons/rss.svg"></a>
+					<a aria-label="Author YouTube Channel Link" href="https://www.youtube.com/@FrostKiwi/"><img
+							class="social_icon" src="/assets/icons/youtube.svg"></a>
+					<a aria-label="Author GitHub Link" href="https://github.com/FrostKiwi"><img class="social_icon"
+							src="/assets/icons/github.svg"></a>
+					<a aria-label="Blog RSS Feed Link" href="/feed.xml"><img class="social_icon"
+							src="/assets/icons/rss.svg"></a>
 				</div>
 			</div>
 		</div>
@@ -123,9 +125,24 @@
 			<h2 id="comments" class="site_title">Comment via GitHub <a href="#comments" class="anchor-link">#</a></h2>
 			<img class="kiwi" src="/assets/kiwis/speak.svg">
 		</div>
+		<div class="spinnerContainer">
+			<img class="spinner" src="/assets/clock.svg">
+		</div>
 		<script src="https://utteranc.es/client.js" repo="FrostKiwi/treasurechest" issue-term="pathname"
 			theme="gruvbox-dark" crossorigin="anonymous" async>
-			</script>
+		</script>
+		<script>
+			(() => {
+				const spinner = document.querySelector('.spinner');
+				spinner.style.display = 'block';
+				const interval = setInterval(() => {
+					if (document.querySelector('.utterances').offsetHeight > 0) {
+						spinner.style.display = 'none';
+						clearInterval(interval);
+					}
+				}, 100);
+			})();
+		</script>
 	</footer>
 	{% endif %}
 </body>

@@ -476,3 +476,14 @@ table.contact h3 {
 	background-color: #DA4453;
 	color: #120c0e;
 }
+
+.spinner {
+	display: none;
+	width: 25%;
+}
+
+.spinnerContainer{
+	width: 100%;
+	display: flex;
+	justify-content: center;
+}
