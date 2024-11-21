@@ -13,7 +13,7 @@ void main(void)
 
 	/* We add half a pixel of breathing room. This is only required for the MSAA
 	   case. Depending on Hardware implementation, rasterization, MSAA sample
-	   count and placement, one row pixels may or may not disappear too soon,
+	   count and placement, one row of pixels may or may not disappear too soon,
 	   when the circle's edge is right up against the unit quad's border */
 	dist += pixelSizeAdjusted * 0.5;
 	
