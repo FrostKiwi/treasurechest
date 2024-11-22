@@ -2,7 +2,7 @@
 title: AAA - Analytical Anti-Aliasing
 permalink: "/{{ page.fileSlug }}/"
 date: 2024-11-20
-last_modified: 2024-11-21
+last_modified: 2024-11-22
 description: How to fix jaggies the analytical way with some juicy secrets
 publicTags:
   - Graphics
@@ -1074,7 +1074,7 @@ To showcase the difference, the above `Radius adjust` slider works off of the `P
 	<figcaption>Rhombous warping at small shape sizes due to use of <code>fwidth()</code></figcaption>
 </figure>
 
-The diagonals shrink more than they should, as the approximation using addition scales too much diagonally. We'll talk about professional implementations further below in a moment, but using `fwidth()` for AAA is what Unity extension "[Shapes](https://acegikmo.com/shapes/docs/#anti-aliasing)" by [Freya Holmér](https://twitter.com/FreyaHolmer/) calls "[Fast Local Anti-Aliasing](https://acegikmo.com/shapes/docs#anti-aliasing)" with the following text:
+The diagonals shrink more than they should, as the approximation using addition scales too much diagonally. We'll talk about professional implementations further below in a moment, but using `fwidth()` for AAA is what Unity extension "[Shapes](https://acegikmo.com/shapes/)" by [Freya Holmér](https://twitter.com/FreyaHolmer/) calls "[Fast Local Anti-Aliasing](https://acegikmo.com/shapes/docs#anti-aliasing)" with the following text:
 
 > Fast LAA has a slight bias in the diagonal directions, making circular shapes appear ever so slightly rhombous and have a slightly sharper curvature in the orthogonal directions, especially when small. Sometimes the edges in the diagonals are slightly fuzzy as well.
 
@@ -1291,7 +1291,7 @@ So we are forced to shrink the border in all cases. This leads to smooth edges e
 	<figcaption>Border pixels rasterized with shrunken border<br>Source: <a href="https://stackoverflow.com/questions/73903568">Explanation</a> on Stack overflow by <a href="https://stannum.io/">Yakov Galka</a></figcaption>
 </figure>
 
-For the 2D case, we could implement a kind of [`NV_conservative_raster_dilate`](https://registry.khronos.org/OpenGL/extensions/NV/NV_conservative_raster_dilate.txt) ourselves, by growing the quad in the vertex shader by one pixel and shrink the signed distance field by one pixel in the fragment shader. And this *is* exactly what's happening in the 2D demos on this page!
+For the 2D case, we could implement a kind of [`NV_conservative_raster_dilate`](https://registry.khronos.org/OpenGL/extensions/NV/NV_conservative_raster_dilate.txt) ourselves, by growing the quad in the vertex shader by half a pixel and shrinking the signed distance field by half a pixel in the fragment shader. And this *is* exactly what's happening in the 2D demos on this page!
 
 <blockquote class="reaction"><div class="reaction_text">This is really pedantic and just here for correctness. In most cases, you don't need to be so precise.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
@@ -1383,3 +1383,94 @@ Whole communities rally around fixing this, like the reddit communities "[r/Moti
 What we have not talked about are the newer machine learning approaches as done for instance with NVIDIA's [**DLAA**](https://en.wikipedia.org/wiki/Deep_learning_anti-aliasing), as that is really outside the scope of this post. Suffice to say Timothy Lottes is [not a fan](https://x.com/NOTimothyLottes/status/1756746848402800785). As for AAA, it's lovely being able to draw smooth yet sharp, motion-stable shapes of any size at native resolutions.
 
 <blockquote class="reaction"><div class="reaction_text">Please feel free to use these techniques in your projects.</div><img class="kiwi" src="/assets/kiwis/love.svg"></blockquote>
+
+## Addendum
+
+Here are some extra comments from other graphics programmers, that came from discussions after this article was posted on [Hacker News](https://news.ycombinator.com/item?id=42191709), [Lobste.rs](https://lobste.rs/s/6e8zc3/aaa_analytical_anti_aliasing) and E-Mail.
+
+### Google Maps
+[Google Maps](http://maps.google.com/) is using this method to draw street segments, as [mentioned](https://news.ycombinator.com/item?id=42197506) by user [aappleby](https://news.ycombinator.com/user?id=aappleby) on Hacker News.
+
+> [**aappleby**](https://news.ycombinator.com/user?id=aappleby): Google Maps uses AAA on capsule shapes for all road segments - I wrote it ~10 years ago. :D
+
+Checking with a [WebGL debugger](https://spector.babylonjs.com/) it seems to be indeed the case. Sometimes there is no local rendering and a tile is fetched from memory or from the server, but sometimes the local drawing kicks-in an indeed, the shader code seems to indicate shape dependant blended alpha on the draw call that draws the streets.
+
+<details>	
+<summary>Google Maps Fragment Shader during streets draw call</summary>
+
+Captured via https://spector.babylonjs.com/
+It's minified, so a bit hard to read. Comments added by me.
+
+```glsl
+precision highp float;
+varying vec4 s, u; /* s is color, u must be size and line width */
+varying vec3 t;
+const float B = 1.;
+float L(float C) {
+	/* Never actually called ? */
+    const float D = 0.;
+    const float E = 1.;
+    const float F = .3;
+    const float G = .3;
+    const float H = 2.*D-2.*E+F+G;
+    const float I = 3.*E-3.*D-2.*F-G;
+    const float J = F;
+    const float K = D;
+    return clamp(((H*C+I)*C+J)*C+K, 0., 1.);
+}
+void main() {
+    vec2 C = vec2(t.x-clamp(t.x, 0., 1.), t.y);
+    float D, E, F, G, H, I, J;
+    D = C.x*C.x+C.y*C.y; /* Capsule Shape Calculation */
+    E = u.x; /* Should be the scale */
+    F = u.y; /* Should be the line width */
+    G = sqrt(D)*E; /* Distance to the capsule shape border */
+    H = clamp(G-F+1., 0., 1.);
+    I = clamp(G+F, 0., 1.);
+    if(B>1.) {
+        H = L(H);
+        I = L(I);
+    }
+    J = clamp(H-I, 0., 1.); /* Smoothing, based on the distance */
+    if(J == 0.)discard; /* Fragment discard when alpha fully zero */
+    gl_FragColor = s; 
+    gl_FragColor.a *= J;
+}
+```
+
+</details>
+<br>
+
+<figure>
+	<img src="img/maps.png" alt="Google maps rendering during streets draw call" />
+	<figcaption>Google maps rendering during streets draw call</figcaption>
+</figure>
+
+<figure>
+	<img src="img/mapsFinished.png" alt="Google maps after rendering" />
+	<figcaption>Google maps after rendering</figcaption>
+</figure>
+
+<blockquote class="reaction"><div class="reaction_text">That's pretty damn fire!</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
+
+### Limit's of SDFs
+Yakov Galka emphasized when this drawing style breaks down:
+
+> [**Yakov Galka**](https://stannum.io/): I think it's worth mentioning that the SDF approach still samples the SDF at a particular point, which may cause aliasing if the SDF has high-frequency components. E.g. if you rasterize a circle smaller than a pixel, then the discussed approach won't fully eliminate the aliasing.
+> \
+> There is a truly analytical method of rasterizing antialiased polygonal and bezier shapes: [Wavelet Rasterization by J. Manson and S. Schaefer](https://people.engr.tamu.edu/schaefer/research/wavelet_rasterization.pdf).
+
+Indeed a limit of this drawing style. I guess this is why "[Shapes](https://acegikmo.com/shapes/docs/#anti-aliasing)" by [Freya Holmér](https://twitter.com/FreyaHolmer/) limits lines to a minimum 1px size and performs alpha fading instead, a technique named [Line Thinness Fading](https://acegikmo.com/shapes/docs/#anti-aliasing) in "Shapes". And this is part of the issues around minimization I mentioned in chapter "The future of all things font?".
+
+As for the demos on this page, you can radius adjust the circle to be below 1px in the [implementation comparison](#implementation) above. With ⅛ Resolution on a 1080p Screen and an shrunk radius, you can push the rendering below 1px and see how this code handles it. In this specific case, quite well.
+
+### TAA
+In the comments below, GitHub user [presentfactory](https://github.com/presentfactory) mentioned me going too hard on TAA. Indeed, this blog post didn't go into which problems TAA tries to solve, that other techniques cannot. In a [tweet thread](https://twitter.com/NOTimothyLottes/status/1859225171678159318), Timothy Lottes also mentioned TAA as the clear technological evolution, but also states that there *are* limits to motion clarity.
+
+> [**Timothy Lottes**](https://twitter.com/NOTimothyLottes): Also FXAA 4 (2-frame blender) and TXAA are radically different, no MLAA in TXAA (MSAA based instead). I dropped FXAA 4, because I believed the MSAA based TAA's (like the one in The Order on PS4) had been a much better technical evolution (MLAA's cannot handle sub-pixel geometry)
+> \
+> So to be clear, I think it was a radical improvement for the ML-scaling-TAA's compared to where say UE4's first TAA ended up. BUT fully solving the ghosting/flicker/artifact problems in the frame-jitter TAA framework might not actually be possible ...
+
+TAA goes ***deep*** and the way jitter resolves things other techniques can't, takes some time to grasp intuitively. [Previously](/GLSL-noise-and-radial-gradient) I introduced my favorite GLSL one-liner for dithering, which can also help TAA with resolve effects temporally. Sledgehammer games used it for shadow filtering.
+
+<blockquote class="reaction"><div class="reaction_text">TAA is some fascinating stuff! This post was too full to appreciate it properly. Here's a recommended <a href="https://gdcvault.com/play/1023254/Temporal-Reprojection-Anti-Aliasing-in">deep-dive talk</a> by "<a href="https://en.wikipedia.org/wiki/Inside_(video_game)">Inside</a>" developer <a href="https://twitter.com/codeverses">Lasse Jon Fuglsang Pedersen</a></div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
