@@ -810,7 +810,7 @@ Always smooth without artifacts and you can adjust the amount of filtering. Pres
 
 With the above buttons, you can set the smoothing to be equal to one pixel. This gives a sharp result, but comes with the caveat that axis-aligned 90° sides may still be perseved as "flat" in specific combinations of screen resolution, size and circle position.
 
-Filtering based on the diagonal pixel size of `√2 px = 1.4142...`, ensures the "tip" of the circle in axis-aligned pixel rows and columns is always non-opaque. This removes the perception of flatness, but makes it shape ever so slightly more blurry.
+Filtering based on the diagonal pixel size of `√2 px = 1.4142...`, ensures the "tip" of the circle in axis-aligned pixel rows and columns is always non-opaque. This removes the perception of flatness, but makes the shape ever so slightly more blurry.
 
 <blockquote class="reaction"><div class="reaction_text">Or in other words: as soon as the border has an opaque pixel, there is already a transparent pixel "in front" of it.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
@@ -862,7 +862,7 @@ By extension, Unreal Engine has distance field approaches for [Soft Shadows](htt
 
 ### Implementation
 
-Let's dive into the sauce. We work with [signed distance fields](https://www.youtube.com/watch?v=62-pRVZuS5c), where for every point that we sample, we know the distance to the desired shape. This information may be baked into a texture as done for [SDF text rendering](https://github.com/Chlumsky/msdf-atlas-gen) or maybe be derived _per-pixel_ from a mathematical formula for simpler shapes like [bezier curves or hearts](https://iquilezles.org/articles/distfunctions2d/).
+Let's dive into the sauce. We work with [signed distance fields](https://www.youtube.com/watch?v=62-pRVZuS5c), where for every point that we sample, we know the distance to the desired shape. This information may be baked into a texture as done for [SDF text rendering](https://github.com/Chlumsky/msdf-atlas-gen) or may be derived _per-pixel_ from a mathematical formula for simpler shapes like [bezier curves or hearts](https://iquilezles.org/articles/distfunctions2d/).
 
 Based on that distance we fade out the border of the shape. If we fade by the size of one pixel, we get perfectly smooth edges, without any strange side effects. The secret sauce is in the implementation and [under the sauce](https://www.youtube.com/watch?v=bRL8v6--bW4) is where the magic is. _How_ does the shader know the size of pixel? _How_ do we blend based on distance?
 
