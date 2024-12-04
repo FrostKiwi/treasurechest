@@ -16,14 +16,14 @@
 		
 	<meta name="author" content="Wladislav Artsimovich">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="description" content="{{ description | default: "TechBlog and secret sauce recipes of Wladislav Artsimovich" }}">
+	<meta name="description" content="{{ description | default('TechBlog and secret sauce recipes of Wladislav Artsimovich') }}">
 
 	<!-- Post tags become HTML keywords -->
-	{% assign post = collections.post | where: "url", page.url | first %}
-		{% if post.data.publicTags %}
-			{% assign keywords = post.data.publicTags | join: ', ' %}
-		{% else %}
-			{% assign keywords = "tech blog, programming, graphics" %}
+	{% set post = collections.post | find("url", page.url) %}
+	{% if post and post.data and post.data.publicTags %}
+	    {% set keywords = post.data.publicTags | join(', ') %}
+	{% else %}
+	    {% set keywords = "tech blog, programming, graphics" %}
 	{% endif %}
 	<meta name="keywords" content="{{ keywords }}">
 
@@ -31,24 +31,22 @@
 	<meta name="twitter:card" content="summary" />
 	<meta name="twitter:creator" content="@FrostKiwiOne" />
 	<meta property="og:url" content="https://blog.frost.kiwi{{ page.url }}" />
-	<meta property="og:title" content="{{ title | default: "FrostKiwi's Secrets" }}" />
-	<meta property="og:description"
-		content="{{ description | default: "TechBlog and secret sauce recipes of Wladislav Artsimovich" }}" />
-	<meta property="og:image"
-		content="https://blog.frost.kiwi{{ post.data.social | default: "/assets/opengraph.jpg" }}" />
+	<meta property="og:title" content="{{ title | default('FrostKiwi\'s Secrets') }}" />
+	<meta property="og:description" content="{{ description | default('TechBlog and secret sauce recipes of Wladislav Artsimovich') }}" />
+	<meta property="og:image" content="https://blog.frost.kiwi{{ post.data.social | default('/assets/opengraph.jpg') }}" />
 	<link rel="me" href="https://mastodon.frost.kiwi/@FrostKiwi">
 
 	<!-- Concat CSS to minify it -->
-	{% capture css %}
+	{% set css %}
 		{% include 'node_modules/sakura.css/css/normalize.css' %}
 		{% include 'node_modules/sakura.css/css/sakura-vader.css' %}
 		{% include 'style/prism-gruvbox-dark.css' %}
 		{% include 'style/base.css' %}
 		{% include 'style/card.css' %}
-	{% endcapture %}
+	{% endset %}
 	
 	<style>
-		{{ css | cssmin }}
+		{{ css | cssmin | safe }}
 	</style>
 	<!-- beautify ignore:end -->
 </head>
@@ -79,12 +77,9 @@
 					About
 				</a>
 				<div class="social">
-					<a aria-label="Author YouTube Channel Link" href="https://www.youtube.com/@FrostKiwi/"><img
-							class="social_icon" src="/assets/icons/youtube.svg"></a>
-					<a aria-label="Author GitHub Link" href="https://github.com/FrostKiwi"><img class="social_icon"
-							src="/assets/icons/github.svg"></a>
-					<a aria-label="Blog RSS Feed Link" href="/feed.xml"><img class="social_icon"
-							src="/assets/icons/rss.svg"></a>
+					<a aria-label="Author YouTube Channel Link" href="https://www.youtube.com/@FrostKiwi/"><img class="social_icon" src="/assets/icons/youtube.svg"></a>
+					<a aria-label="Author GitHub Link" href="https://github.com/FrostKiwi"><img class="social_icon" src="/assets/icons/github.svg"></a>
+					<a aria-label="Blog RSS Feed Link" href="/feed.xml"><img class="social_icon" src="/assets/icons/rss.svg"></a>
 				</div>
 			</div>
 		</div>
@@ -93,21 +88,21 @@
 			<h1 id="{{ title }}">{{ title }} <a href="#{{ title }}" class="anchor-link">#</a></h1>
 			{% if date %}
 			<div class="dates">
-				<div class="created">Created: {{ date | date: "%Y.%m.%d" }}</div>
+				<div class="created">Created: {{ date | dateFormat("yyyy.MM.dd") }}</div>
 				{% if last_modified %}
-				<div class="last_modified">Last edit: {{ last_modified | date: "%Y.%m.%d" }}</div>
+				<div class="last_modified">Last edit: {{ last_modified | dateFormat("yyyy.MM.dd") }}</div>
 				{% endif %}
 			</div>
 			{% endif %}
 			{% endif %}
 		</div>
 	</header>
-	{% if tags contains 'post' %}
+	{% if tags.indexOf('post') >= 0 %}
 	<aside>
 		<blockquote>
 			<details>
 				<summary>Table of Contents</summary>
-				{{ content | toc: '{"tags":["h1","h2","h3","h4"],"ul":"true"}' | modifyTOC: title }}
+				{{ content | toc({ tags: ["h1", "h2", "h3", "h4"], ul: true }) | modifyTOC(title) | safe }}
 			</details>
 		</blockquote>
 	</aside>
@@ -115,9 +110,9 @@
 	<br>
 	{% endif %}
 	<main>
-		{{ content }}
+		{{ content | safe }}
 	</main>
-	{% if tags contains 'post' %}
+	{% if tags.indexOf('post') >= 0 %}
 	<footer>
 		<br>
 		<hr>
@@ -129,8 +124,7 @@
 			<img class="spinner" src="/assets/clock.svg">
 		</div>
 		<script src="https://utteranc.es/client.js" repo="FrostKiwi/treasurechest" issue-term="pathname"
-			theme="gruvbox-dark" crossorigin="anonymous" async>
-		</script>
+			theme="gruvbox-dark" crossorigin="anonymous" async></script>
 		<script>
 			const spinner = document.querySelector('.spinner');
 			spinner.style.display = 'block';

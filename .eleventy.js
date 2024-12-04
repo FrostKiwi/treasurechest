@@ -1,15 +1,16 @@
-const fs = require("fs");
-const CleanCSS = require("clean-css");
-const Image = require("@11ty/eleventy-img");
-const { execSync } = require('child_process');
-const pluginRss = require("@11ty/eleventy-plugin-rss");
-const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
-const eleventyPluginFilesMinifier = require("@sherby/eleventy-plugin-files-minifier");
+import fs from "fs";
+import CleanCSS from "clean-css";
+import { DateTime } from "luxon";
+import Image from "@11ty/eleventy-img";
+import { execSync } from "child_process";
+import pluginRss from "@11ty/eleventy-plugin-rss";
+import syntaxHighlight from "@11ty/eleventy-plugin-syntaxhighlight";
+import eleventyPluginFilesMinifier from "@sherby/eleventy-plugin-files-minifier";
 
 /* Navigation */
-const markdownIt = require('markdown-it')
-const pluginTOC = require('eleventy-plugin-toc')
-const markdownItAnchor = require('markdown-it-anchor');
+import markdownIt from "markdown-it"
+import pluginTOC from "eleventy-plugin-toc";
+import markdownItAnchor from "markdown-it-anchor";
 
 const mdOptions = {
 	html: true,
@@ -18,21 +19,28 @@ const mdOptions = {
 	typographer: true
 }
 const mdAnchorOpts = {
-	permalink: true,
-	permalinkClass: 'anchor-link',
-	permalinkSymbol: '#',
-	level: [1, 2, 3, 4]
-}
+	level: [1, 2, 3, 4],
+	permalink: markdownItAnchor.permalink.linkInsideHeader({
+		class: "anchor-link",
+	}),
+};
 
-module.exports = function (eleventyConfig) {
+export default function (eleventyConfig) {
 	/* Syntax Highlighting */
 	eleventyConfig.addPlugin(syntaxHighlight);
-	/* The required CSS for the PrimJS color theme */
+	/* The required CSS for the PrismJS color theme */
 	eleventyConfig.addPassthroughCopy("assets");
 	eleventyConfig.addPassthroughCopy("ace");
+	eleventyConfig.addPassthroughCopy({
+		"node_modules/ace-builds/src-min/ace.js": "ace/ace.js",
+	});
 	eleventyConfig.on('beforeBuild', () => {
 		// Run the custom script before building the site
 		execSync('node moveAssets.js');
+	});
+
+	eleventyConfig.addFilter("dateFormat", (dateObj, format) => {
+		return DateTime.fromJSDate(dateObj, { zone: "utc" }).toFormat(format);
 	});
 
 	eleventyConfig.setLibrary(
@@ -75,6 +83,11 @@ module.exports = function (eleventyConfig) {
 		return bytesOfFile.toString();
 	});
 
+	eleventyConfig.addFilter("find", (collection, key, value) => {
+		return collection.find(item => item[key] === value);
+	});
+
+
 	/* Thumbnail maker */
 	eleventyConfig.addCollection("thumbnail", async function (collectionApi) {
 		// Get all posts
@@ -97,4 +110,9 @@ module.exports = function (eleventyConfig) {
 
 		return posts;
 	});
+
+	return {
+		htmlTemplateEngine: "njk",
+		markdownTemplateEngine: "njk",
+	};
 };
