@@ -30,9 +30,10 @@ export default function (eleventyConfig) {
 	eleventyConfig.addPlugin(syntaxHighlight);
 	/* The required CSS for the PrismJS color theme */
 	eleventyConfig.addPassthroughCopy("assets");
-	eleventyConfig.addPassthroughCopy("ace");
 	eleventyConfig.addPassthroughCopy({
+		"style/ace/theme-gruvbox_dark_hard.js": "ace/theme-gruvbox_dark_hard.js",
 		"node_modules/ace-builds/src-min/ace.js": "ace/ace.js",
+		"style/ace/mode-glsl.js": "ace/mode-glsl.js",
 	});
 	eleventyConfig.on('beforeBuild', () => {
 		// Run the custom script before building the site
