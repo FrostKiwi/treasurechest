@@ -5,11 +5,10 @@
 	box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.5);
 	border-radius: 10px;
 	overflow: hidden;
-	color: #49002d;
-	background-color: #ffe4f5;
-	background: linear-gradient(0deg, rgba(238, 191, 221, 1) 0%, rgba(255, 228, 245, 1) 100%);
 	padding: 10px;
 	padding-right: 16px;
+	background-color: hsl(350, 45%, 80%);
+	background: linear-gradient(0deg, hsl(350, 45%, 80%) 0%, hsl(350, 100%, 92%) 100%);
 }
 
 @media (max-width: 320px) {
@@ -19,8 +18,17 @@
 }
 
 .post-card:hover {
-	background-color: #a4607d;
-	background: linear-gradient(0deg, rgba(147, 69, 102, 1) 0%, rgba(164, 96, 125, 1) 100%);
+	color: hsl(348, 8%, 13%);
+	background-color: hsl(345, 27%, 51%);
+	background: linear-gradient(0deg, hsl(345, 36%, 42%) 0%, hsl(345, 27%, 51%) 100%);
+}
+
+.post-card:hover h2 {
+	color: hsl(348, 8%, 13%);
+}
+
+.post-card:hover .post-tag {
+	background-color: hsl(348, 8%, 23%);
 }
 
 .post-card img {
@@ -33,7 +41,7 @@
 	aspect-ratio: 1;
 	object-fit: cover;
 	border-radius: 10px;
-	filter: drop-shadow(0 0 10px #351f2944);
+	filter: drop-shadow(0 0 10px #351f2955);
 }
 
 .post-content {
@@ -48,9 +56,9 @@
 }
 
 .post-content h2 {
+	color: hsl(348, 54%, 38%);
 	margin: 0;
 	margin-bottom: 4px;
-	color: #a9015e;
 }
 
 .post-date {
@@ -68,7 +76,7 @@
 .post-tag {
 	display: inline-block;
 	padding: 4px 8px;
-	background-color: #8e476e;
+	background-color: hsl(345, 32%, 35%);
 	color: #ffe4f5;
 	border-radius: 15px;
 	/* Pill shape */
