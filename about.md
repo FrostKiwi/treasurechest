@@ -36,7 +36,7 @@ layout: layout.html
 <table class="contact">
 	<tr>
 		<td>
-			<img src="/assets/icons/email.svg">
+			{% rawFileTrim "style/icons/email.svg" %}
 		</td>
 		<td>
 			<b>E-Mail</b>
