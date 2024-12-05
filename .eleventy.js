@@ -12,6 +12,7 @@ import eleventyPluginFilesMinifier from "@sherby/eleventy-plugin-files-minifier"
 import markdownIt from "markdown-it"
 import pluginTOC from "eleventy-plugin-toc";
 import markdownItAnchor from "markdown-it-anchor";
+import markdownItLinkAttributes from "markdown-it-link-attributes";
 
 const mdOptions = {
 	html: true,
@@ -46,9 +47,14 @@ export default function (eleventyConfig) {
 	});
 
 	eleventyConfig.setLibrary(
-		'md',
+		"md",
 		markdownIt(mdOptions)
 			.use(markdownItAnchor, mdAnchorOpts)
+			.use(markdownItLinkAttributes, {
+				attrs: {
+					target: "_blank",
+				},
+			})
 	);
 
 	eleventyConfig.addPlugin(pluginTOC);

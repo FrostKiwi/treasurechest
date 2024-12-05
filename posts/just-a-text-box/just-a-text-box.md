@@ -17,7 +17,7 @@ As the name suggests, it's [just a minimal HTML](just-a-textbox.html) file servi
   * I constantly use YomiChan to help me read Japanese content, including client's E-Mails with confidential Company information. Pasting client information to an online translator, which phones home to offshore servers for their translations brakes privacy laws on so many levels, it's not even funny. All that just to get text into a textbox. Thus this simple textbox html ensures everything stays offline. There are of course bigger software packages that solve this OS wide, but I'm very much used to YomiChan now and a single TextBox is all I need.
 
 <details>
-<summary>Source of <a href="just-a-textbox.html">just-a-textbox.html</a></summary>
+<summary>Source of <a target="_blank" href="just-a-textbox.html">just-a-textbox.html</a></summary>
 
 ```html
 {% rawFile "posts/just-a-text-box/just-a-textbox.html" %}

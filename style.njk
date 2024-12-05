@@ -1,0 +1,13 @@
+---
+permalink: /style.css
+---
+
+{% set css %}
+    {% include 'node_modules/sakura.css/css/normalize.css' %}
+    {% include 'node_modules/sakura.css/css/sakura-vader.css' %}
+    {% include 'style/prism-gruvbox-dark.css' %}
+    {% include 'style/base.css' %}
+    {% include 'style/card.css' %}
+{% endset %}
+
+{{ css | cssmin | safe }}

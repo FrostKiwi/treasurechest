@@ -13,7 +13,7 @@ image: jo_mpeg.png
 jo_mpeg is a C++ [single header library](https://github.com/nothings/single_file_libs) written by [Jon Olick](https://www.jonolick.com/home/mpeg-video-writer), which creates [MPEG-1](https://en.wikipedia.org/wiki/MPEG-1) videos (without audio). It is [listed as a C++ only library](https://github.com/nothings/single_file_libs#video) in stb's single header library collection. However, only the & reference format is what makes this library C++ only. Replacing those with simple pointers makes this compile with both C and C++. I'm also a big fan of [stb-type of library code](https://github.com/nothings/stb?tab=readme-ov-file#why-single-file-headers), so I converted the library to C.
 
 <details>
-<summary>Full source of the C compatible <a href="jo_mpeg.h">jo_mpeg.h</a></summary>
+<summary>Full source of the C compatible <a target="_blank" href="jo_mpeg.h">jo_mpeg.h</a></summary>
 
 ```c
 {% rawFile "posts/jo-mpeg-in-c/jo_mpeg.h" %}

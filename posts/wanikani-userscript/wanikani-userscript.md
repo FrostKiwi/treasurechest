@@ -18,10 +18,10 @@ The Question prompts of WaniKani are in English though, which I always found kin
 
 This script now properly replaces the prompts to be Japanese and specifies whether or not it's supposed to be [OnYomi](https://en.wikipedia.org/wiki/Kanji#On'yomi_(Sino-Japanese_reading)) or [KunYomi](https://en.wikipedia.org/wiki/Kanji#Kun'yomi_(native_reading)). Get it [on Greasyfork](https://greasyfork.org/en/scripts/444836-wanikani-japanese-review-questions) or directly [from the repo of this blog](https://github.com/FrostKiwi/treasurechest/raw/main/posts/wanikani-userscript/WaniKani%20Japanese%20Review%20Questions.user.js). The detection of OnYomi vs KunYomi is provided by [HaraldN](https://greasyfork.org/en/users/856931-haraldn) in his Userscript [WaniKani Katakana For On'yomi](https://greasyfork.org/en/scripts/437497-wanikani-katakana-for-on-yomi).
 
-<a href="https://greasyfork.org/en/scripts/444836-wanikani-japanese-review-questions" class="no_border" style="display: flex; align-items: center; gap: 10px"><img src="GreasyFork.svg" width="48" style="display: inline; margin: 0px">Download on Greasyfork</a>
+<a target="_blank" href="https://greasyfork.org/en/scripts/444836-wanikani-japanese-review-questions" class="no_border" style="display: flex; align-items: center; gap: 10px"><img src="GreasyFork.svg" width="48" style="display: inline; margin: 0px">Download on Greasyfork</a>
 
 <details>
-<summary>Source code of the <a href="WaniKani Japanese Review Questions.user.js">Userscript</a></summary>
+<summary>Source code of the <a target="_blank" href="WaniKani Japanese Review Questions.user.js">Userscript</a></summary>
 
 ```js
 {% rawFile "posts/wanikani-userscript/WaniKani Japanese Review Questions.user.js" %}

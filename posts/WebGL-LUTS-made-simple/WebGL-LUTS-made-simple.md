@@ -41,7 +41,7 @@ We'll first start with the thermal camera footage. The output of the [thermal ca
 
 Next we upload this footage to the graphics card using WebGL and redisplay it using a [shader](https://learnopengl.com/Getting-started/Hello-Triangle), which leaves the footage untouched. Each frame is transferred as a 2D [texture](https://learnopengl.com/Getting-started/Textures) to the GPU. Though we haven't actually done anything visually yet, we have established a graphics pipeline, which allows us to manipulate the video data in realtime. From here on out, we are mainly interested in the "[Fragment Shader](https://learnopengl.com/Getting-started/Hello-Triangle)". This is the piece of code that runs per pixel of the video to determine its final color.
 
-<blockquote class="reaction"><div class="reaction_text">I'm hardcore simplifying here. Technically there are many shader stages, the fragment shader runs per <a href="https://www.khronos.org/opengl/wiki/Fragment">fragment</a> of the output resolution not per pixel of the input, etc.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">I'm hardcore simplifying here. Technically there are many shader stages, the fragment shader runs per <a target="_blank" href="https://www.khronos.org/opengl/wiki/Fragment">fragment</a> of the output resolution not per pixel of the input, etc.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
 <script  id="fragment_2" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-simple.fs" %}</script>
 
@@ -50,12 +50,12 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 <script>setupTri("canvas_2", "vertex", "fragment_2", "videoPlayer", null);</script>
 
 <blockquote>
-<details><summary><a href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a target="_blank" href="screenshot_passthrough.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
 
 ![image](screenshot_passthrough.jpg)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a target="_blank" href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
@@ -63,7 +63,7 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="video-simple.fs">video-simple.fs</a></summary>
+<summary>WebGL Fragment Shader <a target="_blank" href="video-simple.fs">video-simple.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-simple.fs" %}
@@ -71,7 +71,7 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
@@ -82,7 +82,7 @@ Next we upload this footage to the graphics card using WebGL and redisplay it us
 
 Both the video and its WebGL rendition should be identical and playing in sync.
 
-<blockquote class="reaction"><div class="reaction_text">Unless you are on  <a href="https://www.mozilla.org/en-US/firefox/browsers/mobile/android/">Firefox Android</a>, where <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1884282">video is broken for WebGL</a></div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Unless you are on  <a target="_blank" href="https://www.mozilla.org/en-US/firefox/browsers/mobile/android/">Firefox Android</a>, where <a target="_blank" href="https://bugzilla.mozilla.org/show_bug.cgi?id=1884282">video is broken for WebGL</a></div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
 
 ## Tinting
 
@@ -114,12 +114,12 @@ Before we jump into how LUTs can help us, let's take a look a how we can manipul
 
 <script>setupTri("canvas_3", "vertex", "tintingShader", "videoPlayer", null, null, "shaderReload_3");</script>
 <blockquote>
-<details><summary><a href="screenshot_orange.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a target="_blank" href="screenshot_orange.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
 
 ![image](screenshot_orange.jpg)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a target="_blank" href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
@@ -127,7 +127,7 @@ Before we jump into how LUTs can help us, let's take a look a how we can manipul
 
 </details>
 <details>
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
@@ -198,12 +198,12 @@ A 1D LUT is a simple array of numbers. If the 1D LUT is an RGB image, then a 1D 
 
 <script>setupTri("canvas_4", "vertex", "fragment_4", "videoPlayer", "lut", "lutSelector")</script>
 <blockquote>
-<details><summary><a href="screenshot_inferno.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a target="_blank" href="screenshot_inferno.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
 
 ![image](screenshot_inferno.jpg)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a target="_blank" href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
@@ -211,7 +211,7 @@ A 1D LUT is a simple array of numbers. If the 1D LUT is an RGB image, then a 1D 
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="video-lut.fs">video-lut.fs</a></summary>
+<summary>WebGL Fragment Shader <a target="_blank" href="video-lut.fs">video-lut.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}
@@ -219,7 +219,7 @@ A 1D LUT is a simple array of numbers. If the 1D LUT is an RGB image, then a 1D 
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
@@ -250,12 +250,12 @@ Here is every single colormap that [matplotlib](https://matplotlib.org/) support
 
 <script>setupTri("canvas_5", "vertex", "fragment_5", "videoPlayer", "viridis", "lutSelector2");</script>
 <blockquote>
-<details><summary><a href="screenshot_viridis.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a target="_blank" href="screenshot_viridis.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
 
 ![image](screenshot_viridis.jpg)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a target="_blank" href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
@@ -263,7 +263,7 @@ Here is every single colormap that [matplotlib](https://matplotlib.org/) support
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="video-lut.fs">video-lut.fs</a></summary>
+<summary>WebGL Fragment Shader <a target="_blank" href="video-lut.fs">video-lut.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}
@@ -271,7 +271,7 @@ Here is every single colormap that [matplotlib](https://matplotlib.org/) support
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
@@ -310,12 +310,12 @@ You can perform polynomial approximations of a colormap and thus side-step the L
 
 <script>setupTri("canvas_9", "vertex", "fragment_9", "videoPlayer", null);</script>
 <blockquote>
-<details><summary><a href="screenshot_viridis_polynomial.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a target="_blank" href="screenshot_viridis_polynomial.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
 
 ![image](screenshot_viridis_polynomial.jpg)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a target="_blank" href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
@@ -323,7 +323,7 @@ You can perform polynomial approximations of a colormap and thus side-step the L
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="video-lut_viridis.fs">video-lut_viridis.fs</a></summary>
+<summary>WebGL Fragment Shader <a target="_blank" href="video-lut_viridis.fs">video-lut_viridis.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-lut_viridis.fs" %}
@@ -331,7 +331,7 @@ You can perform polynomial approximations of a colormap and thus side-step the L
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
@@ -352,7 +352,7 @@ Let's take a look at how far this technique can be stretched. This time we are l
 	<video width="960" height="540" controls><source src="left4dead_Gradients.mp4" type="video/mp4"></video>
 	<figcaption>Video: Creating Zombie variation using gradient ramps
 	<br>
-	Source: Excerpt from <a href="https://www.gdcvault.com/play/1012264/Shading-a-Bigger-Better-Sequel">"Shading a Bigger, Better Sequel: Techniques in Left 4 Dead 2"</a><br>GDC 2010 talk by <a href="http://www.bronwengrimes.com">Bronwen Grimes</a>
+	Source: Excerpt from <a target="_blank" href="https://www.gdcvault.com/play/1012264/Shading-a-Bigger-Better-Sequel">"Shading a Bigger, Better Sequel: Techniques in Left 4 Dead 2"</a><br>GDC 2010 talk by <a target="_blank" href="http://www.bronwengrimes.com">Bronwen Grimes</a>
 	</figcaption>
 </figure>
 
@@ -360,8 +360,8 @@ The resulting variations can be seen in the following screenshot. The most impor
 
 <figure>
 	<img src="mayaHLSL.jpg">
-	<figcaption>Left 4 Dead 2: 1D LUT shader displayed in <a href="https://en.wikipedia.org/wiki/Autodesk_Maya">Autodesk Maya</a>, creating color variations.<br>
-	Source: Excerpt from <a href="https://www.gdcvault.com/play/1012264/Shading-a-Bigger-Better-Sequel">"Shading a Bigger, Better Sequel: Techniques in Left 4 Dead 2"</a><br>GDC 2010 talk by <a href="http://www.bronwengrimes.com">Bronwen Grimes</a>
+	<figcaption>Left 4 Dead 2: 1D LUT shader displayed in <a target="_blank" href="https://en.wikipedia.org/wiki/Autodesk_Maya">Autodesk Maya</a>, creating color variations.<br>
+	Source: Excerpt from <a target="_blank" href="https://www.gdcvault.com/play/1012264/Shading-a-Bigger-Better-Sequel">"Shading a Bigger, Better Sequel: Techniques in Left 4 Dead 2"</a><br>GDC 2010 talk by <a target="_blank" href="http://www.bronwengrimes.com">Bronwen Grimes</a>
 	</figcaption></figcaption>
 </figure>
 
@@ -371,7 +371,7 @@ With just a couple of LUTs chosen at random for skin and clothes, the following 
 	<img src="l4dluts.jpg">
 	<img src="zombievariation.jpg">
 	<figcaption>LUTs for skin and clothes chosen at random to create color variation<br>
-	Source: Excerpt from <a href="https://www.gdcvault.com/play/1012264/Shading-a-Bigger-Better-Sequel">"Shading a Bigger, Better Sequel: Techniques in Left 4 Dead 2"</a><br>GDC 2010 talk by <a href="http://www.bronwengrimes.com">Bronwen Grimes</a>
+	Source: Excerpt from <a target="_blank" href="https://www.gdcvault.com/play/1012264/Shading-a-Bigger-Better-Sequel">"Shading a Bigger, Better Sequel: Techniques in Left 4 Dead 2"</a><br>GDC 2010 talk by <a target="_blank" href="http://www.bronwengrimes.com">Bronwen Grimes</a>
 	</figcaption></figcaption>
 </figure>
 
@@ -426,7 +426,7 @@ We can load these planes as a 32³px cube and display it in 3D as [voxels](https
 
 Since it's in 3D, we only see the outer most voxels. We map the Red to X, Green to Y and Blue to Z, since this is identical to the mapping on graphics cards. You may have noticed the origin being in the top left. This is due to DirectX having the texture coordinate origin [in the top left](https://www.puredevsoftware.com/blog/2018/03/17/texture-coordinates-d3d-vs-opengl/), as opposed to OpenGL, which has [its origin in the bottom left](https://learnopengl.com/Getting-started/Textures). Generally the DirectX layout is the unofficial standard, though nothing prevents you from flipping it.
 
-<blockquote class="reaction"><div class="reaction_text">This is the reason why screenshots from OpenGL are sometimes vertically flipped, when handled by tools expecting DirectX layout and vice versa. Many libraries <a href="https://github.com/nothings/stb/blob/ae721c50eaf761660b4f90cc590453cdb0c2acd0/stb_image_write.h#L53">have a switch to handle that</a>.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">This is the reason why screenshots from OpenGL are sometimes vertically flipped, when handled by tools expecting DirectX layout and vice versa. Many libraries <a target="_blank" href="https://github.com/nothings/stb/blob/ae721c50eaf761660b4f90cc590453cdb0c2acd0/stb_image_write.h#L53">have a switch to handle that</a>.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
 #### Setup
 
@@ -453,12 +453,12 @@ And now we load the footage again into WebGL and process it with a 3D LUT in its
 
 <script>setupTri("canvas_6", "vertex", "fragment_6", "gh6footage", "3dlut");</script>
 <blockquote>
-<details><summary><a href="screenshot_v_log.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a target="_blank" href="screenshot_v_log.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
 
 ![image](screenshot_v_log.jpg)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a target="_blank" href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
@@ -466,7 +466,7 @@ And now we load the footage again into WebGL and process it with a 3D LUT in its
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
+<summary>WebGL Fragment Shader <a target="_blank" href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}
@@ -474,7 +474,7 @@ And now we load the footage again into WebGL and process it with a 3D LUT in its
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
@@ -491,7 +491,7 @@ Unfortunately, that code contains a mistake around Z-Axis calculation of the cub
 As with the 1D LUT, any correction we apply to the LUT will be applied to the footage or graphics scene we use. In the following example I imported my footage and LUT into [DaVinci Resolve](https://www.blackmagicdesign.com/products/davinciresolve). I applied Panasonic's "[V-Log to V-709 3D-LUT](https://na.panasonic.com/us/resource-center/v-log-v-709-3d-lut)", which transforms the footage into what Panasonic considers a pleasing standard look. Then a bit of contrast and white point correction to make white full-bright were applied. Afterwards the LUT was exported again. This LUT and its result are shown below.
 
 <input type="file" id="3DLutInput" accept="image/*" style="display: none;">
-<a href="3DLut.png" download="3DLut.png" id="downloadLink" style="display: none;"></a>
+<a target="_blank" href="3DLut.png" download="3DLut.png" id="downloadLink" style="display: none;"></a>
 <div class="center-child"><button onclick="document.getElementById('downloadLink').click();">Download clean LUT</button><button onclick="document.getElementById('3DLutInput').click();">Upload LUT</button></div>
 
 <img src="3DLutDavinci.png" id="3dlutDavinci" style="width: 100%">
@@ -502,12 +502,12 @@ As with the 1D LUT, any correction we apply to the LUT will be applied to the fo
 
 <script>setupTri("canvas_7", "vertex", "fragment_7", "gh6footage", "3dlutDavinci", "3DLutInput");</script>
 <blockquote>
-<details><summary><a href="screenshot_v709.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a target="_blank" href="screenshot_v709.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
 
 ![image](screenshot_v709.jpg)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a target="_blank" href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
@@ -515,7 +515,7 @@ As with the 1D LUT, any correction we apply to the LUT will be applied to the fo
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
+<summary>WebGL Fragment Shader <a target="_blank" href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}
@@ -523,7 +523,7 @@ As with the 1D LUT, any correction we apply to the LUT will be applied to the fo
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}
@@ -593,12 +593,12 @@ This is a very complex set of details to get right and we get it all baked into 
 
 <script>setupTri("canvas_8", "vertex", "fragment_8", "gh6footage", "3dlutDavinci_Film");</script>
 <blockquote>
-<details><summary><a href="screenshot_filmic.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a target="_blank" href="screenshot_filmic.jpg">Screenshot</a>, in case WebGL doesn't work</summary>
 
 ![image](screenshot_filmic.jpg)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a target="_blank" href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}
@@ -606,7 +606,7 @@ This is a very complex set of details to get right and we get it all baked into 
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
+<summary>WebGL Fragment Shader <a target="_blank" href="video-3Dlut.fs">video-3Dlut.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/WebGL-LUTS-made-simple/video-3Dlut.fs" %}
@@ -614,7 +614,7 @@ This is a very complex set of details to get right and we get it all baked into 
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
 {% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.js" %}

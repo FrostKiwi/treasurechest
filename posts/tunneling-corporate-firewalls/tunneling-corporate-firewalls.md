@@ -19,7 +19,7 @@ Being able to setup a connection you trust and where your dev tools work is impo
 <a></a>
 
 
-<blockquote class="reaction"><div class="reaction_text">As much as any other post, my blog's <a href="/about/#disclaimer">disclaimer</a> applies.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">As much as any other post, my blog's <a target="_blank" href="/about/#disclaimer">disclaimer</a> applies.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 <a></a>
 
 

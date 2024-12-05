@@ -26,7 +26,7 @@ Luckily, Python package [colour-science](https://www.colour-science.org/) suppor
 If you want to perform the export yourself or need a colormap not listed, then you can use the Python script below. Required dependencies can be installed via `pip install colour-science matplotlib`.
 
 <details>
-<summary>Python export script <a href="colormap-as-cube-lut.py">colormap-as-cube-lut.py</a></summary>
+<summary>Python export script <a target="_blank" href="colormap-as-cube-lut.py">colormap-as-cube-lut.py</a></summary>
 
 ```python
 {% rawFile "posts/Davinci-Resolve-thermal-luts/colormap-as-cube-lut.py" %}
@@ -59,7 +59,7 @@ Here you can preview all available colormaps, with the following video and the s
 
 <script>setupTri("canvas_5", "vertex", "fragment_5", "videoPlayer", "viridis", "lutSelector2");</script>
 
-<blockquote class="reaction"><div class="reaction_text">Unless you are on  <a href="https://www.mozilla.org/en-US/firefox/browsers/mobile/android/">Firefox Android</a>, where <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1884282">video is broken for WebGL</a></div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Unless you are on  <a target="_blank" href="https://www.mozilla.org/en-US/firefox/browsers/mobile/android/">Firefox Android</a>, where <a target="_blank" href="https://bugzilla.mozilla.org/show_bug.cgi?id=1884282">video is broken for WebGL</a></div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
 
 ## LUT collection
 Here you can download the .cube files individually or [as one .zip](colormaps-as-cube/colormaps-as-cube.zip)

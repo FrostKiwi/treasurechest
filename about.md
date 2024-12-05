@@ -18,7 +18,7 @@ layout: layout.html
 			Born in Belarus <img class="flag" src="/assets/icons/by.svg">, raised in Germany <img class="flag" src="/assets/icons/de.svg">, I now live and work in Japan <img class="flag" src="/assets/icons/jp.svg">.
 		</p>
 		<p>
-			I run the math & tech-focused YouTube Channel <a href="https://www.youtube.com/@FrostKiwi">FrostKiwi</a>
+			I run the math & tech-focused YouTube Channel <a target="_blank" href="https://www.youtube.com/@FrostKiwi">FrostKiwi</a>
 		</p>
 	</div>
 </blockquote>
@@ -51,97 +51,97 @@ layout: layout.html
 	</tr>
 	<tr>
 		<td>
-			<a href="https://www.linkedin.com/in/wladislav-artsimovich-623b81101/">
+			<a target="_blank" href="https://www.linkedin.com/in/wladislav-artsimovich-623b81101/">
 				<img class="social_icon" src="/assets/icons/linkedin.svg">
 			</a>
 		</td>
 		<td>
-			<a href="https://www.linkedin.com/in/wladislav-artsimovich-623b81101/">
+			<a target="_blank" href="https://www.linkedin.com/in/wladislav-artsimovich-623b81101/">
 				<b>LinkedIn</b>
 			</a>
 		</td>
 	</tr>
 	<tr>
 		<td>
-			<a href="https://github.com/FrostKiwi">
+			<a target="_blank" href="https://github.com/FrostKiwi">
 				<img class="social_icon" src="/assets/icons/github.svg">
 			</a>
 		</td>
 		<td>
-			<a href="https://github.com/FrostKiwi">
+			<a target="_blank" href="https://github.com/FrostKiwi">
 				<b>GitHub</b>
 			</a>
 		</td>
 	</tr>
 	<tr>
 		<td>
-			<a rel="me" href="https://mastodon.frost.kiwi/@FrostKiwi">
+			<a target="_blank" rel="me" href="https://mastodon.frost.kiwi/@FrostKiwi">
 				<img class="social_icon" src="/assets/icons/mastodon.svg">
 			</a>
 		</td>
 		<td>
-			<a rel="me" href="https://mastodon.frost.kiwi/@FrostKiwi">
+			<a target="_blank" rel="me" href="https://mastodon.frost.kiwi/@FrostKiwi">
 				<b>Mastodon</b>
 			</a>
 		</td>
 	</tr>
 	<tr>
 		<td>
-			<a href="https://twitter.com/FrostKiwiOne">
+			<a target="_blank" href="https://twitter.com/FrostKiwiOne">
 				<img class="social_icon" src="/assets/icons/twitter.svg">
 				<img class="social_icon" src="/assets/icons/x.svg">
 			</a>
 		</td>
 		<td>
-			<a href="https://twitter.com/FrostKiwiOne">
+			<a target="_blank" href="https://twitter.com/FrostKiwiOne">
 				<b>Twitter / X</b>
 			</a>
 		</td>
 	</tr>
 	<tr>
 		<td>
-			<a href="https://twitter.com/FrostKiwiOne">
+			<a target="_blank" href="https://twitter.com/FrostKiwiOne">
 				<img class="social_icon" src="/assets/icons/reddit.svg">
 			</a>
 		</td>
 		<td>
-			<a href="https://twitter.com/FrostKiwiOne">
+			<a target="_blank" href="https://twitter.com/FrostKiwiOne">
 				<b>Reddit</b>
 			</a>
 		</td>
 	</tr>
 	<tr>
 		<td>
-			<a href="https://www.youtube.com/@FrostKiwi/">
+			<a target="_blank" href="https://www.youtube.com/@FrostKiwi/">
 				<img class="social_icon" src="/assets/icons/youtube.svg">
 			</a>
 		</td>
 		<td>
-			<a href="https://www.youtube.com/@FrostKiwi/">
+			<a target="_blank" href="https://www.youtube.com/@FrostKiwi/">
 				<b>YouTube</b>
 			</a>
 		</td>
 	</tr>
 	<tr>
 		<td>
-			<a href="https://news.ycombinator.com/user?id=FrostKiwi">
+			<a target="_blank" href="https://news.ycombinator.com/user?id=FrostKiwi">
 				<img class="social_icon" src="/assets/icons/hackernews.svg">
 			</a>
 		</td>
 		<td>
-			<a href="https://news.ycombinator.com/user?id=FrostKiwi">
+			<a target="_blank" href="https://news.ycombinator.com/user?id=FrostKiwi">
 				<b>HackerNews</b>
 			</a>
 		</td>
 	</tr>
 	<tr>
 		<td>
-			<a href="https://lobste.rs/~FrostKiwi">
+			<a target="_blank" href="https://lobste.rs/~FrostKiwi">
 				<img class="social_icon" src="/assets/icons/lobsters.svg">
 			</a>
 		</td>
 		<td>
-			<a href="https://lobste.rs/~FrostKiwi">
+			<a target="_blank" href="https://lobste.rs/~FrostKiwi">
 				<b>Lobsters</b>
 			</a>
 		</td>

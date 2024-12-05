@@ -13,6 +13,8 @@
 	<link rel="icon" href="/assets/favicon.ico" sizes="32x32">
 	<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
 	<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+
+	<link rel="stylesheet" href="/style.css">
 		
 	<meta name="author" content="Wladislav Artsimovich">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -35,20 +37,6 @@
 	<meta property="og:description" content="{{ description | default('TechBlog and secret sauce recipes of Wladislav Artsimovich') }}" />
 	<meta property="og:image" content="https://blog.frost.kiwi{{ post.data.social | default('/assets/opengraph.jpg') }}" />
 	<link rel="me" href="https://mastodon.frost.kiwi/@FrostKiwi">
-
-	<!-- Concat CSS to minify it -->
-	{% set css %}
-		{% include 'node_modules/sakura.css/css/normalize.css' %}
-		{% include 'node_modules/sakura.css/css/sakura-vader.css' %}
-		{% include 'style/prism-gruvbox-dark.css' %}
-		{% include 'style/base.css' %}
-		{% include 'style/card.css' %}
-	{% endset %}
-	
-	<style>
-		{{ css | cssmin | safe }}
-	</style>
-	<!-- beautify ignore:end -->
 </head>
 
 <body>
@@ -77,9 +65,9 @@
 					About
 				</a>
 				<div class="social">
-					<a aria-label="Author YouTube Channel Link" href="https://www.youtube.com/@FrostKiwi/"><img class="social_icon" src="/assets/icons/youtube.svg"></a>
-					<a aria-label="Author GitHub Link" href="https://github.com/FrostKiwi"><img class="social_icon" src="/assets/icons/github.svg"></a>
-					<a aria-label="Blog RSS Feed Link" href="/feed.xml"><img class="social_icon" src="/assets/icons/rss.svg"></a>
+					<a target="_blank" aria-label="Author YouTube Channel Link" href="https://www.youtube.com/@FrostKiwi/"><img class="social_icon" src="/assets/icons/youtube.svg"></a>
+					<a target="_blank" aria-label="Author GitHub Link" href="https://github.com/FrostKiwi"><img class="social_icon" src="/assets/icons/github.svg"></a>
+					<a target="_blank" aria-label="Blog RSS Feed Link" href="/feed.xml"><img class="social_icon" src="/assets/icons/rss.svg"></a>
 				</div>
 			</div>
 		</div>

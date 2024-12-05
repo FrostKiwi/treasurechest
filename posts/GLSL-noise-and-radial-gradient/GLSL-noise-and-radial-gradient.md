@@ -20,12 +20,12 @@ I **love** to use soft gradients as backdrops when doing graphics programming, a
 
 <script>setupTri("canvas_2", "vertex_2", "fragment_2");</script>
 <blockquote>
-<details><summary><a href="screenshot_gradient.png">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a target="_blank" href="screenshot_gradient.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
 ![](screenshot_gradient.png)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a target="_blank" href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}
@@ -33,7 +33,7 @@ I **love** to use soft gradients as backdrops when doing graphics programming, a
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="banding.fs">banding.fs</a></summary>
+<summary>WebGL Fragment Shader <a target="_blank" href="banding.fs">banding.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/GLSL-noise-and-radial-gradient/banding.fs" %}
@@ -41,7 +41,7 @@ I **love** to use soft gradients as backdrops when doing graphics programming, a
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
 {% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.js" %}
@@ -81,12 +81,12 @@ Here is what the raw noise looks like. The following WebGL Canvas is set to rend
 <script id="fragment_noise" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/noise.fs" %}</script>
 <script>setupTri("canvas_noise", "vertex_noise", "fragment_noise");</script>
 <blockquote>
-<details><summary><a href="raw_noise.png">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a target="_blank" href="raw_noise.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
 ![image](raw_noise.png)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="noise.vs">noise.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a target="_blank" href="noise.vs">noise.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/GLSL-noise-and-radial-gradient/noise.vs" %}
@@ -94,7 +94,7 @@ Here is what the raw noise looks like. The following WebGL Canvas is set to rend
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="noise.fs">noise.fs</a></summary>
+<summary>WebGL Fragment Shader <a target="_blank" href="noise.fs">noise.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/GLSL-noise-and-radial-gradient/noise.fs" %}
@@ -102,7 +102,7 @@ Here is what the raw noise looks like. The following WebGL Canvas is set to rend
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
 {% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.js" %}
@@ -118,13 +118,13 @@ Now let's combine both previous WebGL examples to clear the color banding and ge
 <script  id="fragment_banding_free" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/gradient.fs" %}</script>
 <script>setupTri("canvas_banding_free", "vertex_banding_free", "fragment_banding_free");</script>
 <blockquote>
-<details><summary><a href="screenshot_gradient_dither.png">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a target="_blank" href="screenshot_gradient_dither.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
 You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will counteract the pixel sized dither and re-introduce color banding!
 ![](screenshot_gradient_dither.png)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a target="_blank" href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}
@@ -132,7 +132,7 @@ You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will co
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="gradient.fs">gradient.fs</a></summary>
+<summary>WebGL Fragment Shader <a target="_blank" href="gradient.fs">gradient.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/GLSL-noise-and-radial-gradient/gradient.fs" %}
@@ -140,7 +140,7 @@ You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will co
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
 {% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.js" %}
@@ -172,13 +172,13 @@ Here is how I usually use this Shader setup to draw a background for objects and
 <script  id="fragment_bg_example" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/full_example.fs" %}</script>
 <script>setupTri("canvas_bg_example", "vertex_bg_example", "fragment_bg_example");</script>
 <blockquote>
-<details><summary><a href="radial.png">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a target="_blank" href="radial.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
 You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will counteract the pixel sized dither and re-introduce color banding!
 ![](radial.png)
 
 </details>
-<details><summary>WebGL Vertex Shader <a href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
+<details><summary>WebGL Vertex Shader <a target="_blank" href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
 {% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}
@@ -186,7 +186,7 @@ You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will co
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a href="full_example.fs">full_example.fs</a></summary>
+<summary>WebGL Fragment Shader <a target="_blank" href="full_example.fs">full_example.fs</a></summary>
 
 ```glsl
 {% rawFile "posts/GLSL-noise-and-radial-gradient/full_example.fs" %}
@@ -194,7 +194,7 @@ You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will co
 
 </details>
 <details>	
-<summary>WebGL Javascript <a href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
 {% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.js" %}
@@ -292,7 +292,7 @@ To finish off, let's take a look how color banding is solved in other pieces of 
 	<video width="1280" height="720" controls><source src="valve.mp4" type="video/mp4"></video>
 	<figcaption>Video: Use of noise in shaders by Valve Software
 	<br>
-	Source: Excerpt from <a href="https://gdcvault.com/play/1021771">"Advanced VR Rendering"</a>, GDC 2015 talk by <a href="https://alex.vlachos.com/">Alex Vlachos</a>
+	Source: Excerpt from <a target="_blank" href="https://gdcvault.com/play/1021771">"Advanced VR Rendering"</a>, GDC 2015 talk by <a target="_blank" href="https://alex.vlachos.com/">Alex Vlachos</a>
 	</figcaption>
 </figure>
 
@@ -307,7 +307,7 @@ float3 ScreenSpaceDither( float2 vScreenPos )
 	return ( vDither.rgb / 255.0 ) * 0.375;
 }
 ```
-<blockquote class="reaction"><div class="reaction_text">The code from the talk is <a href="https://en.wikipedia.org/wiki/High-Level_Shader_Language">HLSL</a> as used in <a href="https://en.wikipedia.org/wiki/Direct3D">DirectX</a>, not <a href="https://en.wikipedia.org/wiki/OpenGL_Shading_Language">GLSL</a> as used with <a href="https://en.wikipedia.org/wiki/OpenGL">OpenGL</a> or <a href="https://en.wikipedia.org/wiki/WebGL">WebGL</a>.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">The code from the talk is <a target="_blank" href="https://en.wikipedia.org/wiki/High-Level_Shader_Language">HLSL</a> as used in <a target="_blank" href="https://en.wikipedia.org/wiki/Direct3D">DirectX</a>, not <a target="_blank" href="https://en.wikipedia.org/wiki/OpenGL_Shading_Language">GLSL</a> as used with <a target="_blank" href="https://en.wikipedia.org/wiki/OpenGL">OpenGL</a> or <a target="_blank" href="https://en.wikipedia.org/wiki/WebGL">WebGL</a>.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 ### Alien: Isolation
 I consider [Alien: Isolation](https://en.wikipedia.org/wiki/Alien:_Isolation) to be a technical master piece in terms of lighting, especially considering the time it was released. They faked realtime global illumination in a really interesting fashion, with the flashlight lighting up the area when shining directly at a wall fairly close and casting a redish ambiance when shining at a deep red door. It's mostly a hardcoded fake effect working with specific surfaces, but I digress...
@@ -316,7 +316,7 @@ Horror games like Alien: Isolation have a lot of dark scenes with lights creatin
 
 <figure>
 	<img src="mission5.jpg" alt="Stage 5 of Alien: Isolation" />
-  <figcaption>Stage 5 of <a href="https://en.wikipedia.org/wiki/Alien:_Isolation">Alien: Isolation</a></figcaption>
+  <figcaption>Stage 5 of <a target="_blank" href="https://en.wikipedia.org/wiki/Alien:_Isolation">Alien: Isolation</a></figcaption>
 </figure>
 
 I photographed the middle of the scene, as viewed on my [Alienware AW3423DW](https://www.dell.com/en-us/shop/alienware-34-curved-qd-oled-gaming-monitor-aw3423dw/apd/210-bcye/monitors-monitor-accessories). In this first example, without any color banding mitigation and again with brightness & contrast boosted for clarity within this article. In real-life the color banding is obviously visible when gaming in a dark environment. These are actual photos and not screenshots, which will matter a little later.
@@ -370,7 +370,7 @@ Of course, you need to have a rather expensive screen, being able to run 10-bits
 The `Deband.fx` Shader (Source code below, for reference) applies dithering to areas, that it detects as affected by color banding, based on the _[Weber Ratio](https://en.wikipedia.org/wiki/Contrast_(vision)#Weber_contrast)_.
 
 <details>	
-<summary><a href="https://reshade.me">ReShade</a>'s <a href="https://github.com/crosire/reshade-shaders/blob/slim/Shaders/Deband.fx">Deband.fx</a> source code, for reference</summary>
+<summary><a target="_blank" href="https://reshade.me">ReShade</a>'s <a target="_blank" href="https://github.com/crosire/reshade-shaders/blob/slim/Shaders/Deband.fx">Deband.fx</a> source code, for reference</summary>
 
 ```hlsl
 {% rawFile "posts/GLSL-noise-and-radial-gradient/Deband.fx" %}
@@ -402,14 +402,14 @@ When cranked to the max, you can see streaks running through the noise. Surprisi
 Finally, let's talk blur. Blur produces smooth gradients, which quickly suffer from color banding. The [KDE Plasma Desktop](https://kde.org/plasma-desktop/), one of the most popular Desktop Environments for Linux and FreeBSD, uses one of my favorite pieces of graphics programming wizardry, the [Dual Kawase Blur](https://github.com/JujuAdams/Kawase), to blur the backdrops of windows, as [implemented a while back](https://phabricator.kde.org/R108:0179f741bbd4cc01da5866fdf7b6a302869a099b). To defuse said color banding, noise can be applied on top. The source code for the implementation [can be found here](https://phabricator.kde.org/source/kwin/browse/master/effects/blur/).
 <figure>
 	<img src="kde.png" alt="KDE Plasma's Blur and Noise settings" />
-  <figcaption>KDE Plasma's Blur with noise at max strength (<a href="https://phabricator.kde.org/R108:cc0325af41528b4f68e9f376c4d2d27ed1e28f11">Source</a>)<br>Zoomed and contrast boosted in circle</figcaption>
+  <figcaption>KDE Plasma's Blur with noise at max strength (<a target="_blank" href="https://phabricator.kde.org/R108:cc0325af41528b4f68e9f376c4d2d27ed1e28f11">Source</a>)<br>Zoomed and contrast boosted in circle</figcaption>
 </figure>
 
 ### Microsoft Windows Acrylic
 To finish off, here is how Windows 11 and its _[Acrylic](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic#how-we-designed-acrylic)_ does it. It applies both blur and noise to achieve the same.
 <figure>
 	<img src="acrylic-recipe-diagram.png" alt="Microsoft Acrylic implementation diagram" />
-  <figcaption>Microsoft Acrylic implementation diagram (<a href="https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic#how-we-designed-acrylic">Source</a>)</figcaption>
+  <figcaption>Microsoft Acrylic implementation diagram (<a target="_blank" href="https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic#how-we-designed-acrylic">Source</a>)</figcaption>
 </figure>
 
 Here is how it looks in [Microsoft's "New Windows Terminal"](https://github.com/microsoft/terminal). The circle has again brightness and contrast boosted to see the effect more clearly in the context of the article. Even though new Windows terminal is open source, the implementation of acrylic is within the source code of Windows itself, so we cannot take a look at the specific implementation.
