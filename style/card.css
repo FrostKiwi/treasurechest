@@ -44,6 +44,10 @@
 	filter: drop-shadow(0 0 10px #351f2955);
 }
 
+.post-card:hover .post-image {
+	filter: drop-shadow(0 0 15px #351f29AA);
+}
+
 .post-content {
 	flex-grow: 1;
 	padding-left: 15px;

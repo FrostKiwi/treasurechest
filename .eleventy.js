@@ -3,6 +3,7 @@ import CleanCSS from "clean-css";
 import { DateTime } from "luxon";
 import Image from "@11ty/eleventy-img";
 import { execSync } from "child_process";
+import slugify from "@sindresorhus/slugify";
 import pluginRss from "@11ty/eleventy-plugin-rss";
 import syntaxHighlight from "@11ty/eleventy-plugin-syntaxhighlight";
 import eleventyPluginFilesMinifier from "@sherby/eleventy-plugin-files-minifier";
@@ -110,6 +111,28 @@ export default function (eleventyConfig) {
 		}
 
 		return posts;
+	});
+
+	/* Tags */
+	eleventyConfig.addFilter('slug', function (str) {
+		return slugify(str, {
+			customReplacements: [
+				['+', 'plus']
+			]
+		});
+	});
+
+	eleventyConfig.addCollection("publicTagsWithIndex", function (collectionApi) {
+		const tags = [null];
+		let tagSet = new Set();
+
+		collectionApi.getAll().forEach(function (item) {
+			if ("publicTags" in item.data) {
+				item.data.publicTags.forEach((tag) => tagSet.add(tag));
+			}
+		});
+
+		return tags.concat([...tagSet]);
 	});
 
 	return {
