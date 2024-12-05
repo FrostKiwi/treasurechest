@@ -51,6 +51,9 @@ export default function (eleventyConfig) {
 		markdownIt(mdOptions)
 			.use(markdownItAnchor, mdAnchorOpts)
 			.use(markdownItLinkAttributes, {
+				matcher(href) {
+					return href.startsWith("http://") || href.startsWith("https://");
+				},
 				attrs: {
 					target: "_blank",
 				},
