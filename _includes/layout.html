@@ -73,7 +73,7 @@
 		</div>
 		<div class="post_title">
 			{% if title %}
-			<h1 id="{{ title }}">{{ title }} <a href="#{{ title }}" class="anchor-link">#</a></h1>
+			<h1 id="{{ title | slug }}">{{ title }} <a href="#{{ title | slug }}" class="anchor-link">#</a></h1>
 			{% if date %}
 			<div class="dates">
 				<div class="created">Created: {{ date | dateFormat("yyyy.MM.dd") }}</div>

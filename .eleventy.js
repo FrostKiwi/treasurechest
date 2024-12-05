@@ -62,13 +62,21 @@ export default function (eleventyConfig) {
 
 	eleventyConfig.addPlugin(pluginTOC);
 
+	/* 🐌 🤘 */
+	const slugRules = [['+', 'plus']];
+
+	eleventyConfig.addFilter('slug', function (str) {
+		return slugify(str, { customReplacements: slugRules });
+	});
+
 	eleventyConfig.addFilter("modifyTOC", function (tocHtml, postTitle) {
 		if (!tocHtml)
 			tocHtml = `<nav class="toc"><ul></ul></nav>`;
 		/* Clear whitespace before string matching */
 		tocHtml = tocHtml.replace(/>\s+</g, '><');
 		/* Header */
-		tocHtml = tocHtml.replace('<ul>', `<ul><li><a href="#${postTitle}">${postTitle}</a><ul>`);
+		const h1Link = slugify(postTitle, { customReplacements: slugRules });
+		tocHtml = tocHtml.replace('<ul>', `<ul><li><a href="#${h1Link}">${postTitle}</a><ul>`);
 		/* Comments */
 		tocHtml = tocHtml.replace('</ul></nav>', '</ul></li><li><a href="#comments">Comments</a></li></ul></nav>');
 		return tocHtml;
@@ -123,14 +131,6 @@ export default function (eleventyConfig) {
 	});
 
 	/* Tags */
-	eleventyConfig.addFilter('slug', function (str) {
-		return slugify(str, {
-			customReplacements: [
-				['+', 'plus']
-			]
-		});
-	});
-
 	eleventyConfig.addCollection("publicTagsWithIndex", function (collectionApi) {
 		const tags = [null];
 		let tagSet = new Set();
