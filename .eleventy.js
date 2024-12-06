@@ -96,6 +96,14 @@ export default function (eleventyConfig) {
 		return bytesOfFile.toString();
 	});
 
+	eleventyConfig.addShortcode("rawFileTrim", (filename) => {
+		const bytesOfFile = fs.readFileSync(filename, "utf-8");
+		return bytesOfFile
+			.replace(/\n|\r/g, "")
+			.replace(/\s{2,}/g, " ")
+			.trim();
+	})
+
 	eleventyConfig.addFilter("find", (collection, key, value) => {
 		return collection.find(item => item[key] === value);
 	});

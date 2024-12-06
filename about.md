@@ -12,10 +12,10 @@ layout: layout.html
 		</p>
 		<p>
 			<b>Wladislav Artsimovich</b> here, welcoming you to my blog.
-			I speak <img class="flag" src="/assets/icons/gb.svg"> <img class="flag" src="/assets/icons/de.svg"> <img class="flag" src="/assets/icons/ru.svg"> <img class="flag" src="/assets/icons/jp.svg"> and do computer stuff.
+			I speak {% rawFileTrim "style/icons/gb.svg" %} {% rawFileTrim "style/icons/de.svg" %} {% rawFileTrim "style/icons/ru.svg" %} {% rawFileTrim "style/icons/jp.svg" %} and do computer stuff.
 		</p>
 		<p>
-			Born in Belarus <img class="flag" src="/assets/icons/by.svg">, raised in Germany <img class="flag" src="/assets/icons/de.svg">, I now live and work in Japan <img class="flag" src="/assets/icons/jp.svg">.
+			Born in Belarus {% rawFileTrim "style/icons/by.svg" %}, raised in Germany {% rawFileTrim "style/icons/de.svg" %}, I now live and work in Japan {% rawFileTrim "style/icons/jp.svg" %}.
 		</p>
 		<p>
 			I run the math & tech-focused YouTube Channel <a target="_blank" href="https://www.youtube.com/@FrostKiwi">FrostKiwi</a>
@@ -36,7 +36,7 @@ layout: layout.html
 <table class="contact">
 	<tr>
 		<td>
-			<img src="/assets/icons/email.svg">
+			{% rawFileTrim "style/icons/email.svg" %}
 		</td>
 		<td>
 			<b>E-Mail</b>
@@ -51,8 +51,8 @@ layout: layout.html
 	</tr>
 	<tr>
 		<td>
-			<a target="_blank" href="https://www.linkedin.com/in/wladislav-artsimovich-623b81101/">
-				<img class="social_icon" src="/assets/icons/linkedin.svg">
+			<a target="_blank" class="social_icon" href="https://www.linkedin.com/in/wladislav-artsimovich-623b81101/">
+				{% rawFileTrim "style/icons/linkedin.svg" %}
 			</a>
 		</td>
 		<td>
@@ -63,8 +63,8 @@ layout: layout.html
 	</tr>
 	<tr>
 		<td>
-			<a target="_blank" href="https://github.com/FrostKiwi">
-				<img class="social_icon" src="/assets/icons/github.svg">
+			<a target="_blank" class="social_icon" href="https://github.com/FrostKiwi">
+				{% rawFileTrim "style/icons/github.svg" %}
 			</a>
 		</td>
 		<td>
@@ -75,8 +75,8 @@ layout: layout.html
 	</tr>
 	<tr>
 		<td>
-			<a target="_blank" rel="me" href="https://mastodon.frost.kiwi/@FrostKiwi">
-				<img class="social_icon" src="/assets/icons/mastodon.svg">
+			<a target="_blank" class="social_icon" rel="me" href="https://mastodon.frost.kiwi/@FrostKiwi">
+				{% rawFileTrim "style/icons/mastodon.svg" %}
 			</a>
 		</td>
 		<td>
@@ -87,9 +87,9 @@ layout: layout.html
 	</tr>
 	<tr>
 		<td>
-			<a target="_blank" href="https://twitter.com/FrostKiwiOne">
-				<img class="social_icon" src="/assets/icons/twitter.svg">
-				<img class="social_icon" src="/assets/icons/x.svg">
+			<a target="_blank" class="social_icon" href="https://twitter.com/FrostKiwiOne">
+				{% rawFileTrim "style/icons/twitter.svg" %}
+				{% rawFileTrim "style/icons/x.svg" %}
 			</a>
 		</td>
 		<td>
@@ -100,8 +100,8 @@ layout: layout.html
 	</tr>
 	<tr>
 		<td>
-			<a target="_blank" href="https://twitter.com/FrostKiwiOne">
-				<img class="social_icon" src="/assets/icons/reddit.svg">
+			<a target="_blank" class="social_icon" href="https://twitter.com/FrostKiwiOne">
+				{% rawFileTrim "style/icons/reddit.svg" %}
 			</a>
 		</td>
 		<td>
@@ -112,8 +112,8 @@ layout: layout.html
 	</tr>
 	<tr>
 		<td>
-			<a target="_blank" href="https://www.youtube.com/@FrostKiwi/">
-				<img class="social_icon" src="/assets/icons/youtube.svg">
+			<a target="_blank" class="social_icon" href="https://www.youtube.com/@FrostKiwi/">
+				{% rawFileTrim "style/icons/youtube.svg" %}
 			</a>
 		</td>
 		<td>
@@ -124,8 +124,8 @@ layout: layout.html
 	</tr>
 	<tr>
 		<td>
-			<a target="_blank" href="https://news.ycombinator.com/user?id=FrostKiwi">
-				<img class="social_icon" src="/assets/icons/hackernews.svg">
+			<a target="_blank" class="social_icon" href="https://news.ycombinator.com/user?id=FrostKiwi">
+				{% rawFileTrim "style/icons/hackernews.svg" %}
 			</a>
 		</td>
 		<td>
@@ -136,8 +136,8 @@ layout: layout.html
 	</tr>
 	<tr>
 		<td>
-			<a target="_blank" href="https://lobste.rs/~FrostKiwi">
-				<img class="social_icon" src="/assets/icons/lobsters.svg">
+			<a target="_blank" class="social_icon" href="https://lobste.rs/~FrostKiwi">
+				{% rawFileTrim "style/icons/lobsters.svg" %}
 			</a>
 		</td>
 		<td>
