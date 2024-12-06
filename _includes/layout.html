@@ -25,15 +25,11 @@
 		{% set keywords = "techblog, programming, graphics, webdev, japan" %}
 	{% endif %}
 	<meta name="keywords" content="{{ keywords }}">
-	
-	<style>
-		{% include 'node_modules/sakura.css/css/normalize.css' %}
-		{% include 'node_modules/sakura.css/css/sakura-vader.css' %}
-		{% include 'node_modules/prism-themes/themes/prism-gruvbox-dark.min.css' %}
-		{% include 'style/base.css' %}
-		{% include 'style/card.css' %}
-	</style>
 
+	<style>
+		{% inlineSass 'style/base.scss' %}
+	</style>
+	
 	<!-- Twitter Tags -->
 	<meta name="twitter:card" content="summary" />
 	<meta name="twitter:creator" content="@FrostKiwiOne" />

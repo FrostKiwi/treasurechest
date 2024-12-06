@@ -1,3 +1,4 @@
+import * as sass from "sass";
 import { DateTime } from "luxon";
 import Image from "@11ty/eleventy-img";
 import pluginRss from "@11ty/eleventy-plugin-rss";
@@ -69,6 +70,15 @@ export default function (eleventyConfig) {
 		/* Comments */
 		tocHtml = tocHtml.replace('</ul></nav>', '</ul></li><li><a href="#comments">Comments</a></li></ul></nav>');
 		return tocHtml;
+	});
+
+	eleventyConfig.addShortcode("inlineSass", function (scssFilePath) {
+		return sass.compile(scssFilePath,
+			{
+				loadPaths: ["node_modules"],
+				silenceDeprecations: ["color-functions", "global-builtin", "import"],
+				style: "compressed",
+			}).css;
 	});
 
 	/* Reload on CSS changes, since 11ty doesn't see them */

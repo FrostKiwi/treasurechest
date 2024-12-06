@@ -3,7 +3,7 @@ layout: layout.html
 ---
 <blockquote class="profile_wrapper">
 	<div class="img_wrapper">
-		<img class="profile" src="/assets/profile.jpg">
+		<img src="/assets/profile.jpg">
 	</div>
 	<div class="text_wrapper">
 		<p>
