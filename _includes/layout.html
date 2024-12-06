@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
 
+<!-- beautify ignore:start -->
 <head>
-	<!-- beautify ignore:start -->
 	<meta charset="utf-8">
 	{% if title %}
 		<title>{{ title }}</title>
@@ -13,8 +13,6 @@
 	<link rel="icon" href="/assets/favicon.ico" sizes="32x32">
 	<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
 	<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
-
-	<link rel="stylesheet" href="/style.css">
 		
 	<meta name="author" content="Wladislav Artsimovich">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,6 +26,14 @@
 	    {% set keywords = "tech blog, programming, graphics" %}
 	{% endif %}
 	<meta name="keywords" content="{{ keywords }}">
+	
+	<style>
+		{% include 'node_modules/sakura.css/css/normalize.css' %}
+		{% include 'node_modules/sakura.css/css/sakura-vader.css' %}
+		{% include 'node_modules/prism-themes/themes/prism-gruvbox-dark.min.css' %}
+		{% include 'style/base.css' %}
+		{% include 'style/card.css' %}
+	</style>
 
 	<!-- Twitter Tags -->
 	<meta name="twitter:card" content="summary" />
@@ -38,6 +44,7 @@
 	<meta property="og:image" content="https://blog.frost.kiwi{{ post.data.social | default('/assets/opengraph.jpg') }}" />
 	<link rel="me" href="https://mastodon.frost.kiwi/@FrostKiwi">
 </head>
+<!-- beautify ignore:end -->
 
 <body>
 	<header>
@@ -65,15 +72,19 @@
 					About
 				</a>
 				<div class="social">
-					<a target="_blank" aria-label="Author YouTube Channel Link" href="https://www.youtube.com/@FrostKiwi/"><img class="social_icon" src="/assets/icons/youtube.svg"></a>
-					<a target="_blank" aria-label="Author GitHub Link" href="https://github.com/FrostKiwi"><img class="social_icon" src="/assets/icons/github.svg"></a>
-					<a target="_blank" aria-label="Blog RSS Feed Link" href="/feed.xml"><img class="social_icon" src="/assets/icons/rss.svg"></a>
+					<a target="_blank" aria-label="Author YouTube Channel Link"
+						href="https://www.youtube.com/@FrostKiwi/"><img class="social_icon"
+							src="/assets/icons/youtube.svg"></a>
+					<a target="_blank" aria-label="Author GitHub Link" href="https://github.com/FrostKiwi"><img
+							class="social_icon" src="/assets/icons/github.svg"></a>
+					<a target="_blank" aria-label="Blog RSS Feed Link" href="/feed.xml"><img class="social_icon"
+							src="/assets/icons/rss.svg"></a>
 				</div>
 			</div>
 		</div>
 		<div class="post_title">
 			{% if title %}
-			<h1 id="{{ title | slug }}">{{ title }} <a href="#{{ title | slug }}" class="anchor-link">#</a></h1>
+				<h1>{{ title }} <a href="#" class="anchor-link">#</a></h1>
 			{% if date %}
 			<div class="dates">
 				<div class="created">Created: {{ date | dateFormat("yyyy.MM.dd") }}</div>
@@ -102,7 +113,14 @@
 	</main>
 	{% if tags.indexOf('post') >= 0 %}
 	<footer>
-		<br>
+		<div class="comment_group">
+			<a class="invisUnderline" href="/">
+				<span class="h5like">More Articles</span>
+			</a>
+			<a class="invisUnderline" href="#">
+				<span class="h5like">Top</h3>
+			</a>
+		</div>
 		<hr>
 		<div class="comment_group">
 			<h2 id="comments" class="site_title">Comment via GitHub <a href="#comments" class="anchor-link">#</a></h2>

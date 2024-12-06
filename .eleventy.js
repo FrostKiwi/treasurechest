@@ -1,5 +1,4 @@
 import fs from "fs";
-import CleanCSS from "clean-css";
 import { DateTime } from "luxon";
 import Image from "@11ty/eleventy-img";
 import { execSync } from "child_process";
@@ -75,17 +74,12 @@ export default function (eleventyConfig) {
 		/* Clear whitespace before string matching */
 		tocHtml = tocHtml.replace(/>\s+</g, '><');
 		/* Header */
-		const h1Link = slugify(postTitle, { customReplacements: slugRules });
-		tocHtml = tocHtml.replace('<ul>', `<ul><li><a href="#${h1Link}">${postTitle}</a><ul>`);
+		tocHtml = tocHtml.replace('<ul>', `<ul><li><a href="#">${postTitle}</a><ul>`);
 		/* Comments */
 		tocHtml = tocHtml.replace('</ul></nav>', '</ul></li><li><a href="#comments">Comments</a></li></ul></nav>');
 		return tocHtml;
 	});
 
-	/* CSS minifier as per https://www.11ty.dev/docs/quicktips/inline-css/ */
-	eleventyConfig.addFilter("cssmin", function (code) {
-		return new CleanCSS({}).minify(code).styles;
-	});
 	/* Reload on CSS changes, since 11ty doesn't see them */
 	eleventyConfig.addWatchTarget("style");
 	eleventyConfig.addWatchTarget("assets");

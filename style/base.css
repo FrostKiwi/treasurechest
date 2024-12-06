@@ -23,6 +23,10 @@ table img {
 	margin-bottom: 0px;
 }
 
+.invisUnderline {
+	border-bottom: 2px solid transparent;
+}
+
 .kiwi {
 	filter: drop-shadow(0px 0px 15px rgba(0, 0, 0, 0.25));
 	height: 80px;
@@ -115,10 +119,6 @@ table img {
 	filter: drop-shadow(0px 0px 15px rgba(0, 0, 0, .25));
 }
 
-.social_icon:hover {
-	filter: brightness(5%) invert(37%) sepia(23%) saturate(6807%) hue-rotate(332deg) brightness(92%) contrast(84%) drop-shadow(0px 0px 15px rgba(0, 0, 0, .25));
-}
-
 .flag {
 	margin: 0px;
 	height: 1em;
@@ -129,6 +129,15 @@ table img {
 	margin-top: 2rem;
 	margin-bottom: 0px;
 	font-size: 2.2em;
+}
+
+.h5like {
+	display: block;
+	line-height: 1.1;
+	font-size: 1.25em;
+	font-weight: 700;
+	margin-top: 1.5rem;
+	margin-bottom: 1.5rem;
 }
 
 .profile_wrapper {
