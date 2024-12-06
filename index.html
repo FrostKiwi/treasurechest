@@ -1,12 +1,6 @@
 ---
 layout: layout.html
 tags:
-# Filter by tag not yet required, commented out
-# pagination:
-#   data: collections.publicTagsWithIndex
-#   size: 1
-#   alias: currentTag
-# permalink: "{% if currentTag %}/tags/{{ currentTag | slug }}/index.html{% else %}/index.html{% endif %}"
 ---
 <h1 style="display: none;">FrostKiwi's Blog</h1>
 {% for post in collections.post | reverse %}

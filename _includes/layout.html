@@ -19,11 +19,10 @@
 	<meta name="description" content="{{ description | default('TechBlog and secret sauce recipes of Wladislav Artsimovich') }}">
 
 	<!-- Post tags become HTML keywords -->
-	{% set post = collections.post | find("url", page.url) %}
-	{% if post and post.data and post.data.publicTags %}
-	    {% set keywords = post.data.publicTags | join(', ') %}
+	{% if publicTags %}
+		{% set keywords = publicTags %}
 	{% else %}
-	    {% set keywords = "tech blog, programming, graphics" %}
+		{% set keywords = "techblog, programming, graphics, webdev, japan" %}
 	{% endif %}
 	<meta name="keywords" content="{{ keywords }}">
 	

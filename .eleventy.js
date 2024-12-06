@@ -1,8 +1,6 @@
-import fs from "fs";
 import { DateTime } from "luxon";
 import Image from "@11ty/eleventy-img";
 import { execSync } from "child_process";
-import slugify from "@sindresorhus/slugify";
 import pluginRss from "@11ty/eleventy-plugin-rss";
 import syntaxHighlight from "@11ty/eleventy-plugin-syntaxhighlight";
 import eleventyPluginFilesMinifier from "@sherby/eleventy-plugin-files-minifier";
@@ -61,13 +59,6 @@ export default function (eleventyConfig) {
 
 	eleventyConfig.addPlugin(pluginTOC);
 
-	/* 🐌 🤘 */
-	const slugRules = [['+', 'plus']];
-
-	eleventyConfig.addFilter('slug', function (str) {
-		return slugify(str, { customReplacements: slugRules });
-	});
-
 	eleventyConfig.addFilter("modifyTOC", function (tocHtml, postTitle) {
 		if (!tocHtml)
 			tocHtml = `<nav class="toc"><ul></ul></nav>`;
@@ -90,10 +81,6 @@ export default function (eleventyConfig) {
 
 	/* RSS Plugin */
 	eleventyConfig.addPlugin(pluginRss);
-
-	eleventyConfig.addFilter("find", (collection, key, value) => {
-		return collection.find(item => item[key] === value);
-	});
 
 	/* Thumbnail maker */
 	eleventyConfig.addCollection("thumbnail", async function (collectionApi) {
@@ -137,3 +124,25 @@ export default function (eleventyConfig) {
 		markdownTemplateEngine: "njk",
 	};
 };
+
+/* Note to self:
+   If I need filtering based on post tags, I gotta re-insert this. Right now the
+   post count doesn't justify this though.
+   
+   In index.html, to generate the /tags/<tagname> urls:
+   pagination:
+     data: collections.publicTagsWithIndex
+     size: 1
+     alias: currentTag
+   permalink: "{% if currentTag %}/tags/{{ currentTag | slug }}/index.html{% else %}/index.html{% endif %}"
+   
+   And the Slugify rules to fix things like C++ becoming a bad URL and custom
+   rules to make sure slugify doesn't make c and c++ the same, causing an error.
+
+   //🐌 🤘
+   const slugRules = [['+', 'plus']];
+
+   eleventyConfig.addFilter('slug', function (str) {
+   	return slugify(str, { customReplacements: slugRules });
+   });
+*/
