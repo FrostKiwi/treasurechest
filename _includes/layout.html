@@ -40,7 +40,7 @@
 	<meta property="og:url" content="https://blog.frost.kiwi{{ page.url }}" />
 	<meta property="og:title" content="{{ title | default('FrostKiwi\'s Secrets') }}" />
 	<meta property="og:description" content="{{ description | default('TechBlog and secret sauce recipes of Wladislav Artsimovich') }}" />
-	<meta property="og:image" content="https://blog.frost.kiwi{{ post.data.social | default('/assets/opengraph.jpg') }}" />
+	<meta property="og:image" content="https://blog.frost.kiwi{{ social | default('/assets/opengraph.jpg') }}" />
 	<link rel="me" href="https://mastodon.frost.kiwi/@FrostKiwi">
 </head>
 <!-- beautify ignore:end -->
@@ -91,7 +91,7 @@
 			{% endif %}
 		</div>
 	</header>
-	{% if tags.indexOf('post') >= 0 %}
+	{% if isPost %}
 	<aside>
 		<blockquote>
 			<details>
@@ -106,7 +106,7 @@
 	<main>
 		{{ content | safe }}
 	</main>
-	{% if tags.indexOf('post') >= 0 %}
+	{% if isPost %}
 	<footer>
 		<div class="comment_group">
 			<a class="invisUnderline" href="/">

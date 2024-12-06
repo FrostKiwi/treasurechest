@@ -35,7 +35,6 @@ export default function (eleventyConfig) {
 		"style/ace/mode-glsl.js": "ace/mode-glsl.js",
 	});
 	eleventyConfig.on('beforeBuild', () => {
-		// Run the custom script before building the site
 		execSync('node moveAssets.js');
 	});
 
@@ -59,6 +58,9 @@ export default function (eleventyConfig) {
 
 	eleventyConfig.addPlugin(pluginTOC);
 
+	/* Header and comments are not part of the post markdown and are thus
+	   missing in the table of contents. Shift the bullet points TOC inwards and
+	   apply a point at the top for the header and comments. */
 	eleventyConfig.addFilter("modifyTOC", function (tocHtml, postTitle) {
 		if (!tocHtml)
 			tocHtml = `<nav class="toc"><ul></ul></nav>`;
@@ -84,7 +86,6 @@ export default function (eleventyConfig) {
 
 	/* Thumbnail maker */
 	eleventyConfig.addCollection("thumbnail", async function (collectionApi) {
-		// Get all posts
 		const posts = collectionApi.getFilteredByTag("post");
 
 		for (const post of posts) {
@@ -95,28 +96,11 @@ export default function (eleventyConfig) {
 					outputDir: './_site/' + post.url
 				});
 				post.data.image = post.url + image.jpeg[0].filename;
-				if (image.jpeg[1])
-					post.data.social = post.url + image.jpeg[1].filename;
-				else
-					post.data.social = post.url + image.jpeg[0].filename;
+				post.data.social = post.url + image.jpeg[1].filename;
 			}
 		}
 
 		return posts;
-	});
-
-	/* Tags */
-	eleventyConfig.addCollection("publicTagsWithIndex", function (collectionApi) {
-		const tags = [null];
-		let tagSet = new Set();
-
-		collectionApi.getAll().forEach(function (item) {
-			if ("publicTags" in item.data) {
-				item.data.publicTags.forEach((tag) => tagSet.add(tag));
-			}
-		});
-
-		return tags.concat([...tagSet]);
 	});
 
 	return {
@@ -124,25 +108,3 @@ export default function (eleventyConfig) {
 		markdownTemplateEngine: "njk",
 	};
 };
-
-/* Note to self:
-   If I need filtering based on post tags, I gotta re-insert this. Right now the
-   post count doesn't justify this though.
-   
-   In index.html, to generate the /tags/<tagname> urls:
-   pagination:
-     data: collections.publicTagsWithIndex
-     size: 1
-     alias: currentTag
-   permalink: "{% if currentTag %}/tags/{{ currentTag | slug }}/index.html{% else %}/index.html{% endif %}"
-   
-   And the Slugify rules to fix things like C++ becoming a bad URL and custom
-   rules to make sure slugify doesn't make c and c++ the same, causing an error.
-
-   //🐌 🤘
-   const slugRules = [['+', 'plus']];
-
-   eleventyConfig.addFilter('slug', function (str) {
-   	return slugify(str, { customReplacements: slugRules });
-   });
-*/

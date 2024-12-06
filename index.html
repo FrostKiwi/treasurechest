@@ -1,31 +1,28 @@
 ---
 layout: layout.html
-tags:
 ---
 <h1 style="display: none;">FrostKiwi's Blog</h1>
 {% for post in collections.post | reverse %}
 	{% if not post.data.wip %}
-		{% if not currentTag or (post.data.publicTags and currentTag in post.data.publicTags) %}
-			<a href="{{ post.url }}">
-				<div class="post-card">
-					<img src="{{ post.data.image }}" alt="{{ post.data.title }}" class="post-image">
-					<div class="post-content">
-						<h2>{{ post.data.title }}</h2>
-						<div class="subinfo">
-							<span class="post-date">{{ post.date | dateFormat("yyyy.MM.dd") }}</span>
-							{% if post.data.publicTags %}
-							<div>
-								{% for tag in post.data.publicTags %}
-									<span class="post-tag">{{ tag }}</span>
-								{% endfor %}
-							</div>
-							{% endif %}
+		<a href="{{ post.url }}">
+			<div class="post-card">
+				<img src="{{ post.data.image }}" alt="{{ post.data.title }}" class="post-image">
+				<div class="post-content">
+					<h2>{{ post.data.title }}</h2>
+					<div class="subinfo">
+						<span class="post-date">{{ post.date | dateFormat("yyyy.MM.dd") }}</span>
+						{% if post.data.publicTags %}
+						<div>
+							{% for tag in post.data.publicTags %}
+								<span class="post-tag">{{ tag }}</span>
+							{% endfor %}
 						</div>
-						<span class="post-description">{{ post.data.description }}</span>
+						{% endif %}
 					</div>
+					<span class="post-description">{{ post.data.description }}</span>
 				</div>
-			</a>
-		{% endif %}
+			</div>
+		</a>
 	{% endif %}
 {% endfor %}
 <br>

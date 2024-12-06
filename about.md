@@ -1,5 +1,4 @@
 ---
-tags:
 layout: layout.html
 ---
 <blockquote class="profile_wrapper">

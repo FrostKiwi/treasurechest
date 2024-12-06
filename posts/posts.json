@@ -1,4 +1,5 @@
 {
 	"layout": "layout.html",
-	"tags": "post"
+	"tags": "post",
+	"isPost": true
 }
