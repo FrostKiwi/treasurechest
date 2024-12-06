@@ -60,7 +60,7 @@
 						const nextKiwi = () => document.querySelector('.kiwi').src = kiwis[++currentKiwi % kiwis.length];
 						new Image().src = kiwis[(currentKiwi + 1) % kiwis.length];
 						document.querySelector('.kiwi').onclick = nextKiwi;
-						nextKiwi();
+						//nextKiwi();
 					})();
 				</script>
 				<a class="no_border" href="/">
@@ -80,7 +80,7 @@
 		</div>
 		<div class="post_title">
 			{% if title %}
-				<h1>{{ title }} <a href="#" class="anchor-link">#</a></h1>
+				<h1>{{ title }}</h1>
 			{% if date %}
 			<div class="dates">
 				<div class="created">Created: {{ date | dateFormat("yyyy.MM.dd") }}</div>
