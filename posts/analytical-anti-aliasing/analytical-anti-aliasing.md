@@ -25,17 +25,17 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 
 <script src="utility.js"></script>
 <script src="circleSimple.js"></script>
-<script id="vertexBlit" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/shader/blit.vs" %}</script>
-<script id="fragmentBlit" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/blit.fs" %}</script>
-<script id="vertexPost" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/shader/post.vs" %}</script>
-<script id="fragmentPost" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/post.fs" %}</script>
-<script id="vertexRedBox" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/shader/red.vs" %}</script>
-<script id="fragmentRedBox" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/shader/red.fs" %}</script>
-<script id="fragmentPostFXAA" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/post-FXAA.fs" %}</script>
+<script id="vertexBlit" type="x-shader/x-vertex">{% include "posts/analytical-anti-aliasing/shader/blit.vs" %}</script>
+<script id="fragmentBlit" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/blit.fs" %}</script>
+<script id="vertexPost" type="x-shader/x-vertex">{% include "posts/analytical-anti-aliasing/shader/post.vs" %}</script>
+<script id="fragmentPost" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/post.fs" %}</script>
+<script id="vertexRedBox" type="x-shader/x-vertex">{% include "posts/analytical-anti-aliasing/shader/red.vs" %}</script>
+<script id="fragmentRedBox" type="x-shader/x-vertex">{% include "posts/analytical-anti-aliasing/shader/red.fs" %}</script>
+<script id="fragmentPostFXAA" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/post-FXAA.fs" %}</script>
 
-<script id="vertex_0" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/shader/circle.vs" %}</script>
-<script id="fragment_0" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/circle.fs" %}</script>
-<script id="fragment_SimpleColor" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/simpleColor.fs" %}</script>
+<script id="vertex_0" type="x-shader/x-vertex">{% include "posts/analytical-anti-aliasing/shader/circle.vs" %}</script>
+<script id="fragment_0" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/circle.fs" %}</script>
+<script id="fragment_SimpleColor" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/simpleColor.fs" %}</script>
 <div class="toggleRes">
 	<div>
 	  <input type="radio" id="native" name="resSimple" value="1" checked />
@@ -76,7 +76,7 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 <details><summary>WebGL Vertex Shader <a target="_blank" href="shader/circle.vs">circle.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/shader/circle.vs" %}
+{% include "posts/analytical-anti-aliasing/shader/circle.vs" %}
 ```
 
 </details>
@@ -84,7 +84,7 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 <summary>WebGL Fragment Shader <a target="_blank" href="shader/circle.fs">circle.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/shader/circle.fs" %}
+{% include "posts/analytical-anti-aliasing/shader/circle.fs" %}
 ```
 
 </details>
@@ -92,7 +92,7 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 <summary>WebGL Javascript <a target="_blank" href="circleSimple.js">circleSimple.js</a></summary>
 
 ```javascript
-{% rawFile "posts/analytical-anti-aliasing/circleSimple.js" %}
+{% include "posts/analytical-anti-aliasing/circleSimple.js" %}
 ```
 
 </details>
@@ -169,7 +169,7 @@ SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Sup
 <summary>SSAA buffer Fragment Shader <a target="_blank" href="shader/post.fs">post.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/shader/post.fs" %}
+{% include "posts/analytical-anti-aliasing/shader/post.fs" %}
 ```
 
 </details>
@@ -177,7 +177,7 @@ SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Sup
 <summary>WebGL Javascript <a target="_blank" href="circleSSAA.js">circleSSAA.js</a></summary>
 
 ```javascript
-{% rawFile "posts/analytical-anti-aliasing/circleSSAA.js" %}
+{% include "posts/analytical-anti-aliasing/circleSSAA.js" %}
 ```
 
 </details>
@@ -230,9 +230,9 @@ In fact, some of the best implementations were [discovered by vendors on acciden
 
 <blockquote id="sampleErrorMessage" style="display: none" class="reaction"></blockquote>
 
-<script id="vertexAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/circle-analytical.vs" %}</script>
-<script id="fragmentAnalytical" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/circle-analytical.fs" %}</script>
-<script id="fragmentAnalyticalCompare" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/circle-analyticalCompare.fs" %}</script>
+<script id="vertexAnalytical" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/circle-analytical.vs" %}</script>
+<script id="fragmentAnalytical" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/circle-analytical.fs" %}</script>
+<script id="fragmentAnalyticalCompare" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/circle-analyticalCompare.fs" %}</script>
 <div class="toggleRes">
 	<div>
 	  <input type="radio" id="nativeMSAA" name="resMSAA" value="1" checked />
@@ -274,7 +274,7 @@ In fact, some of the best implementations were [discovered by vendors on acciden
 <summary>WebGL Javascript <a target="_blank" href="circleMSAA.js">circleMSAA.js</a></summary>
 
 ```javascript
-{% rawFile "posts/analytical-anti-aliasing/circleMSAA.js" %}
+{% include "posts/analytical-anti-aliasing/circleMSAA.js" %}
 ```
 
 </details>
@@ -383,7 +383,7 @@ Let's see what the hype was about. The final version publicly released was FXAA 
 <summary>WebGL FXAA Shader <a target="_blank" href="shader/post-FXAA.fs">post-FXAA.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/shader/post-FXAA.fs" %}
+{% include "posts/analytical-anti-aliasing/shader/post-FXAA.fs" %}
 ```
 
 </details>
@@ -391,7 +391,7 @@ Let's see what the hype was about. The final version publicly released was FXAA 
 <summary>WebGL Javascript <a target="_blank" href="circleFXAA.js">circleFXAA.js</a></summary>
 
 ```javascript
-{% rawFile "posts/analytical-anti-aliasing/circleFXAA.js" %}
+{% include "posts/analytical-anti-aliasing/circleFXAA.js" %}
 ```
 
 </details>
@@ -409,10 +409,10 @@ A scene from my favorite piece of software in existence: [NeoTokyo°](https://st
 
 <blockquote class="reaction"><div class="reaction_text">This has fixed resolution and will only be at you device's native resolution, if your device has no dpi scaling and the browser is at 100% zoom.</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 
-<script id="vertexInteractive" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/shader/FXAA-interactive.vs" %}</script>
-<script id="fragmentInteractive" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/FXAA-interactive.fs" %}</script>
-<script id="vertexLuma" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/FXAA-Luma.vs" %}</script>
-<script id="fragmentLuma" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/FXAA-Luma.fs" %}</script>
+<script id="vertexInteractive" type="x-shader/x-vertex">{% include "posts/analytical-anti-aliasing/shader/FXAA-interactive.vs" %}</script>
+<script id="fragmentInteractive" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/FXAA-interactive.fs" %}</script>
+<script id="vertexLuma" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/FXAA-Luma.vs" %}</script>
+<script id="fragmentLuma" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/FXAA-Luma.fs" %}</script>
 <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; justify-content: space-around;">
     <span style="display: flex; gap: 8px; white-space: nowrap">
         <label style="display: flex; gap: 8px; align-items: center;">
@@ -696,7 +696,7 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 <details><summary>WebGL Vertex Shader <a target="_blank" href="shader/FXAA-interactive.vs">FXAA-interactive.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/shader/FXAA-interactive.vs" %}
+{% include "posts/analytical-anti-aliasing/shader/FXAA-interactive.vs" %}
 ```
 
 </details>
@@ -704,7 +704,7 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 <summary>WebGL Fragment Shader <a target="_blank" href="shader/FXAA-interactive.fs">FXAA-interactive.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/shader/FXAA-interactive.fs" %}
+{% include "posts/analytical-anti-aliasing/shader/FXAA-interactive.fs" %}
 ```
 
 </details>
@@ -712,13 +712,13 @@ Special notes when using FXAA_GREEN_AS_LUMA,
 <summary>WebGL Javascript <a target="_blank" href="FXAA-interactive.js">FXAA-interactive.js</a></summary>
 
 ```javascript
-{% rawFile "posts/analytical-anti-aliasing/FXAA-interactive.js" %}
+{% include "posts/analytical-anti-aliasing/FXAA-interactive.js" %}
 ```
 
 </details>
 </blockquote>
 
-<script id="vertexBlitSimple" type="x-shader/x-vertex">{% rawFile "posts/analytical-anti-aliasing/shader/blitSimple.vs" %}</script>
+<script id="vertexBlitSimple" type="x-shader/x-vertex">{% include "posts/analytical-anti-aliasing/shader/blitSimple.vs" %}</script>
 <script src="FXAA-interactive.js"></script>
 <script>setupFXAAInteractive("canvasFXAAInteractive", "vertexInteractive", "fragmentInteractive", "vertexLuma", "fragmentLuma", "vertexBlitSimple", "fragmentBlit", "vertexRedBox", "fragmentRedBox");</script>
 
@@ -753,8 +753,8 @@ Now we get to the good stuff. Analytical Anti-Aliasing approaches the problem ba
 	</div>
 </div>
 
-<script id="fragment3D" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/3DAnalytical.fs" %}</script>
-<script id="vertex3D" type="x-shader/x-fragment">{% rawFile "posts/analytical-anti-aliasing/shader/3DAnalytical.vs" %}</script>
+<script id="fragment3D" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/3DAnalytical.fs" %}</script>
+<script id="vertex3D" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/3DAnalytical.vs" %}</script>
 
 <script src="mat4.js"></script>
 <script src="circleAnalytical.js"></script>
@@ -782,7 +782,7 @@ Now we get to the good stuff. Analytical Anti-Aliasing approaches the problem ba
 <details><summary>WebGL Vertex Shader <a target="_blank" href="shader/circle-analytical.vs">circle-analytical.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/shader/circle-analytical.vs" %}
+{% include "posts/analytical-anti-aliasing/shader/circle-analytical.vs" %}
 ```
 
 </details>
@@ -790,7 +790,7 @@ Now we get to the good stuff. Analytical Anti-Aliasing approaches the problem ba
 <summary>WebGL Fragment Shader <a target="_blank" href="shader/circle-analytical.fs">circle-analytical.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/shader/circle-analytical.fs" %}
+{% include "posts/analytical-anti-aliasing/shader/circle-analytical.fs" %}
 ```
 
 </details>
@@ -798,7 +798,7 @@ Now we get to the good stuff. Analytical Anti-Aliasing approaches the problem ba
 <summary>WebGL Javascript <a target="_blank" href="circleAnalytical.js">circleAnalytical.js</a></summary>
 
 ```javascript
-{% rawFile "posts/analytical-anti-aliasing/circleAnalytical.js" %}
+{% include "posts/analytical-anti-aliasing/circleAnalytical.js" %}
 ```
 
 </details>
@@ -1008,7 +1008,7 @@ The shader code works in NDC space with no concept of how big a pixel is. How do
 <details><summary>WebGL Vertex Shader <a target="_blank" href="shader/circle-analytical.vs">circle-analytical.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/shader/circle-analytical.vs" %}
+{% include "posts/analytical-anti-aliasing/shader/circle-analytical.vs" %}
 ```
 
 </details>
@@ -1016,7 +1016,7 @@ The shader code works in NDC space with no concept of how big a pixel is. How do
 <summary>WebGL Fragment Shader <a target="_blank" href="shader/circle-analyticalCompare.fs">circle-analyticalCompare.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/shader/circle-analyticalCompare.fs" %}
+{% include "posts/analytical-anti-aliasing/shader/circle-analyticalCompare.fs" %}
 ```
 
 </details>
@@ -1024,7 +1024,7 @@ The shader code works in NDC space with no concept of how big a pixel is. How do
 <summary>WebGL Javascript <a target="_blank" href="circleAnalyticalComparison.js">circleAnalyticalComparison.js</a></summary>
 
 ```javascript
-{% rawFile "posts/analytical-anti-aliasing/circleAnalyticalComparison.js" %}
+{% include "posts/analytical-anti-aliasing/circleAnalyticalComparison.js" %}
 ```
 
 </details>
@@ -1242,7 +1242,7 @@ Everything we talked about extends to the 3D case as well. We won't dig [into 3D
 <details><summary>WebGL Vertex Shader <a target="_blank" href="shader/3DAnalytical.vs">3DAnalytical.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/shader/3DAnalytical.vs" %}
+{% include "posts/analytical-anti-aliasing/shader/3DAnalytical.vs" %}
 ```
 
 </details>
@@ -1250,7 +1250,7 @@ Everything we talked about extends to the 3D case as well. We won't dig [into 3D
 <summary>WebGL Fragment Shader <a target="_blank" href="shader/3DAnalytical.fs">3DAnalytical.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/analytical-anti-aliasing/shader/3DAnalytical.fs" %}
+{% include "posts/analytical-anti-aliasing/shader/3DAnalytical.fs" %}
 ```
 
 </details>
@@ -1258,7 +1258,7 @@ Everything we talked about extends to the 3D case as well. We won't dig [into 3D
 <summary>WebGL Javascript <a target="_blank" href="3DAnalytical.js">3DAnalytical.js</a></summary>
 
 ```javascript
-{% rawFile "posts/analytical-anti-aliasing/3DAnalytical.js" %}
+{% include "posts/analytical-anti-aliasing/3DAnalytical.js" %}
 ```
 
 </details>

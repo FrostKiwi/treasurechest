@@ -24,7 +24,7 @@ This script now properly replaces the prompts to be Japanese and specifies wheth
 <summary>Source code of the <a target="_blank" href="WaniKani Japanese Review Questions.user.js">Userscript</a></summary>
 
 ```js
-{% rawFile "posts/wanikani-userscript/WaniKani Japanese Review Questions.user.js" %}
+{% include "posts/wanikani-userscript/WaniKani Japanese Review Questions.user.js" %}
 ```
 </details>
 

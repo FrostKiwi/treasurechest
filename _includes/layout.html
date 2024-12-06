@@ -60,7 +60,7 @@
 						const nextKiwi = () => document.querySelector('.kiwi').src = kiwis[++currentKiwi % kiwis.length];
 						new Image().src = kiwis[(currentKiwi + 1) % kiwis.length];
 						document.querySelector('.kiwi').onclick = nextKiwi;
-						//nextKiwi();
+						nextKiwi();
 					})();
 				</script>
 				<a class="no_border" href="/">
@@ -72,9 +72,9 @@
 					About
 				</a>
 				<div class="social">
-					<a target="_blank" aria-label="Author YouTube Channel Link" href="https://www.youtube.com/@FrostKiwi/" class="social_icon iconDyn">{% rawFileTrim "style/icons/youtube.svg" %}</a>
-					<a target="_blank" aria-label="Author GitHub Link" href="https://github.com/FrostKiwi" class="social_icon iconDyn">{% rawFileTrim "style/icons/github.svg" %}</a>
-					<a target="_blank" aria-label="Blog RSS Feed Link" href="/feed.xml" class="social_icon iconDyn">{% rawFileTrim "style/icons/rss.svg" %}</a>
+					<a target="_blank" aria-label="Author YouTube Channel Link" href="https://www.youtube.com/@FrostKiwi/" class="social_icon iconDyn">{% include "style/icons/youtube.svg" %}</a>
+					<a target="_blank" aria-label="Author GitHub Link" href="https://github.com/FrostKiwi" class="social_icon iconDyn">{% include "style/icons/github.svg" %}</a>
+					<a target="_blank" aria-label="Blog RSS Feed Link" href="/feed.xml" class="social_icon iconDyn">{% include "style/icons/rss.svg" %}</a>
 				</div>
 			</div>
 		</div>

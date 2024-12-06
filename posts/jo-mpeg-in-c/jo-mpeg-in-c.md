@@ -16,7 +16,7 @@ jo_mpeg is a C++ [single header library](https://github.com/nothings/single_file
 <summary>Full source of the C compatible <a target="_blank" href="jo_mpeg.h">jo_mpeg.h</a></summary>
 
 ```c
-{% rawFile "posts/jo-mpeg-in-c/jo_mpeg.h" %}
+{% include "posts/jo-mpeg-in-c/jo_mpeg.h" %}
 ```
 </details>
 

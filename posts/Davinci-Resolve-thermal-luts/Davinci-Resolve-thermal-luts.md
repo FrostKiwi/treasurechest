@@ -9,7 +9,7 @@ publicTags:
 image: thumb.png
 ---
 <script src="/WebGL-LUTS-made-simple/fullscreen-tri.js"></script>
-<script  id="vertex" type="x-shader/x-vertex">{% rawFile "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
+<script  id="vertex" type="x-shader/x-vertex">{% include "posts/WebGL-LUTS-made-simple/fullscreen-tri.vs" %}</script>
 
 When writing [my previous article about LUTs in video games](/WebGL-LUTS-made-simple), I noticed that there is no straight forward way to colormap grayscale footage in [DaVinci Resolve](https://www.blackmagicdesign.com/products/davinciresolve), a popular video editing and color grading suite for Windows, Linux and MacOS. On the internet you can find LUTs which attempt to color RGB video in the style of thermal camera footage, but I didn't find standard colormaps.
 
@@ -29,7 +29,7 @@ If you want to perform the export yourself or need a colormap not listed, then y
 <summary>Python export script <a target="_blank" href="colormap-as-cube-lut.py">colormap-as-cube-lut.py</a></summary>
 
 ```python
-{% rawFile "posts/Davinci-Resolve-thermal-luts/colormap-as-cube-lut.py" %}
+{% include "posts/Davinci-Resolve-thermal-luts/colormap-as-cube-lut.py" %}
 ```
 
 </details>
@@ -49,11 +49,11 @@ That's it, now you can apply colormaps to grayscale footage, coloring the footag
 Here you can preview all available colormaps, with the following video and the selectbox. Unless you have specific artistic goals or special data layout, you should use should use the perceptually uniform LUTs, because [reasons](/WebGL-LUTS-made-simple/#so-many-colors).
 <video style="display: none" width="100%" height="480px" autoplay playsinline muted controls loop id="videoPlayer"><source src="/WebGL-LUTS-made-simple/bwvid.mp4" type="video/mp4"></video>
 
-{% rawFile "posts/WebGL-LUTS-made-simple/select.html" %}
+{% include "posts/WebGL-LUTS-made-simple/select.html" %}
 
 <img src="/assets/LUTs/PerceptuallyUniform/viridis.png" id="viridis" style="width: 100%; height: 64px;">
 
-<script  id="fragment_5" type="x-shader/x-fragment">{% rawFile "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
+<script  id="fragment_5" type="x-shader/x-fragment">{% include "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
 <canvas width="684" height="480px" style="width: unset; max-width: 100%; max-height: 480px" id="canvas_5"></canvas>
 

@@ -20,7 +20,7 @@ As the name suggests, it's [just a minimal HTML](just-a-textbox.html) file servi
 <summary>Source of <a target="_blank" href="just-a-textbox.html">just-a-textbox.html</a></summary>
 
 ```html
-{% rawFile "posts/just-a-text-box/just-a-textbox.html" %}
+{% include "posts/just-a-text-box/just-a-textbox.html" %}
 ```
 </details>
 

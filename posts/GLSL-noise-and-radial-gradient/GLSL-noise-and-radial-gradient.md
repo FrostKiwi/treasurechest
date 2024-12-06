@@ -13,8 +13,8 @@ image: threshold.png
 I **love** to use soft gradients as backdrops when doing graphics programming, a love started by a [Corona Renderer](https://corona-renderer.com/) product shot [sample scene](https://forum.corona-renderer.com/index.php?topic=11345) shared by user [romullus](https://forum.corona-renderer.com/index.php?action=profile;u=9510) and its use of radial gradients to highlight the product. But they are quite horrible from a design standpoint, since they produce awful [color banding](https://en.wikipedia.org/wiki/Colour_banding), also referred to as [posterization](https://en.wikipedia.org/wiki/Posterization). Depending on things like screen type, gradient colors, viewing environment, etc., the effect can be sometimes not present at all, yet sometimes painfully obvious. Let's take a look at what I mean. The following is a WebGL Canvas drawing a black & white, dark and soft half-circle gradient.
 
 <script src="fullscreen-tri.js"></script>
-<script  id="vertex_2" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}</script>
-<script  id="fragment_2" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/banding.fs" %}</script>
+<script  id="vertex_2" type="x-shader/x-vertex">{% include "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}</script>
+<script  id="fragment_2" type="x-shader/x-fragment">{% include "posts/GLSL-noise-and-radial-gradient/banding.fs" %}</script>
 
 <canvas height="200px" style="max-height: 456px" id="canvas_2"></canvas>
 
@@ -28,7 +28,7 @@ I **love** to use soft gradients as backdrops when doing graphics programming, a
 <details><summary>WebGL Vertex Shader <a target="_blank" href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}
+{% include "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}
 ```
 
 </details>
@@ -36,7 +36,7 @@ I **love** to use soft gradients as backdrops when doing graphics programming, a
 <summary>WebGL Fragment Shader <a target="_blank" href="banding.fs">banding.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/GLSL-noise-and-radial-gradient/banding.fs" %}
+{% include "posts/GLSL-noise-and-radial-gradient/banding.fs" %}
 ```
 
 </details>
@@ -44,7 +44,7 @@ I **love** to use soft gradients as backdrops when doing graphics programming, a
 <summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
-{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.js" %}
+{% include "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.js" %}
 ```
 
 </details>
@@ -77,8 +77,8 @@ Let's fix this. The main point of this article is to share how I get banding fre
 Here is what the raw noise looks like. The following WebGL Canvas is set to render at the same pixel density as your screen.
 
 <canvas id="canvas_noise" style="max-height: 342px" ></canvas>
-<script id="vertex_noise" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/noise.vs" %}</script>
-<script id="fragment_noise" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/noise.fs" %}</script>
+<script id="vertex_noise" type="x-shader/x-vertex">{% include "posts/GLSL-noise-and-radial-gradient/noise.vs" %}</script>
+<script id="fragment_noise" type="x-shader/x-fragment">{% include "posts/GLSL-noise-and-radial-gradient/noise.fs" %}</script>
 <script>setupTri("canvas_noise", "vertex_noise", "fragment_noise");</script>
 <blockquote>
 <details><summary><a target="_blank" href="raw_noise.png">Screenshot</a>, in case WebGL doesn't work</summary>
@@ -89,7 +89,7 @@ Here is what the raw noise looks like. The following WebGL Canvas is set to rend
 <details><summary>WebGL Vertex Shader <a target="_blank" href="noise.vs">noise.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/GLSL-noise-and-radial-gradient/noise.vs" %}
+{% include "posts/GLSL-noise-and-radial-gradient/noise.vs" %}
 ```
 
 </details>
@@ -97,7 +97,7 @@ Here is what the raw noise looks like. The following WebGL Canvas is set to rend
 <summary>WebGL Fragment Shader <a target="_blank" href="noise.fs">noise.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/GLSL-noise-and-radial-gradient/noise.fs" %}
+{% include "posts/GLSL-noise-and-radial-gradient/noise.fs" %}
 ```
 
 </details>
@@ -105,7 +105,7 @@ Here is what the raw noise looks like. The following WebGL Canvas is set to rend
 <summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
-{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.js" %}
+{% include "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.js" %}
 ```
 
 </details>
@@ -114,8 +114,8 @@ Here is what the raw noise looks like. The following WebGL Canvas is set to rend
 Now let's combine both previous WebGL examples to clear the color banding and get a smooth half-circle gradient.
 
 <canvas height="200px" style="max-height: 456px"  id="canvas_banding_free"></canvas>
-<script  id="vertex_banding_free" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}</script>
-<script  id="fragment_banding_free" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/gradient.fs" %}</script>
+<script  id="vertex_banding_free" type="x-shader/x-vertex">{% include "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}</script>
+<script  id="fragment_banding_free" type="x-shader/x-fragment">{% include "posts/GLSL-noise-and-radial-gradient/gradient.fs" %}</script>
 <script>setupTri("canvas_banding_free", "vertex_banding_free", "fragment_banding_free");</script>
 <blockquote>
 <details><summary><a target="_blank" href="screenshot_gradient_dither.png">Screenshot</a>, in case WebGL doesn't work</summary>
@@ -127,7 +127,7 @@ You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will co
 <details><summary>WebGL Vertex Shader <a target="_blank" href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}
+{% include "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}
 ```
 
 </details>
@@ -135,7 +135,7 @@ You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will co
 <summary>WebGL Fragment Shader <a target="_blank" href="gradient.fs">gradient.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/GLSL-noise-and-radial-gradient/gradient.fs" %}
+{% include "posts/GLSL-noise-and-radial-gradient/gradient.fs" %}
 ```
 
 </details>
@@ -143,7 +143,7 @@ You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will co
 <summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
-{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.js" %}
+{% include "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.js" %}
 ```
 
 </details>
@@ -168,8 +168,8 @@ Technically, the proper way to achieve banding free-ness is to perform [error di
 Here is how I usually use this Shader setup to draw a background for objects and scenes to live on.
 
 <canvas height="200px" style="max-height: 456px" id="canvas_bg_example"></canvas>
-<script  id="vertex_bg_example" type="x-shader/x-vertex">{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}</script>
-<script  id="fragment_bg_example" type="x-shader/x-fragment">{% rawFile "posts/GLSL-noise-and-radial-gradient/full_example.fs" %}</script>
+<script  id="vertex_bg_example" type="x-shader/x-vertex">{% include "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}</script>
+<script  id="fragment_bg_example" type="x-shader/x-fragment">{% include "posts/GLSL-noise-and-radial-gradient/full_example.fs" %}</script>
 <script>setupTri("canvas_bg_example", "vertex_bg_example", "fragment_bg_example");</script>
 <blockquote>
 <details><summary><a target="_blank" href="radial.png">Screenshot</a>, in case WebGL doesn't work</summary>
@@ -181,7 +181,7 @@ You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will co
 <details><summary>WebGL Vertex Shader <a target="_blank" href="fullscreen-tri.vs">fullscreen-tri.vs</a></summary>
 
 ```glsl
-{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}
+{% include "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}
 ```
 
 </details>
@@ -189,7 +189,7 @@ You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will co
 <summary>WebGL Fragment Shader <a target="_blank" href="full_example.fs">full_example.fs</a></summary>
 
 ```glsl
-{% rawFile "posts/GLSL-noise-and-radial-gradient/full_example.fs" %}
+{% include "posts/GLSL-noise-and-radial-gradient/full_example.fs" %}
 ```
 
 </details>
@@ -197,7 +197,7 @@ You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will co
 <summary>WebGL Javascript <a target="_blank" href="fullscreen-tri.js">fullscreen-tri.js</a></summary>
 
 ```javascript
-{% rawFile "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.js" %}
+{% include "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.js" %}
 ```
 
 </details>
@@ -373,7 +373,7 @@ The `Deband.fx` Shader (Source code below, for reference) applies dithering to a
 <summary><a target="_blank" href="https://reshade.me">ReShade</a>'s <a target="_blank" href="https://github.com/crosire/reshade-shaders/blob/slim/Shaders/Deband.fx">Deband.fx</a> source code, for reference</summary>
 
 ```hlsl
-{% rawFile "posts/GLSL-noise-and-radial-gradient/Deband.fx" %}
+{% include "posts/GLSL-noise-and-radial-gradient/Deband.fx" %}
 ```
 
 </details><br>
