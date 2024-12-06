@@ -24,11 +24,12 @@ const mdAnchorOpts = {
 };
 
 export default function (eleventyConfig) {
+	/* Assets */
+	eleventyConfig.addPassthroughCopy("assets");
+	eleventyConfig.addPassthroughCopy({ "posts": "." });
 	/* Syntax Highlighting */
 	eleventyConfig.addPlugin(syntaxHighlight);
 	/* The required CSS for the PrismJS color theme */
-	eleventyConfig.addPassthroughCopy("assets");
-	eleventyConfig.addPassthroughCopy({"posts": "."});
 	eleventyConfig.addPassthroughCopy({
 		"style/ace/theme-gruvbox_dark_hard.js": "ace/theme-gruvbox_dark_hard.js",
 		"node_modules/ace-builds/src-min/ace.js": "ace/ace.js",
@@ -87,12 +88,14 @@ export default function (eleventyConfig) {
 
 		for (const post of posts) {
 			if (post.data.image) {
-				const image = await Image('./posts/' + post.url + '/' + post.data.image, {
+				const image = await Image('posts/' + post.url + '/' + post.data.image, {
 					widths: [256, "auto"],
 					formats: ['jpeg'],
-					outputDir: './_site/' + post.url
+					outputDir: eleventyConfig.dir.output + '/' + post.url
 				});
+				/* Thumbnail */
 				post.data.image = post.url + image.jpeg[0].filename;
+				/* Opengraph social media image */
 				post.data.social = post.url + image.jpeg[1].filename;
 			}
 		}

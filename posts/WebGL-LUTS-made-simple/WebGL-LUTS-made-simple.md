@@ -179,18 +179,18 @@ A 1D LUT is a simple array of numbers. If the 1D LUT is an RGB image, then a 1D 
 
 <div class="center-child">
 <select id="lutSelector">
-    <option value="/assets/LUTs/PerceptuallyUniform/inferno.png">Inferno - 256px wide</option>
-    <option value="/assets/LUTs/InfernoSizes/inferno128.png">Inferno - 128px wide</option>
-    <option value="/assets/LUTs/InfernoSizes/inferno64.png">Inferno - 64px wide</option>
-    <option value="/assets/LUTs/InfernoSizes/inferno32.png">Inferno - 32px wide</option>
-    <option value="/assets/LUTs/InfernoSizes/inferno16.png">Inferno - 16px wide</option>
-    <option value="/assets/LUTs/InfernoSizes/inferno8.png">Inferno - 8px wide</option>
-    <option value="/assets/LUTs/InfernoSizes/inferno4.png">Inferno - 4px wide</option>
-    <option value="/assets/LUTs/InfernoSizes/inferno2.png">Inferno - 2px wide</option>
+    <option value="LUTs/PerceptuallyUniform/inferno.png">Inferno - 256px wide</option>
+    <option value="LUTs/InfernoSizes/inferno128.png">Inferno - 128px wide</option>
+    <option value="LUTs/InfernoSizes/inferno64.png">Inferno - 64px wide</option>
+    <option value="LUTs/InfernoSizes/inferno32.png">Inferno - 32px wide</option>
+    <option value="LUTs/InfernoSizes/inferno16.png">Inferno - 16px wide</option>
+    <option value="LUTs/InfernoSizes/inferno8.png">Inferno - 8px wide</option>
+    <option value="LUTs/InfernoSizes/inferno4.png">Inferno - 4px wide</option>
+    <option value="LUTs/InfernoSizes/inferno2.png">Inferno - 2px wide</option>
 </select>
 </div>
 
-<img src="/assets/LUTs/PerceptuallyUniform/inferno.png" id="lut" style="width: 100%; height: 64px;">
+<img src="LUTs/PerceptuallyUniform/inferno.png" id="lut" style="width: 100%; height: 64px;">
 
 <script  id="fragment_4" type="x-shader/x-fragment">{% include "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
@@ -242,7 +242,7 @@ Here is every single colormap that [matplotlib](https://matplotlib.org/) support
 
 {% include "posts/WebGL-LUTS-made-simple/select.html" %}
 
-<img src="/assets/LUTs/PerceptuallyUniform/viridis.png" id="viridis" style="width: 100%; height: 64px;">
+<img src="LUTs/PerceptuallyUniform/viridis.png" id="viridis" style="width: 100%; height: 64px;">
 
 <script  id="fragment_5" type="x-shader/x-fragment">{% include "posts/WebGL-LUTS-made-simple/video-lut.fs" %}</script>
 
@@ -304,7 +304,7 @@ You can perform polynomial approximations of a colormap and thus side-step the L
 
 <script  id="fragment_9" type="x-shader/x-fragment">{% include "posts/WebGL-LUTS-made-simple/video-lut_viridis.fs" %}</script>
 
-<img src="/assets/LUTs/PerceptuallyUniform/viridis.png" style="width: 100%; height: 32px; margin-bottom: 8px">
+<img src="LUTs/PerceptuallyUniform/viridis.png" style="width: 100%; height: 32px; margin-bottom: 8px">
 <img src="viridis_from_function.png" style="width: 100%; height: 32px;">
 <canvas width="684" height="480px" style="max-height: 480px" style="width: unset; max-height: 480px; max-width: 100%" id="canvas_9"></canvas>
 
@@ -386,8 +386,8 @@ One more use for 1D LUTs in graphics programming is to cache expensive calculati
 Unless we talk about various approximations, gamma correction requires the use of the function [pow()](https://docs.gl/sl4/pow), which especially on older GPUs is a very expensive instruction. Add to that a branching path, if the piece-wise curve is needed. Or even worse, if you had to contend with the bananas level awful [4-segment piece-wise approximation the Xbox 360 uses](https://cdn.cloudflare.steamstatic.com/apps/valve/2008/GDC2008_PostProcessingInTheOrangeBox.pdf). Precalculating that into a 1D LUT skips such per-pixel calculations.
 
 <figure>
-	<img src="/assets/LUTs/Gamma/gamma2.2.png" style="width: 100%; height: 64px;">
-	<img src="/assets/LUTs/Gamma/gamma2.2inv.png" style="width: 100%; height: 64px;">
+	<img src="LUTs/Gamma/gamma2.2.png" style="width: 100%; height: 64px;">
+	<img src="LUTs/Gamma/gamma2.2inv.png" style="width: 100%; height: 64px;">
 	<figcaption>Gamma 2.2 and its inverted counterpart baked into 1D LUTs</figcaption>
 </figure>
 
