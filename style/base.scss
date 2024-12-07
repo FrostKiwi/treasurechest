@@ -124,8 +124,6 @@ table img {
 		gap: 2px;
 
 		@include breakpoint-sm {
-			letter-spacing: 0.1rem;
-
 			img {
 				height: 32px;
 			}
@@ -158,6 +156,7 @@ table img {
 
 	.iconDyn svg {
 		max-width: 100%;
+		height: auto;
 	}
 
 	a {
