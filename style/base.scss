@@ -1,19 +1,17 @@
+@use 'sass:color';
+
 @use 'normalize.css/normalize.css';
 @use 'prism-themes/themes/prism-gruvbox-dark.css';
+
 @use 'sakura.css/scss/sakura-vader' as sakura;
+@use 'sizes' as size;
+
+@use 'multiSwitch';
+@use 'sliders';
+@use 'header';
+@use 'about';
 @use 'cards';
-
-@mixin breakpoint-xs {
-	@media (max-width: 320px) {
-		@content;
-	}
-}
-
-@mixin breakpoint-sm {
-	@media (max-width: 382px) {
-		@content;
-	}
-}
+@use 'kiwis';
 
 body {
 	background-color: #231e1f;
@@ -46,22 +44,6 @@ table img {
 	border-bottom: 2px solid transparent;
 }
 
-.kiwi {
-	filter: drop-shadow(0px 0px 15px rgba(0, 0, 0, 0.25));
-	height: 80px;
-	width: 80px;
-
-	@include breakpoint-sm {
-		height: 60px;
-		width: 60px;
-	}
-
-	@include breakpoint-xs {
-		height: 40px;
-		width: 40px;
-	}
-}
-
 .comment_group {
 	display: flex;
 	justify-content: space-between;
@@ -74,101 +56,8 @@ table img {
 	}
 }
 
-.top-bar {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	flex-direction: row;
-	text-shadow: 0px 0px 25px rgba(0, 0, 0, .5);
-	gap: 10px;
-
-	.site_title {
-		line-height: 1.1;
-		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-		font-weight: 500;
-		overflow-wrap: break-word;
-		word-wrap: break-word;
-		-ms-word-break: break-all;
-		word-break: break-word;
-		font-size: 2.35em;
-
-		@include breakpoint-sm {
-			font-size: 2em;
-		}
-
-		@include breakpoint-xs {
-			font-size: 1.5em;
-		}
-	}
-
-	a {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		flex-direction: column;
-		gap: 2px;
-	}
-
-	img,
-	h1 {
-		margin: 0px;
-	}
-
-	.right_group {
-		font-size: larger;
-		letter-spacing: 0.5rem;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		flex-direction: column;
-		gap: 2px;
-
-		@include breakpoint-sm {
-			img {
-				height: 32px;
-			}
-		}
-
-		@include breakpoint-xs {
-			img {
-				height: 24px;
-			}
-		}
-	}
-
-	.left_group {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		flex-direction: row;
-		gap: 8px;
-		flex-shrink: 0;
-	}
-}
-
 .no_border:hover {
 	border-bottom: 0px;
-}
-
-.social {
-	display: flex;
-	gap: 4px;
-
-	.iconDyn svg {
-		max-width: 100%;
-
-		@include breakpoint-sm {
-			height: 32px;
-		}
-
-		@include breakpoint-xs {
-			height: 24px;
-		}
-	}
-
-	a {
-		border-bottom: 0px;
-	}
 }
 
 .social_icon {
@@ -198,54 +87,6 @@ table img {
 	font-weight: 700;
 	margin-top: 1.5rem;
 	margin-bottom: 1.5rem;
-}
-
-.profile_wrapper {
-	display: flex;
-	flex-direction: row;
-	gap: 16px;
-
-	@include breakpoint-sm {
-		flex-direction: column;
-	}
-
-	.img_wrapper {
-		width: 33.3%;
-		align-items: center;
-		display: flex;
-		justify-content: center;
-
-		img {
-			align-self: center;
-			margin: 0px;
-			filter: drop-shadow(0 0 15px #351f29);
-
-			@include breakpoint-sm {
-				width: 60%;
-			}
-
-			@include breakpoint-xs {
-				width: 80%;
-			}
-		}
-
-		@include breakpoint-sm {
-			width: 100%;
-			align-items: center;
-		}
-	}
-
-	.text_wrapper {
-		width: 66.6%;
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
-		gap: 12px;
-
-		@include breakpoint-sm {
-			width: 100%;
-		}
-	}
 }
 
 .dates {
@@ -303,8 +144,12 @@ canvas {
 }
 
 blockquote {
-	border-image: linear-gradient(0deg, rgba(223, 116, 126, 1) 0%, rgba(235, 153, 161, 1) 100%);
+	border-image: linear-gradient(0deg, color.scale(sakura.$color-blossom, $lightness: -10%) 0%, sakura.$color-blossom 100%);
 	border-image-slice: 1;
+
+	code {
+		background-color: color.scale(sakura.$color-bg-alt, $lightness: -15%);
+	}
 }
 
 aside {
@@ -324,26 +169,6 @@ aside {
 
 	li {
 		margin-bottom: unset;
-	}
-}
-
-.reaction {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
-	padding: 1rem;
-	margin-bottom: 1rem;
-	margin-top: 1rem;
-
-	img {
-		margin: 0px;
-	}
-
-	.reaction_text {
-		width: 100%;
-		text-align: center;
-		font-style: italic;
 	}
 }
 
@@ -368,143 +193,11 @@ h6 {
 	}
 }
 
-/* About page social media table */
-.contact {
-	tr:last-child td {
-		border-bottom: none;
-	}
-
-	td {
-		text-align: center;
-		vertical-align: middle;
-	}
-
-	td[colspan="2"] {
-		border-bottom: none;
-	}
-
-	a {
-		border-bottom: 0px;
-		display: flex;
-		justify-content: center;
-		gap: 20px
-	}
-
-	h3 {
-		margin: 0px;
-	}
-}
-
 .center-child {
 	width: 100%;
 	display: flex;
 	justify-content: space-around;
 	padding-bottom: 8px;
-}
-
-/* Sliders */
-.slider {
-	-webkit-appearance: none;
-	appearance: none;
-	width: 100%;
-	height: 10px;
-	border-radius: 10px;
-	background: sakura.$color-bg-alt;
-	outline: none;
-	border: none;
-	margin-bottom: unset;
-	padding: unset;
-
-	&:focus {
-		border: none;
-	}
-
-	&:hover {
-		&::-webkit-slider-thumb {
-			background: sakura.$color-force;
-		}
-
-		&::-moz-range-thumb {
-			background: sakura.$color-force;
-		}
-	}
-
-	&:focus {
-		&::-webkit-slider-thumb {
-			border: 1px solid sakura.$color-blossom;
-		}
-
-		&::-moz-range-thumb {
-			border: 1px solid sakura.$color-blossom;
-		}
-	}
-
-	&::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 20px;
-		height: 20px;
-		border-radius: 50%;
-		border: none;
-		background: sakura.$color-blossom;
-		cursor: pointer;
-	}
-
-	&::-moz-range-thumb {
-		width: 20px;
-		height: 20px;
-		border-radius: 50%;
-		border: none;
-		background: sakura.$color-blossom;
-		cursor: pointer;
-	}
-}
-
-/* Big multiselect buttons */
-.toggleRes {
-	display: flex;
-	border-radius: 12px;
-	overflow: hidden;
-
-	>div {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-
-		input {
-			/* Hide the native radio buttons */
-			display: none;
-		}
-
-		label {
-			flex: 1;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			line-height: 1.2em;
-			padding: 10px 4px;
-			cursor: pointer;
-			transition: background-color 0.3s, color 0.3s;
-			margin-bottom: unset;
-			user-select: none;
-
-			>div {
-				font-size: smaller;
-				filter: contrast(50%);
-			}
-
-			&:hover {
-				background-color: sakura.$color-force;
-				color: sakura.$color-bg;
-			}
-		}
-
-		input:checked+label {
-			background-color: sakura.$color-blossom;
-			color: sakura.$color-bg;
-		}
-	}
 }
 
 .spinnerContainer {

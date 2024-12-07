@@ -1,0 +1,48 @@
+@use 'sakura.css/scss/sakura-vader' as sakura;
+
+/* Big multiselect buttons */
+.toggleRes {
+	display: flex;
+	border-radius: 12px;
+	overflow: hidden;
+
+	>div {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+
+		input {
+			/* Hide the native radio buttons */
+			display: none;
+		}
+
+		label {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			line-height: 1.2em;
+			padding: 10px 4px;
+			cursor: pointer;
+			transition: background-color 0.3s, color 0.3s;
+			margin-bottom: unset;
+			user-select: none;
+
+			>div {
+				font-size: smaller;
+				filter: contrast(50%);
+			}
+
+			&:hover {
+				background-color: sakura.$color-force;
+				color: sakura.$color-bg;
+			}
+		}
+
+		input:checked+label {
+			background-color: sakura.$color-blossom;
+			color: sakura.$color-bg;
+		}
+	}
+}
