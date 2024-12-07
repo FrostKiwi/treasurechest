@@ -848,7 +848,7 @@ Staying with the Last of Us, [The Last of Us Part II](https://en.wikipedia.org/w
 
 Here the reflection calculation is part of the material shader, rendering against the rigidly defined mathematical shape of the capsule _per-pixel_, multiple of which are arranged in the shape of the main character. This makes capsule reflections **_analytical_**.
 
-<blockquote class="reaction"><div class="reaction_text">An online demo with is worth at least a million...<br>...yeah the joke is getting old.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">An online demo is worth at least a million...<br>...yeah the joke is getting old.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 <figure>
 	<img src="img/analytical.png" alt="" />
 	<figcaption><a target="_blank" href="https://www.shadertoy.com/view/4djSDy">Shadertoy demo</a> for Analytical Ambient Occlusion by <a target="_blank" href="https://iquilezles.org/">Inigo Quilez</a></figcaption>

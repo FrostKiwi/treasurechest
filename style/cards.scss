@@ -9,6 +9,11 @@
 	background-color: hsl(350, 45%, 80%);
 	background: linear-gradient(0deg, hsl(350, 45%, 80%) 0%, hsl(350, 100%, 92%) 100%);
 
+	h2 {
+		color: hsl(348, 54%, 38%);
+		margin: 0 0 4px 0;
+	}
+
 	&:hover {
 		color: hsl(348, 8%, 13%);
 		background-color: hsl(345, 27%, 51%);
@@ -47,11 +52,6 @@
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
-
-		h2 {
-			color: hsl(348, 54%, 38%);
-			margin: 0 0 4px 0;
-		}
 
 		.subinfo {
 			display: flex;
