@@ -156,6 +156,14 @@ table img {
 
 	.iconDyn svg {
 		max-width: 100%;
+
+		@include breakpoint-sm {
+			height: 32px;
+		}
+
+		@include breakpoint-xs {
+			height: 24px;
+		}
 	}
 
 	a {
