@@ -146,10 +146,6 @@ canvas {
 blockquote {
 	border-image: linear-gradient(0deg, color.scale(sakura.$color-blossom, $lightness: -10%) 0%, sakura.$color-blossom 100%);
 	border-image-slice: 1;
-
-	code {
-		background-color: color.scale(sakura.$color-bg-alt, $lightness: -15%);
-	}
 }
 
 aside {
