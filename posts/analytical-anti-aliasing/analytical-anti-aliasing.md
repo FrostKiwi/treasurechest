@@ -298,7 +298,7 @@ When MSAA became required with [OpenGL 3](https://en.wikipedia.org/wiki/OpenGL#O
 	<figcaption>Double edges - iOS 2xMSAA, created by iOS rounding transparency of 4xMSAA</figcaption>
 </figure>
 
-Mobile chips support *exactly* MSAAx4 and things are weird. Android will let you pick 2x, but the driver will force 4x anyways. iPhones & iPads do something rather stupid: Choosing 2x will make it 4x, but transparency will be rounded to nearest 50% multiple, leading to double edges in our example. There is hardware specific reason:
+Mobile chips support *exactly* MSAAx4 and things are weird. Android will let you pick 2x, but the driver will force 4x anyways. iPhones & iPads do something rather stupid: Choosing 2x will make it 4x, but transparency will be rounded to the nearest 50% multiple, leading to double edges in our example. There is hardware specific reason:
 
 ### Performance cost: (maybe) Zero
 
