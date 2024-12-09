@@ -1470,6 +1470,6 @@ In the comments below, GitHub user [presentfactory](https://github.com/presentfa
 > \
 > So to be clear, I think it was a radical improvement for the ML-scaling-TAA's compared to where say UE4's first TAA ended up. BUT fully solving the ghosting/flicker/artifact problems in the frame-jitter TAA framework might not actually be possible ...
 
-TAA goes ***deep*** and the way jitter resolves things other techniques can't, takes some time to grasp intuitively. [Previously](/GLSL-noise-and-radial-gradient) I introduced my favorite GLSL one-liner for dithering, which can also help TAA with resolve effects temporally. Sledgehammer games used it for shadow filtering.
+TAA goes ***deep*** and the way jitter resolves things other techniques can't, takes some time to grasp intuitively. [Previously](/GLSL-noise-and-radial-gradient) I introduced my favorite GLSL one-liner for dithering, which can also help TAA resolve effects temporally. Sledgehammer games used it for shadow filtering.
 
 <blockquote class="reaction"><div class="reaction_text">TAA is some fascinating stuff! This post was too full to appreciate it properly. Here's a recommended <a target="_blank" href="https://gdcvault.com/play/1023254/Temporal-Reprojection-Anti-Aliasing-in">deep-dive talk</a> by "<a target="_blank" href="https://en.wikipedia.org/wiki/Inside_(video_game)">Inside</a>" developer <a target="_blank" href="https://twitter.com/codeverses">Lasse Jon Fuglsang Pedersen</a></div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
