@@ -6,7 +6,6 @@
 		"title": "FrostKiwi's Secrets",
 		"subtitle": "A collection of useful things I want to share with the world",
 		"language": "en",
-		"url": "https://blog.frost.kiwi",
 		"author": {
 			"name": "Wladislav Artsimovich",
 			"email": "blog@frost.kiwi"
@@ -15,20 +14,20 @@
 }
 ---
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom" xml:base="{{ metadata.url }}">
+<feed xmlns="http://www.w3.org/2005/Atom" xml:base="{{ site.url }}">
 	<title>{{ metadata.title }}</title>
 	<subtitle>{{ metadata.subtitle }}</subtitle>
-	<link href="{{ permalink | absoluteUrl(metadata.url) }}" rel="self" />
-	<link href="{{ metadata.url }}" rel="alternate" />
+	<link href="{{ permalink | absoluteUrl(site.url) }}" rel="self" />
+	<link href="{{ site.url }}" rel="alternate" />
 	<updated>{{ collections.post | getNewestCollectionItemDate | dateToRfc3339 }}</updated>
-	<id>{{ metadata.url }}</id>
+	<id>{{ site.url }}</id>
 	<author>
 		<name>{{ metadata.author.name }}</name>
 		<email>{{ metadata.author.email }}</email>
 	</author>
 	{%- for post in collections.post | reverse %}
 		{%- if not post.data.wip %}
-			{%- set absolutePostUrl = post.url | absoluteUrl(metadata.url) %}
+			{%- set absolutePostUrl = post.url | absoluteUrl(site.url) %}
 			<entry>
 				<title>{{ post.data.title }}</title>
 				<link href="{{ absolutePostUrl }}" rel="alternate" />

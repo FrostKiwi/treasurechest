@@ -18,6 +18,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="{{ description | default('TechBlog and secret sauce recipes of Wladislav Artsimovich') }}">
 	<meta name="generator" content="{{ eleventy.generator }}">
+	<meta name="google-site-verification" content="LoClBpgKxT1b5iTvLyu0GHSs4BIV5-v5TYVV2Aj5P-Q" />
 
 	<!-- Post tags become HTML keywords -->
 	{% if publicTags %}
@@ -34,10 +35,10 @@
 	<!-- Twitter Tags -->
 	<meta name="twitter:card" content="summary" />
 	<meta name="twitter:creator" content="@FrostKiwiOne" />
-	<meta property="og:url" content="https://blog.frost.kiwi{{ page.url }}" />
+	<meta property="og:url" content="{{ site.url }}{{ page.url }}" />
 	<meta property="og:title" content="{{ title | default('FrostKiwi\'s Secrets') }}" />
 	<meta property="og:description" content="{{ description | default('TechBlog and secret sauce recipes of Wladislav Artsimovich') }}" />
-	<meta property="og:image" content="https://blog.frost.kiwi{{ social | default('/assets/opengraph.jpg') }}" />
+	<meta property="og:image" content="{{ site.url }}{{ social | default('/assets/opengraph.jpg') }}" />
 	<link rel="me" href="https://mastodon.frost.kiwi/@FrostKiwi">
 </head>
 <!-- beautify ignore:end -->
