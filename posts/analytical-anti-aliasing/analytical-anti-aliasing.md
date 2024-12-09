@@ -1264,7 +1264,7 @@ Everything we talked about extends to the 3D case as well. We won't dig [into 3D
 </blockquote>
 <script>setup3D("canvas3D", "vertex3D", "fragment3D", "fragment_SimpleColor", "vertexBlit", "fragmentBlit", "res3D", "showQuad3D");</script>
 
-With the 3D camera and resulting perspective matrix multiplication, we use the reliable screen space derivatives again to get the pixel size. But in reality, [we can still do without](https://web.archive.org/web/20150521050627/https://www.opengl.org/wiki/Compute_eye_space_from_window_space)! This would require us to multiply of the inverse perspective matrix with the fragment coordinates _**per pixel**_. Performance-painful, yet possible.
+With the 3D camera and resulting perspective matrix multiplication, we use the reliable screen space derivatives again to get the pixel size. But in reality, [we can still do without](https://web.archive.org/web/20150521050627/https://www.opengl.org/wiki/Compute_eye_space_from_window_space)! This would require us to multiply the inverse perspective matrix with the fragment coordinates _**per pixel**_. Performance-painful, yet possible.
 
 ### Unmentioned challenges
 There is something I have not explained yet, a persistent misunderstanding I held until [Yakov Galka](https://stannum.io/) explained [the deetz to me on stackoverflow](https://stackoverflow.com/questions/73903568). Depending on how we setup the blending math, to perform the smoothing we may remove pixel alpha on the inside of the shape, add it to the outside or center it.
