@@ -212,7 +212,7 @@ In fact, some of the best implementations were [discovered by vendors on acciden
 
 ## MSAA
 
-[MSAA](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) is super sampling, but only at the silhouette of models, overlapping geometry, and texture edges if "[Alpha to Coverage](https://bgolus.medium.com/anti-aliased-alpha-test-the-esoteric-alpha-to-coverage-8b177335ae4f)" is enabled. MSAA is implemented by the graphics card in-hardware by the graphics vendors and what is supported depends on hardware. In the select box below you can choose different MSAA levels for our circle.
+[MSAA](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) is super sampling, but only at the silhouette of models, overlapping geometry, and texture edges if "[Alpha to Coverage](https://bgolus.medium.com/anti-aliased-alpha-test-the-esoteric-alpha-to-coverage-8b177335ae4f)" is enabled. MSAA is implemented by graphics vendors on the GPU in-hardware and what is supported depends on said hardware. In the select box below you can choose different MSAA levels for our circle.
 
 [There is up to MSAA x64](https://opengl.gpuinfo.org/displaycapability.php?name=GL_MAX_SAMPLES), but what is available is implementation defined. WebGL 1 has no support, which is why the next canvas initializes a [WebGL 2](https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext) context. In WebGL, NVIDIA limits MSAA to 8x on Windows, even if more is supported, whilst on Linux no such limit is in place. On smartphones you will only get exactly 4x, as discussed below.
 
@@ -325,7 +325,7 @@ As explained by [Rahul Prasad](https://www.linkedin.com/in/rahulprasad2/) in the
 	</figcaption>
 </figure>
 
-In short, this is possible under the condition of [forward rendering](https://gamedevelopment.tutsplus.com/forward-rendering-vs-deferred-rendering--gamedev-12342a) with geometry that is not too dense and the GPU having [tiled-based rendering architecture](https://developer.arm.com/documentation/102662/0100/Tile-based-GPUs), which allows the GPU to perform MSAA calculations without heavy memory access and thus [latency hiding](/WebGL-LUTS-made-simple/#performance-cost%3A-zero) the cost of the calculation. Here's [deep dive](https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msaa#color-resolve), if you are interested.
+In short, this is possible under the condition of [forward rendering](https://gamedevelopment.tutsplus.com/forward-rendering-vs-deferred-rendering--gamedev-12342a) with geometry that is not too dense and the GPU having [tiled-based rendering architecture](https://developer.arm.com/documentation/102662/0100/Tile-based-GPUs), which allows the GPU to perform MSAA calculations without heavy memory access and thus [latency hiding](/WebGL-LUTS-made-simple/#performance-cost%3A-zero) the cost of the calculation. Here's a [deep-dive](https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/performance/msaa#color-resolve), if you are interested.
 
 ### A complex toolbox
 
@@ -399,7 +399,7 @@ Let's see what the hype was about. The final version publicly released was FXAA 
 
 A bit of a weird result. It looks good if the circle wouldn't move. Perfectly smooth edges. But the circle distorts as it moves. The axis-aligned top and bottom especially have a little nub that appears and disappears. And switching to lower resolutions, the circle even loses its round shape, [wobbling like Play Station 1 graphics](https://www.youtube.com/watch?v=x8TO-nrUtSI).
 
-Per-pixel, FXAA considers only the 3x3 neighborhood, so it can't possibly know that this area is part of a big shape. But it also doesn't just "blur edges", as often said. As explained in the [official whitepaper](https://developer.download.nvidia.com/assets/gamedev/files/sdk/11/FXAA_WhitePaper.pdf), it finds the edge's direction and shifts the pixel's coordinates to let the performance free linear interpolation do the blending.
+Per-pixel, FXAA considers only the 3x3 neighborhood, so it can't possibly know that this area is part of a big shape. But it also doesn't just "blur edges", as often said. As explained in the [official whitepaper](https://developer.download.nvidia.com/assets/gamedev/files/sdk/11/FXAA_WhitePaper.pdf), it finds the edge's direction and shifts the pixel's coordinates to let the performance free bilinear filtering do the blending.
 
 For our demo here, wrong tool for the job. Really, we didn't do FXAA justice with our example. FXAA was created for another use case and has many settings and presets. It was created to anti-alias more complex scenes. Let's give it a fair shot!
 
@@ -824,17 +824,17 @@ But if you look at the code box above, you will find [circle-analytical.fs](shad
 
 ### What even _is_ "Analytical"?
 
-In graphics programming, _Analytical_ refers to effects created by knowing the make-up of the intended shape beforehand and performing calculations against the rigid mathematical definition of said shape. This term is used **_very_** loosely across computer graphics, similar to super sampling referring to multiple things, depending on context.
+In graphics programming, _Analytical_ refers to effects created by knowing the make-up of the intended shape beforehand and performing calculations against the mathematical definition of said shape. This term is used **_very_** loosely across computer graphics, similar to super sampling referring to multiple things, depending on context.
 
 <blockquote class="reaction"><div class="reaction_text">A picture is worth a thousand words...</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 <figure>
-	<img src="img/lastOfUs.jpg" alt="Character soft-shadow from stretched spheres in The Last Of Us." />
-	<figcaption>Character soft-shadow from stretched spheres in The Last Of Us.<br><a target="_blank" href="http://miciwan.com/SIGGRAPH2013/Lighting%20Technology%20of%20The%20Last%20Of%20Us.pdf">Lighting Technology of "The Last Of Us"</a>, Siggraph 2013 talk by <a target="_blank" href="http://miciwan.com/">Michał Iwanicki</a></figcaption>
+	<img src="img/lastOfUs.jpg" alt="Character soft-shadow from stretched spheres in The Last Of Us" />
+	<figcaption>Character soft-shadow from stretched spheres in The Last Of Us<br><a target="_blank" href="http://miciwan.com/SIGGRAPH2013/Lighting%20Technology%20of%20The%20Last%20Of%20Us.pdf">Lighting Technology of "The Last Of Us"</a>, Siggraph 2013 talk by <a target="_blank" href="http://miciwan.com/">Michał Iwanicki</a></figcaption>
 </figure>
 
 Very soft soft-shadows which include [contact-hardening](http://wscg.zcu.cz/WSCG2012/short/B37-full.pdf), implemented by algorithms like [percentage-closer soft shadows](https://developer.download.nvidia.com/shaderlibrary/docs/shadow_PCSS.pdf) are very computationally intense and require both high resolution shadow maps and/or very aggressive filtering to not produce shimmering during movement.
 
-This is why [Naughty Dog](https://en.wikipedia.org/wiki/Naughty_Dog)'s [The Last of Us](https://en.wikipedia.org/wiki/The_Last_of_Us) relied on getting soft-shadows on the main character by calculating the shadow from a rigidly defined formula of a stretched sphere, multiple of which were arranged in the shape of the main character, shown in red. An improved implementation with shader code can be seen in this [Shadertoy demo](https://www.shadertoy.com/view/3stcD4) by [romainguy](https://www.shadertoy.com/user/romainguy), with the more modern [capsule](<https://en.wikipedia.org/wiki/Capsule_(geometry)>), as opposed to a stretched sphere.
+This is why [Naughty Dog](https://en.wikipedia.org/wiki/Naughty_Dog)'s [The Last of Us](https://en.wikipedia.org/wiki/The_Last_of_Us) relied on getting soft-shadows on the main character by calculating the shadow from a rigidly defined formula of a stretched sphere, multiple of which were arranged in the shape of the main character, shown in red. An improved implementation with shader code can be seen in this [Shadertoy demo](https://www.shadertoy.com/view/3stcD4) by [romainguy](https://www.shadertoy.com/user/romainguy), with the modern [capsule](<https://en.wikipedia.org/wiki/Capsule_(geometry)>), as opposed to a stretched sphere.
 
 This is now an integral part of modern game engines, [like Unreal](http://dev.epicgames.com/documentation/en-us/unreal-engine/capsule-shadows-overview-in-unreal-engine). As opposed to [standard shadow mapping](https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping), we don't render the scene from the perspective of the light with finite resolution. We evaluate the shadow _per-pixel_ against the mathematical equation of the stretched sphere or capsule. This makes capsule shadows **_analytical_**.
 
@@ -848,7 +848,7 @@ Staying with the Last of Us, [The Last of Us Part II](https://en.wikipedia.org/w
 
 Here the reflection calculation is part of the material shader, rendering against the rigidly defined mathematical shape of the capsule _per-pixel_, multiple of which are arranged in the shape of the main character. This makes capsule reflections **_analytical_**.
 
-<blockquote class="reaction"><div class="reaction_text">An online demo with is worth at least a million...<br>...yeah the joke is getting old.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">An online demo is worth at least a million...<br>...yeah the joke is getting old.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 <figure>
 	<img src="img/analytical.png" alt="" />
 	<figcaption><a target="_blank" href="https://www.shadertoy.com/view/4djSDy">Shadertoy demo</a> for Analytical Ambient Occlusion by <a target="_blank" href="https://iquilezles.org/">Inigo Quilez</a></figcaption>

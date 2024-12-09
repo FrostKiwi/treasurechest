@@ -1,0 +1,11 @@
+@mixin breakpoint-xs {
+	@media (max-width: 320px) {
+		@content;
+	}
+}
+
+@mixin breakpoint-sm {
+	@media (max-width: 382px) {
+		@content;
+	}
+}

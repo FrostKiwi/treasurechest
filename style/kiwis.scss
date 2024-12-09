@@ -1,0 +1,37 @@
+@use 'sizes' as size;
+
+.kiwi {
+	filter: drop-shadow(0px 0px 15px rgba(0, 0, 0, 0.25));
+	height: 80px;
+	width: 80px;
+
+	@include size.breakpoint-sm {
+		height: 60px;
+		width: 60px;
+	}
+
+	@include size.breakpoint-xs {
+		height: 40px;
+		width: 40px;
+	}
+}
+
+.reaction {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 1rem;
+	margin-bottom: 1rem;
+	margin-top: 1rem;
+
+	img {
+		margin: 0px;
+	}
+
+	.reaction_text {
+		width: 100%;
+		text-align: center;
+		font-style: italic;
+	}
+}
