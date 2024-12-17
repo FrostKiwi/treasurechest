@@ -33,6 +33,9 @@ So we need to give it's own ssh, but we lose the ability to run config, unless w
 Alternative:
 https://github.com/erebe/wstunnel
 
+You can use
+https://github.com/butlerx/wetty or https://github.com/shellinabox/shellinabox , but exposing the shell on as a website is not the best idea, as HTTPS itself may be compromised in a corporate environment due to DPI.
+
 ## Other options
 There is the connection multiplexer [https://github.com/yrutschle/sslh](SSLH), which can sit in front of your HTTP server and redirect the packets based on type. However, such a modification of infrastructure may simply be impossible and doesn't solve the issue of SSH connections being potentially filtered. It remains a popular choice for many.
 
