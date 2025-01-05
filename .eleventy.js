@@ -87,7 +87,9 @@ export default function (eleventyConfig) {
 	eleventyConfig.addWatchTarget("posts");
 
 	/* HTML minifier */
-	eleventyConfig.addPlugin(eleventyPluginFilesMinifier);
+	if (process.env.BUILDMODE === "production") {
+		eleventyConfig.addPlugin(eleventyPluginFilesMinifier);
+	}
 
 	/* RSS Plugin */
 	eleventyConfig.addPlugin(pluginRss);

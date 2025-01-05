@@ -43,8 +43,8 @@ jobs:
       - name: Pull dependencies
         run: npm install
       
-      - name: Build with Vite
-        run: npx @11ty/eleventy
+      - name: Build with Eleventy
+        run: npm run build:prod
 
       # Upload _site folder
       - name: Upload artifact
