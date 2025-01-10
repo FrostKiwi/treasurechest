@@ -89,14 +89,14 @@
 		</div>
 	</header>
 	{% if isPost %}
-	<aside>
+	<nav>
 		<blockquote>
 			<details>
 				<summary>Table of Contents</summary>
 				{{ content | toc({ tags: ["h1", "h2", "h3", "h4"], ul: true }) | modifyTOC(title) | safe }}
 			</details>
 		</blockquote>
-	</aside>
+	</nav>
 	{% else %}
 	<br>
 	{% endif %}

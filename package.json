@@ -24,11 +24,11 @@
   "homepage": "https://github.com/FrostKiwi/treasurechest#readme",
   "dependencies": {
     "@11ty/eleventy": "^3.0.0",
-    "@11ty/eleventy-img": "^5.0.0",
+    "@11ty/eleventy-img": "^6.0.0",
     "@11ty/eleventy-plugin-rss": "^2.0.2",
     "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.0",
     "@sherby/eleventy-plugin-files-minifier": "^1.1.1",
-    "ace-builds": "^1.37.1",
+    "ace-builds": "^1.37.4",
     "cross-env": "^7.0.3",
     "eleventy-plugin-toc": "^1.1.5",
     "luxon": "^3.5.0",

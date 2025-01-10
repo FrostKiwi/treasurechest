@@ -40,6 +40,11 @@ table img {
 	margin-bottom: 0px;
 }
 
+iframe{
+	width: 100%;
+	border: none;
+}
+
 .invisUnderline {
 	border-bottom: 2px solid transparent;
 }
@@ -148,7 +153,7 @@ blockquote {
 	border-image-slice: 1;
 }
 
-aside {
+nav {
 	line-height: 2.5rem;
 
 	blockquote {
