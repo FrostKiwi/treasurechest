@@ -1,0 +1,12 @@
+.rssFeedEntry {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+	gap: 10px;
+
+	img {
+		margin-top: 1rem;
+		max-width: 150px;
+	}
+}

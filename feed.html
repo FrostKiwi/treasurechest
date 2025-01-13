@@ -14,6 +14,7 @@
 }
 ---
 <?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="/feedStyle.xsl"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xml:base="{{ site.url }}">
 	<title>{{ metadata.title }}</title>
 	<subtitle>{{ metadata.subtitle }}</subtitle>
@@ -31,6 +32,7 @@
 			<entry>
 				<title>{{ post.data.title }}</title>
 				<link href="{{ absolutePostUrl }}" rel="alternate" />
+				<image>{{ post.data.image | absoluteUrl(site.url) }}</image>
 				<updated>{{ post.date | dateToRfc3339 }}</updated>
 				<id>{{ absolutePostUrl }}</id>
 				<summary>{{ post.data.description }}</summary>
@@ -38,10 +40,11 @@
 					{{ post.data.description }}
 					<![CDATA[
     					<a href="{{ absolutePostUrl }}">
-    		  				<img alt="thumbnail" src="{{ post.data.image }}" />
+    		  				<img alt="thumbnail" src="{{ post.data.image | absoluteUrl(site.url) }}" />
 				    	</a>
   					]]>
 				</content>
+				<enclosure url="{{ post.data.image | absoluteUrl(site.url) }}" type="image/jpeg" />
 			</entry>
 		{%- endif %}
 	{%- endfor %}

@@ -77,7 +77,7 @@ export default function (eleventyConfig) {
 			{
 				loadPaths: ["node_modules"],
 				silenceDeprecations: ["color-functions", "global-builtin", "import"],
-				style: process.env.BUILDMODE === "production" ? "compressed" : "expanded",
+				style: "compressed",
 			}).css;
 	});
 
