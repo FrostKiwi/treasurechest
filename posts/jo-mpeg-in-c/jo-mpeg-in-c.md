@@ -2,7 +2,7 @@
 title: Jo_MPEG converted to C
 permalink: "/{{ page.fileSlug }}/"
 date: 2022-02-18
-last_modified: 2024-08-17
+last_modified: 2025-01-21
 description: Single-header MPEG-1 Video library ported to C
 publicTags:
   - C++
@@ -49,3 +49,27 @@ Unfortunately, the output has increased saturation and contrast. This is due to 
 </figure>
 
 I'm not sure why the code change credited to `r- lyeh` happened, but I guess the used video player handled color space incorrectly. Both [VLC](https://www.videolan.org/) and [MPV](https://mpv.io/) playback the colors correctly with `v1.03`.
+
+## Addendum
+As [clarified](https://github.com/FrostKiwi/treasurechest/issues/5#issuecomment-2602237649) by [@r-lyeh](https://github.com/r-lyeh) in the [comments](#comments), the color space fix was regarding the YUV math. I reinserted the fix, as it was always meant to be and bumped the version to `v1.04`. Here is a sample with the correct color math, shown scene from [NeoTokyo°](https://store.steampowered.com/app/244630/NEOTOKYO/).
+
+<video poster="v104Thumb.png" width="684" height="512" controls mute autoplay loop><source src="compareV104.mp4" type="video/mp4"></video>
+
+The conversion to [YCbCr](https://en.wikipedia.org/wiki/YCbCr) was this in `v1.02`, scaling the color vectors too much.
+```c
+  Y[i] = ( 0.299f*r + 0.587f*g + 0.114f*b) * (219.f/255) + 16;
+CBx[i] = (-0.299f*r - 0.587f*g + 0.886f*b) * (224.f/255) + 128;
+CRx[i] = ( 0.701f*r - 0.587f*g - 0.114f*b) * (224.f/255) + 128;
+```
+Here is the same but in `v1.03`, correct scale but mixed up color components.
+```c
+  Y[i] = ( 0.59f*r + 0.30f*g + 0.11f*b) * (219.f/255) + 16;
+CBx[i] = (-0.17f*r - 0.33f*g + 0.50f*b) * (224.f/255) + 128;
+CRx[i] = ( 0.50f*r - 0.42f*g - 0.08f*b) * (224.f/255) + 128;
+```
+And finally the new fix, as pointed out by [@r-lyeh](https://github.com/r-lyeh) in `v1.04`.
+```c
+  Y[i] = ( 0.59f*g + 0.30f*r + 0.11f*b) * (219.f/255) + 16;
+CBx[i] = (-0.17f*r - 0.33f*g + 0.50f*b) * (224.f/255) + 128;
+CRx[i] = ( 0.50f*r - 0.42f*g - 0.08f*b) * (224.f/255) + 128;
+```
