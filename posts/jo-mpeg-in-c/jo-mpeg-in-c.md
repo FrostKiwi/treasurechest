@@ -51,7 +51,7 @@ Unfortunately, the output has increased saturation and contrast. This is due to 
 I'm not sure why the code change credited to `r- lyeh` happened, but I guess the used video player handled color space incorrectly. Both [VLC](https://www.videolan.org/) and [MPV](https://mpv.io/) playback the colors correctly with `v1.03`.
 
 ## Addendum
-As [clarified](https://github.com/FrostKiwi/treasurechest/issues/5#issuecomment-2602237649) by [@r-lyeh](https://github.com/r-lyeh) in the [comments](#comments), the color space fix was regarding the YUV math. I reinserted the fix, as it was always meant to be and bumped the version to `v1.04`. Here is a sample with the correct color math, shown scene from [NeoTokyo°](https://store.steampowered.com/app/244630/NEOTOKYO/).
+As [clarified](https://github.com/FrostKiwi/treasurechest/issues/5#issuecomment-2602237649) by [@r-lyeh](https://github.com/r-lyeh) in the [comments](#comments), the color space fix was regarding the YUV math. I [reinserted the fix](https://github.com/FrostKiwi/treasurechest/commit/c86aeb859a017d1e30442f0c6bf5d187d0770d58#diff-06f83bdf1cb85a74bec97a3f11b76e759a46aa77d29454544206af7cd7efd3c8), as it was always meant to be and bumped the version to `v1.04`. Here is a sample with the correct color math, shown scene from [NeoTokyo°](https://store.steampowered.com/app/244630/NEOTOKYO/).
 
 <video poster="v104Thumb.png" width="684" height="512" controls mute autoplay loop><source src="compareV104.mp4" type="video/mp4"></video>
 
