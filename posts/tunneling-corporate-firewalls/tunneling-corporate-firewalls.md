@@ -40,20 +40,63 @@ OpenSSH, as comes preinstalled on Windows these days, doesn't support proxies na
 
 ### Trust is earned, not bought
 
-Rsync hates you
+## Rsync
+### Rsync on Windows
+This is a bit of an interesting [story](https://en.wikipedia.org/wiki/CwRsync). On Windows there exist two versions of rsync. The standard rsync client with [source code from the Samba project](https://rsync.samba.org/) and [cwRsync](https://en.wikipedia.org/wiki/CwRsync), which has a free client but is closed sourced and [monetized via it's server component](https://itefix.net/store/buy?product=49.00000004) by [itefix](https://itefix.net/). Although cwRsync has a right to exist, I do find it a bit scummy to capitalize on FOSS projects [Cygwin](https://www.cygwin.com/) and Rsync in such a way, considering the client is just the FOSS Rsync source, compiled via cygwin and presumably some custom patches to work with their rsync windows server.
+
+Anyhow, connecting to proxies with cwRsync simply won't work, if you don't call it from a unix emulating environment. cwRsync will error out with `/bin/sh not found`, due to how [itefix](https://itefix.net/) setup the compilation. Luckily the free open source way works, though the calling convention in windows is a bit of a mess.
+
+The issue to overcome for both rsync is: It needs to be called with the OpenSSH, that it was built with, as it links against OpenSSH of a specific version. But OpenSSH also needs to call our proxy command. The way this call happens depends on the environment and the settings it was built in. If we execute rsync in Windows' Powershell, cygwin is responsible for translating these calls. The call of `rsync.exe` ➡ `ssh.exe` works, but the subsequent call of `ssh.exe` ➡ `proxytunnel.exe`, `connect.exe` or `corkscrew.exe` fails due to cygwin is involved and it's requirement of `sh.exe` to be present. Providing your own `sh.exe` won't work due to binary incompatibility.
+
+<blockquote class="reaction"><div class="reaction_text">With <a target="_blank" href="https://itefix.net/">itefix</a>'s cwRsync there is no way to fix it, since it's closed source. 👎</div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
+<a></a>
+
+This calling convention needs the binary to be in a `usr/bin/` subfolder with `sh.exe` present, due to how cygwin hardcodes things, otherwise you get a `/bin/sh: No such file or directory`. 
+
+Unfortunately, the flexible windows package managers like [scoop](https://scoop.sh/) ships with cwRsync only, something I hope fix in a PR. So we need to install MSYS2, install rsync and make it available in PATH.
+
+As a shortcut, I extracted rsync `v3.3.0` from MSYS2 and the associated `ssh`. Beware that the `usr/bin/` needs to be intact due to Cygwin hardcoding.
+
+<blockquote class="reaction"><div class="reaction_text">Took me a while to figure this mess out.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
+<a></a>
+
 Needs the ssh it comes with. You could specify the command via -e or the environment var `RSYNC_RSH`, but it doesn't get you far, as the way cwRsync ships, it won't work as it invokes the ProxyCommand in an incompatible way. /bin/sh not found, but if you give it that it has to use the libraries it was compiled with, which we don't have.
 
 So we need to give it's own ssh, but we lose the ability to run config, unless we install MSYS to provide that functionality. So it's back to specifying our proxycommand as a long tail of commands. 
 
-`C:\msysMinimal\usr\bin\rsync.exe -e "/C/msysMinimal/usr/bin/ssh-for-rsync.exe -i /C/Users/artsimow/.ssh/key -o StrictHostKeyChecking=accept-new -o ProxyCommand='/C/msysMinimal/usr/bin/proxytunnel -X -z -p 127.0.0.1:54450 -r domain.com:443 -d 127.0.0.1:22'"`
+`C:\msys64\usr\bin\rsync.exe -e "C:\msys64\usr\bin\ssh.exe -i C:\Users\<User>\.ssh\key -o ProxyCommand='proxytunnel.exe -X -z -p localproxy:port -r domain:443 -d 127.0.0.1:22'" -avz --progress user@<targetNotRequired>:bulb.bash .`
 
+We could just call it from inside MSYS2 and everything would be fine. But you may have *other* tools calling in-turn rsync, so this needs to work outside of MSYS. This works, but we won't have a `/home` anymore and not config file, or `known_hosts` file. If you don't want to `ED25519 key fingerprint is SHA256:f913xxxxxxxxxxxxxxxxxxxxxxxc. This key is not known by any other names.` each time, you will need to hardcode separate paths.
+
+or we can specify our default config file and call via
+
+`C:\rsync\rsync.exe -e "C:\rsync\ssh.exe -F C:\Users\<USER>\.ssh\config" -avz --progress CONFIGNAME:bulb.bash .`
+
+But we have to take care, that the identity file is specified as an absolute path, so
+`IdentityFile ~/.ssh/key` is a no go.
+
+Without a unix environment
+also `known_hosts` needs an absolute path, so both windows' ssh and our rsync's ssh can read from the same.
+
+And finally, we don't want to that huge call each time and we can't expect other tooling relying on rsync to know this huge command. So we can make rsync fetch it from an environment variable. `RSYNC_RSH`.
+
+[corkscrew.zip](corkscrew.zip)
+[rsync-3.4.1-windows.zip](rsync-3.4.1-windows.zip)
+
+![](PATH.png)
+![](RSYNC_RSH.png)
+
+<blockquote class="reaction"><div class="reaction_text">It's kind of bananas what we have to go through on Windows to get basic tooling without resorting to <a target="_blank" href="https://learn.microsoft.com/en-us/windows/wsl/install">WSL</a> or <a target="_blank" href="https://www.msys2.org/">MSYS 2</a>. Makes me really appreciate what a fine piece of engineering <a target="_blank" href="https://www.msys2.org/">MSYS 2</a> is.</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
+<a></a>
+
+## Other options
 Alternative:
 https://github.com/erebe/wstunnel
 
 You can use
 https://github.com/butlerx/wetty or https://github.com/shellinabox/shellinabox , but exposing the shell on as a website is not the best idea, as HTTPS itself may be compromised in a corporate environment due to DPI.
 
-## Other options
+
 There is the connection multiplexer [https://github.com/yrutschle/sslh](SSLH), which can sit in front of your HTTP server and redirect the packets based on type. However, such a modification of infrastructure may simply be impossible and doesn't solve the issue of SSH connections being potentially filtered. It remains a popular choice for many.
 
 <blockquote class="reaction"><div class="reaction_text">Man, I have seen some s*#$.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
@@ -65,12 +108,14 @@ There is the connection multiplexer [https://github.com/yrutschle/sslh](SSLH), w
 
 There are many ways to build your tunnel. Over ICMP.
 
+All of these need HTTP/1.1 () If the intermediate Proxy communicates with HTTP/2, your connections will error out
+
 ## Filtered
 
 | Direction | Protocol | Length | Info |
 | --- | --- | --- | --- |
-| Source→Target	|TCP	|66	|`52170 → 22 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM`|
-| Target→Source	|TCP	|66	|`22 → 52170 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1452 SACK_PERM WS=128`|
+| 💻 ➡ 🌎	|TCP	|66	|`52170 → 22 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM`|
+| 🌎 ➡ 💻	|TCP	|66	|`22 → 52170 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1452 SACK_PERM WS=128`|
 | Source→Target	|TCP	|54	|`52170 → 22 [ACK] Seq=1 Ack=1 Win=132096 Len=0`|
 | Source→Target	|TCP	|87	|`52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
 | Source→Target	|TCP	|87	|`[TCP Retransmission] 52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
@@ -145,6 +190,8 @@ There are many ways to build your tunnel. Over ICMP.
 
 # Tunneled
 ## proxytunnel.exe
+https://github.com/ScoopInstaller/Main/pull/6409
+
 | Direction | Protocol | Length | Info |
 | --- | --- | --- | --- |
 |Source→Proxy|	TCP		|66|	`54033 → 80 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM`|
