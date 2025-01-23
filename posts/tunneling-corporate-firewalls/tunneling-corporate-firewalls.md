@@ -111,13 +111,14 @@ There are many ways to build your tunnel. Over ICMP.
 All of these need HTTP/1.1 () If the intermediate Proxy communicates with HTTP/2, your connections will error out
 
 ## Filtered
+Here is what traffic **may** look like if it's now going through and being filtered.
 
 | Direction | Protocol | Length | Info |
 | --- | --- | --- | --- |
-| 💻 ➡ 🌎	|TCP	|66	|`52170 → 22 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM`|
-| 🌎 ➡ 💻	|TCP	|66	|`22 → 52170 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1452 SACK_PERM WS=128`|
-| Source→Target	|TCP	|54	|`52170 → 22 [ACK] Seq=1 Ack=1 Win=132096 Len=0`|
-| Source→Target	|TCP	|87	|`52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
+| 🖥 ➡ 🌐	|TCP	|66	|`52170 → 22 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM`|
+| 🌎 ⬅ 💻	|TCP	|66	|`22 → 52170 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1452 SACK_PERM WS=128`|
+| ⌨ ➡ 🌍	|TCP	|54	|`52170 → 22 [ACK] Seq=1 Ack=1 Win=132096 Len=0`|
+| 💻 ➡ 🌏	|TCP	|87	|`52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
 | Source→Target	|TCP	|87	|`[TCP Retransmission] 52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
 | Source→Target	|TCP	|87	|`[TCP Retransmission] 52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
 | Source→Target	|TCP	|87	|`[TCP Retransmission] 52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
@@ -127,6 +128,9 @@ All of these need HTTP/1.1 () If the intermediate Proxy communicates with HTTP/2
 | Source→Target	|TCP	|87	|`[TCP Retransmission] 52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
 | Source→Target	|TCP	|87	|`[TCP Retransmission] 52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
 | Source→Target	|TCP	|54	|`52170 → 22 [RST, ACK] Seq=34 Ack=1 Win=0 Len=0`|
+
+The target never responds to our requests, before our clients gives up with the [`RST`](https://developers.cloudflare.com/fundamentals/reference/tcp-connections/#tcp-connections-and-keep-alives) signal.
+Note the three two packets of exchange, aka the [TCP handshake](https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake/), the [MSS, maximum segment size](https://www.cloudflare.com/learning/network-layer/what-is-mss/) is not identical, a (weak) indication that whoever responded to us it not our actual target, but some kind of firewall or whatever.
 
 ## Whitelisted
 
@@ -301,6 +305,10 @@ https://github.com/ScoopInstaller/Main/pull/6409
 | Proxy→Source	|TCP|	1514|	`80 → 53166 [ACK] Seq=5312 Ack=2926 Win=40960 Len=1460`|
 | Proxy→Source	|TCP|	150|	`80 → 53166 [PSH, ACK] Seq=6772 Ack=2926 Win=40960 Len=96`|
 | Source→Proxy	|TCP|	54|	`53166 → 80 [ACK] Seq=2926 Ack=6868 Win=131328 Len=0`|
+
+So wait, apparently there are no SSH packets going out...
+
+...this was capture the PC that the signal originated from. Let's see what it looks like from the intermediate, corporate proxy.
 
 ## Deep Packet Inspection
 There is only one way to detect this properly: [Deep packet inspection](https://en.wikipedia.org/wiki/Deep_packet_inspection). In the context of HTTPs or corporate connections, this involved pre-installing a [Trusted Root Certification Authority](https://en.wikipedia.org/wiki/Certificate_authority) on the user's machine, which is stripped by the corporate proxy. But this is such a bad idea, that [even the NSA issued an advisory](https://web.archive.org/web/20191119195359/https://media.defense.gov/2019/Nov/18/2002212783/-1/-1/0/MANAGING%20RISK%20FROM%20TLS%20INSPECTION_20191106.PDF).
