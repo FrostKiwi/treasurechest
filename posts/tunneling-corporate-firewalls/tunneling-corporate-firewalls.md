@@ -527,7 +527,7 @@ Note the three two packets of exchange, aka the [TCP handshake](https://www.clou
 
 
 # Tunneled
-## Older `connect.exe`
+## `connect.exe` and `corkscrew.exe`
 Let's see what it looks like from the intermediate, corporate proxy. We are looking at the communication between the Proxy and the Laptop specifically. And this is again the output of wireshark.
 
 | Direction | Protocol | Length | Info |
