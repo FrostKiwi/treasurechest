@@ -111,204 +111,570 @@ There are many ways to build your tunnel. Over ICMP.
 All of these need HTTP/1.1 () If the intermediate Proxy communicates with HTTP/2, your connections will error out
 
 ## Filtered
-Here is what traffic **may** look like if it's now going through and being filtered.
+```
+$ ssh -p <SSH Port> user@domain.com
 
-| Direction | Protocol | Length | Info |
-| --- | --- | --- | --- |
-| 🖥 ➡ 🌐	|TCP	|66	|`52170 → 22 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM`|
-| 🌎 ⬅ 💻	|TCP	|66	|`22 → 52170 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1452 SACK_PERM WS=128`|
-| ⌨ ➡ 🌍	|TCP	|54	|`52170 → 22 [ACK] Seq=1 Ack=1 Win=132096 Len=0`|
-| 💻 ➡ 🌏	|TCP	|87	|`52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
-| Source→Target	|TCP	|87	|`[TCP Retransmission] 52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
-| Source→Target	|TCP	|87	|`[TCP Retransmission] 52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
-| Source→Target	|TCP	|87	|`[TCP Retransmission] 52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
-| Source→Target	|TCP	|87	|`[TCP Retransmission] 52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
-| Source→Target	|TCP	|87	|`[TCP Retransmission] 52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
-| Source→Target	|TCP	|87	|`[TCP Retransmission] 52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
-| Source→Target	|TCP	|87	|`[TCP Retransmission] 52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
-| Source→Target	|TCP	|87	|`[TCP Retransmission] 52170 → 22 [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33`|
-| Source→Target	|TCP	|54	|`52170 → 22 [RST, ACK] Seq=34 Ack=1 Win=0 Len=0`|
+kex_exchange_identification: read: Connection timed out
+banner exchange: Connection to domain.com port <SSH Port>: Connection timed out
+```
+
+
+Here is what traffic **may** look like if it's not going through and being filtered.
+
+**Source** 💻 is a Laptop attempting `ssh -p 22 user@domain.com`, shows up in the capture with its **local** IPv4 Address. **Target** 🌍 is the server with port 22 open, shows up in the capture with its **public** IPv4 Address.
+
+<blockquote class="reaction"><div class="reaction_text">Rows with 💻 ➡ 🌍 mean outgoing packets, aka <strong>Source ➡ Target</strong>. Rows with 🌍 ➡ 💻 and a <span style="background-color: #0006">dark background</span> indicate incoming packets, aka <strong>Target ➡ Source</strong>.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+<a></a>
+<table>
+	<thead>
+	<tr>
+		<th>Direction</th>
+		<th>Protocol</th>
+		<th>Length</th>
+		<th>Info</th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr>
+		<td>💻 ➡ 🌍</td>
+		<td>TCP</td>
+		<td>66</td>
+		<td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM</code></td>
+	</tr>
+	<tr style="background-color: #0004;">
+		<td>🌍 ➡ 💻</td>
+		<td>TCP</td>
+		<td>66</td>
+		<td><code>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1452 SACK_PERM WS=128</code></td>
+	</tr>
+	<tr>
+		<td>💻 ➡ 🌍</td>
+		<td>TCP</td>
+		<td>54</td>
+		<td><code>[ACK] Seq=1 Ack=1 Win=132096 Len=0</code></td>
+	</tr>
+	<tr>
+		<td>💻 ➡ 🌍</td>
+		<td>TCP</td>
+		<td>87</td>
+		<td><code>[PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33</code></td>
+	</tr>
+	<tr>
+		<td>💻 ➡ 🌍</td>
+		<td>TCP</td>
+		<td>87</td>
+		<td><code>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33</code></td>
+	</tr>
+	<tr style="text-align: center">
+		<td colspan=4>This goes on for 7 more <code>[TCP Retransmission]</code> packets</td>
+	</tr>
+	<tr>
+		<td>💻 ➡ 🌍</td>
+		<td>TCP</td>
+		<td>54</td>
+		<td><code>[RST, ACK] Seq=34 Ack=1 Win=0 Len=0</code></td>
+	</tr>
+	</tbody>
+</table>
 
 The target never responds to our requests, before our clients gives up with the [`RST`](https://developers.cloudflare.com/fundamentals/reference/tcp-connections/#tcp-connections-and-keep-alives) signal.
 Note the three two packets of exchange, aka the [TCP handshake](https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake/), the [MSS, maximum segment size](https://www.cloudflare.com/learning/network-layer/what-is-mss/) is not identical, a (weak) indication that whoever responded to us it not our actual target, but some kind of firewall or whatever.
 
 ## Whitelisted
 
-| Direction | Protocol | Length | Info |
-| --- | --- | --- | --- |
-|Source→Target|	TCP|	66|	`52789 → 22 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM`|
-|Target→Source|	TCP|	66|	`22 → 52789 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128`|
-|Source→Target|	TCP|	54|	`52789 → 22 [ACK] Seq=1 Ack=1 Win=131328 Len=0`|
-|Source→Target|	SSHv2|	87|	`Client: Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)`|
-|Target→Source|	TCP|	60|	`22 → 52789 [ACK] Seq=1 Ack=34 Win=64256 Len=0`|
-|Target→Source|	SSHv2|	95|	`Server: Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)`|
-|Source→Target|	SSHv2|	1486|	`Client: Key Exchange Init`|
-|Target→Source|	SSHv2|	1110|	`Server: Key Exchange Init`|
-|Source→Target|	SSHv2|	102|	`Client: Elliptic Curve Diffie-Hellman Key Exchange Init`|
-|Target→Source|	TCP|	60|	`22 → 52789 [ACK] Seq=1098 Ack=1514 Win=64128 Len=0`|
-|Target→Source|	SSHv2|	562|	`Server: Elliptic Curve Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)`|
-|Source→Target|	SSHv2|	70|	`Client: New Keys`|
-|Target→Source|	TCP|	60|	`22 → 52789 [ACK] Seq=1606 Ack=1530 Win=64128 Len=0`|
-|Source→Target|	SSHv2|	98|	`Client: Encrypted packet (len=44)`|
-|Target→Source|	TCP|	60|	`22 → 52789 [ACK] Seq=1606 Ack=1574 Win=64128 Len=0`|
-|Target→Source|	SSHv2|	98|	`Server: Encrypted packet (len=44)`|
-|Source→Target|	SSHv2|	114|	`Client: Encrypted packet (len=60)`|
-|Target→Source|	TCP|	60|	`22 → 52789 [ACK] Seq=1650 Ack=1634 Win=64128 Len=0`|
-|Target→Source|	SSHv2|	98|	`Server: Encrypted packet (len=44)`|
-|Source→Target|	SSHv2|	554|	`Client: Encrypted packet (len=500)`|
-|Target→Source|	TCP|	60|	`22 → 52789 [ACK] Seq=1694 Ack=2134 Win=64128 Len=0`|
-|Target→Source|	SSHv2|	514|	`Server: Encrypted packet (len=460)`|
-|Source→Target|	SSHv2|	962|	`Client: Encrypted packet (len=908)`|
-|Target→Source|	SSHv2|	82|	`Server: Encrypted packet (len=28)`|
-|Source→Target|	SSHv2|	166|	`Client: Encrypted packet (len=112)`|
-|Target→Source|	TCP|	60|	`22 → 52789 [ACK] Seq=2182 Ack=3154 Win=64128 Len=0`|
-|Target→Source|	SSHv2|	830|	`Server: Encrypted packet (len=776)`|
-|Source→Target|	TCP|	54|	`52789 → 22 [ACK] Seq=3154 Ack=2958 Win=130048 Len=0`|
-|Target→Source|	SSHv2|	246|	`Server: Encrypted packet (len=192)`|
-|Source→Target|	SSHv2|	190|	`Client: Encrypted packet (len=136)`|
-|Target→Source|	TCP|	60|	`22 → 52789 [ACK] Seq=3150 Ack=3290 Win=64128 Len=0`|
-|Target→Source|	SSHv2|	162|	`Server: Encrypted packet (len=108)`|
-|Target→Source|	SSHv2|	242|	`Server: Encrypted packet (len=188)`|
-|Target→Source|	SSHv2|	406|	`Server: Encrypted packet (len=352)`|
-|Target→Source|	SSHv2|	170|	`Server: Encrypted packet (len=116)`|
-|Target→Source|	SSHv2|	138|	`Server: Encrypted packet (len=84)`|
-|Target→Source|	SSHv2|	274|	`Server: Encrypted packet (len=220)`|
-|Target→Source|	SSHv2|	306|	`Server: Encrypted packet (len=252)`|
-|Target→Source|	SSHv2|	146|	`Server: Encrypted packet (len=92)`|
-|Target→Source|	SSHv2|	226|	`Server: Encrypted packet (len=172)`|
-|Target→Source|	SSHv2|	146|	`Server: Encrypted packet (len=92)`|
-|Source→Target|	TCP|	54|	`52789 → 22 [ACK] Seq=3290 Ack=4826 Win=131328 Len=0`|
-|Target→Source|	SSHv2|	1514|	`Server: Encrypted packet (len=1460)`|
-|Target→Source|	SSHv2|	86|	`Server: Encrypted packet (len=32)`|
-|Source→Target|	TCP|	54|	`52789 → 22 [ACK] Seq=3290 Ack=6318 Win=131328 Len=0`|
-|Target→Source|	SSHv2|	98|	`Server: Encrypted packet (len=44)`|
-|Target→Source|	SSHv2|	130|	`Server: Encrypted packet (len=76)`|
-|Source→Target|	TCP|	54|	`52789 → 22 [ACK] Seq=3290 Ack=6438 Win=131072 Len=0`|
-|Target→Source|	SSHv2|	1514|	`Server: Encrypted packet (len=1460)`|
-|Target→Source|	SSHv2|	62|	`Server: Encrypted packet (len=8)`|
-|Target→Source|	SSHv2|	98|	`Server: Encrypted packet (len=44)`|
-|Source→Target|	TCP|	54|	`52789 → 22 [ACK] Seq=3290 Ack=7950 Win=131328 Len=0`|
-|Target→Source|	SSHv2|	98|	`Server: Encrypted packet (len=44)`|
-|Target→Source|	SSHv2|	98|	`Server: Encrypted packet (len=44)`|
-|Source→Target|	TCP|	54|	`52789 → 22 [ACK] Seq=3290 Ack=8038 Win=131072 Len=0`|
+<table>
+	<thead>
+		<tr>
+			<th>Direction</th>
+			<th>Protocol</th>
+			<th>Length</th>
+			<th>Info</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>TCP</td>
+			<td>66</td>
+			<td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>TCP</td>
+			<td>66</td>
+			<td><code>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>TCP</td>
+			<td>54</td>
+			<td><code>[ACK] Seq=1 Ack=1 Win=131328 Len=0</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>SSHv2</td>
+			<td>87</td>
+			<td><code>Client: Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>TCP</td>
+			<td>60</td>
+			<td><code>[ACK] Seq=1 Ack=34 Win=64256 Len=0</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>95</td>
+			<td><code>Server: Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>SSHv2</td>
+			<td>1486</td>
+			<td><code>Client: Key Exchange Init</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>1110</td>
+			<td><code>Server: Key Exchange Init</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>SSHv2</td>
+			<td>102</td>
+			<td><code>Client: Elliptic Curve Diffie-Hellman Key Exchange Init</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>TCP</td>
+			<td>60</td>
+			<td><code>[ACK] Seq=1098 Ack=1514 Win=64128 Len=0</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>562</td>
+			<td><code>Server: Elliptic Curve Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>SSHv2</td>
+			<td>70</td>
+			<td><code>Client: New Keys</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>TCP</td>
+			<td>60</td>
+			<td><code>[ACK] Seq=1606 Ack=1530 Win=64128 Len=0</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>SSHv2</td>
+			<td>98</td>
+			<td><code>Client: Encrypted packet (len=44)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>TCP</td>
+			<td>60</td>
+			<td><code>[ACK] Seq=1606 Ack=1574 Win=64128 Len=0</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>98</td>
+			<td><code>Server: Encrypted packet (len=44)</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>SSHv2</td>
+			<td>114</td>
+			<td><code>Client: Encrypted packet (len=60)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>TCP</td>
+			<td>60</td>
+			<td><code>[ACK] Seq=1650 Ack=1634 Win=64128 Len=0</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>98</td>
+			<td><code>Server: Encrypted packet (len=44)</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>SSHv2</td>
+			<td>554</td>
+			<td><code>Client: Encrypted packet (len=500)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>TCP</td>
+			<td>60</td>
+			<td><code>[ACK] Seq=1694 Ack=2134 Win=64128 Len=0</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>514</td>
+			<td><code>Server: Encrypted packet (len=460)</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>SSHv2</td>
+			<td>962</td>
+			<td><code>Client: Encrypted packet (len=908)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>82</td>
+			<td><code>Server: Encrypted packet (len=28)</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>SSHv2</td>
+			<td>166</td>
+			<td><code>Client: Encrypted packet (len=112)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>TCP</td>
+			<td>60</td>
+			<td><code>[ACK] Seq=2182 Ack=3154 Win=64128 Len=0</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>830</td>
+			<td><code>Server: Encrypted packet (len=776)</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>TCP</td>
+			<td>54</td>
+			<td><code>[ACK] Seq=3154 Ack=2958 Win=130048 Len=0</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>246</td>
+			<td><code>Server: Encrypted packet (len=192)</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>SSHv2</td>
+			<td>190</td>
+			<td><code>Client: Encrypted packet (len=136)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>TCP</td>
+			<td>60</td>
+			<td><code>[ACK] Seq=3150 Ack=3290 Win=64128 Len=0</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>162</td>
+			<td><code>Server: Encrypted packet (len=108)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>242</td>
+			<td><code>Server: Encrypted packet (len=188)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>406</td>
+			<td><code>Server: Encrypted packet (len=352)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>170</td>
+			<td><code>Server: Encrypted packet (len=116)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>138</td>
+			<td><code>Server: Encrypted packet (len=84)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>274</td>
+			<td><code>Server: Encrypted packet (len=220)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>306</td>
+			<td><code>Server: Encrypted packet (len=252)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>146</td>
+			<td><code>Server: Encrypted packet (len=92)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>226</td>
+			<td><code>Server: Encrypted packet (len=172)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>146</td>
+			<td><code>Server: Encrypted packet (len=92)</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>TCP</td>
+			<td>54</td>
+			<td><code>[ACK] Seq=3290 Ack=4826 Win=131328 Len=0</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>1514</td>
+			<td><code>Server: Encrypted packet (len=1460)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>86</td>
+			<td><code>Server: Encrypted packet (len=32)</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>TCP</td>
+			<td>54</td>
+			<td><code>[ACK] Seq=3290 Ack=6318 Win=131328 Len=0</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>98</td>
+			<td><code>Server: Encrypted packet (len=44)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>130</td>
+			<td><code>Server: Encrypted packet (len=76)</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>TCP</td>
+			<td>54</td>
+			<td><code>[ACK] Seq=3290 Ack=6438 Win=131072 Len=0</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>1514</td>
+			<td><code>Server: Encrypted packet (len=1460)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>62</td>
+			<td><code>Server: Encrypted packet (len=8)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>98</td>
+			<td><code>Server: Encrypted packet (len=44)</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>TCP</td>
+			<td>54</td>
+			<td><code>[ACK] Seq=3290 Ack=7950 Win=131328 Len=0</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>98</td>
+			<td><code>Server: Encrypted packet (len=44)</code></td>
+		</tr>
+		<tr style="background-color: #0004;">
+			<td>🌍 ➡ 💻</td>
+			<td>SSHv2</td>
+			<td>98</td>
+			<td><code>Server: Encrypted packet (len=44)</code></td>
+		</tr>
+		<tr>
+			<td>💻 ➡ 🌍</td>
+			<td>TCP</td>
+			<td>54</td>
+			<td><code>[ACK] Seq=3290 Ack=8038 Win=131072 Len=0</code></td>
+		</tr>
+	</tbody>
+</table>
+
 
 # Tunneled
+## Older `connect.exe`
+Let's see what it looks like from the intermediate, corporate proxy. We are looking at the communication between the Proxy and the Laptop specifically. And this is again the output of wireshark.
+
+| Direction | Protocol | Length | Info |
+| --- | --- | --- | --- |
+| 💻 →  🖥 |TCP	| 66	| `62543 → 9999 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1`|
+| 🖥 →  💻 |TCP	| 66	| `9999 → 62543 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128`|
+| 💻 →  🖥 |TCP	| 60	| `62543 → 9999 [ACK] Seq=1 Ack=1 Win=131328 Len=0`|
+| 💻 →  🖥 |TCP	| 89	| `CONNECT  🖥:22 HTTP/1.0  [TCP segment of a reassembled PDU]`|
+| 🖥 →  💻 |TCP	| 54	| `9999 → 62543 [ACK] Seq=1 Ack=36 Win=64256 Len=0`|
+| 💻 →  🖥 |HTTP	| 60	| `CONNECT  🖥:22 HTTP/1.0`|
+| 🖥 →  💻 |TCP	| 54	| `9999 → 62543 [ACK] Seq=1 Ack=38 Win=64256 Len=0`|
+| 🖥 →  💻 |HTTP	| 93	| `HTTP/1.0 200 Connection established`|
+| 🖥 →  💻 |SSH	| 95	| `Client: Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)`|
+| 💻 →  🖥 |SSHv2	| 87	| `Server: Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)`|
+| 🖥 →  💻 |TCP	| 54	| `9999 → 62543 [ACK] Seq=81 Ack=71 Win=64256 Len=0`|
+| 🖥 →  💻 |SSHv2	| 1110	| `Client: Key Exchange Init`|
+| 💻 →  🖥 |TCP	| 1078	| `[TCP segment of a reassembled PDU]`|
+| 🖥 →  💻 |TCP	| 54	| `9999 → 62543 [ACK] Seq=1137 Ack=1095 Win=64128 Len=0`|
+| 💻 →  🖥 |SSHv2	| 510	| `Server: Server: Key Exchange Init, Diffie-Hellman Key Exchange Init`|
+| 🖥 →  💻 |TCP	| 54	| `9999 → 62543 [ACK] Seq=1137 Ack=1551 Win=64128 Len=0`|
+| 🖥 →  💻 |SSHv2	| 562	| `Client: Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)`|
+| 💻 →  🖥 |SSHv2	| 114	| `Server: New Keys, Encrypted packet (len=44)`|
+| 🖥 →  💻 |SSHv2	| 98	| `Client: Encrypted packet (len=44)`|
+| 💻 →  🖥 |SSHv2	| 114	| `Server: Encrypted packet (len=60)`|
+| 🖥 →  💻 |SSHv2	| 98	| `Client: Encrypted packet (len=44)`|
+| 💻 →  🖥 |SSHv2	| 554	| `Server: Encrypted packet (len=500)`|
+| 🖥 →  💻 |SSHv2	| 514	| `Client: Encrypted packet (len=460)`|
+| 💻 →  🖥 |SSHv2	| 962	| `Server: Encrypted packet (len=908)`|
+| 🖥 →  💻 |SSHv2	| 82	| `Client: Encrypted packet (len=28)`|
+| 💻 →  🖥 |SSHv2	| 166	| `Server: Encrypted packet (len=112)`|
+| 🖥 →  💻 |TCP	| 54	| `9999 → 62543 [ACK] Seq=2221 Ack=3191 Win=64128 Len=0`|
+| 🖥 →  💻 |SSHv2	| 830	| `Client: Encrypted packet (len=776)`|
+| 🖥 →  💻 |SSHv2	| 202	| `Client: Encrypted packet (len=148)`|
+| 🖥 →  💻 |SSHv2	| 98	| `Client: Encrypted packet (len=44)`|
+| 💻 →  🖥 |TCP	| 60	| `62543 → 9999 [ACK] Seq=3191 Ack=3189 Win=131328 Len=0`|
+| 💻 →  🖥 |SSHv2	| 190	| `Server: Encrypted packet (len=136)`|
+| 🖥 →  💻 |TCP	| 54	| `9999 → 62543 [ACK] Seq=3189 Ack=3327 Win=64128 Len=0`|
+| 🖥 →  💻 |SSHv2	| 162	| `Client: Encrypted packet (len=108)`|
+| 🖥 →  💻 |SSHv2	| 754	| `Client: Encrypted packet (len=700)`|
+| 🖥 →  💻 |SSHv2	| 370	| `Client: Encrypted packet (len=316)`|
+| 🖥 →  💻 |SSHv2	| 346	| `Client: Encrypted packet (len=292)`|
+
+As you can see, even though we speak HTTP, the proxy still clocks that SSH is going here.
+
 ## proxytunnel.exe
 https://github.com/ScoopInstaller/Main/pull/6409
 
 | Direction | Protocol | Length | Info |
 | --- | --- | --- | --- |
-|Source→Proxy|	TCP		|66|	`54033 → 80 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM`|
-|Proxy→Source|	TCP		|66|	`80 → 54033 [SYN, ACK] Seq=0 Ack=1 Win=29200 Len=0 MSS=1460 SACK_PERM WS=512`|
-|Source→Proxy|	TCP		|54|	`54033 → 80 [ACK] Seq=1 Ack=1 Win=131328 Len=0`|
-|Source→Proxy|	HTTP	|676|	`CONNECT TARGET:443 HTTP/1.1 `|
-|Proxy→Source|	TCP		|60|	`80 → 54033 [ACK] Seq=1 Ack=623 Win=30720 Len=0`|
-|Proxy→Source|	TCP		|1514|	`80 → 54033 [ACK] Seq=1 Ack=623 Win=30720 Len=1460`|
-|Proxy→Source|	HTTP	|1148|	`HTTP/1.0 200 Connection established `|
-|Source→Proxy|	TCP		|54|	`54033 → 80 [ACK] Seq=623 Ack=2555 Win=131328 Len=0`|
-|Source→Proxy|	TLSv1.2	|376|	`Client Hello (SNI=TARGET)`|
-|Proxy→Source|	TCP		|60|	`80 → 54033 [ACK] Seq=2555 Ack=945 Win=31744 Len=0`|
-|Proxy→Source|	TLSv1.3	|1514|	`Server Hello, Change Cipher Spec, Application Data`|
-|Proxy→Source|	TLSv1.3	|978|	`Application Data, Application Data, Application Data`|
-|Source→Proxy|	TCP		|54|	`54033 → 80 [ACK] Seq=945 Ack=4939 Win=131328 Len=0`|
-|Source→Proxy|	TLSv1.3	|134|	`Change Cipher Spec, Application Data`|
-|Proxy→Source|	TCP		|60|	`80 → 54033 [ACK] Seq=4939 Ack=1025 Win=31744 Len=0`|
-|Source→Proxy|	TLSv1.3	|165|	`Application Data`|
-|Proxy→Source|	TCP		|60|	`80 → 54033 [ACK] Seq=4939 Ack=1136 Win=31744 Len=0`|
-|Proxy→Source|	TLSv1.3	|336|	`Application Data, Application Data, Application Data, Application Data`|
-|Source→Proxy|	TLSv1.3	|109|	`Application Data`|
-|Proxy→Source|	TCP		|60|	`80 → 54033 [ACK] Seq=5221 Ack=1191 Win=31744 Len=0`|
-|Source→Proxy|	TLSv1.3	|1508|	`Application Data`|
-|Proxy→Source|	TCP		|60|	`80 → 54033 [ACK] Seq=5221 Ack=2645 Win=34816 Len=0`|
-|Proxy→Source|	TLSv1.3	|772|	`Application Data`|
-|Source→Proxy|	TLSv1.3	|124|	`Application Data`|
-|Proxy→Source|	TCP		|60|	`80 → 54033 [ACK] Seq=5939 Ack=2715 Win=34816 Len=0`|
-|Proxy→Source|	TLSv1.3	|568|	`Application Data`|
-|Source→Proxy|	TLSv1.3	|136|	`Application Data`|
-|Proxy→Source|	TCP		|60|	`80 → 54033 [ACK] Seq=6453 Ack=2797 Win=34816 Len=0`|
-|Proxy→Source|	TLSv1.3	|120|	`Application Data`|
-|Source→Proxy|	TLSv1.3	|136|	`Application Data`|
-|Proxy→Source|	TCP		|60|	`80 → 54033 [ACK] Seq=6519 Ack=2879 Win=34816 Len=0`|
-|Proxy→Source|	TLSv1.3	|120|	`Application Data`|
-|Source→Proxy|	TLSv1.3	|216|	`Application Data`|
-|Proxy→Source|	TCP		|60|	`80 → 54033 [ACK] Seq=6585 Ack=3041 Win=37888 Len=0`|
-|Proxy→Source|	TLSv1.3	|176|	`Application Data`|
-|Source→Proxy|	TCP		|54|	`54033 → 80 [ACK] Seq=3041 Ack=6707 Win=131072 Len=0`|
-|Source→Proxy|	TLSv1.3	|384|	`Application Data`|
-|Proxy→Source|	TCP		|60|	`80 → 54033 [ACK] Seq=6707 Ack=3371 Win=40448 Len=0`|
-|Proxy→Source|	TLSv1.3	|104|	`Application Data`|
-|Source→Proxy|	TLSv1.3	|188|	`Application Data`|
-|Proxy→Source|	TCP		|60|	`80 → 54033 [ACK] Seq=6757 Ack=3505 Win=43520 Len=0`|
-|Proxy→Source|	TLSv1.3	|1046|	`Application Data, Application Data`|
-|Source→Proxy|	TCP		|54|	`54033 → 80 [ACK] Seq=3505 Ack=7749 Win=130048 Len=0`|
-|Proxy→Source|	TLSv1.3	|120|	`Application Data`|
-|Source→Proxy|	TLSv1.3	|212|	`Application Data`|
-|Proxy→Source|	TCP		|60|	`80 → 54033 [ACK] Seq=7815 Ack=3663 Win=46592 Len=0`|
-|Proxy→Source|	TLSv1.3	|298|	`Application Data, Application Data`|
-|Source→Proxy|	TCP		|54|	`54033 → 80 [ACK] Seq=3663 Ack=8059 Win=131328 Len=0`|
-|Proxy→Source|	TLSv1.3	|1514|	`Application Data`|
-|Proxy→Source|	TLSv1.3	|378|	`Application Data, Application Data, Application Data`|
-|Source→Proxy|	TCP		|54|	`54033 → 80 [ACK] Seq=3663 Ack=9843 Win=131328 Len=0`|
+| Source ➡  Target | TCP		|	66 | `49928 → 9999 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM`|
+| Target ➡  Source | TCP		|	66 | `9999 → 49928 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128`|
+| Source ➡  Target | TCP		|	54 | `49928 → 9999 [ACK] Seq=1 Ack=1 Win=131328 Len=0`|
+| Source ➡  Target | HTTP	|	157 | `CONNECT domain.com:443 HTTP/1.1 `|
+| Target ➡  Source | TCP		|	60 | `9999 → 49928 [ACK] Seq=1 Ack=104 Win=64256 Len=0`|
+| Target ➡  Source | HTTP	|	93 | `HTTP/1.1 200 Connection established `|
+| Source ➡  Target | TLSv1.2	|		380 | `Client Hello (SNI=domain.com)`|
+| Target ➡  Source | TCP		|	60 | `9999 → 49928 [ACK] Seq=40 Ack=430 Win=64128 Len=0`|
+| Target ➡  Source | TLSv1.2	|		1514 | `Server Hello`|
+| Target ➡  Source | TLSv1.2	|		1206 | `Certificate, Server Key Exchange, Server Hello Done`|
+| Source ➡  Target | TCP		|	54 | `49928 → 9999 [ACK] Seq=430 Ack=2652 Win=131328 Len=0`|
+| Source ➡  Target | TLSv1.2	|		212 | `Client Key Exchange, Change Cipher Spec, Encrypted Handshake Message`|
+| Target ➡  Source | TCP		|	60 | `9999 → 49928 [ACK] Seq=2652 Ack=588 Win=64128 Len=0`|
+| Target ➡  Source | TLSv1.2	|		105 | `Change Cipher Spec, Encrypted Handshake Message`|
+| Source ➡  Target | TLSv1.2	|		184 | `Application Data`|
+| Target ➡  Source | TCP		|	60 | `9999 → 49928 [ACK] Seq=2703 Ack=718 Win=64128 Len=0`|
+| Target ➡  Source | TLSv1.2	|		142 | `Application Data`|
+| Source ➡  Target | TLSv1.2	|		116 | `Application Data`|
+| Target ➡  Source | TLSv1.2	|		124 | `Application Data`|
+| Source ➡  Target | TLSv1.2	|		1515 | `Application Data`|
+| Target ➡  Source | TLSv1.2	|		1139 | `Application Data`|
+| Source ➡  Target | TLSv1.2	|		131 | `Application Data`|
+| Target ➡  Source | TCP		|	60 | `9999 → 49928 [ACK] Seq=3946 Ack=2241 Win=64128 Len=0`|
+| Target ➡  Source | TLSv1.2	|		591 | `Application Data`|
+| Source ➡  Target | TLSv1.2	|		143 | `Application Data`|
+| Target ➡  Source | TLSv1.2	|		127 | `Application Data`|
+| Source ➡  Target | TLSv1.2	|		143 | `Application Data`|
+| Target ➡  Source | TLSv1.2	|		127 | `Application Data`|
+| Source ➡  Target | TLSv1.2	|		583 | `Application Data`|
+| Target ➡  Source | TLSv1.2	|		543 | `Application Data`|
 
-## Older `connect.exe`
+What does the proxy see?
+
 | Direction | Protocol | Length | Info |
 | --- | --- | --- | --- |
-| Source→Proxy	|TCP|	66|	`53166 → 80 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM`|
-| Proxy→Source	|TCP|	66|	`80 → 53166 [SYN, ACK] Seq=0 Ack=1 Win=29200 Len=0 MSS=1460 SACK_PERM WS=512`|
-| Source→Proxy	|TCP|	54|	`53166 → 80 [ACK] Seq=1 Ack=1 Win=131328 Len=0`|
-| Source→Proxy	|HTTP|	650|	`CONNECT 87.187.210.102:44422 HTTP/1.0 `|
-| Proxy→Source	|TCP|	60|	`80 → 53166 [ACK] Seq=1 Ack=597 Win=30720 Len=0`|
-| Proxy→Source	|TCP|	1514|	`80 → 53166 [ACK] Seq=1 Ack=597 Win=30720 Len=1460 [TCP PDU reassembled in 20]`|
-| Proxy→Source	|HTTP|	1148|	`HTTP/1.0 200 Connection established `|
-| Source→Proxy	|TCP|	54|	`53166 → 80 [ACK] Seq=597 Ack=2555 Win=131328 Len=0`|
-| Source→Proxy	|TCP|	87|	`53166 → 80 [PSH, ACK] Seq=597 Ack=2555 Win=131328 Len=33`|
-| Proxy→Source	|TCP|	60|	`80 → 53166 [ACK] Seq=2555 Ack=630 Win=30720 Len=0`|
-| Proxy→Source	|TCP|	75|	`80 → 53166 [PSH, ACK] Seq=2555 Ack=630 Win=30720 Len=21`|
-| Source→Proxy	|TCP|	1078|	`53166 → 80 [PSH, ACK] Seq=630 Ack=2576 Win=131328 Len=1024`|
-| Proxy→Source	|TCP|	60|	`80 → 53166 [ACK] Seq=2576 Ack=1654 Win=32768 Len=0`|
-| Source→Proxy	|TCP|	462|	`53166 → 80 [PSH, ACK] Seq=1654 Ack=2576 Win=131328 Len=408`|
-| Proxy→Source	|TCP|	60|	`80 → 53166 [ACK] Seq=2576 Ack=2062 Win=34816 Len=0`|
-| Proxy→Source	|TCP|	750|	`80 → 53166 [PSH, ACK] Seq=2576 Ack=2062 Win=34816 Len=696`|
-| Source→Proxy	|TCP|	102|	`53166 → 80 [PSH, ACK] Seq=2062 Ack=3272 Win=130560 Len=48`|
-| Proxy→Source	|TCP|	60|	`80 → 53166 [ACK] Seq=3272 Ack=2110 Win=34816 Len=0`|
-| Source→Proxy	|TCP|	54|	`65048 → 80 [FIN, ACK] Seq=1 Ack=1 Win=510 Len=0`|
-| Proxy→Source	|TCP|	54|	`80 → 65048 [FIN, ACK] Seq=1 Ack=2 Win=69 Len=0`|
-| Source→Proxy	|TCP|	54|	`65048 → 80 [ACK] Seq=2 Ack=2 Win=510 Len=0`|
-| Proxy→Source	|TCP|	546|	`80 → 53166 [PSH, ACK] Seq=3272 Ack=2110 Win=34816 Len=492`|
-| Source→Proxy	|TCP|	114|	`53166 → 80 [PSH, ACK] Seq=2110 Ack=3764 Win=130048 Len=60`|
-| Proxy→Source	|TCP|	60|	`80 → 53166 [ACK] Seq=3764 Ack=2170 Win=34816 Len=0`|
-| Proxy→Source	|TCP|	98|	`80 → 53166 [PSH, ACK] Seq=3764 Ack=2170 Win=34816 Len=44`|
-| Source→Proxy	|TCP|	114|	`53166 → 80 [PSH, ACK] Seq=2170 Ack=3808 Win=130048 Len=60`|
-| Proxy→Source	|TCP|	60|	`80 → 53166 [ACK] Seq=3808 Ack=2230 Win=34816 Len=0`|
-| Proxy→Source	|TCP|	98|	`80 → 53166 [PSH, ACK] Seq=3808 Ack=2230 Win=34816 Len=44`|
-| Source→Proxy	|TCP|	194|	`53166 → 80 [PSH, ACK] Seq=2230 Ack=3852 Win=130048 Len=140`|
-| Proxy→Source	|TCP|	60|	`80 → 53166 [ACK] Seq=3852 Ack=2370 Win=36864 Len=0`|
-| Proxy→Source	|TCP|	154|	`80 → 53166 [PSH, ACK] Seq=3852 Ack=2370 Win=36864 Len=100`|
-| Source→Proxy	|TCP|	54|	`53166 → 80 [ACK] Seq=2370 Ack=3952 Win=129792 Len=0`|
-| Source→Proxy	|TCP|	362|	`53166 → 80 [PSH, ACK] Seq=2370 Ack=3952 Win=129792 Len=308`|
-| Proxy→Source	|TCP|	60|	`80 → 53166 [ACK] Seq=3952 Ack=2678 Win=38912 Len=0`|
-| Proxy→Source	|TCP|	82|	`80 → 53166 [PSH, ACK] Seq=3952 Ack=2678 Win=38912 Len=28`|
-| Source→Proxy	|TCP|	166|	`53166 → 80 [PSH, ACK] Seq=2678 Ack=3980 Win=129792 Len=112`|
-| Proxy→Source	|TCP|	60|	`80 → 53166 [ACK] Seq=3980 Ack=2790 Win=38912 Len=0`|
-| Source→Proxy	|TCP|	128|	`54033 → 80 [PSH, ACK] Seq=1 Ack=1 Win=510 Len=74`|
-| Proxy→Source	|TCP|	60|	`80 → 54033 [ACK] Seq=1 Ack=75 Win=91 Len=0`|
-| Proxy→Source	|TCP|	1002|	`80 → 53166 [PSH, ACK] Seq=3980 Ack=2790 Win=38912 Len=948`|
-| Source→Proxy	|TCP|	54|	`53166 → 80 [ACK] Seq=2790 Ack=4928 Win=131328 Len=0`|
-| Proxy→Source	|TCP|	104|	`80 → 54033 [PSH, ACK] Seq=1 Ack=75 Win=91 Len=50`|
-| Source→Proxy	|TCP|	54|	`54033 → 80 [ACK] Seq=75 Ack=51 Win=510 Len=0`|
-| Proxy→Source	|TCP|	98|	`80 → 53166 [PSH, ACK] Seq=4928 Ack=2790 Win=38912 Len=44`|
-| Source→Proxy	|TCP|	190|	`53166 → 80 [PSH, ACK] Seq=2790 Ack=4972 Win=131328 Len=136`|
-| Proxy→Source	|TCP|	60|	`80 → 53166 [ACK] Seq=4972 Ack=2926 Win=40960 Len=0`|
-| Proxy→Source	|TCP|	254|	`80 → 53166 [PSH, ACK] Seq=4972 Ack=2926 Win=40960 Len=200`|
-| Source→Proxy	|TCP|	54|	`53166 → 80 [ACK] Seq=2926 Ack=5172 Win=131072 Len=0`|
-| Proxy→Source	|TCP|	194|	`80 → 53166 [PSH, ACK] Seq=5172 Ack=2926 Win=40960 Len=140`|
-| Proxy→Source	|TCP|	1514|	`80 → 53166 [ACK] Seq=5312 Ack=2926 Win=40960 Len=1460`|
-| Proxy→Source	|TCP|	150|	`80 → 53166 [PSH, ACK] Seq=6772 Ack=2926 Win=40960 Len=96`|
-| Source→Proxy	|TCP|	54|	`53166 → 80 [ACK] Seq=2926 Ack=6868 Win=131328 Len=0`|
+|Source →  Target	| TCP		| 66	|  `51450 → 9999 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1`|
+| Target → Source	| TCP		| 66	|  `9999 → 51450 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128`|
+|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=1 Ack=1 Win=131328 Len=0`|
+|Source →  Target	| HTTP		| 157	|  `CONNECT domain.com:443 HTTP/1.1`|
+| Target → Source	| TCP		| 54	|  `9999 → 51450 [ACK] Seq=1 Ack=104 Win=64256 Len=0`|
+| Target → Source	| HTTP		| 93	|  `HTTP/1.1 200 Connection established`|
+|Source →  Target	| TLSv1		| 380	|  `Client Hello`|
+| Target → Source	| TCP		| 54	|  `9999 → 51450 [ACK] Seq=40 Ack=430 Win=64128 Len=0`|
+| Target → Source	| TLSv1.2	|	 2666	|  `Server Hello, Certificate, Server Key Exchange, Server Hello Done`|
+|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=430 Ack=2652 Win=131328 Len=0`|
+|Source →  Target	| TLSv1.2	|	 212	|  `Client Key Exchange, Change Cipher Spec, Encrypted Handshake Message`|
+| Target → Source	| TCP		| 54	|  `9999 → 51450 [ACK] Seq=2652 Ack=588 Win=64128 Len=0`|
+| Target → Source	| TLSv1.2	|	 105	|  `Change Cipher Spec, Encrypted Handshake Message`|
+|Source →  Target	| TLSv1.2	|	 184	|  `Application Data`|
+| Target → Source	| TCP		| 54	|  `9999 → 51450 [ACK] Seq=2703 Ack=718 Win=64128 Len=0`|
+| Target → Source	| TLSv1.2	|	 142	|  `Application Data`|
+| Target → Source	| TLSv1.2	|	 124	|  `Application Data`|
+|Source →  Target	| TLSv1.2	|	 116	|  `Application Data`|
+| Target → Source	| TLSv1.2	|	 1139	|  `Application Data`|
+|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=780 Ack=3946 Win=130048 Len=0`|
+|Source →  Target	| TCP		| 1514	|  `[TCP segment of a reassembled PDU]`|
+|Source →  Target	| TLSv1.2	|	 103	|  `Application Data`|
+| Target → Source	| TCP		| 54	|  `9999 → 51450 [ACK] Seq=3946 Ack=2289 Win=64128 Len=0`|
+| Target → Source	| TLSv1.2	|	 591	|  `Application Data`|
+|Source →  Target	| TLSv1.2	|	 143	|  `Application Data`|
+| Target → Source	| TLSv1.2	|	 127	|  `Application Data`|
+|Source →  Target	| TLSv1.2	|	 143	|  `Application Data`|
+| Target → Source	| TLSv1.2	|	 127	|  `Application Data`|
+|Source →  Target	| TLSv1.2	|	 583	|  `Application Data`|
+| Target → Source	| TLSv1.2	|	 543	|  `Application Data`|
+|Source →  Target	| TLSv1.2	|	 991	|  `Application Data`|
+| Target → Source	| TLSv1.2	|	 111	|  `Application Data`|
+|Source →  Target	| TLSv1.2	|	 195	|  `Application Data`|
+| Target → Source	| TCP		| 54	|  `9999 → 51450 [ACK] Seq=5175 Ack=4074 Win=64128 Len=0`|
+| Target → Source	| TLSv1.2	|	 859	|  `Application Data`|
+| Target → Source	| TLSv1.2	|	 275	|  `Application Data`|
+|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=4074 Ack=6201 Win=131328 Len=0`|
+|Source →  Target	| TLSv1.2	|	 219	|  `Application Data`|
+| Target → Source	| TCP		| 54	|  `9999 → 51450 [ACK] Seq=6201 Ack=4239 Win=64128 Len=0`|
+| Target → Source	| TLSv1.2	|	 191	|  `Application Data`|
+| Target → Source	| TLSv1.2	|	 1319	|  `Application Data`|
+|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=4239 Ack=7603 Win=129792 Len=0`|
+| Target → Source	| TLSv1.2	|	 1575	|  `Application Data`|
+|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=4239 Ack=9124 Win=131328 Len=0`|
+| Target → Source	| TLSv1.2	|	 232	|  `Application Data, Application Data`|
+| Target → Source	| TLSv1.2	|	 1551	|  `Application Data`|
+| Target → Source	| TLSv1.2	|	 127	|  `Application Data`|
+| Target → Source	| TLSv1.2	|	 127	|  `Application Data`|
+| Target → Source	| TLSv1.2	|	 127	|  `Application Data`|
+|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=4239 Ack=10872 Win=131328 Len=0`|
+|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=4239 Ack=11018 Win=131072 Len=0`|
 
-So wait, apparently there are no SSH packets going out...
+The proxy is non the wiser! Now there is no way for the proxy to know what's going on and block our connection. Except [with specialized tooling mostly relegated to research](https://inria.hal.science/hal-01273160/file/HTTPS_traffic_identification_framework_NOMS16.pdf), which looks at the encrypted traffic and squints *really* hard.
 
-...this was capture the PC that the signal originated from. Let's see what it looks like from the intermediate, corporate proxy.
+Unless... [\*cue scary music\*](https://youtu.be/AfjqL0vaBYU?t=5)
 
-## Deep Packet Inspection
-There is only one way to detect this properly: [Deep packet inspection](https://en.wikipedia.org/wiki/Deep_packet_inspection). In the context of HTTPs or corporate connections, this involved pre-installing a [Trusted Root Certification Authority](https://en.wikipedia.org/wiki/Certificate_authority) on the user's machine, which is stripped by the corporate proxy. But this is such a bad idea, that [even the NSA issued an advisory](https://web.archive.org/web/20191119195359/https://media.defense.gov/2019/Nov/18/2002212783/-1/-1/0/MANAGING%20RISK%20FROM%20TLS%20INSPECTION_20191106.PDF).
+## Deep Packet Inspection 👻
+There is only one way to detect this properly at scale: [Deep packet inspection (DPI)](https://en.wikipedia.org/wiki/Deep_packet_inspection). In the context of HTTPs or corporate connections, this involved pre-installing a [Trusted Root Certification Authority](https://en.wikipedia.org/wiki/Certificate_authority) on the user's machine (i.e. via Windows' group policy), which allows the corporate proxy to strip encryption. But this is such a bad idea, that even the [NSA](https://en.wikipedia.org/wiki/National_Security_Agency) issued [an advisory](https://web.archive.org/web/20191119195359/https://media.defense.gov/2019/Nov/18/2002212783/-1/-1/0/MANAGING%20RISK%20FROM%20TLS%20INSPECTION_20191106.PDF) and the [Cypersecurity & Infrastructure Security Agency CISA](https://en.wikipedia.org/wiki/Cybersecurity_and_Infrastructure_Security_Agency) outright [cautions against it](https://www.cisa.gov/news-events/alerts/2017/03/16/https-interception-weakens-tls-security).
+
+Now browsers are actually supposed to protect against this and do [indeed have ways to do detect DPI](https://www.grc.com/fingerprints.htm). However, the browsers are kinda cahoots with the corporate proxy on this one. If your system is told to trust a a CA, it will.
+
+Also comment `https://stackoverflow.com/questions/58671007` Yes this is detectable, see `https://www.grc.com/fingerprints.htm` on the server it's a simple fingerprint check, but automating it in JS is a bit tougher due to know way of getting the cert, but possible via `https://stackoverflow.com/questions/2402121`
+
+```
+openssl s_client -proxy <Corporate Proxy IP>:<Corporate Proxy Port> -connect <Site which is not blocked>:443 -servername <Site which is not blocked> | openssl x509 -noout -fingerprint -sha1
+```
