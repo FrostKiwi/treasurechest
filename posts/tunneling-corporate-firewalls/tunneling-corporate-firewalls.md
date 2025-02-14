@@ -15,14 +15,18 @@ When you have a project, online service or WebApp that you manage and deploy, yo
 
 <blockquote class="reaction"><div class="reaction_text">...unless your project is purely <a target="_blank" href="https://en.wikipedia.org/wiki/Serverless_computing">serverless</a> and built with a bunch of <a target="_blank" href="https://cloud.google.com/learn/paas-vs-iaas-vs-saas">(Insert Random Letter) as a Service</a> bricks.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
-Being able to setup a connection you trust and where your dev tools work is important. How you connect to the server where you deploy your projects isn't always straight forward though, when there are proxies, packet sniffing firewalls and network monitoring in-between you and the internet.
+Being able to setup a connection you trust and where your dev tools work is important. How you connect to the server where you deploy your projects isn't always straight forward though, when there are proxies, packet sniffing firewalls and network monitoring in-between you, the internet and the target server.
 
-Ultimately, this is what this post is about - how to SSH into machines, when there is stuff in the way preventing that and make sure that your tools like [scp](https://man.openbsd.org/scp.1), [rsync](https://en.wikipedia.org/wiki/Rsync) or editing files directly on the server via [VSCode's SSH integration](https://code.visualstudio.com/docs/remote/ssh) work, with the absolute minimum of modifications to your server.
+<blockquote class="reaction"><div class="reaction_text">The "correct" answer is: <a target="_blank" href="https://tailscale.com/blog/hamachi">setup a VPN</a>! But that's sometimes not possible. <a target="_blank" href="https://www.microsoft.com/en-us/microsoft-365/business-insights-ideas/resources/what-is-endpoint-management">Endpoint management</a> may forbid it client-side. Server-side infrastructure may be managed by a third party, kicking off costly service requests.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
-## So many flavors 
+Ultimately, this is what this post is about - how to SSH into machines, when there is stuff in the way preventing that and make sure that your tools like git, [scp](https://man.openbsd.org/scp.1), [rsync](https://en.wikipedia.org/wiki/Rsync) or editing files directly on the server via [VSCode's SSH integration](https://code.visualstudio.com/docs/remote/ssh) work, with no new software and the ***absolute minimum*** of modifications to your server.
+
+## Tunneling - So many flavors
 If you control both Source and Destination, then you can tunnel everything through anything in complete secrecy and ultimately there is nothing anyone can do about it. This shouldn't be news to anyone working with networks. There are countless articles and videos going over a multitude of tunneling combinations.
 
-- Internet over Pings
+- [Internet and SSH over ICMP (Pings)](https://github.com/DhavalKapil/icmptunnel)
+- [Internet and SSH over DNS requests](https://github.com/yarrick/iodine)
+- [Internet and SSH over WebSockets](https://github.com/erebe/wstunnel)
 
 But ultimately, this post is about how to do it in a way that your dev tools are happy about.
 
@@ -90,9 +94,6 @@ And finally, we don't want to that huge call each time and we can't expect other
 <a></a>
 
 ## Other options
-Alternative:
-https://github.com/erebe/wstunnel
-
 You can use
 https://github.com/butlerx/wetty or https://github.com/shellinabox/shellinabox , but exposing the shell on as a website is not the best idea, as HTTPS itself may be compromised in a corporate environment due to DPI.
 
@@ -664,7 +665,7 @@ What does the proxy see?
 |Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=4239 Ack=10872 Win=131328 Len=0`|
 |Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=4239 Ack=11018 Win=131072 Len=0`|
 
-The proxy is non the wiser! Now there is no way for the proxy to know what's going on and block our connection. Except [with specialized tooling mostly relegated to research](https://inria.hal.science/hal-01273160/file/HTTPS_traffic_identification_framework_NOMS16.pdf), which looks at the encrypted traffic and squints *really* hard.
+The proxy is [non the wiser](https://www.youtube.com/watch?v=otCpCn0l4Wo&t=15s)! Now there is no way for the proxy to know what's going on and block our connection. Except [with specialized tooling mostly relegated to research](https://inria.hal.science/hal-01273160/file/HTTPS_traffic_identification_framework_NOMS16.pdf), which looks at the encrypted traffic and squints *really* hard.
 
 Unless... [\*cue scary music\*](https://youtu.be/AfjqL0vaBYU?t=5)
 
@@ -678,3 +679,8 @@ Also comment `https://stackoverflow.com/questions/58671007` Yes this is detectab
 ```
 openssl s_client -proxy <Corporate Proxy IP>:<Corporate Proxy Port> -connect <Site which is not blocked>:443 -servername <Site which is not blocked> | openssl x509 -noout -fingerprint -sha1
 ```
+
+## Quick tip:
+Don't retype your SSH Key's password until reboot or time limit. On windows 
+
+![](keyagent-windows.png)
