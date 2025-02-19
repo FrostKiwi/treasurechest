@@ -29,8 +29,16 @@ If you control both Source and Destination, then you can tunnel everything throu
 - [Internet and SSH over WebSockets](https://github.com/erebe/wstunnel)
 
 But ultimately, this post is about how to do it in a way that your dev tools are happy about.
-
+![](img/dumbfirewall.svg)
+![](img/simple.svg)
 This post will take a look 
+
+<blockquote class="reaction"><div class="reaction_text">As much as any other post, my blog's <a target="_blank" href="/about/#disclaimer">disclaimer</a> applies.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+## The corporate proxy
+Let's define quickly, what even is a corporate proxy? I'm talking about the modern company with IT setup to control and monitor its employees. Usually, there is nothing malicious about this and sometimes enforced by compliance rules outside the company's influence.
+
+So why is any of this required? Can't you simply open a ticket at your IT department? There may be points situations that makes this impossible on the timescale that a project needs delivering. Reasons for this are many, especially if there are intermediary companies which are responsible for digital infrastructure, kicking-off complicated inter-contract reviews.
 
 ### Maybe you don't need to
 Local proxies are such a vital piece of infrastructure, that we expect the operating system's proxy settings to be honored by default, built proxy settings into most network connected software and have additional defacto standards to specify them like the environment variables `http_proxy`, `HTTPS_PROXY`, `NO_PROXY` and friends.
@@ -41,6 +49,9 @@ But mainly it's because how a proxy works may change based on environment and a 
 
 
 OpenSSH, as comes preinstalled on Windows these days, doesn't support proxies natively, [except an SSH proxy itself](https://goteleport.com/blog/ssh-proxyjump-ssh-proxycommand/). Instead, OpenSSH gives the generic [`ProxyCommand`](https://goteleport.com/blog/ssh-proxyjump-ssh-proxycommand/)
+
+## [HTTP CONNECT](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT)
+Wait... what? How does the proxy speak with OpenSSH? Since when do HTTP Proxies support SSH? How does a  -insert that's the neat post you don't- Well, they don't. HTTP CONNECT works by relaying RAW TCP. Similar to the dumb firewall we talked about previously, HTTP CONNECT doesn't understand what TCP it's actually relaying. Which bring us to the obvious point: Why don't corporate proxies simply forbid HTTP CONNECT? - Because that would break HTTPS proxy connections. There are stills ways to prohibit this, a bit of a boogie man we'll get into at the end, but corporate proxies are bound by a catch 22 here: You have to look inside to tell apart what is being sent, but looking inside entails breaking encryption.
 
 ### Trust is earned, not bought
 
@@ -93,6 +104,11 @@ And finally, we don't want to that huge call each time and we can't expect other
 <blockquote class="reaction"><div class="reaction_text">It's kind of bananas what we have to go through on Windows to get basic tooling without resorting to <a target="_blank" href="https://learn.microsoft.com/en-us/windows/wsl/install">WSL</a> or <a target="_blank" href="https://www.msys2.org/">MSYS 2</a>. Makes me really appreciate what a fine piece of engineering <a target="_blank" href="https://www.msys2.org/">MSYS 2</a> is.</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
 <a></a>
 
+## Corporate proxy
+Now, in modern endpoint security there is usually a VPN what talks to what in what scope is fairly diverse. 
+
+<blockquote class="reaction"><div class="reaction_text">You cannot prevent data exfiltration, there is always a way around it. I wish corporate tech would give its engineers the best tools to succeed instead of blindly chasing compliance.<a target="_blank" href="/about/#disclaimer">disclaimer</a> applies.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
 ## Other options
 You can use
 https://github.com/butlerx/wetty or https://github.com/shellinabox/shellinabox , but exposing the shell on as a website is not the best idea, as HTTPS itself may be compromised in a corporate environment due to DPI.
@@ -102,10 +118,6 @@ There is the connection multiplexer [https://github.com/yrutschle/sslh](SSLH), w
 
 <blockquote class="reaction"><div class="reaction_text">Man, I have seen some s*#$.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
 <a></a>
-
-<blockquote class="reaction"><div class="reaction_text">As much as any other post, my blog's <a target="_blank" href="/about/#disclaimer">disclaimer</a> applies.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
-<a></a>
-
 
 There are many ways to build your tunnel. Over ICMP.
 
