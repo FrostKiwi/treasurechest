@@ -677,6 +677,14 @@ What does the proxy see?
 |Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=4239 Ack=10872 Win=131328 Len=0`|
 |Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=4239 Ack=11018 Win=131072 Len=0`|
 
+Effectively what we have created with ...
+```
+proxy_connect;
+proxy_connect_allow 22;
+proxy_connect_address 127.0.0.1;
+```
+... is port-forwarding, without the ability to do so.
+
 The proxy is [non the wiser](https://www.youtube.com/watch?v=otCpCn0l4Wo&t=15s)! Now there is no way for the proxy to know what's going on and block our connection. Except [with specialized tooling mostly relegated to research](https://inria.hal.science/hal-01273160/file/HTTPS_traffic_identification_framework_NOMS16.pdf), which looks at the encrypted traffic and squints *really* hard.
 
 Unless... [\*cue scary music\*](https://youtu.be/AfjqL0vaBYU?t=5)
