@@ -28,12 +28,15 @@ If you control both Source and Destination, then you can tunnel everything throu
 - [Internet and SSH over DNS requests](https://github.com/yarrick/iodine)
 - [Internet and SSH over WebSockets](https://github.com/erebe/wstunnel)
 
-But ultimately, this post is about how to do it in a way that your dev tools are happy about.
-![](img/dumbfirewall.svg)
-![](img/simple.svg)
-This post will take a look 
+As for this article, we'll deep-dive ✨***SSH over HTTP(S)***✨. Be it Linux or Windows, we will look at how to setup everything up, what the underlying network traffic looks like and most importantly: how your digital infrastructure is already capable of all this ... even if it didn't intend to.
 
-<blockquote class="reaction"><div class="reaction_text">As much as any other post, my blog's <a target="_blank" href="/about/#disclaimer">disclaimer</a> applies.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">As for what even qualifies as tunneling, we'll get into that...</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+<a></a>
+
+## A normal SSH connection
+A "dumb" firewall which performs no packet sniffing, is unable to block SSH *specifically*. These firewalls control which type (UDP, TCP, etc.) of packet can go from which port, address or application to which port, address or application. This applies to both stateless firewalls and [stateful firewalls](https://en.wikipedia.org/wiki/Stateful_firewall), a distinction which we'll ignore going forward.
+
+When we SSH into something, 
 
 ## The corporate proxy
 Let's define quickly, what even is a corporate proxy? I'm talking about the modern company with IT setup to control and monitor its employees. Usually, there is nothing malicious about this and sometimes enforced by compliance rules outside the company's influence.
