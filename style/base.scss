@@ -14,6 +14,9 @@
 @use 'kiwis';
 @use 'rss';
 
+$blurConst: blur(calc(1vw + 1vh));
+$bgColor: #00000070;
+
 body {
 	background-color: #231e1f;
 	background-image: url("/assets/bg.png");
@@ -41,7 +44,7 @@ table img {
 	margin-bottom: 0px;
 }
 
-iframe{
+iframe {
 	width: 100%;
 	border: none;
 }
@@ -143,24 +146,44 @@ figure {
 		text-align: center;
 		font-size: smaller;
 	}
-}
 
+	a {
+		&:hover {
+			border-bottom: unset;
+		}
 
-figure.full {
-	margin-left: calc(-45vw + 50%);
-	margin-right: calc(-45vw + 50%);
-	width: 90vw;
-	max-width: 90vw;
-
-	img {
-		width: 100%;
-		max-width: none;
+		&:target {
+			z-index: 1;
+			position: fixed;
+			left: 0;
+			top: 0;
+			width: 100vw;
+			height: 100vh;
+			max-width: 100%;
+			max-height: 100%;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			background-color: $bgColor;
+			backdrop-filter: $blurConst;
+			-webkit-backdrop-filter: $blurConst;
+		}
 	}
 
-	figcaption {
-		max-width: 38em;
-		margin-left: auto;
-		margin-right: auto;
+	.overlay {
+		z-index: 2;
+		display: none;
+		position: fixed;
+		left: 0;
+		top: 0;
+		width: 100vw;
+		height: 100vh;
+		max-width: 100%;
+		max-height: 100%;
+	}
+
+	a:target+.overlay {
+		display: block;
 	}
 }
 

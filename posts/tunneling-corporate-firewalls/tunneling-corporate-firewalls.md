@@ -1,6 +1,6 @@
 ---
 wip: true
-title: Can't block me - Tunneling corporate firewalls for developers
+title: Tunneling corporate firewalls for developers
 permalink: "/{{ page.fileSlug }}/"
 date:
 last_modified:
@@ -39,10 +39,7 @@ We'll go through all the ways you may SSH into your server, with increasing leve
 
 ### Simple, direct connection
 
-<figure class="expandable">
-        <img src="img/simple.svg" alt="Schematic of an SSH connection"/>
-    <figcaption>Schematic of an SSH connection</figcaption>
-</figure>
+{% clickableImage "img/simple.svg", "Schematic of an SSH connection" %}
 
 Let's start with a classic default setup. It also covers the case, that your proxy has whitelisted this connection to be `direct`, is part of a company internal subnet not going through a proxy to the outside or that the target is within your company VPN.
 
@@ -191,10 +188,7 @@ Let's take a look at what happens inside the network. All captures are performed
 
 ### Dumb firewall
 
-<figure class="full">
-        <img src="img/dumbfirewall.svg" alt="Schematic of an SSH connection"/>
-    <figcaption>Schematic of an SSH connection</figcaption>
-</figure>
+{% clickableImage "img/dumbfirewall.svg", "Schematic of an SSH connection" %}
 
 A "dumb" firewall which performs no packet sniffing, is unable to block SSH *specifically*. These firewalls control which type (UDP, TCP, etc.) of packet can go from which port, address or application to which port, address or application. This applies to both stateless firewalls and [stateful firewalls](https://en.wikipedia.org/wiki/Stateful_firewall), a distinction which we'll ignore going forward.
 

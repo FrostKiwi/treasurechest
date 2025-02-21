@@ -1,5 +1,6 @@
 import * as sass from "sass";
 import { DateTime } from "luxon";
+import * as crypto from "node:crypto";
 import Image from "@11ty/eleventy-img";
 import pluginRss from "@11ty/eleventy-plugin-rss";
 import syntaxHighlight from "@11ty/eleventy-plugin-syntaxhighlight";
@@ -79,6 +80,20 @@ export default function (eleventyConfig) {
 				silenceDeprecations: ["color-functions", "global-builtin", "import"],
 				style: "compressed",
 			}).css;
+	});
+
+	eleventyConfig.addShortcode("clickableImage", function (imgPath, description) {
+		const uniqueID = crypto.randomBytes(20).toString('hex');
+		const figureID = `fig-${uniqueID}`;
+		const imgID = `img-${uniqueID}`;
+
+		return `<figure id="${figureID}">
+        	<a id="${imgID}" href="#${imgID}">
+        	    <img src="${imgPath}" alt="${description}" />
+        	</a>
+        	<a href="#${figureID}" class="overlay"></a>
+        	<figcaption>${description}</figcaption>
+    	</figure>`;
 	});
 
 	/* Reload on CSS changes, since 11ty doesn't see them */
