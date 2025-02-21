@@ -145,6 +145,25 @@ figure {
 	}
 }
 
+
+figure.full {
+	margin-left: calc(-45vw + 50%);
+	margin-right: calc(-45vw + 50%);
+	width: 90vw;
+	max-width: 90vw;
+
+	img {
+		width: 100%;
+		max-width: none;
+	}
+
+	figcaption {
+		max-width: 38em;
+		margin-left: auto;
+		margin-right: auto;
+	}
+}
+
 canvas {
 	margin-bottom: 0px;
 }

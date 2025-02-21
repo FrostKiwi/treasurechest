@@ -191,7 +191,7 @@ Let's take a look at what happens inside the network. All captures are performed
 
 ### Dumb firewall
 
-<figure class="expandable">
+<figure class="full">
         <img src="img/dumbfirewall.svg" alt="Schematic of an SSH connection"/>
     <figcaption>Schematic of an SSH connection</figcaption>
 </figure>
