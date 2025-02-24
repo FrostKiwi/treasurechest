@@ -19,7 +19,7 @@ Being able to setup a connection you trust and where your dev tools work is impo
 
 <blockquote class="reaction"><div class="reaction_text">The "correct" answer is: <a target="_blank" href="https://tailscale.com/blog/hamachi">setup a VPN</a>! But that's sometimes not possible. <a target="_blank" href="https://www.microsoft.com/en-us/microsoft-365/business-insights-ideas/resources/what-is-endpoint-management">Endpoint management</a> may forbid it client-side. Server-side infrastructure may be managed by a third party, kicking off costly service requests.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
-Ultimately, this is what this post is about - how to SSH into machines, when there is stuff in the way preventing that and make sure that your tools like git, [scp](https://man.openbsd.org/scp.1), [rsync](https://en.wikipedia.org/wiki/Rsync) or editing files directly on the server via [VSCode's SSH integration](https://code.visualstudio.com/docs/remote/ssh) work, with no new software and the ***absolute minimum*** of modifications to your server.
+Ultimately, this is what this post is about - how to SSH into machines, when there is stuff in the way preventing that and make sure that your tools like git, [scp](https://man.openbsd.org/scp.1), [rsync](https://en.wikipedia.org/wiki/Rsync) or editing files directly on the server via [VSCode's SSH integration](https://code.visualstudio.com/docs/remote/ssh) work, with no new software installed and the ***absolute minimum*** of modifications to your server.
 
 ## Tunneling - So many flavors
 If you control both Source and Destination, then you can tunnel everything through anything in complete secrecy and ultimately there is nothing anyone can do about it. This shouldn't be news to anyone working with networks. There are countless articles and videos going over a multitude of tunneling combinations.
@@ -41,10 +41,14 @@ We'll go through all the ways you may SSH into your server, with increasing leve
 
 {% clickableImage "img/simple.svg", "Schematic of an SSH connection" %}
 
-Let's start with a classic default setup. It also covers the case, that your proxy has whitelisted this connection to be `direct`, is part of a company internal subnet not going through a proxy to the outside or that the target is within your company VPN.
+Let's start with a classic default setup: [SSHD](https://man.openbsd.org/sshd.8), the SSH daemon of OpenSSH is listening on Port 22, your WebApp is accessed via HTTP and HTTPS on Port 80 and 443 respectively. These ports are [port-forwarded](https://en.wikipedia.org/wiki/Port_forwarding) and accessible by anyone via a static IP address or a domain name.
+
+You also have the basics of SSH security down: You have setup [fail2ban to prevent password brute forcing](https://github.com/fail2ban/fail2ban) or configured SSHD to [reject logins via password](https://www.cyberciti.biz/faq/how-to-disable-ssh-password-login-on-linux/) and only allow [key based authentication](https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server).
+
+This "direct" connection also covers the case, that your proxy has whitelisted this connection to be `direct`, is part of a company internal subnet not going through a proxy to the outside or that the target is within your company VPN.
 
 #### Network capture
-Let's take a look at what happens inside the network. All captures are performed with wireshark.
+Let's take a look at what happens inside the network. All captures are performed with [wireshark](https://github.com/wireshark/wireshark).
 
 **Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. The capture concerns just this communication attempt. As there is no intermediary, the capture is performed on **Source** 💻.
 
@@ -190,7 +194,7 @@ Let's take a look at what happens inside the network. All captures are performed
 
 {% clickableImage "img/dumbfirewall.svg", "Schematic of an SSH connection" %}
 
-A "dumb" firewall which performs no packet sniffing, is unable to block SSH *specifically*. These firewalls control which type (UDP, TCP, etc.) of packet can go from which port, address or application to which port, address or application. This applies to both stateless firewalls and [stateful firewalls](https://en.wikipedia.org/wiki/Stateful_firewall), a distinction which we'll ignore going forward.
+A "dumb" [firewall](https://en.wikipedia.org/wiki/Firewall_(computing)) which performs no packet sniffing, is unable to block SSH *specifically*. These firewalls control which type ([UDP](https://en.wikipedia.org/wiki/User_Datagram_Protocol), [TCP](https://en.wikipedia.org/wiki/Transmission_Control_Protocol), etc.) of packet can go from which port, address or application to which port, address or application. This applies to both stateless firewalls and [stateful firewalls](https://en.wikipedia.org/wiki/Stateful_firewall), a distinction which we'll ignore going forward.
 
 #### Network capture
 ```
@@ -523,6 +527,8 @@ proxy_connect_address 127.0.0.1;
 ... is port-forwarding, without the ability to do so.
 
 The proxy is [non the wiser](https://www.youtube.com/watch?v=otCpCn0l4Wo&t=15s)! Now there is no way for the proxy to know what's going on and block our connection. Except [with specialized tooling mostly relegated to research](https://inria.hal.science/hal-01273160/file/HTTPS_traffic_identification_framework_NOMS16.pdf), which looks at the encrypted traffic and squints *really* hard.
+
+There are impressive papers with [LLMs guessing somewhat accurately what LLMs are outputting](https://www.youtube.com/watch?v=UfenH7xKO1s) based purely on <strong>encrypted</strong> packet length, as currently ChatBot interfaces like Microsoft's CoPilot send the output token by token as packet by packet.
 
 Unless... [\*cue scary music\*](https://youtu.be/AfjqL0vaBYU?t=5)
 
