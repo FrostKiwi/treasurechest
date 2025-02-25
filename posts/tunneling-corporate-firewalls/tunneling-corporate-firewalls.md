@@ -9,7 +9,7 @@ publicTags:
   - cyber security
   - networking
   - hacking
-image: img/thumb.jpg
+image: img/thumb.png
 ---
 When you have a project, online service or WebApp that you manage and deploy, you usually have something that you [SSH](https://en.wikipedia.org/wiki/Secure_Shell) into. It maybe a real server, a [VPS](https://en.wikipedia.org/wiki/Virtual_private_server), a container, a [Kubernetes](https://kubernetes.io/) node and what have you.
 
