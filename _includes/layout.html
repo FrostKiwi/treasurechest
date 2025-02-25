@@ -46,11 +46,11 @@
 	<header>
 		<div class="top-bar">
 			<div class="left_group">
-				<img class="kiwi" alt="Cute Kiwi doing cute things" src="/assets/kiwis/detective.svg">
+				<img class="kiwi" alt="Cute Kiwi doing cute things" src="/assets/kiwis/book.svg">
 				<script>
 					(() => {
 						const kiwis = [
-							'detective', 'facepalm', 'happy', 'ice', 'love', 'miffed', 'party', 'sad', 'surprised', 'dead', 'teach', 'think', 'book', 'cyber', 'laugh', 'sleep'
+							'detective', 'facepalm', 'drillMiffed', 'happy', 'ice', 'love', 'miffed', 'party', 'drillAngry', 'sad', 'surprised', 'dead', 'teach', 'think', 'book', 'cyber', 'laugh', 'sleep'
 						].map(name => `/assets/kiwis/${name}.svg`);
 						let currentKiwi = Math.floor(Math.random() * kiwis.length);
 						const nextKiwi = () => document.querySelector('.kiwi').src = kiwis[++currentKiwi % kiwis.length];
