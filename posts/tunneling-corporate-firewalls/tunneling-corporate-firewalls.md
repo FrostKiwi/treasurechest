@@ -30,16 +30,16 @@ If you control both Source and Destination, then you can tunnel everything throu
 
 As for this article, we'll deep-dive ✨***SSH over HTTP(S)***✨. Be it Linux or Windows, we will look at how to setup everything up, what the underlying network traffic looks like and most importantly: how your digital infrastructure is **already** capable of all this ... even if it wasn't supposed to.
 
-<blockquote class="reaction"><div class="reaction_text">Ladies and Gentlemen, get your hard hats ready,<br><a target="_blank" href="https://youtu.be/DrYXGwMZrV4&t=8">for tonight we drill the firewall</a></div><img class="kiwi" src="/assets/kiwis/drillAngry.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Get your hard hats ready, <a target="_blank" href="https://youtu.be/DrYXGwMZrV4&t=8">for tonight we drill the firewall</a></div><img class="kiwi" src="/assets/kiwis/drillAngry.svg"></blockquote>
 
-## SSH Connection Scenarios
+## Basic SSH Connection Scenarios
 We'll go through all the ways you may SSH into your server, with increasing levels of filtering, monitoring and connection blocking. As this is in the context of web development, I will always include how your main WebApps are reached as well. 
 
 <blockquote class="reaction"><div class="reaction_text">In modern web deployments, your service may sit behind an <a target="_blank" href="https://learn.microsoft.com/en-us/azure/application-gateway/overview">application gateway</a>, potentially with multiple micro-services at play. We are going to simplify and consider no such factors in this article.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 ### Simple, direct connection
 
-{% clickableImage "img/simple.svg", "Schematic of an SSH connection" %}
+{% clickableImage "img/simple.svg", "Schematic of a direct SSH connection" %}
 
 Let's start with a classic default setup: [SSHD](https://man.openbsd.org/sshd.8), the SSH daemon of OpenSSH is listening on Port 22, your WebApp is accessed via HTTP and HTTPS on Port 80 and 443 respectively. These ports are [port-forwarded](https://en.wikipedia.org/wiki/Port_forwarding) and accessible by anyone via a static IP address or a domain name.
 
@@ -283,7 +283,7 @@ Even after the communication became fully encrypted, we can still infer this com
 
 ### Blocked by firewall
 
-{% clickableImage "img/dumbfirewall.svg", "Schematic of an SSH connection" %}
+{% clickableImage "img/dumbfirewall.svg", "SSH connection blocked by firewall rule" %}
 
 <blockquote class="reaction"><div class="reaction_text">Click the image for fullscreen, or finger zoom on mobile. The illustrations will get longer and longer going forward.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
@@ -374,7 +374,7 @@ The (true) target never responds to our requests, before our clients gives up wi
 
 ### SSH on port 443
 
-{% clickableImage "img/sshport443.svg", "Schematic of an SSH connection" %}
+{% clickableImage "img/sshport443.svg", "Usage of different port: SSH connection passing firewall blocking rule" %}
 
 Let's start with the most obvious workaround for our "dumb" firewall case: Set the SSH port to 443. As two services cannot share the same port, we must either disable our HTTP and HTTPS service or set one of them to another port.
 
@@ -382,7 +382,7 @@ This will get us past our dumb firewall case, but will obviously prevent our Web
 
 ### [SSLH](https://github.com/yrutschle/sslh): HTTP and SSH on the same port
 
-{% clickableImage "img/sslh.svg", "Schematic of an SSH connection" %}
+{% clickableImage "img/sslh.svg", "SSLH multiplexing both HTTPS and SSH" %}
 
 One popular solution to this is the connection multiplexer [SSLH](https://github.com/yrutschle/sslh). It's usually setup to listen on port 443, checks whether the incoming connection is SSH or HTTPS and establishes the connection to SSHD or your HTTP service respectively. SSLH can do more, but that's the gist of it.
 
@@ -391,31 +391,51 @@ One popular solution to this is the connection multiplexer [SSLH](https://github
 From the perspective of the client, nothing changed as compared to a direct connection. However, it requires a **new piece of software** to sit in front of your entire server-side communication stack. One more thing to maintain, one more thing to fail. And still, subject to be blocked by corporate proxies and packet sniffing firewalls.
 
 ## The corporate proxy
-A corporate proxy is an exit point to the internet, deployed for security and compliance reasons within a company to forbid anything that isn't explicitly allowed and monitor for threats. The main ideas are usually to curb [data exfiltration](https://en.wikipedia.org/wiki/Data_exfiltration) and to ensure employees don't do things without clearing it with IT department prior.
 
-<blockquote class="reaction"><div class="reaction_text"><strong>Far</strong> beyond any theoretical hack, employees misconfiguring things, uploading sensitive data to 3rd parties and similar faux pas are <strong>the</strong> prime reason far data leaks.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
+{% clickableImage "img/proxyBasic.svg", "Corporate Proxy used as egress point to the internet" %}
 
-These come usually as part of an overarching IT and endpoint security package sold by companies like [Cisco](https://www.cisco.com), [Forcepoint](https://forcepoint.com) and [Fortinet](https://www.fortinet.com/), among others. In Windows land, these are usually setup by [Group policies](https://en.wikipedia.org/wiki/Group_Policy) pre-configuring a system-wide proxy. In *Nix land these are usually pre-configured with the initial OS image.
+A corporate proxy is an exit point to the internet, deployed for security and compliance reasons within a company to monitor for threats and forbid anything that isn't explicitly allowed. Furthermore it's supposed to curb [data exfiltration](https://en.wikipedia.org/wiki/Data_exfiltration) and ensure employees don't setup infrastructure, without clearing it with IT prior.
 
-<blockquote class="reaction"><div class="reaction_text">On a personal point, I'm not a fan of Forcepoint's <a target="_blank" href="https://en.wikipedia.org/wiki/Forcepoint#Forcepoint">ties to the military industrial complex</a>, but they are diligent and quick with upkeep of their underlying products like false blocks from <a target="_blank" href="https://en.wikipedia.org/wiki/BlackSpider_Technologies_Limited">blackspider / SurfControl</a>.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text"><strong>Far</strong> beyond any malicious hacking, employees misconfiguring things, uploading sensitive data to 3rd parties and similar faux pas are <strong>the</strong> prime reason far data leaks.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
-Among these corporate proxies, it's not uncommon to have packet sniffing capabilities, preventing connections that don't pass the sniff-test of "looks like normal internet access". Going forward, we will circumvent this.
+These proxies are usually part of an overarching IT and endpoint security package sold by companies like [Cisco](https://www.cisco.com), [Forcepoint](https://forcepoint.com) and [Fortinet](https://www.fortinet.com/), among others. In Windows land, these are usually setup by [Group policies](https://en.wikipedia.org/wiki/Group_Policy) pre-configuring a system-wide proxy and in *Nix land these are usually pre-configured with an initial OS image.
+
+<blockquote class="reaction"><div class="reaction_text">On a personal point, I'm not a fan of Forcepoint's <a target="_blank" href="https://en.wikipedia.org/wiki/Forcepoint#Forcepoint">ties to the military industrial complex</a>, but they are diligent and quick with upkeep of their underlying products like false blocks from <a target="_blank" href="https://en.wikipedia.org/wiki/BlackSpider_Technologies_Limited">blackspider / SurfControl</a>.</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
+
+Among these corporate proxies, it's not uncommon to have packet sniffing capabilities, preventing connections that don't pass the sniff-test of "looks like normal internet access". Going forward, we will circumvent this and do so in a way that makes dev tools happy. Before that, let's clear the elephants in the room...
 
 <blockquote class="reaction"><div class="reaction_text">Probably the time to mention, that as much as any other post, my blog's <a target="_blank" href="/about/#disclaimer">disclaimer</a> applies.</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
 
-So why is any of this required? Can't you simply open a ticket at your IT department? There may be points situations that makes this impossible on the timescale that a project needs delivering. Reasons for this are many, especially if there are intermediary companies which are responsible for digital infrastructure, kicking-off complicated inter-contract reviews.
+...why would you need to? Can't you simply open a ticket at your IT department? Certain situations may make a deeper architectural solution impossible on the timescale that a project needs delivering, happenings need to happen and things need to thing. 
 
-In technological practice though, I'm bearish on most endpoint security in the context of software development. Data transfer [via audio](https://github.com/ggerganov/ggwave), side-channels like [emitted radio waves](https://arxiv.org/html/2409.02292v1) and even away from this esoteric stuff to basic photos of a screen - malicious data exfiltration is unblockable. So please stop making my life difficult.
+There may be intermediary companies which are responsible for digital infrastructure, kicking-off complicated inter-contract reviews; engineer access gateways may be on unreliable subnets; or simply, the present digital infrastructure may be such a mess, that trust just can't be established in the first place.
 
-### Maybe you don't need to
-Local proxies are such a vital piece of infrastructure, that we expect the operating system's proxy settings to be honored by default, built proxy settings into most network connected software and have additional defacto standards to specify them like the environment variables `http_proxy`, `HTTPS_PROXY`, `NO_PROXY` and friends.
+<blockquote class="reaction"><div class="reaction_text">Man, have I seen some s*#$.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
+<a></a>
 
-But what may come as a surprise, is that such a fundamental piece of infrastructure like OpenSSH doesn't support it, with the exception of [SSH as a proxy itself](https://goteleport.com/blog/ssh-proxyjump-ssh-proxycommand/). The reasons for this are multiple, with one being the [unix philosophy](https://en.wikipedia.org/wiki/Unix_philosophy#Origin) of doing one thing only and doing it well.
+### Honoring the proxy
+Proxies are such a vital piece of infrastructure, that we expect the operating system's proxy settings to be honored by default, built proxy settings into most network connected software and have additional defacto standards to specify them like the environment variables `http_proxy`, `HTTPS_PROXY`, `NO_PROXY` and friends.
 
-But mainly it's because how a proxy works may change based on environment and a basic building block like SSH needs to be compatible with all possibilities. Or to quote from the unix philosophy any future, ***as yet unknown*** protocols.
+<figure>
+	<img src="img/firefoxProxy.png" alt="Firefox's proxy settings" />
+	<figcaption>Firefox's proxy settings</figcaption>
+</figure>
 
+But what may come as a surprise, is that a fundamental piece of infrastructure like OpenSSH doesn't support it, with the exception of [SSH as a proxy itself](https://goteleport.com/blog/ssh-proxyjump-ssh-proxycommand/). Because [Unix philosophy](https://en.wikipedia.org/wiki/Unix_philosophy#Origin) and all that. SSH clients like [Putty](https://www.putty.org/) do, but we'll stick with OpenSSH, which is [FOSS](https://en.wikipedia.org/wiki/Free_and_open-source_software) and comes pre-installed on every OS by now.
 
-OpenSSH, as comes preinstalled on Windows these days, doesn't support proxies natively, [except an SSH proxy itself](https://goteleport.com/blog/ssh-proxyjump-ssh-proxycommand/). Instead, OpenSSH gives the generic [`ProxyCommand`](https://goteleport.com/blog/ssh-proxyjump-ssh-proxycommand/)
+<figure>
+	<img src="img/OpenSSH-in-windows.png" alt="OpenSSH Client installed by default in Windows 10 and 11" />
+	<figcaption>OpenSSH Client installed by default in Windows 10 and 11</figcaption>
+</figure>
+
+Instead, OpenSSH supplies `ProxyCommand` and relies on other tools proxying for it. There exist multiple ways to do this, let's start with the simplest ones, with no extra encryption at play. Ignoring Linux and Mac staple [`nc`](https://en.wikipedia.org/wiki/Netcat) for brevity, cross-platform there are FOSS [`connect.c` aka `ssh-connect`](https://github.com/gotoh/ssh-connect) and [corkscrew](https://github.com/bryanpkc/corkscrew).
+
+The `ssh-connect` created by [@gotoh](https://github.com/gotoh) recently moved to GitHub. Most online documentation now points to [a dead bitbucket repo](https://bitbucket.org/gotoh/connect). On Windows specifically it comes as `connect.exe` by default if you install [Git for Windows](https://gitforwindows.org/) and can also [be installed via Sccop](https://scoop.sh/#/apps?q=connect&id=bdf819b2986269a3c7c29074c2d26870a17c4a88) or [MSYS](https://packages.msys2.org/base/mingw-w64-connect).
+
+Though not quite the same, in the context of the article [corkscrew](https://github.com/bryanpkc/corkscrew) does the same. It is more well known as a project, but in contrast to `ssh-connect` has no widely distributed Windows build. For x64 Windows, I have compiled it myself and here it is as a shortcut for testing: [corkscrew.zip](corkscrew.zip).
+
+## Tunneling
+Let's jump in with the most basic first step.
 
 ## [HTTP CONNECT](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT)
 Wait... what? How does the proxy speak with OpenSSH? Since when do HTTP Proxies support SSH? How does a  -insert that's the neat post you don't- Well, they don't. HTTP CONNECT works by relaying RAW TCP. Similar to the dumb firewall we talked about previously, HTTP CONNECT doesn't understand what TCP it's actually relaying. Which bring us to the obvious point: Why don't corporate proxies simply forbid HTTP CONNECT? - Because that would break HTTPS proxy connections. There are stills ways to prohibit this, a bit of a boogie man we'll get into at the end, but corporate proxies are bound by a catch 22 here: You have to look inside to tell apart what is being sent, but looking inside entails breaking encryption.
@@ -509,15 +529,12 @@ https://github.com/butlerx/wetty or https://github.com/shellinabox/shellinabox ,
 
 There is the connection multiplexer [https://github.com/yrutschle/sslh](SSLH), which can sit in front of your HTTP server and redirect the packets based on type. However, such a modification of infrastructure may simply be impossible and doesn't solve the issue of SSH connections being potentially filtered. It remains a popular choice for many.
 
-<blockquote class="reaction"><div class="reaction_text">Man, I have seen some s*#$.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
-<a></a>
-
 There are many ways to build your tunnel. Over ICMP.
 
 All of these need HTTP/1.1 () If the intermediate Proxy communicates with HTTP/2, your connections will error out
 
-# Tunneled
-## `connect.exe` and `corkscrew.exe`
+## Tunneled
+### `connect.exe` and `corkscrew.exe`
 Let's see what it looks like from the intermediate, corporate proxy. We are looking at the communication between the Proxy and the Laptop specifically. And this is again the output of wireshark.
 
 | Direction | Protocol | Length | Info |
