@@ -7,7 +7,7 @@ last_modified:
 description: Establish SSH connections and ensure your dev tools work via HTTPS tunneling, even if proxies and firewalls don't let you
 publicTags:
   - cyber security
-  - networking
+  - web dev
   - hacking
 image: img/thumb.png
 ---
@@ -28,9 +28,9 @@ If you control both Source and Destination, then you can tunnel everything throu
 - [Internet and SSH over DNS requests](https://github.com/yarrick/iodine)
 - [Internet and SSH over WebSockets](https://github.com/erebe/wstunnel)
 
-As for this article, we'll deep-dive ✨***SSH over HTTP(S)***✨. Be it Linux or Windows, we will look at how to setup everything up, what the underlying network traffic looks like and most importantly: how your digital infrastructure is already capable of all this ... even if it didn't intend to.
+As for this article, we'll deep-dive ✨***SSH over HTTP(S)***✨. Be it Linux or Windows, we will look at how to setup everything up, what the underlying network traffic looks like and most importantly: how your digital infrastructure is **already** capable of all this ... even if it wasn't supposed to.
 
-<blockquote class="reaction"><div class="reaction_text">As much as any other post, my blog's <a target="_blank" href="/about/#disclaimer">disclaimer</a> applies.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Ladies and Gentlemen, get your hard hats ready,<br><a target="_blank" href="https://youtu.be/DrYXGwMZrV4&t=8">for tonight we drill the firewall</a></div><img class="kiwi" src="/assets/kiwis/drillAngry.svg"></blockquote>
 
 ## SSH Connection Scenarios
 We'll go through all the ways you may SSH into your server, with increasing levels of filtering, monitoring and connection blocking. As this is in the context of web development, I will always include how your main WebApps are reached as well. 
@@ -48,7 +48,7 @@ You also probably have the basics of SSH security down: You have setup [fail2ban
 This "direct" connection also covers the case, that your proxy has whitelisted this connection to be `direct`, is part of a company internal subnet not going through a proxy to the outside or that the target is within your company VPN.
 
 #### Network capture
-Let's take a look at what happens inside the network. All captures are performed with [wireshark](https://github.com/wireshark/wireshark). **Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. The capture concerns just this specific connection. As there is no intermediary, the capture is performed on **Source** 💻.
+Let's take a look at what happens inside the network. All captures are performed with [wireshark](https://github.com/wireshark/wireshark). **Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. The capture concerns just this specific connection. As there is no intermediary yet, the capture is performed on **Source** 💻.
 
 <blockquote class="reaction"><div class="reaction_text">Rows with 💻 ➡ 🌍 mean outgoing packets, aka <strong>Source ➡ Target</strong>. Rows with 🌍 ➡ 💻 and a <span style="background-color: #0006">dark background</span> indicate incoming packets, aka <strong>Target ➡ Source</strong>.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 <style>
@@ -277,181 +277,6 @@ Let's take a look at what happens inside the network. All captures are performed
 	</tbody>
 </table>
 
-<table>
-	<thead>
-		<tr>
-			<th>Direction</th>
-			<th>Protocol</th>
-			<th>Length</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr>
-			<td style="border-bottom: unset;">💻 ➡ 🌍</td>
-			<td style="border-bottom: unset;">TCP</td>
-			<td style="border-bottom: unset;">66</td>
-		</tr>
-		<tr>
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM</pre></td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td style="border-bottom: unset;">🌍 ➡ 💻</td>
-			<td style="border-bottom: unset;">TCP</td>
-			<td style="border-bottom: unset;">66</td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128</pre></td>
-		</tr>
-		<tr>
-			<td style="border-bottom: unset;">💻 ➡ 🌍</td>
-			<td style="border-bottom: unset;">TCP</td>
-			<td style="border-bottom: unset;">54</td>
-		</tr>
-		<tr>
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">[ACK] Seq=1 Ack=1 Win=131328 Len=0</pre></td>
-		</tr>
-		<tr>
-			<td style="border-bottom: unset;">💻 ➡ 🌍</td>
-			<td style="border-bottom: unset;">SSHv2</td>
-			<td style="border-bottom: unset;">87</td>
-		</tr>
-		<tr>
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">Client: Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</pre></td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td style="border-bottom: unset;">🌍 ➡ 💻</td>
-			<td style="border-bottom: unset;">TCP</td>
-			<td style="border-bottom: unset;">60</td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">[ACK] Seq=1 Ack=34 Win=64256 Len=0</pre></td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td style="border-bottom: unset;">🌍 ➡ 💻</td>
-			<td style="border-bottom: unset;">SSHv2</td>
-			<td style="border-bottom: unset;">95</td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">Server: Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</pre></td>
-		</tr>
-		<tr>
-			<td style="border-bottom: unset;">💻 ➡ 🌍</td>
-			<td style="border-bottom: unset;">SSHv2</td>
-			<td style="border-bottom: unset;">1486</td>
-		</tr>
-		<tr>
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">Client: Key Exchange Init</pre></td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td style="border-bottom: unset;">🌍 ➡ 💻</td>
-			<td style="border-bottom: unset;">SSHv2</td>
-			<td style="border-bottom: unset;">1110</td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">Server: Key Exchange Init</pre></td>
-		</tr>
-		<tr>
-			<td style="border-bottom: unset;">💻 ➡ 🌍</td>
-			<td style="border-bottom: unset;">SSHv2</td>
-			<td style="border-bottom: unset;">102</td>
-		</tr>
-		<tr>
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">Client: Elliptic Curve Diffie-Hellman Key Exchange Init</pre></td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td style="border-bottom: unset;">🌍 ➡ 💻</td>
-			<td style="border-bottom: unset;">TCP</td>
-			<td style="border-bottom: unset;">60</td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">[ACK] Seq=1098 Ack=1514 Win=64128 Len=0</pre></td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td style="border-bottom: unset;">🌍 ➡ 💻</td>
-			<td style="border-bottom: unset;">SSHv2</td>
-			<td style="border-bottom: unset;">562</td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">Server: Elliptic Curve Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</pre></td>
-		</tr>
-		<tr>
-			<td style="border-bottom: unset;">💻 ➡ 🌍</td>
-			<td style="border-bottom: unset;">SSHv2</td>
-			<td style="border-bottom: unset;">70</td>
-		</tr>
-		<tr>
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">Client: New Keys</pre></td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td style="border-bottom: unset;">🌍 ➡ 💻</td>
-			<td style="border-bottom: unset;">TCP</td>
-			<td style="border-bottom: unset;">60</td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">[ACK] Seq=1606 Ack=1530 Win=64128 Len=0</pre></td>
-		</tr>
-		<tr>
-			<td style="border-bottom: unset;">💻 ➡ 🌍</td>
-			<td style="border-bottom: unset;">SSHv2</td>
-			<td style="border-bottom: unset;">98</td>
-		</tr>
-		<tr>
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">Client: Encrypted packet (len=44)</pre></td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td style="border-bottom: unset;">🌍 ➡ 💻</td>
-			<td style="border-bottom: unset;">TCP</td>
-			<td style="border-bottom: unset;">60</td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">[ACK] Seq=1606 Ack=1574 Win=64128 Len=0</pre></td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td style="border-bottom: unset;">🌍 ➡ 💻</td>
-			<td style="border-bottom: unset;">SSHv2</td>
-			<td style="border-bottom: unset;">98</td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">Server: Encrypted packet (len=44)</pre></td>
-		</tr>
-		<tr>
-			<td style="border-bottom: unset;">💻 ➡ 🌍</td>
-			<td style="border-bottom: unset;">SSHv2</td>
-			<td style="border-bottom: unset;">114</td>
-		</tr>
-		<tr>
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">Client: Encrypted packet (len=60)</pre></td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td style="border-bottom: unset;">🌍 ➡ 💻</td>
-			<td style="border-bottom: unset;">TCP</td>
-			<td style="border-bottom: unset;">60</td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">[ACK] Seq=1650 Ack=1634 Win=64128 Len=0</pre></td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td style="border-bottom: unset;">🌍 ➡ 💻</td>
-			<td style="border-bottom: unset;">SSHv2</td>
-			<td style="border-bottom: unset;">98</td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">Server: Encrypted packet (len=44)</pre></td>
-		</tr>
-		<tr>
-			<td style="border-bottom: unset;">💻 ➡ 🌍</td>
-			<td style="border-bottom: unset;">SSHv2</td>
-			<td style="border-bottom: unset;">554</td>
-		</tr>
-		<tr>
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">Client: Encrypted packet (len=500)</pre></td>
-		</tr>
-		<tr style="text-align: center">
-			<td colspan=3 style="max-width: 1px">These <code>Encrypted packets</code> back and forth go on for the duration of the session</td>
-		</tr>
-	</tbody>
-</table>
-
 The first 3 packets are the standard [TCP handshake](https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake/). After that SSH begins its authentication, key change and encryption setup. You can kinda imply this to be SSH, as the communication happens on port 22. More obviously, anyone looking at the traffic can easily clock this as SSH, as the setup phase loudly proclaims to be SSH.
 
 Even after the communication became fully encrypted, we can still infer this communication to be SSH, as this is still one specific connection, that we **know** previously talked the "SSH way". Inferring the connection type by looking at the packets and connection history is what's known as [packet-sniffing](https://en.wikipedia.org/wiki/Packet_analyzer).
@@ -462,87 +287,125 @@ Even after the communication became fully encrypted, we can still infer this com
 
 <blockquote class="reaction"><div class="reaction_text">Click the image for fullscreen, or finger zoom on mobile. The illustrations will get longer and longer going forward.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-A "dumb" [firewall](https://en.wikipedia.org/wiki/Firewall_(computing)), which performs no packet sniffing, is unable to block SSH *specifically*. These firewalls control which type ([UDP](https://en.wikipedia.org/wiki/User_Datagram_Protocol), [TCP](https://en.wikipedia.org/wiki/Transmission_Control_Protocol), etc.) of packet can go from and to which port, address or application. This applies to both stateless firewalls and [stateful firewalls](https://en.wikipedia.org/wiki/Stateful_firewall), a distinction which we'll ignore going forward.
+A "dumb" [firewall](https://en.wikipedia.org/wiki/Firewall_(computing)), which performs no packet sniffing, is unable to block SSH *specifically*. These firewalls control which type ([UDP](https://en.wikipedia.org/wiki/User_Datagram_Protocol), [TCP](https://en.wikipedia.org/wiki/Transmission_Control_Protocol), [etc.](https://github.com/Hawzen/hdp)) of packet can go from and to which port, address or application. This applies to both stateless firewalls and [stateful firewalls](https://en.wikipedia.org/wiki/Stateful_firewall), a distinction which we'll ignore going forward.
 
-A popular "set and forget" way of setting up internet access with the intention to block users from doing stuff except browse the internet is to block everything except TCP Port 80 for HTTP and TCP Port 443 for HTTPS. Let's see what happens on the network side:
+For now we ignore potential server-side firewalls and look at client-side only. A popular "set and forget" firewall ruleset to allow internet access but block users from doing other stuff is to only permit outbound TCP Port 80 for HTTP, TCP Port 443 for HTTPS and block everything else.
 
-#### Network capture
-**Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. Here is what traffic **may** look like if it's not going through and being filtered. The exact error depends on where the blocking is taking place. Provided the domain itself isn't blacklisted, usually it's a [timeout](https://en.wikipedia.org/wiki/Timeout_(computing)) error saying.
+Our default SSH connection attempt will error out in such an environment. The exact error depends on where and how the blocking is taking place. Provided the domain itself isn't blacklisted, usually it's a [timeout](https://en.wikipedia.org/wiki/Timeout_(computing)) error saying.
 
 ```
 kex_exchange_identification: read: Connection timed out
 banner exchange: Connection to example.com port <SSH Port>: Connection timed out
 ```
+#### Network capture
+Let's see what happens on the network side. **Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. Here is what traffic **may** look like if it's not going through and being filtered.
 
 <table>
 	<thead>
-		<tr>
-			<th>Direction</th>
-			<th>Protocol</th>
-			<th>Length</th>
-		</tr>
+	<tr>
+		<th>Direction</th>
+		<th>Protocol</th>
+		<th>Length</th>
+		<th>Info</th>
+	</tr>
 	</thead>
 	<tbody>
-		<tr>
-			<td style="border-bottom: unset;">💻 ➡ 🌍</td>
-			<td style="border-bottom: unset;">TCP</td>
-			<td style="border-bottom: unset;">66</td>
-		</tr>
-		<tr>
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM</pre></td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td style="border-bottom: unset;">🌍 ➡ 💻</td>
-			<td style="border-bottom: unset;">TCP</td>
-			<td style="border-bottom: unset;">66</td>
-		</tr>
-		<tr class="targetSourceRow">
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1452 SACK_PERM WS=128</pre></td>
-		</tr>
-		<tr>
-			<td style="border-bottom: unset;">💻 ➡ 🌍</td>
-			<td style="border-bottom: unset;">TCP</td>
-			<td style="border-bottom: unset;">54</td>
-		</tr>
-		<tr>
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">[ACK] Seq=1 Ack=1 Win=132096 Len=0</pre></td>
-		</tr>
-		<tr>
-			<td style="border-bottom: unset;">💻 ➡ 🌍</td>
-			<td style="border-bottom: unset;">TCP</td>
-			<td style="border-bottom: unset;">87</td>
-		</tr>
-		<tr>
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">[PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33</pre></td>
-		</tr>
-		<tr>
-			<td style="border-bottom: unset;">💻 ➡ 🌍</td>
-			<td style="border-bottom: unset;">TCP</td>
-			<td style="border-bottom: unset;">87</td>
-		</tr>
-		<tr>
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33</pre></td>
-		</tr>
-		<tr style="text-align: center">
-			<td colspan=3 style="max-width: 1px">This goes on for 7 more <code>[TCP Retransmission]</code> packets</td>
-		</tr>
-		<tr>
-			<td style="border-bottom: unset;">💻 ➡ 🌍</td>
-			<td style="border-bottom: unset;">TCP</td>
-			<td style="border-bottom: unset;">54</td>
-		</tr>
-		<tr>
-			<td colspan=3 style="max-width: 1px"><pre style="margin-bottom: unset; padding-top: 0.5em; padding-bottom: 0.5em">[RST, ACK] Seq=34 Ack=1 Win=0 Len=0</pre></td>
-		</tr>
+	<tr>
+		<td>💻 ➡ 🌍</td>
+		<td>TCP</td>
+		<td>66</td>
+		<td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM</code></td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM</pre></td>
+	</tr>
+	<tr style="background-color: #0004;">
+		<td>🌍 ➡ 💻</td>
+		<td>TCP</td>
+		<td>66</td>
+		<td><code>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1452 SACK_PERM WS=128</code></td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1452 SACK_PERM WS=128</pre></td>
+	</tr>
+	<tr>
+		<td>💻 ➡ 🌍</td>
+		<td>TCP</td>
+		<td>54</td>
+		<td><code>[ACK] Seq=1 Ack=1 Win=132096 Len=0</code></td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>[ACK] Seq=1 Ack=1 Win=132096 Len=0</pre></td>
+	</tr>
+	<tr>
+		<td>💻 ➡ 🌍</td>
+		<td>TCP</td>
+		<td>87</td>
+		<td><code>[PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33</code></td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>[PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33</pre></td>
+	</tr>
+	<tr>
+		<td>💻 ➡ 🌍</td>
+		<td>TCP</td>
+		<td>87</td>
+		<td><code>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33</code></td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33</pre></td>
+	</tr>	
+	<tr style="text-align: center; border-bottom: 1px solid #40363a;">
+		<td colspan=4>This goes on for 7 more <code>[TCP Retransmission]</code> packets</td>
+	</tr>
+	<tr>
+		<td>💻 ➡ 🌍</td>
+		<td>TCP</td>
+		<td>54</td>
+		<td><code>[RST, ACK] Seq=34 Ack=1 Win=0 Len=0</code></td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4 style="border-bottom: unset"><pre>[RST, ACK] Seq=34 Ack=1 Win=0 Len=0</pre></td>
+	</tr>	
 	</tbody>
 </table>
 
-The target never responds to our requests, before our clients gives up with the [`RST`](https://developers.cloudflare.com/fundamentals/reference/tcp-connections/#tcp-connections-and-keep-alives) signal. Note that for the first three packets, aka the [TCP handshake](https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake/), the [MSS (maximum segment size)](https://www.cloudflare.com/learning/network-layer/what-is-mss/) is not identical, a ***weak*** indication that whoever responded to us it not our actual target, but some kind of firewall or whatever.
+The (true) target never responds to our requests, before our clients gives up with the [`RST`](https://developers.cloudflare.com/fundamentals/reference/tcp-connections/#tcp-connections-and-keep-alives) signal. Note that for the first three packets, aka the [TCP handshake](https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake/), the [MSS (maximum segment size)](https://www.cloudflare.com/learning/network-layer/what-is-mss/) is not identical, a ***weak*** indication that whoever responded to us it not our actual target, but some kind of firewall or whatever.
+
+### SSH on port 443
+
+{% clickableImage "img/sshport443.svg", "Schematic of an SSH connection" %}
+
+Let's start with the most obvious workaround for our "dumb" firewall case: Set the SSH port to 443. As two services cannot share the same port, we must either disable our HTTP and HTTPS service or set one of them to another port.
+
+This will get us past our dumb firewall case, but will obviously prevent our WebApp from being reachable. Except for the port number, the network capture will look identical to the direct connection case and any packet sniffer will still be able to tell that this is an SSH connection.
+
+### [SSLH](https://github.com/yrutschle/sslh): HTTP and SSH on the same port
+
+{% clickableImage "img/sslh.svg", "Schematic of an SSH connection" %}
+
+One popular solution to this is the connection multiplexer [SSLH](https://github.com/yrutschle/sslh). It's usually setup to listen on port 443, checks whether the incoming connection is SSH or HTTPS and establishes the connection to SSHD or your HTTP service respectively. SSLH can do more, but that's the gist of it.
+
+<blockquote class="reaction"><div class="reaction_text">To be clear, the connections themselves are not mixed protocol and the clients need no modification. SSLH only determines where the connection is established to.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+From the perspective of the client, nothing changed as compared to a direct connection. However, it requires a **new piece of software** to sit in front of your entire server-side communication stack. One more thing to maintain, one more thing to fail. And still, subject to be blocked by corporate proxies and packet sniffing firewalls.
 
 ## The corporate proxy
-Let's define quickly, what even is a corporate proxy? I'm talking about the modern company with IT setup to control and monitor its employees. Usually, there is nothing malicious about this and sometimes enforced by compliance rules outside the company's influence.
+A corporate proxy is an exit point to the internet, deployed for security and compliance reasons within a company to forbid anything that isn't explicitly allowed and monitor for threats. The main ideas are usually to curb [data exfiltration](https://en.wikipedia.org/wiki/Data_exfiltration) and to ensure employees don't do things without clearing it with IT department prior.
+
+<blockquote class="reaction"><div class="reaction_text"><strong>Far</strong> beyond any theoretical hack, employees misconfiguring things, uploading sensitive data to 3rd parties and similar faux pas are <strong>the</strong> prime reason far data leaks.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
+
+These come usually as part of an overarching IT and endpoint security package sold by companies like [Cisco](https://www.cisco.com), [Forcepoint](https://forcepoint.com) and [Fortinet](https://www.fortinet.com/), among others. In Windows land, these are usually setup by [Group policies](https://en.wikipedia.org/wiki/Group_Policy) pre-configuring a system-wide proxy. In *Nix land these are usually pre-configured with the initial OS image.
+
+<blockquote class="reaction"><div class="reaction_text">On a personal point, I'm not a fan of Forcepoint's <a target="_blank" href="https://en.wikipedia.org/wiki/Forcepoint#Forcepoint">ties to the military industrial complex</a>, but they are diligent and quick with upkeep of their underlying products like false blocks from <a target="_blank" href="https://en.wikipedia.org/wiki/BlackSpider_Technologies_Limited">blackspider / SurfControl</a>.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
+
+Among these corporate proxies, it's not uncommon to have packet sniffing capabilities, preventing connections that don't pass the sniff-test of "looks like normal internet access". Going forward, we will circumvent this.
+
+<blockquote class="reaction"><div class="reaction_text">Probably the time to mention, that as much as any other post, my blog's <a target="_blank" href="/about/#disclaimer">disclaimer</a> applies.</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
 
 So why is any of this required? Can't you simply open a ticket at your IT department? There may be points situations that makes this impossible on the timescale that a project needs delivering. Reasons for this are many, especially if there are intermediary companies which are responsible for digital infrastructure, kicking-off complicated inter-contract reviews.
+
+In technological practice though, I'm bearish on most endpoint security in the context of software development. Data transfer [via audio](https://github.com/ggerganov/ggwave), side-channels like [emitted radio waves](https://arxiv.org/html/2409.02292v1) and even away from this esoteric stuff to basic photos of a screen - malicious data exfiltration is unblockable. So please stop making my life difficult.
 
 ### Maybe you don't need to
 Local proxies are such a vital piece of infrastructure, that we expect the operating system's proxy settings to be honored by default, built proxy settings into most network connected software and have additional defacto standards to specify them like the environment variables `http_proxy`, `HTTPS_PROXY`, `NO_PROXY` and friends.
@@ -562,7 +425,7 @@ Wait... what? How does the proxy speak with OpenSSH? Since when do HTTP Proxies 
 httpd = {
   enable = true;
   virtualHosts = {
-    "dmgmori.xn--rhqv96g" = {
+    "example.com" = {
       listen = [
         {
           ip = "*";
@@ -815,6 +678,7 @@ Also comment `https://stackoverflow.com/questions/58671007` Yes this is detectab
 ```
 openssl s_client -proxy <Corporate Proxy IP>:<Corporate Proxy Port> -connect <Site which is not blocked>:443 -servername <Site which is not blocked> | openssl x509 -noout -fingerprint -sha1
 ```
+
 
 ## Quick tip:
 Don't retype your SSH Key's password until reboot or time limit. On windows 
