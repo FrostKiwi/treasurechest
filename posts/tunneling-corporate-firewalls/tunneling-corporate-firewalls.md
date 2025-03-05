@@ -421,18 +421,26 @@ Proxies are such a vital piece of infrastructure, that we expect the operating s
 	<figcaption>Firefox's proxy settings</figcaption>
 </figure>
 
-But what may come as a surprise, is that a fundamental piece of infrastructure like OpenSSH doesn't support it, with the exception of [SSH as a proxy itself](https://goteleport.com/blog/ssh-proxyjump-ssh-proxycommand/). Because [Unix philosophy](https://en.wikipedia.org/wiki/Unix_philosophy#Origin) and all that. SSH clients like [Putty](https://www.putty.org/) do, but we'll stick with OpenSSH, which is [FOSS](https://en.wikipedia.org/wiki/Free_and_open-source_software) and comes pre-installed on every OS by now.
+But what may come as a surprise, is that such a fundamental piece of infrastructure like OpenSSH doesn't support it, with the exception of [SSH as a proxy itself](https://goteleport.com/blog/ssh-proxyjump-ssh-proxycommand/). Because [Unix philosophy](https://en.wikipedia.org/wiki/Unix_philosophy#Origin) and all that. SSH clients like [Putty](https://www.putty.org/) do, but we'll stick with OpenSSH, which is [FOSS](https://en.wikipedia.org/wiki/Free_and_open-source_software) and comes pre-installed on every OS by now.
 
 <figure>
 	<img src="img/OpenSSH-in-windows.png" alt="OpenSSH Client installed by default in Windows 10 and 11" />
 	<figcaption>OpenSSH Client installed by default in Windows 10 and 11</figcaption>
 </figure>
 
-Instead, OpenSSH supplies `ProxyCommand` and relies on other tools proxying for it. There exist multiple ways to do this, let's start with the simplest ones, with no extra encryption at play. Ignoring Linux and Mac staple [`nc`](https://en.wikipedia.org/wiki/Netcat) for brevity, cross-platform there are FOSS [`connect.c` aka `ssh-connect`](https://github.com/gotoh/ssh-connect) and [corkscrew](https://github.com/bryanpkc/corkscrew).
+Instead, OpenSSH supplies `ProxyCommand` and relies on other tools proxying for it. There exist multiple ways to do this, let's start with the simplest ones, with no extra encryption at play. Ignoring the Linux and Mac staple [`nc`](https://en.wikipedia.org/wiki/Netcat) for brevity, cross-platform there are FOSS [`connect.c` aka `ssh-connect`](https://github.com/gotoh/ssh-connect) and [corkscrew](https://github.com/bryanpkc/corkscrew).
 
-The `ssh-connect` created by [@gotoh](https://github.com/gotoh) recently moved to GitHub. Most online documentation now points to [a dead bitbucket repo](https://bitbucket.org/gotoh/connect). On Windows specifically it comes as `connect.exe` by default if you install [Git for Windows](https://gitforwindows.org/) and can also [be installed via Sccop](https://scoop.sh/#/apps?q=connect&id=bdf819b2986269a3c7c29074c2d26870a17c4a88) or [MSYS](https://packages.msys2.org/base/mingw-w64-connect).
+`ssh-connect` created by [@gotoh](https://github.com/gotoh) recently moved to GitHub. Most online documentation now points to [a dead bitbucket repo](https://bitbucket.org/gotoh/connect). On Windows specifically it comes as `connect.exe` by default if you install [Git for Windows](https://gitforwindows.org/) and can also [be installed via Sccop](https://scoop.sh/#/apps?q=connect&id=bdf819b2986269a3c7c29074c2d26870a17c4a88) or [MSYS](https://packages.msys2.org/base/mingw-w64-connect).
 
 Though not quite the same, in the context of the article [corkscrew](https://github.com/bryanpkc/corkscrew) does the same. It is more well known as a project, but in contrast to `ssh-connect` has no widely distributed Windows build. For x64 Windows, I have compiled it myself and here it is as a shortcut for testing: [corkscrew.zip](corkscrew.zip).
+
+### Tunneling
+
+{% clickableImage "img/tunneledHTTP.svg", "SSH tunneled via HTTP" %}
+
+{% clickableImage "img/tunneledHTTPS.svg", "SSH tunneled via HTTP" %}
+
+#### Network capture
 
 ## Tunneling
 Let's jump in with the most basic first step.
