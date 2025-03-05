@@ -470,20 +470,23 @@ httpd = {
 
 ## Rsync
 ### Rsync on Windows
-This is a bit of an interesting [story](https://en.wikipedia.org/wiki/CwRsync). On Windows there exist two versions of rsync. The standard rsync client with [source code from the Samba project](https://rsync.samba.org/) and [cwRsync](https://en.wikipedia.org/wiki/CwRsync), which has a free client but is closed sourced and [monetized via it's server component](https://itefix.net/store/buy?product=49.00000004) by [itefix](https://itefix.net/). Although cwRsync has a right to exist, I do find it a bit scummy to capitalize on FOSS projects [Cygwin](https://www.cygwin.com/) and Rsync in such a way, considering the client is just the FOSS Rsync source, compiled via cygwin and presumably some custom patches to work with their rsync windows server.
+This is a bit of an interesting [story](https://en.wikipedia.org/wiki/CwRsync). On Windows there exist two versions of rsync. The standard FOSS rsync client with [source code from the Samba project](https://rsync.samba.org/) and [cwRsync](https://en.wikipedia.org/wiki/CwRsync), which has a free client but is closed sourced and [monetized via it's server component](https://itefix.net/store/buy?product=49.00000004) by [itefix](https://itefix.net/).
+
+<blockquote class="reaction"><div class="reaction_text">cwRsync has a right to exist, though I do find it a bit scummy to capitalize on FOSS projects <a target="_blank" href="https://www.cygwin.com/">Cygwin</a> and Rsync, considering the client presumably mostly the FOSS Rsync source, compiled via cygwin.</div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
+<a></a>
 
 Anyhow, connecting to proxies with cwRsync simply won't work, if you don't call it from a unix emulating environment. cwRsync will error out with `/bin/sh not found`, due to how [itefix](https://itefix.net/) setup the compilation. Luckily the free open source way works, though the calling convention in windows is a bit of a mess.
 
-The issue to overcome for both rsync is: It needs to be called with the OpenSSH, that it was built with, as it links against OpenSSH of a specific version. But OpenSSH also needs to call our proxy command. The way this call happens depends on the environment and the settings it was built in. If we execute rsync in Windows' Powershell, cygwin is responsible for translating these calls. The call of `rsync.exe` ➡ `ssh.exe` works, but the subsequent call of `ssh.exe` ➡ `proxytunnel.exe`, `connect.exe` or `corkscrew.exe` fails due to cygwin is involved and it's requirement of `sh.exe` to be present. Providing your own `sh.exe` won't work due to binary incompatibility.
+The issue is, that rsync needs to be called with the OpenSSH that it was built with, as it is linked against a specific version. But OpenSSH in turn ***also*** needs to call our proxy command. The way this call happens depends on compilation environment and settings. In Windows' Powershell, cygwin is responsible for translating these calls.
 
-<blockquote class="reaction"><div class="reaction_text">With <a target="_blank" href="https://itefix.net/">itefix</a>'s cwRsync there is no way to fix it, since it's closed source. 👎</div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
+The call of `rsync.exe` ➡ `ssh.exe` works, but the subsequent call of `ssh.exe` ➡ `proxytunnel.exe`, `connect.exe` or `corkscrew.exe` fails, due to cygwin and its requirement of `sh.exe` to be present. Providing your own `sh.exe` won't work due to binary incompatibility.
+
+<blockquote class="reaction"><div class="reaction_text">With <a target="_blank" href="https://itefix.net/">itefix</a>'s cwRsync there is no way to fix it, since it's closed source. 👎</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 <a></a>
 
-This calling convention needs the binary to be in a `usr/bin/` subfolder with `sh.exe` present, due to how cygwin hardcodes things, otherwise you get a `/bin/sh: No such file or directory`. 
+This calling convention needs the binary to be in a `usr/bin/` subfolder with `sh.exe` present, due to how cygwin hardcodes things, otherwise you get a `/bin/sh: No such file or directory`.  Unfortunately, the flexible windows package managers like [scoop](https://scoop.sh/) ships with cwRsync only, something I hope fix in a PR.
 
-Unfortunately, the flexible windows package managers like [scoop](https://scoop.sh/) ships with cwRsync only, something I hope fix in a PR. So we need to install MSYS2, install rsync and make it available in PATH.
-
-As a shortcut, I extracted rsync `v3.3.0` from MSYS2 and the associated `ssh`. Beware that the `usr/bin/` needs to be intact due to Cygwin hardcoding.
+Without resorting to [WSL](https://learn.microsoft.com/en-us/windows/wsl/install), we would need to install [MSYS2](https://www.msys2.org/), install rsync and make it available in PATH. Big fan of MSYS, but that's too much of a mess. As a shortcut, I extracted rsync `v3.3.0` from MSYS2 and the associated `ssh`. Beware that the `usr/bin/` needs to be intact due to Cygwin hardcoding.
 
 <blockquote class="reaction"><div class="reaction_text">Took me a while to figure this mess out.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
 <a></a>
@@ -509,18 +512,13 @@ also `known_hosts` needs an absolute path, so both windows' ssh and our rsync's 
 And finally, we don't want to that huge call each time and we can't expect other tooling relying on rsync to know this huge command. So we can make rsync fetch it from an environment variable. `RSYNC_RSH`.
 
 [corkscrew.zip](corkscrew.zip)
-[rsync-3.4.1-windows.zip](rsync-3.4.1-windows.zip)
+[rsync-3.3.1-windows.zip](rsync-3.3.1-windows.zip)
 
 ![](PATH.png)
 ![](RSYNC_RSH.png)
 
 <blockquote class="reaction"><div class="reaction_text">It's kind of bananas what we have to go through on Windows to get basic tooling without resorting to <a target="_blank" href="https://learn.microsoft.com/en-us/windows/wsl/install">WSL</a> or <a target="_blank" href="https://www.msys2.org/">MSYS 2</a>. Makes me really appreciate what a fine piece of engineering <a target="_blank" href="https://www.msys2.org/">MSYS 2</a> is.</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
 <a></a>
-
-## Corporate proxy
-Now, in modern endpoint security there is usually a VPN what talks to what in what scope is fairly diverse. 
-
-<blockquote class="reaction"><div class="reaction_text">You cannot prevent data exfiltration, there is always a way around it. I wish corporate tech would give its engineers the best tools to succeed instead of blindly chasing compliance.<a target="_blank" href="/about/#disclaimer">disclaimer</a> applies.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 ## Other options
 You can use
