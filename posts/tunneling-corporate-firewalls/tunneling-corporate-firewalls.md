@@ -196,7 +196,7 @@ Let's take a look at what happens inside the network. All captures are performed
 			<td>70</td>
 			<td><code>Client: New Keys</code></td>
 		</tr>
-		<tr class="mobileRow">
+		<tr class="mobileRow">	
 			<td colspan=4><pre>Client: New Keys</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
@@ -295,7 +295,7 @@ Our default SSH connection attempt will error out in such an environment. The ex
 
 ```
 kex_exchange_identification: read: Connection timed out
-banner exchange: Connection to example.com port <SSH Port>: Connection timed out
+banner exchange: Connection to example.com port 22: Connection timed out
 ```
 #### Network capture
 Let's see what happens on the network side. **Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. Here is what traffic **may** look like if it's not going through and being filtered.
@@ -392,7 +392,7 @@ From the perspective of the client, nothing changed as compared to a direct conn
 
 ## The corporate proxy
 
-{% clickableImage "img/proxyBasic.svg", "Corporate Proxy used as egress point to the internet" %}
+{% clickableImage "img/proxyBasic.svg", "Corporate Proxy used as egress point to the internet. Any other outbound connection not going through the proxy (eg. SSH) is blocked by a firewall" %}
 
 A corporate proxy is an exit point to the internet, deployed for security and compliance reasons within a company to monitor for threats and forbid anything that isn't explicitly allowed. Furthermore it's supposed to curb [data exfiltration](https://en.wikipedia.org/wiki/Data_exfiltration) and ensure employees don't setup infrastructure, without clearing it with IT prior.
 
@@ -421,26 +421,282 @@ Proxies are such a vital piece of infrastructure, that we expect the operating s
 	<figcaption>Firefox's proxy settings</figcaption>
 </figure>
 
-But what may come as a surprise, is that such a fundamental piece of infrastructure like OpenSSH doesn't support it, with the exception of [SSH as a proxy itself](https://goteleport.com/blog/ssh-proxyjump-ssh-proxycommand/). Because [Unix philosophy](https://en.wikipedia.org/wiki/Unix_philosophy#Origin) and all that. SSH clients like [Putty](https://www.putty.org/) do, but we'll stick with OpenSSH, which is [FOSS](https://en.wikipedia.org/wiki/Free_and_open-source_software) and comes pre-installed on every OS by now.
+But what may come as a surprise, is that such a fundamental piece of infrastructure like OpenSSH doesn't support it, with the exception of [SSH as a proxy itself](https://goteleport.com/blog/ssh-proxyjump-ssh-proxycommand/). Because [Unix philosophy](https://en.wikipedia.org/wiki/Unix_philosophy#Origin) and all that. SSH clients like [Putty](https://www.putty.org/) do, but we'll stick with OpenSSH. It's [FOSS](https://en.wikipedia.org/wiki/Free_and_open-source_software), other tools rely on it and it comes pre-installed on every OS by now.
 
 <figure>
 	<img src="img/OpenSSH-in-windows.png" alt="OpenSSH Client installed by default in Windows 10 and 11" />
 	<figcaption>OpenSSH Client installed by default in Windows 10 and 11</figcaption>
 </figure>
 
-Instead, OpenSSH supplies `ProxyCommand` and relies on other tools proxying for it. There exist multiple ways to do this, let's start with the simplest ones, with no extra encryption at play. Ignoring the Linux and Mac staple [`nc`](https://en.wikipedia.org/wiki/Netcat) for brevity, cross-platform there are FOSS [`connect.c` aka `ssh-connect`](https://github.com/gotoh/ssh-connect) and [corkscrew](https://github.com/bryanpkc/corkscrew).
+OpenSSH supplies `ProxyCommand` and relies on other tools proxying for it. Many ways to do this. For now, let's start with the simplest ones, with no extra encryption at play. Ignoring the Linux and Mac staple [`nc`](https://en.wikipedia.org/wiki/Netcat) for brevity, there are FOSS [`connect.c` aka `ssh-connect`](https://github.com/gotoh/ssh-connect) and [corkscrew](https://github.com/bryanpkc/corkscrew), working on Linux, BSD, Mac OS and Windows.
 
 `ssh-connect` created by [@gotoh](https://github.com/gotoh) recently moved to GitHub. Most online documentation now points to [a dead bitbucket repo](https://bitbucket.org/gotoh/connect). On Windows specifically it comes as `connect.exe` by default if you install [Git for Windows](https://gitforwindows.org/) and can also [be installed via Sccop](https://scoop.sh/#/apps?q=connect&id=bdf819b2986269a3c7c29074c2d26870a17c4a88) or [MSYS](https://packages.msys2.org/base/mingw-w64-connect).
 
 Though not quite the same, in the context of the article [corkscrew](https://github.com/bryanpkc/corkscrew) does the same. It is more well known as a project, but in contrast to `ssh-connect` has no widely distributed Windows build. For x64 Windows, I have compiled it myself and here it is as a shortcut for testing: [corkscrew.zip](corkscrew.zip).
 
-### Tunneling
+### Baby's first tunnel
+Both `corkscrew` and `ssh-connect` are very simple and can authenticate if the proxy uses `basic auth`. To test out their connection you do not need to setup SSH. First we check whether they can reach our `SSHD` in the first place. Let's use `198.51.100.4` and port `8080` for our corporate proxy.
+```
+corkscrew <corporate-proxy> 8080 example.com 22
+*or*
+connect 
+```
+```
+$ corkscrew 198.51.100.4 8080 example.com 22
+SSH-2.0-OpenSSH_9.9
+```
+```
+$ connect -H 198.51.100.4:8080 example.com 22
+SSH-2.0-OpenSSH_9.9
+```
 
 {% clickableImage "img/tunneledHTTP.svg", "SSH tunneled via HTTP" %}
 
-{% clickableImage "img/tunneledHTTPS.svg", "SSH tunneled via HTTP" %}
+{% clickableImage "img/tunneledHTTPS.svg", "SSH tunneled via HTTPS" %}
 
 #### Network capture
+**Source** 💻 is a Laptop attempting `ssh user@example.com`, with `ProxyCommand corkscrew 198.51.100.4 8080 example.com 22`. **Target** 🏢 is an intermediate proxy sitting in between a private subnet and the internet.
+
+<table>
+	<thead>
+		<tr>
+			<th>Direction</th>
+			<th>Protocol</th>
+			<th>Length</th>
+			<th>Info</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>💻 ➡ 🏢</td>
+			<td>TCP</td>
+			<td>66</td>
+			<td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1`|</td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1</pre></td>
+	</tr>
+	<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>66</td>
+<td><code>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</pre></td>
+	</tr>
+<tr><td>💻 ➡ 🏢</td><td>TCP</td><td>60</td>
+<td><code>[ACK] Seq=1 Ack=1 Win=131328 Len=0`|</td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>[ACK] Seq=1 Ack=1 Win=131328 Len=0</pre></td>
+	</tr>
+<tr><td>💻 ➡ 🏢</td><td>TCP</td><td>89</td>
+<td><code>CONNECT  example.com:22 HTTP/1.0  [TCP segment of a reassembled PDU]`|</td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>CONNECT  example.com:22 HTTP/1.0  [TCP segment of a reassembled PDU]</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<td><code>[ACK] Seq=1 Ack=36 Win=64256 Len=0`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>[ACK] Seq=1 Ack=36 Win=64256 Len=0</pre></td>
+	</tr>
+<tr><td>💻 ➡ 🏢</td><td>HTTP</td><td>60</td>
+<td><code>CONNECT  example.com:22 HTTP/1.0`|</td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>CONNECT  example.com:22 HTTP/1.0</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<td><code>[ACK] Seq=1 Ack=38 Win=64256 Len=0`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>[ACK] Seq=1 Ack=38 Win=64256 Len=0</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>HTTP</td><td>93</td>
+<td><code>HTTP/1.0 200 Connection established`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>HTTP/1.0 200 Connection established</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSH</td><td>95</td>
+<td><code>Client: Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>Client: Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</pre></td>
+	</tr>
+<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>87</td>
+<td><code>Server: Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)`|</td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>Server: Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<td><code>[ACK] Seq=81 Ack=71 Win=64256 Len=0`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>[ACK] Seq=81 Ack=71 Win=64256 Len=0</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>1110</td>
+<td><code>Client: Key Exchange Init`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>Client: Key Exchange Init</pre></td>
+	</tr>
+<tr><td>💻 ➡ 🏢</td><td>TCP</td><td>1078</td>
+<td><code>[TCP segment of a reassembled PDU]`|</td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>[TCP segment of a reassembled PDU]</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<td><code>[ACK] Seq=1137 Ack=1095 Win=64128 Len=0`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>[ACK] Seq=1137 Ack=1095 Win=64128 Len=0</pre></td>
+	</tr>
+<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>510</td>
+<td><code>Server: Key Exchange Init, Diffie-Hellman Key Exchange Init`|</td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>Server: Key Exchange Init, Diffie-Hellman Key Exchange Init</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<td><code>[ACK] Seq=1137 Ack=1551 Win=64128 Len=0`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>[ACK] Seq=1137 Ack=1551 Win=64128 Len=0</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>562</td>
+<td><code>Client: Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>Client: Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</pre></td>
+	</tr>
+<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>114</td>
+<td><code>Server: New Keys, Encrypted packet (len=44)`|</td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>Server: New Keys, Encrypted packet (len=44)</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>98</td>
+<td><code>Client: Encrypted packet (len=44)`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>Client: Encrypted packet (len=44)</pre></td>
+	</tr>
+<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>114</td>
+<td><code>Server: Encrypted packet (len=60)`|</td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>Server: Encrypted packet (len=60)</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>98</td>
+<td><code>Client: Encrypted packet (len=44)`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>Client: Encrypted packet (len=44)</pre></td>
+	</tr>
+<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>554</td>
+<td><code>Server: Encrypted packet (len=500)`|</td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>Server: Encrypted packet (len=500)</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>514</td>
+<td><code>Client: Encrypted packet (len=460)`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>Client: Encrypted packet (len=460)</pre></td>
+	</tr>
+<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>962</td>
+<td><code>Server: Encrypted packet (len=908)`|</td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>Server: Encrypted packet (len=908)</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>82</td>
+<td><code>Client: Encrypted packet (len=28)`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>Client: Encrypted packet (len=28)</pre></td>
+	</tr>
+<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>166</td>
+<td><code>Server: Encrypted packet (len=112)`|</td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>Server: Encrypted packet (len=112)</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<td><code>[ACK] Seq=2221 Ack=3191 Win=64128 Len=0`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>[ACK] Seq=2221 Ack=3191 Win=64128 Len=0</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>830</td>
+<td><code>Client: Encrypted packet (len=776)`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>Client: Encrypted packet (len=776)</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>202</td>
+<td><code>Client: Encrypted packet (len=148)`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>Client: Encrypted packet (len=148)</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>98</td>
+<td><code>Client: Encrypted packet (len=44)`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>Client: Encrypted packet (len=44)</pre></td>
+	</tr>
+<tr><td>💻 ➡ 🏢</td><td>TCP</td><td>60</td>
+<td><code>[ACK] Seq=3191 Ack=3189 Win=131328 Len=0`|</td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>[ACK] Seq=3191 Ack=3189 Win=131328 Len=0</pre></td>
+	</tr>
+<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>190</td>
+<td><code>Server: Encrypted packet (len=136)`|</td>
+	</tr>
+	<tr class="mobileRow">
+			<td colspan=4><pre>Server: Encrypted packet (len=136)</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<td><code>[ACK] Seq=3189 Ack=3327 Win=64128 Len=0`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>[ACK] Seq=3189 Ack=3327 Win=64128 Len=0</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>162</td>
+<td><code>Client: Encrypted packet (len=108)`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>Client: Encrypted packet (len=108)</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>754</td>
+<td><code>Client: Encrypted packet (len=700)`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>Client: Encrypted packet (len=700)</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>370</td>
+<td><code>Client: Encrypted packet (len=316)`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>Client: Encrypted packet (len=316)</pre></td>
+	</tr>
+<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>346</td>
+<td><code>Client: Encrypted packet (len=292)`|</td>
+	</tr>
+	<tr class="mobileRow targetSourceRow">
+			<td colspan=4><pre>Client: Encrypted packet (len=292)</pre></td>
+	</tr>
+		<tr style="text-align: center; border-bottom: 1px solid #40363a;">
+		<td colspan=4><code>Encrypted packets</code> go back and forth for the duration of the session</td>
+		</tr>
+	</tbody>
+</table>
 
 ## Tunneling
 Let's jump in with the most basic first step.
@@ -476,8 +732,12 @@ httpd = {
 };
 ```
 
-## Rsync
-### Rsync on Windows
+## What *not* to do
+There are some projects which go the jackhammer route of exposing the shell as an HTTP service. The more popular ones are [Wetty](https://github.com/butlerx/wetty) and [Shell in a Box](https://github.com/shellinabox/shellinabox). Besides 
+
+## Dev tools
+### Rsync
+#### Rsync on Windows
 This is a bit of an interesting [story](https://en.wikipedia.org/wiki/CwRsync). On Windows there exist two versions of rsync. The standard FOSS rsync client with [source code from the Samba project](https://rsync.samba.org/) and [cwRsync](https://en.wikipedia.org/wiki/CwRsync), which has a free client but is closed sourced and [monetized via it's server component](https://itefix.net/store/buy?product=49.00000004) by [itefix](https://itefix.net/).
 
 <blockquote class="reaction"><div class="reaction_text">cwRsync has a right to exist, though I do find it a bit scummy to capitalize on FOSS projects <a target="_blank" href="https://www.cygwin.com/">Cygwin</a> and Rsync, considering the client presumably mostly the FOSS Rsync source, compiled via cygwin.</div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
@@ -530,12 +790,7 @@ And finally, we don't want to that huge call each time and we can't expect other
 
 ## Other options
 You can use
-https://github.com/butlerx/wetty or https://github.com/shellinabox/shellinabox , but exposing the shell on as a website is not the best idea, as HTTPS itself may be compromised in a corporate environment due to DPI.
 
-
-There is the connection multiplexer [https://github.com/yrutschle/sslh](SSLH), which can sit in front of your HTTP server and redirect the packets based on type. However, such a modification of infrastructure may simply be impossible and doesn't solve the issue of SSH connections being potentially filtered. It remains a popular choice for many.
-
-There are many ways to build your tunnel. Over ICMP.
 
 All of these need HTTP/1.1 () If the intermediate Proxy communicates with HTTP/2, your connections will error out
 
@@ -543,45 +798,7 @@ All of these need HTTP/1.1 () If the intermediate Proxy communicates with HTTP/2
 ### `connect.exe` and `corkscrew.exe`
 Let's see what it looks like from the intermediate, corporate proxy. We are looking at the communication between the Proxy and the Laptop specifically. And this is again the output of wireshark.
 
-| Direction | Protocol | Length | Info |
-| --- | --- | --- | --- |
-| 💻 →  🖥 |TCP	| 66	| `62543 → 9999 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1`|
-| 🖥 →  💻 |TCP	| 66	| `9999 → 62543 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128`|
-| 💻 →  🖥 |TCP	| 60	| `62543 → 9999 [ACK] Seq=1 Ack=1 Win=131328 Len=0`|
-| 💻 →  🖥 |TCP	| 89	| `CONNECT  🖥:22 HTTP/1.0  [TCP segment of a reassembled PDU]`|
-| 🖥 →  💻 |TCP	| 54	| `9999 → 62543 [ACK] Seq=1 Ack=36 Win=64256 Len=0`|
-| 💻 →  🖥 |HTTP	| 60	| `CONNECT  🖥:22 HTTP/1.0`|
-| 🖥 →  💻 |TCP	| 54	| `9999 → 62543 [ACK] Seq=1 Ack=38 Win=64256 Len=0`|
-| 🖥 →  💻 |HTTP	| 93	| `HTTP/1.0 200 Connection established`|
-| 🖥 →  💻 |SSH	| 95	| `Client: Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)`|
-| 💻 →  🖥 |SSHv2	| 87	| `Server: Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)`|
-| 🖥 →  💻 |TCP	| 54	| `9999 → 62543 [ACK] Seq=81 Ack=71 Win=64256 Len=0`|
-| 🖥 →  💻 |SSHv2	| 1110	| `Client: Key Exchange Init`|
-| 💻 →  🖥 |TCP	| 1078	| `[TCP segment of a reassembled PDU]`|
-| 🖥 →  💻 |TCP	| 54	| `9999 → 62543 [ACK] Seq=1137 Ack=1095 Win=64128 Len=0`|
-| 💻 →  🖥 |SSHv2	| 510	| `Server: Server: Key Exchange Init, Diffie-Hellman Key Exchange Init`|
-| 🖥 →  💻 |TCP	| 54	| `9999 → 62543 [ACK] Seq=1137 Ack=1551 Win=64128 Len=0`|
-| 🖥 →  💻 |SSHv2	| 562	| `Client: Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)`|
-| 💻 →  🖥 |SSHv2	| 114	| `Server: New Keys, Encrypted packet (len=44)`|
-| 🖥 →  💻 |SSHv2	| 98	| `Client: Encrypted packet (len=44)`|
-| 💻 →  🖥 |SSHv2	| 114	| `Server: Encrypted packet (len=60)`|
-| 🖥 →  💻 |SSHv2	| 98	| `Client: Encrypted packet (len=44)`|
-| 💻 →  🖥 |SSHv2	| 554	| `Server: Encrypted packet (len=500)`|
-| 🖥 →  💻 |SSHv2	| 514	| `Client: Encrypted packet (len=460)`|
-| 💻 →  🖥 |SSHv2	| 962	| `Server: Encrypted packet (len=908)`|
-| 🖥 →  💻 |SSHv2	| 82	| `Client: Encrypted packet (len=28)`|
-| 💻 →  🖥 |SSHv2	| 166	| `Server: Encrypted packet (len=112)`|
-| 🖥 →  💻 |TCP	| 54	| `9999 → 62543 [ACK] Seq=2221 Ack=3191 Win=64128 Len=0`|
-| 🖥 →  💻 |SSHv2	| 830	| `Client: Encrypted packet (len=776)`|
-| 🖥 →  💻 |SSHv2	| 202	| `Client: Encrypted packet (len=148)`|
-| 🖥 →  💻 |SSHv2	| 98	| `Client: Encrypted packet (len=44)`|
-| 💻 →  🖥 |TCP	| 60	| `62543 → 9999 [ACK] Seq=3191 Ack=3189 Win=131328 Len=0`|
-| 💻 →  🖥 |SSHv2	| 190	| `Server: Encrypted packet (len=136)`|
-| 🖥 →  💻 |TCP	| 54	| `9999 → 62543 [ACK] Seq=3189 Ack=3327 Win=64128 Len=0`|
-| 🖥 →  💻 |SSHv2	| 162	| `Client: Encrypted packet (len=108)`|
-| 🖥 →  💻 |SSHv2	| 754	| `Client: Encrypted packet (len=700)`|
-| 🖥 →  💻 |SSHv2	| 370	| `Client: Encrypted packet (len=316)`|
-| 🖥 →  💻 |SSHv2	| 346	| `Client: Encrypted packet (len=292)`|
+
 
 As you can see, even though we speak HTTP, the proxy still clocks that SSH is going here.
 
