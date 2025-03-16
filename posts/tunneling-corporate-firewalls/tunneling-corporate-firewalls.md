@@ -43,14 +43,16 @@ We'll go through all the ways you may SSH into your server, with increasing leve
 
 Let's start with a classic default setup: [SSHD](https://man.openbsd.org/sshd.8), the SSH daemon of OpenSSH is listening on Port 22, your WebApp is accessed via HTTP and HTTPS on Port 80 and 443 respectively. These ports are [port-forwarded](https://en.wikipedia.org/wiki/Port_forwarding) and accessible by anyone via a static IP address or a domain name.
 
-You also probably have the basics of SSH security down: You have setup [fail2ban to prevent password brute forcing](https://github.com/fail2ban/fail2ban) and/or configured SSHD to [reject logins via password](https://www.cyberciti.biz/faq/how-to-disable-ssh-password-login-on-linux/) and only allow [key based authentication](https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server).
+You have the basics of SSH security: [fail2ban to prevent password brute forcing](https://github.com/fail2ban/fail2ban) and/or configured `SSHD` to [reject logins via password](https://www.cyberciti.biz/faq/how-to-disable-ssh-password-login-on-linux/) and only allow [key based authentication](https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server). Whilst [security through obscurity](https://en.wikipedia.org/wiki/Security_through_obscurity) is bad, we don't have to make it too obvious for random port scans and `SSHD` on ports like [59274](https://datatracker.ietf.org/doc/html/rfc6335#section-6) is just as valid.
 
 This "direct" connection also covers the case, that your proxy has whitelisted this connection to be `direct`, is part of a company internal subnet not going through a proxy to the outside or that the target is within your company VPN.
 
 #### Network capture
-Let's take a look at what happens inside the network. All captures are performed with [wireshark](https://github.com/wireshark/wireshark). **Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. The capture concerns just this specific connection. As there is no intermediary yet, the capture is performed on **Source** 💻.
+Let's take a look at what happens inside the network. All [captures](https://en.wikipedia.org/wiki/Packet_analyzer) are performed with [wireshark](https://github.com/wireshark/wireshark). **Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. The capture concerns just this specific [TCP connection](https://en.wikipedia.org/wiki/Transmission_Control_Protocol). As there is no intermediary yet, the capture is performed on **Source** 💻.
 
-<blockquote class="reaction"><div class="reaction_text">Rows with 💻 ➡ 🌍 mean outgoing packets, aka <strong>Source ➡ Target</strong>. Rows with 🌍 ➡ 💻 and a <span style="background-color: #0006">dark background</span> indicate incoming packets, aka <strong>Target ➡ Source</strong>.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+Each individual packet's **Direction** is determined by the Source and Destination [IP address](https://en.wikipedia.org/wiki/IP_address	), **Protocol** is judged by wireshark based on packet contents and connection history, **Length** is the packet size in bytes and **Info** is wireshark's quick summary of what the packet is or does.
+
+<blockquote class="reaction"><div class="reaction_text">Rows with 💻 ➡ 🌍 mean outgoing <a target="_blank" href="https://en.wikipedia.org/wiki/Network_packet">packets</a>, aka <strong>Source ➡ Target</strong>. Rows with 🌍 ➡ 💻 and a <span style="background-color: #0006">dark background</span> indicate incoming packets, aka <strong>Target ➡ Source</strong>.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 <style>
 	.targetSourceRow{
 		background-color: #0004;
@@ -122,10 +124,10 @@ Let's take a look at what happens inside the network. All captures are performed
 			<td>💻 ➡ 🌍</td>
 			<td>SSHv2</td>
 			<td>87</td>
-			<td><code>Client: Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</code></td>
+			<td><code>Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</code></td>
 		</tr>
 		<tr class="mobileRow">
-			<td colspan=4><pre>Client: Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</pre></td>
+			<td colspan=4><pre>Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
 			<td>🌍 ➡ 💻</td>
@@ -140,37 +142,37 @@ Let's take a look at what happens inside the network. All captures are performed
 			<td>🌍 ➡ 💻</td>
 			<td>SSHv2</td>
 			<td>95</td>
-			<td><code>Server: Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</code></td>
+			<td><code>Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</code></td>
 		</tr>
 		<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Server: Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</pre></td>
+			<td colspan=4><pre>Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</pre></td>
 		</tr>
 		<tr>
 			<td>💻 ➡ 🌍</td>
 			<td>SSHv2</td>
 			<td>1486</td>
-			<td><code>Client: Key Exchange Init</code></td>
+			<td><code>Key Exchange Init</code></td>
 		</tr>
 		<tr class="mobileRow">
-			<td colspan=4><pre>Client: Key Exchange Init</pre></td>
+			<td colspan=4><pre>Key Exchange Init</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
 			<td>🌍 ➡ 💻</td>
 			<td>SSHv2</td>
 			<td>1110</td>
-			<td><code>Server: Key Exchange Init</code></td>
+			<td><code>Key Exchange Init</code></td>
 		</tr>
 		<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Server: Key Exchange Init</pre></td>
+			<td colspan=4><pre>Key Exchange Init</pre></td>
 		</tr>
 		<tr>
 			<td>💻 ➡ 🌍</td>
 			<td>SSHv2</td>
 			<td>102</td>
-			<td><code>Client: Elliptic Curve Diffie-Hellman Key Exchange Init</code></td>
+			<td><code>Elliptic Curve Diffie-Hellman Key Exchange Init</code></td>
 		</tr>
 		<tr class="mobileRow">
-			<td colspan=4><pre>Client: Elliptic Curve Diffie-Hellman Key Exchange Init</pre></td>
+			<td colspan=4><pre>Elliptic Curve Diffie-Hellman Key Exchange Init</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
 			<td>🌍 ➡ 💻</td>
@@ -185,19 +187,19 @@ Let's take a look at what happens inside the network. All captures are performed
 			<td>🌍 ➡ 💻</td>
 			<td>SSHv2</td>
 			<td>562</td>
-			<td><code>Server: Elliptic Curve Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</code></td>
+			<td><code>Elliptic Curve Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</code></td>
 		</tr>
 		<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Server: Elliptic Curve Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</pre></td>
+			<td colspan=4><pre>Elliptic Curve Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</pre></td>
 		</tr>
 		<tr>
 			<td>💻 ➡ 🌍</td>
 			<td>SSHv2</td>
 			<td>70</td>
-			<td><code>Client: New Keys</code></td>
+			<td><code>New Keys</code></td>
 		</tr>
 		<tr class="mobileRow">	
-			<td colspan=4><pre>Client: New Keys</pre></td>
+			<td colspan=4><pre>New Keys</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
 			<td>🌍 ➡ 💻</td>
@@ -212,10 +214,10 @@ Let's take a look at what happens inside the network. All captures are performed
 			<td>💻 ➡ 🌍</td>
 			<td>SSHv2</td>
 			<td>98</td>
-			<td><code>Client: Encrypted packet (len=44)</code></td>
+			<td><code>Encrypted packet (len=44)</code></td>
 		</tr>
 		<tr class="mobileRow">
-			<td colspan=4><pre>Client: Encrypted packet (len=44)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=44)</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
 			<td>🌍 ➡ 💻</td>
@@ -230,19 +232,19 @@ Let's take a look at what happens inside the network. All captures are performed
 			<td>🌍 ➡ 💻</td>
 			<td>SSHv2</td>
 			<td>98</td>
-			<td><code>Server: Encrypted packet (len=44)</code></td>
+			<td><code>Encrypted packet (len=44)</code></td>
 		</tr>
 		<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Server: Encrypted packet (len=44)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=44)</pre></td>
 		</tr>
 		<tr>
 			<td>💻 ➡ 🌍</td>
 			<td>SSHv2</td>
 			<td>114</td>
-			<td><code>Client: Encrypted packet (len=60)</code></td>
+			<td><code>Encrypted packet (len=60)</code></td>
 		</tr>
 		<tr class="mobileRow">
-			<td colspan=4><pre>Client: Encrypted packet (len=60)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=60)</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
 			<td>🌍 ➡ 💻</td>
@@ -257,19 +259,19 @@ Let's take a look at what happens inside the network. All captures are performed
 			<td>🌍 ➡ 💻</td>
 			<td>SSHv2</td>
 			<td>98</td>
-			<td><code>Server: Encrypted packet (len=44)</code></td>
+			<td><code>Encrypted packet (len=44)</code></td>
 		</tr>
 		<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Server: Encrypted packet (len=44)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=44)</pre></td>
 		</tr>
 		<tr>
 			<td>💻 ➡ 🌍</td>
 			<td>SSHv2</td>
 			<td>554</td>
-			<td><code>Client: Encrypted packet (len=500)</code></td>
+			<td><code>Encrypted packet (len=500)</code></td>
 		</tr>
 		<tr class="mobileRow">
-			<td colspan=4><pre>Client: Encrypted packet (len=500)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=500)</pre></td>
 		</tr>
 		<tr style="text-align: center">
 			<td colspan=4><code>Encrypted packets</code> go back and forth for the duration of the session</td>
@@ -277,13 +279,13 @@ Let's take a look at what happens inside the network. All captures are performed
 	</tbody>
 </table>
 
-The first 3 packets are the standard [TCP handshake](https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake/). After that SSH begins its authentication, key change and encryption setup. You can kinda imply this to be SSH, as the communication happens on port 22. More obviously, anyone looking at the traffic can easily clock this as SSH, as the setup phase loudly proclaims to be SSH.
+The first 3 packets are the standard [TCP handshake](https://en.wikipedia.org/wiki/Transmission_Control_Protocol#Connection_establishment). After that SSH begins its authentication, key change and encryption setup. You can *kinda* imply this to be SSH, as the communication happens on port 22. More obviously, anyone looking at the traffic can easily clock this as SSH, as the setup phase [loudly proclaims](https://datatracker.ietf.org/doc/html/rfc4253#section-4.2) to be SSH.
 
-Even after the communication became fully encrypted, we can still infer this communication to be SSH, as this is still one specific connection, that we **know** previously talked the "SSH way". Inferring the connection type by looking at the packets and connection history is what's known as [packet-sniffing](https://en.wikipedia.org/wiki/Packet_analyzer).
+Even after the communication became fully encrypted, we can still infer this communication to be SSH, as this is still one specific connection, that we **know** previously talked with a "SSH smell". Inferring the connection type by looking at the packets and connection history is what's known as [packet-sniffing](https://en.wikipedia.org/wiki/Packet_analyzer).
 
 ### Blocked by firewall
 
-{% clickableImage "img/dumbfirewall.svg", "SSH connection blocked by firewall rule" %}
+{% clickableImage "img/dumbfirewall.svg", "SSH connection blocked by a firewall rule" %}
 
 <blockquote class="reaction"><div class="reaction_text">Click the image for fullscreen, or finger zoom on mobile. The illustrations will get longer and longer going forward.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
@@ -370,7 +372,9 @@ Let's see what happens on the network side. **Source** 💻 is a Laptop attempti
 	</tbody>
 </table>
 
-The (true) target never responds to our requests, before our clients gives up with the [`RST`](https://developers.cloudflare.com/fundamentals/reference/tcp-connections/#tcp-connections-and-keep-alives) signal. Note that for the first three packets, aka the [TCP handshake](https://www.cloudflare.com/learning/ssl/what-happens-in-a-tls-handshake/), the [MSS (maximum segment size)](https://www.cloudflare.com/learning/network-layer/what-is-mss/) is not identical, a ***weak*** indication that whoever responded to us it not our actual target, but some kind of firewall or whatever.
+***INVESTIGATE***
+
+The (true) target never responds to our requests, before our clients gives up with the [`RST`](https://developers.cloudflare.com/fundamentals/reference/tcp-connections/#tcp-connections-and-keep-alives) signal. Note that for the first three packets, aka the [TCP handshake](https://en.wikipedia.org/wiki/Transmission_Control_Protocol#Connection_establishment), the [MSS (maximum segment size)](https://www.cloudflare.com/learning/network-layer/what-is-mss/) is not identical, a ***weak*** indication that whoever responded to us it not our actual target, but some kind of firewall or whatever.
 
 ### SSH on port 443
 
@@ -388,7 +392,7 @@ One popular solution to this is the connection multiplexer [SSLH](https://github
 
 <blockquote class="reaction"><div class="reaction_text">To be clear, the connections themselves are not mixed protocol and the clients need no modification. SSLH only determines where the connection is established to.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
-From the perspective of the client, nothing changed as compared to a direct connection. However, it requires a **new piece of software** to sit in front of your entire server-side communication stack. One more thing to maintain, one more thing to fail. And still, subject to be blocked by corporate proxies and packet sniffing firewalls.
+From the perspective of the client, nothing changed as compared to a direct connection. However, it requires a **new piece of software** to sit in front of your entire server-side communication stack. One more thing to maintain, one more thing to fail. Still subject to be blocked by corporate proxies and packet sniffing firewalls.
 
 ## The corporate proxy
 
@@ -428,34 +432,55 @@ But what may come as a surprise, is that such a fundamental piece of infrastruct
 	<figcaption>OpenSSH Client installed by default in Windows 10 and 11</figcaption>
 </figure>
 
-OpenSSH supplies `ProxyCommand` and relies on other tools proxying for it. Many ways to do this. For now, let's start with the simplest ones, with no extra encryption at play. Ignoring the Linux and Mac staple [`nc`](https://en.wikipedia.org/wiki/Netcat) for brevity, there are FOSS [`connect.c` aka `ssh-connect`](https://github.com/gotoh/ssh-connect) and [corkscrew](https://github.com/bryanpkc/corkscrew), working on Linux, BSD, Mac OS and Windows.
+<blockquote class="reaction"><div class="reaction_text">With OpenSSH instead of tools like Putty we also get to use Terminals like the <a target="_blank" href="https://github.com/microsoft/terminal">new Windows Terminal</a> or <a target="_blank" href="https://ghostty.org/"> GhostTTY</a> with modern design, good font support and copy-paste that doesn't make you <a target="_blank" href="https://superuser.com/a/180045">blow your brains out</a></div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
+<a></a>
 
-`ssh-connect` created by [@gotoh](https://github.com/gotoh) recently moved to GitHub. Most online documentation now points to [a dead bitbucket repo](https://bitbucket.org/gotoh/connect). On Windows specifically it comes as `connect.exe` by default if you install [Git for Windows](https://gitforwindows.org/) and can also [be installed via Sccop](https://scoop.sh/#/apps?q=connect&id=bdf819b2986269a3c7c29074c2d26870a17c4a88) or [MSYS](https://packages.msys2.org/base/mingw-w64-connect).
+<figure>
+	<img src="img/console.png" alt="OpenSSH Connection in Windows Terminal" />
+	<figcaption>OpenSSH Connection in Windows Terminal</figcaption>
+</figure>
 
-Though not quite the same, in the context of the article [corkscrew](https://github.com/bryanpkc/corkscrew) does the same. It is more well known as a project, but in contrast to `ssh-connect` has no widely distributed Windows build. For x64 Windows, I have compiled it myself and here it is as a shortcut for testing: [corkscrew.zip](corkscrew.zip).
+OpenSSH supplies `ProxyCommand` and relies on other tools proxying for it. Many ways to do this. For now, let's start with the simplest ones, with no extra encryption at play. There are FOSS [`connect.c` aka `ssh-connect`](https://github.com/gotoh/ssh-connect) and [corkscrew](https://github.com/bryanpkc/corkscrew), working on Linux, BSD, Mac OS and Windows.
+
+<blockquote class="reaction"><div class="reaction_text">Linux, BSD and MacOS have <a target="_blank" href="https://en.wikipedia.org/wiki/Netcat"><code>nc</code></a> preinstalled, which can also be used. But we are ignoring it for brevity, as it's more of a general purpose tool and the <a target="_blank" href="https://scoop.sh/#/apps?q=netcat&id=8bec774707c893d2baf0cb999c13936c7bebc306">windows builds</a> are flagged by Windows Defender.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
+
+`ssh-connect` created by [@gotoh](https://github.com/gotoh) recently moved to GitHub. Most online documentation now points to [a dead bitbucket repo](https://bitbucket.org/gotoh/connect). On Windows specifically it comes as `connect.exe`, installed by default with [Git for Windows](https://gitforwindows.org/) and can also [be installed via Sccop](https://scoop.sh/#/apps?q=connect&id=bdf819b2986269a3c7c29074c2d26870a17c4a88) or [MSYS](https://packages.msys2.org/base/mingw-w64-connect).
+
+Though not quite the same, in the context of the article [corkscrew](https://github.com/bryanpkc/corkscrew) does the same. It is more well known as a project, [just 260 lines of C](https://github.com/bryanpkc/corkscrew/blob/master/corkscrew.c), but in contrast to `ssh-connect` has no widely distributed Windows build. For x64 Windows, I have compiled it myself and here it is as a shortcut for testing: [corkscrew.zip](corkscrew.zip).
 
 ### Baby's first tunnel
-Both `corkscrew` and `ssh-connect` are very simple and can authenticate if the proxy uses `basic auth`. To test out their connection you do not need to setup SSH. First we check whether they can reach our `SSHD` in the first place. Let's use `198.51.100.4` and port `8080` for our corporate proxy.
-```
-corkscrew <corporate-proxy> 8080 example.com 22
-*or*
-connect 
-```
+Both `corkscrew` and `ssh-connect` are very simple and can authenticate if the proxy uses `basic auth`. To confirm connection to `SSHD` you don't need to configure SSH. All proxy commands are supposed to return the [SSH identification string](https://datatracker.ietf.org/doc/html/rfc4253#section-4.2), which is how you can check if a connection is established.
+
+<blockquote class="reaction"><div class="reaction_text">Let's use <a target="_blank" href="https://datatracker.ietf.org/doc/html/rfc5737#section-3"><code>198.51.100.4</code></a> and port <code>8080</code> for our corporate proxy.</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
+
 ```
 $ corkscrew 198.51.100.4 8080 example.com 22
 SSH-2.0-OpenSSH_9.9
-```
-```
+/* or */
 $ connect -H 198.51.100.4:8080 example.com 22
 SSH-2.0-OpenSSH_9.9
 ```
 
+If those proxy commands successfully return the [server-side SSH identification string](https://datatracker.ietf.org/doc/html/rfc4253#section-4.2), we are good to go and can use it with SSH. If not, you can diagnose and look for the reason at this stage, without SSH spewing errors at you. Now to use it with SSH, we can supply the `ProxyCommand` like:
+
+```sh
+$ ssh -o ProxyCommand="corkscrew 198.51.100.4 8080 example.com 22" user@
+/* or */
+$ ssh -o ProxyCommand="connect -H 198.51.100.4:8080 example.com 22" user@
+```
+
+<blockquote class="reaction"><div class="reaction_text">This annoyingly long command is <strong>not</strong> how you use SSH. We skip proper SSH configuration until later in the article.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+Using this and optionally `-i` for the keyfile, we can connect to our target server. Note how `ProxyCommand` now determines destination and port. Whilst we can use [placeholders `%h %p`](https://man.openbsd.org/ssh_config#ProxyCommand), `ssh` itself is not involved in matters of routing anymore, so neither `-p` for non-default ports, nor destination after `user@` is required.
+
 {% clickableImage "img/tunneledHTTP.svg", "SSH tunneled via HTTP" %}
 
-{% clickableImage "img/tunneledHTTPS.svg", "SSH tunneled via HTTPS" %}
+Now we communicate with SSH (a TCP protocol) over the corporate Proxy, which speaks HTTP (also a TCP protocol). This classifies our setup as tunneling. SSH talks to `ProxyCommand` and receives SSH packets as if nothing/
+
+https://www.youtube.com/watch?v=se17_0zbZds&t=10s
 
 #### Network capture
-**Source** 💻 is a Laptop attempting `ssh user@example.com`, with `ProxyCommand corkscrew 198.51.100.4 8080 example.com 22`. **Target** 🏢 is an intermediate proxy sitting in between a private subnet and the internet.
+**Source** 💻 is a Laptop performing `ssh -o ProxyCommand="corkscrew 198.51.100.4 8080 example.com 22" user@`. **Target** 🏢 is an intermediate proxy sitting in between a private subnet and the internet. The capture is performed on this intermediate proxy **Target** 🏢.
 
 <table>
 	<thead>
@@ -471,232 +496,235 @@ SSH-2.0-OpenSSH_9.9
 			<td>💻 ➡ 🏢</td>
 			<td>TCP</td>
 			<td>66</td>
-			<td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1`|</td>
+			<td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1</td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1</pre></td>
 	</tr>
 	<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>66</td>
-<td><code>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128`|</td>
+<td><code>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>TCP</td><td>60</td>
-<td><code>[ACK] Seq=1 Ack=1 Win=131328 Len=0`|</td>
+<td><code>[ACK] Seq=1 Ack=1 Win=131328 Len=0</td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>[ACK] Seq=1 Ack=1 Win=131328 Len=0</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>TCP</td><td>89</td>
-<td><code>CONNECT  example.com:22 HTTP/1.0  [TCP segment of a reassembled PDU]`|</td>
+<td><code>CONNECT  example.com:22 HTTP/1.0  [TCP segment of a reassembled PDU]</td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>CONNECT  example.com:22 HTTP/1.0  [TCP segment of a reassembled PDU]</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
-<td><code>[ACK] Seq=1 Ack=36 Win=64256 Len=0`|</td>
+<td><code>[ACK] Seq=1 Ack=36 Win=64256 Len=0</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=1 Ack=36 Win=64256 Len=0</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>HTTP</td><td>60</td>
-<td><code>CONNECT  example.com:22 HTTP/1.0`|</td>
+<td><code>CONNECT  example.com:22 HTTP/1.0</td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>CONNECT  example.com:22 HTTP/1.0</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
-<td><code>[ACK] Seq=1 Ack=38 Win=64256 Len=0`|</td>
+<td><code>[ACK] Seq=1 Ack=38 Win=64256 Len=0</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=1 Ack=38 Win=64256 Len=0</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>HTTP</td><td>93</td>
-<td><code>HTTP/1.0 200 Connection established`|</td>
+<td><code>HTTP/1.0 200 Connection established</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>HTTP/1.0 200 Connection established</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSH</td><td>95</td>
-<td><code>Client: Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)`|</td>
+<td><code>Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Client: Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</pre></td>
+			<td colspan=4><pre>Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>87</td>
-<td><code>Server: Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)`|</td>
+<td><code>Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</td>
 	</tr>
 	<tr class="mobileRow">
-			<td colspan=4><pre>Server: Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</pre></td>
+			<td colspan=4><pre>Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
-<td><code>[ACK] Seq=81 Ack=71 Win=64256 Len=0`|</td>
+<td><code>[ACK] Seq=81 Ack=71 Win=64256 Len=0</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=81 Ack=71 Win=64256 Len=0</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>1110</td>
-<td><code>Client: Key Exchange Init`|</td>
+<td><code>Key Exchange Init</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Client: Key Exchange Init</pre></td>
+			<td colspan=4><pre>Key Exchange Init</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>TCP</td><td>1078</td>
-<td><code>[TCP segment of a reassembled PDU]`|</td>
+<td><code>[TCP segment of a reassembled PDU]</td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>[TCP segment of a reassembled PDU]</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
-<td><code>[ACK] Seq=1137 Ack=1095 Win=64128 Len=0`|</td>
+<td><code>[ACK] Seq=1137 Ack=1095 Win=64128 Len=0</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=1137 Ack=1095 Win=64128 Len=0</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>510</td>
-<td><code>Server: Key Exchange Init, Diffie-Hellman Key Exchange Init`|</td>
+<td><code>Key Exchange Init, Diffie-Hellman Key Exchange Init</td>
 	</tr>
 	<tr class="mobileRow">
-			<td colspan=4><pre>Server: Key Exchange Init, Diffie-Hellman Key Exchange Init</pre></td>
+			<td colspan=4><pre>Key Exchange Init, Diffie-Hellman Key Exchange Init</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
-<td><code>[ACK] Seq=1137 Ack=1551 Win=64128 Len=0`|</td>
+<td><code>[ACK] Seq=1137 Ack=1551 Win=64128 Len=0</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=1137 Ack=1551 Win=64128 Len=0</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>562</td>
-<td><code>Client: Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)`|</td>
+<td><code>Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Client: Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</pre></td>
+			<td colspan=4><pre>Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>114</td>
-<td><code>Server: New Keys, Encrypted packet (len=44)`|</td>
+<td><code>New Keys, Encrypted packet (len=44)</td>
 	</tr>
 	<tr class="mobileRow">
-			<td colspan=4><pre>Server: New Keys, Encrypted packet (len=44)</pre></td>
+			<td colspan=4><pre>New Keys, Encrypted packet (len=44)</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>98</td>
-<td><code>Client: Encrypted packet (len=44)`|</td>
+<td><code>Encrypted packet (len=44)</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Client: Encrypted packet (len=44)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=44)</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>114</td>
-<td><code>Server: Encrypted packet (len=60)`|</td>
+<td><code>Encrypted packet (len=60)</td>
 	</tr>
 	<tr class="mobileRow">
-			<td colspan=4><pre>Server: Encrypted packet (len=60)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=60)</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>98</td>
-<td><code>Client: Encrypted packet (len=44)`|</td>
+<td><code>Encrypted packet (len=44)</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Client: Encrypted packet (len=44)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=44)</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>554</td>
-<td><code>Server: Encrypted packet (len=500)`|</td>
+<td><code>Encrypted packet (len=500)</td>
 	</tr>
 	<tr class="mobileRow">
-			<td colspan=4><pre>Server: Encrypted packet (len=500)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=500)</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>514</td>
-<td><code>Client: Encrypted packet (len=460)`|</td>
+<td><code>Encrypted packet (len=460)</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Client: Encrypted packet (len=460)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=460)</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>962</td>
-<td><code>Server: Encrypted packet (len=908)`|</td>
+<td><code>Encrypted packet (len=908)</td>
 	</tr>
 	<tr class="mobileRow">
-			<td colspan=4><pre>Server: Encrypted packet (len=908)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=908)</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>82</td>
-<td><code>Client: Encrypted packet (len=28)`|</td>
+<td><code>Encrypted packet (len=28)</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Client: Encrypted packet (len=28)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=28)</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>166</td>
-<td><code>Server: Encrypted packet (len=112)`|</td>
+<td><code>Encrypted packet (len=112)</td>
 	</tr>
 	<tr class="mobileRow">
-			<td colspan=4><pre>Server: Encrypted packet (len=112)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=112)</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
-<td><code>[ACK] Seq=2221 Ack=3191 Win=64128 Len=0`|</td>
+<td><code>[ACK] Seq=2221 Ack=3191 Win=64128 Len=0</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=2221 Ack=3191 Win=64128 Len=0</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>830</td>
-<td><code>Client: Encrypted packet (len=776)`|</td>
+<td><code>Encrypted packet (len=776)</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Client: Encrypted packet (len=776)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=776)</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>202</td>
-<td><code>Client: Encrypted packet (len=148)`|</td>
+<td><code>Encrypted packet (len=148)</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Client: Encrypted packet (len=148)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=148)</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>98</td>
-<td><code>Client: Encrypted packet (len=44)`|</td>
+<td><code>Encrypted packet (len=44)</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Client: Encrypted packet (len=44)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=44)</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>TCP</td><td>60</td>
-<td><code>[ACK] Seq=3191 Ack=3189 Win=131328 Len=0`|</td>
+<td><code>[ACK] Seq=3191 Ack=3189 Win=131328 Len=0</td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>[ACK] Seq=3191 Ack=3189 Win=131328 Len=0</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>190</td>
-<td><code>Server: Encrypted packet (len=136)`|</td>
+<td><code>Encrypted packet (len=136)</td>
 	</tr>
 	<tr class="mobileRow">
-			<td colspan=4><pre>Server: Encrypted packet (len=136)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=136)</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
-<td><code>[ACK] Seq=3189 Ack=3327 Win=64128 Len=0`|</td>
+<td><code>[ACK] Seq=3189 Ack=3327 Win=64128 Len=0</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=3189 Ack=3327 Win=64128 Len=0</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>162</td>
-<td><code>Client: Encrypted packet (len=108)`|</td>
+<td><code>Encrypted packet (len=108)</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Client: Encrypted packet (len=108)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=108)</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>754</td>
-<td><code>Client: Encrypted packet (len=700)`|</td>
+<td><code>Encrypted packet (len=700)</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Client: Encrypted packet (len=700)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=700)</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>370</td>
-<td><code>Client: Encrypted packet (len=316)`|</td>
+<td><code>Encrypted packet (len=316)</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Client: Encrypted packet (len=316)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=316)</pre></td>
 	</tr>
 <tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>346</td>
-<td><code>Client: Encrypted packet (len=292)`|</td>
+<td><code>Encrypted packet (len=292)</td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Client: Encrypted packet (len=292)</pre></td>
+			<td colspan=4><pre>Encrypted packet (len=292)</pre></td>
 	</tr>
 		<tr style="text-align: center; border-bottom: 1px solid #40363a;">
 		<td colspan=4><code>Encrypted packets</code> go back and forth for the duration of the session</td>
 		</tr>
 	</tbody>
 </table>
+
+<blockquote class="reaction"><div class="reaction_text">You may have noticed the labels of Source and Target flip.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
 
 ## Tunneling
 Let's jump in with the most basic first step.
@@ -803,6 +831,9 @@ Let's see what it looks like from the intermediate, corporate proxy. We are look
 As you can see, even though we speak HTTP, the proxy still clocks that SSH is going here.
 
 ## proxytunnel.exe
+
+{% clickableImage "img/tunneledHTTPS.svg", "SSH tunneled via HTTPS" %}
+
 https://github.com/ScoopInstaller/Main/pull/6409
 
 | Direction | Protocol | Length | Info |
