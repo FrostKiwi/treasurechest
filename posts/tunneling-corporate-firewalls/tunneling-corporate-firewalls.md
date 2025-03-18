@@ -293,14 +293,33 @@ A "dumb" [firewall](https://en.wikipedia.org/wiki/Firewall_(computing)), which p
 
 For now we ignore potential server-side firewalls and look at client-side only. A popular "set and forget" firewall ruleset to allow internet access but block users from doing other stuff is to only permit outbound TCP Port 80 for HTTP, TCP Port 443 for HTTPS and block everything else.
 
-Our default SSH connection attempt will error out in such an environment. The exact error depends on where and how the blocking is taking place. Provided the domain itself isn't blacklisted, usually it's a [timeout](https://en.wikipedia.org/wiki/Timeout_(computing)) error saying.
+Our default SSH connection attempt will error out in such an environment. The exact error depends on where and how the blocking is taking place. Provided the domain itself isn't blacklisted, usually it's a [timeout](https://en.wikipedia.org/wiki/Timeout_(computing)) error. Looking at the network capture of a dumb firewall isn't very interesting, so let's take a look at a smart one.
 
+#### Network capture
+
+```bash
+$ ssh user@example.com
+ssh: connect to host example.com port 22: Connection timed out
 ```
+
+Source ? Target TCP 74 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
+Source ? Target TCP 74 [TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
+Source ? Target TCP 74 [TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
+Source ? Target TCP 74 [TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
+Source ? Target TCP 74 [TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
+Source ? Target TCP 74 [TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
+Source ? Target TCP 74 [TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
+
+#### Smart Firewall
+
+```bash
+$ ssh user@example.com
 kex_exchange_identification: read: Connection timed out
 banner exchange: Connection to example.com port 22: Connection timed out
 ```
+
 #### Network capture
-Let's see what happens on the network side. **Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. Here is what traffic **may** look like if it's not going through and being filtered.
+**Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. Here is what traffic **may** look like if it's not going through and being filtered by a smart firewall.
 
 <table>
 	<thead>
@@ -341,21 +360,21 @@ Let's see what happens on the network side. **Source** 💻 is a Laptop attempti
 	</tr>
 	<tr>
 		<td>💻 ➡ 🌍</td>
-		<td>TCP</td>
+		<td>SSHv2</td>
 		<td>87</td>
-		<td><code>[PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33</code></td>
+		<td><code>[PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33, Payload: Protocol SSH-2.0-OpenSSH_for_Windows_9.5</code></td>
 	</tr>
 	<tr class="mobileRow">
-			<td colspan=4><pre>[PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33</pre></td>
+			<td colspan=4><pre>[PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33, Payload: Protocol SSH-2.0-OpenSSH_for_Windows_9.5</pre></td>
 	</tr>
 	<tr>
 		<td>💻 ➡ 🌍</td>
-		<td>TCP</td>
+		<td>SSHv2</td>
 		<td>87</td>
-		<td><code>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33</code></td>
+		<td><code>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33, Payload: Protocol SSH-2.0-OpenSSH_for_Windows_9.5</code></td>
 	</tr>
 	<tr class="mobileRow">
-			<td colspan=4><pre>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33</pre></td>
+			<td colspan=4><pre>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33, Payload: Protocol SSH-2.0-OpenSSH_for_Windows_9.5</pre></td>
 	</tr>	
 	<tr style="text-align: center; border-bottom: 1px solid #40363a;">
 		<td colspan=4>This goes on for 7 more <code>[TCP Retransmission]</code> packets</td>
@@ -372,9 +391,26 @@ Let's see what happens on the network side. **Source** 💻 is a Laptop attempti
 	</tbody>
 </table>
 
-***INVESTIGATE***
+<blockquote class="reaction"><div class="reaction_text">Wireshark wasn't smart enough to label the failed length 87 (payload length 33) packets as SSH, even though the contents clearly indicate it was. I changed it manually above for completeness.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-The (true) target never responds to our requests, before our clients gives up with the [`RST`](https://developers.cloudflare.com/fundamentals/reference/tcp-connections/#tcp-connections-and-keep-alives) signal. Note that for the first three packets, aka the [TCP handshake](https://en.wikipedia.org/wiki/Transmission_Control_Protocol#Connection_establishment), the [MSS (maximum segment size)](https://www.cloudflare.com/learning/network-layer/what-is-mss/) is not identical, a ***weak*** indication that whoever responded to us it not our actual target, but some kind of firewall or whatever.
+The target successfully answers our call for a TCP connection,  never responds to our requests, before our clients gives up with the [`RST`](https://developers.cloudflare.com/fundamentals/reference/tcp-connections/#tcp-connections-and-keep-alives) signal.
+
+The server side is just as confused:
+
+```
+    1 0.000000000 Target → Source TCP 66 [SYN] Seq=0 Win=64240 Len=0 MSS=1452 WS=256 SACK_PERM
+    2 0.000074993 Source → Target TCP 66 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128
+    3 0.284110819 Target → Source TCP 60 [ACK] Seq=1 Ack=1 Win=132096 Len=0
+    4 0.284396068 Source → Target TCP 80 [PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+    5 0.284423249 Source → Target TCP 54 [FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0
+    6 0.905775808 Source → Target TCP 54 [TCP Retransmission] [FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0
+    7 1.801848579 Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+    8 3.529749955 Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+    9 6.985862956 Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+   10 13.961840699 Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+   11 27.785785049 Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+   12 55.433829602 Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+```
 
 ### SSH on port 443
 
