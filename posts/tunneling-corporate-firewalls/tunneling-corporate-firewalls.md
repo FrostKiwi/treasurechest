@@ -43,7 +43,7 @@ We'll go through all the ways you may SSH into your server, with increasing leve
 
 Let's start with a classic default setup: [SSHD](https://man.openbsd.org/sshd.8), the SSH daemon of OpenSSH is listening on Port 22, your WebApp is accessed via HTTP and HTTPS on Port 80 and 443 respectively. These ports are [port-forwarded](https://en.wikipedia.org/wiki/Port_forwarding) and accessible by anyone via a static IP address or a domain name.
 
-You have the basics of SSH security: [fail2ban to prevent password brute forcing](https://github.com/fail2ban/fail2ban) and/or configured `SSHD` to [reject logins via password](https://www.cyberciti.biz/faq/how-to-disable-ssh-password-login-on-linux/) and only allow [key based authentication](https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server). Whilst [security through obscurity](https://en.wikipedia.org/wiki/Security_through_obscurity) is bad, we don't have to make it too obvious for random port scans and `SSHD` on ports like [59274](https://datatracker.ietf.org/doc/html/rfc6335#section-6) is just as valid.
+You have the basics of SSH security: [fail2ban to prevent password brute forcing](https://github.com/fail2ban/fail2ban) and/or configured `SSHD` to [reject logins via password](https://www.cyberciti.biz/faq/how-to-disable-ssh-password-login-on-linux/) and only allow [key based authentication](https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server). Whilst [security through obscurity](https://en.wikipedia.org/wiki/Security_through_obscurity) is bad, we don't have to make it *too* obvious for [random port scans](https://support.censys.io/hc/en-us/articles/25692846962708-Censys-Internet-Scanning-Introduction) and `SSHD` on ports like [59274](https://datatracker.ietf.org/doc/html/rfc6335#section-6) is just as valid.
 
 This "direct" connection also covers the case, that your proxy has whitelisted this connection to be `direct`, is part of a company internal subnet not going through a proxy to the outside or that the target is within your company VPN.
 
@@ -283,34 +283,69 @@ The first 3 packets are the standard [TCP handshake](https://en.wikipedia.org/wi
 
 Even after the communication became fully encrypted, we can still infer this communication to be SSH, as this is still one specific connection, that we **know** previously talked with a "SSH smell". Inferring the connection type by looking at the packets and connection history is what's known as [packet-sniffing](https://en.wikipedia.org/wiki/Packet_analyzer).
 
-### Blocked by firewall
+### Blocked by a "dumb" firewall
 
-{% clickableImage "img/dumbfirewall.svg", "SSH connection blocked by a firewall rule" %}
+{% clickableImage "img/dumbfirewall.svg", "SSH connection blocked by a firewall port block rule" %}
 
-<blockquote class="reaction"><div class="reaction_text">Click the image for fullscreen, or finger zoom on mobile. The illustrations will get longer and longer going forward.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Click the image for fullscreen, or finger zoom on mobile. The illustrations will get wider and wider going forward.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 A "dumb" [firewall](https://en.wikipedia.org/wiki/Firewall_(computing)), which performs no packet sniffing, is unable to block SSH *specifically*. These firewalls control which type ([UDP](https://en.wikipedia.org/wiki/User_Datagram_Protocol), [TCP](https://en.wikipedia.org/wiki/Transmission_Control_Protocol), [etc.](https://github.com/Hawzen/hdp)) of packet can go from and to which port, address or application. This applies to both stateless firewalls and [stateful firewalls](https://en.wikipedia.org/wiki/Stateful_firewall), a distinction which we'll ignore going forward.
 
 For now we ignore potential server-side firewalls and look at client-side only. A popular "set and forget" firewall ruleset to allow internet access but block users from doing other stuff is to only permit outbound TCP Port 80 for HTTP, TCP Port 443 for HTTPS and block everything else.
 
-Our default SSH connection attempt will error out in such an environment. The exact error depends on where and how the blocking is taking place. Provided the domain itself isn't blacklisted, usually it's a [timeout](https://en.wikipedia.org/wiki/Timeout_(computing)) error. Looking at the network capture of a dumb firewall isn't very interesting, so let's take a look at a smart one.
-
-#### Network capture
+Our default SSH connection attempt will error out in such an environment. Provided the domain itself isn't blacklisted, [DNS](https://en.wikipedia.org/wiki/Domain_Name_System) resolves correctly and the OS isn't aware of the firewall rule giving you a `ssh: connect to host example.com port 44422: Permission denied`, you'll get this [timeout](https://en.wikipedia.org/wiki/Timeout_(computing)) error after waiting a period:
 
 ```bash
 $ ssh user@example.com
 ssh: connect to host example.com port 22: Connection timed out
 ```
 
-Source ? Target TCP 74 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
-Source ? Target TCP 74 [TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
-Source ? Target TCP 74 [TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
-Source ? Target TCP 74 [TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
-Source ? Target TCP 74 [TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
-Source ? Target TCP 74 [TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
-Source ? Target TCP 74 [TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
+#### Network capture
+**Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. Here is what traffic look like if the firewall is blocking the outgoing communication via a simple port block. Capture is again on **Source** 💻.
 
-#### Smart Firewall
+<table>
+	<thead>
+		<tr>
+			<th>Direction</th>
+			<th>Protocol</th>
+			<th>Length</th>
+			<th>Info</th>
+		</tr>
+	</thead>
+	<tbody>
+<tr><td>💻 ➡ 🌍</td><td>TCP</td><td>74</td><td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</code></td></tr>
+<tr class="mobileRow"><td colspan=4><pre>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</pre></td></tr>
+<tr><td>💻 ➡ 🌍</td><td>TCP</td><td>74</td><td><code>[TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</code></td></tr>
+<tr class="mobileRow"><td colspan=4><pre>[TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</pre></td></tr>
+		<tr style="text-align: center">
+			<td colspan=4>This goes on for 5 more <code>[TCP Retransmission]</code> packets</td>
+		</tr>
+	</tbody>
+</table>
+
+As you might have expected, SSH sends the TCP Handshake `SYN`, which never reaches the server, prompting a bunch of `[TCP Retransmission]` before giving up with a timeout error.
+
+### SSH on port 443
+
+{% clickableImage "img/sshport443.svg", "Usage of different port: SSH connection passing firewall blocking rule" %}
+
+Let's start with the most obvious workaround for our "dumb" firewall case: Set the SSH port to 443. As two services cannot share the same port, we must either disable our HTTP and HTTPS service or set one of them to another port.
+
+This will get us past our dumb firewall case, but will obviously prevent our WebApp from being reachable. Except for the port number, the network capture will look identical to the direct connection case and any packet sniffer will still be able to tell that this is an SSH connection.
+
+### [SSLH](https://github.com/yrutschle/sslh): HTTP and SSH on the same port
+
+{% clickableImage "img/sslh.svg", "SSLH multiplexing both HTTPS and SSH" %}
+
+One popular solution to this is the connection multiplexer [SSLH](https://github.com/yrutschle/sslh). It's usually setup to listen on port 443, checks whether the incoming connection is SSH or HTTPS and establishes the connection to SSHD or your HTTP service respectively. SSLH can do more, but that's the gist of it.
+
+<blockquote class="reaction"><div class="reaction_text">To be clear, the connections themselves are not mixed protocol and the clients need no modification. SSLH only determines where the connection is established to.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+From the perspective of the client, nothing changed as compared to a direct connection. However, it requires a **new piece of software** to sit in front of your entire server-side communication stack. One more thing to maintain, one more thing to fail. Still subject to be blocked by corporate proxies and packet sniffing firewalls.
+
+### Blocked by a "smart" firewall
+
+{% clickableImage "img/smartfirewall.svg", "SSH connection blocked by a packet-inspecting firewall" %}
 
 ```bash
 $ ssh user@example.com
@@ -319,7 +354,7 @@ banner exchange: Connection to example.com port 22: Connection timed out
 ```
 
 #### Network capture
-**Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. Here is what traffic **may** look like if it's not going through and being filtered by a smart firewall.
+**Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. Here is what traffic look like if it's not going through and being filtered by a smart firewall, which inspects traffic.
 
 <table>
 	<thead>
@@ -395,40 +430,22 @@ banner exchange: Connection to example.com port 22: Connection timed out
 
 The target successfully answers our call for a TCP connection,  never responds to our requests, before our clients gives up with the [`RST`](https://developers.cloudflare.com/fundamentals/reference/tcp-connections/#tcp-connections-and-keep-alives) signal.
 
-The server side is just as confused:
+Let's take a look a server side. **Source** 🌍 is the server with SSHD on port 22 and **Target** 💻 is a Laptop attempting `ssh user@example.com`.
 
-```
-    1 0.000000000 Target → Source TCP 66 [SYN] Seq=0 Win=64240 Len=0 MSS=1452 WS=256 SACK_PERM
-    2 0.000074993 Source → Target TCP 66 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128
-    3 0.284110819 Target → Source TCP 60 [ACK] Seq=1 Ack=1 Win=132096 Len=0
-    4 0.284396068 Source → Target TCP 80 [PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
-    5 0.284423249 Source → Target TCP 54 [FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0
-    6 0.905775808 Source → Target TCP 54 [TCP Retransmission] [FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0
-    7 1.801848579 Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
-    8 3.529749955 Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
-    9 6.985862956 Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
-   10 13.961840699 Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
-   11 27.785785049 Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
-   12 55.433829602 Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
-```
+Target → Source TCP 66 [SYN] Seq=0 Win=64240 Len=0 MSS=1452 WS=256 SACK_PERM
+Source → Target TCP 66 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128
+Target → Source TCP 60 [ACK] Seq=1 Ack=1 Win=132096 Len=0
+Source → Target TCP 80 [PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+Source → Target TCP 54 [FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0
+Source → Target TCP 54 [TCP Retransmission] [FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0
+Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
 
-### SSH on port 443
-
-{% clickableImage "img/sshport443.svg", "Usage of different port: SSH connection passing firewall blocking rule" %}
-
-Let's start with the most obvious workaround for our "dumb" firewall case: Set the SSH port to 443. As two services cannot share the same port, we must either disable our HTTP and HTTPS service or set one of them to another port.
-
-This will get us past our dumb firewall case, but will obviously prevent our WebApp from being reachable. Except for the port number, the network capture will look identical to the direct connection case and any packet sniffer will still be able to tell that this is an SSH connection.
-
-### [SSLH](https://github.com/yrutschle/sslh): HTTP and SSH on the same port
-
-{% clickableImage "img/sslh.svg", "SSLH multiplexing both HTTPS and SSH" %}
-
-One popular solution to this is the connection multiplexer [SSLH](https://github.com/yrutschle/sslh). It's usually setup to listen on port 443, checks whether the incoming connection is SSH or HTTPS and establishes the connection to SSHD or your HTTP service respectively. SSLH can do more, but that's the gist of it.
-
-<blockquote class="reaction"><div class="reaction_text">To be clear, the connections themselves are not mixed protocol and the clients need no modification. SSLH only determines where the connection is established to.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
-
-From the perspective of the client, nothing changed as compared to a direct connection. However, it requires a **new piece of software** to sit in front of your entire server-side communication stack. One more thing to maintain, one more thing to fail. Still subject to be blocked by corporate proxies and packet sniffing firewalls.
+<blockquote class="reaction"><div class="reaction_text">Before we get out our hammer drill, let's introduce another antagonist of today's journey...</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
 
 ## The corporate proxy
 
@@ -438,7 +455,7 @@ A corporate proxy is an exit point to the internet, deployed for security and co
 
 <blockquote class="reaction"><div class="reaction_text"><strong>Far</strong> beyond any malicious hacking, employees misconfiguring things, uploading sensitive data to 3rd parties and similar faux pas are <strong>the</strong> prime reason far data leaks.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
-These proxies are usually part of an overarching IT and endpoint security package sold by companies like [Cisco](https://www.cisco.com), [Forcepoint](https://forcepoint.com) and [Fortinet](https://www.fortinet.com/), among others. In Windows land, these are usually setup by [Group policies](https://en.wikipedia.org/wiki/Group_Policy) pre-configuring a system-wide proxy and in *Nix land these are usually pre-configured with an initial OS image.
+These proxies are usually part of an overarching IT and endpoint security package sold by companies like [ThreatLocker](https://www.threatlocker.com), [Forcepoint](https://forcepoint.com) and [Cisco](https://www.cisco.com), among others. In Windows land, these are usually setup by [Group policies](https://en.wikipedia.org/wiki/Group_Policy) pre-configuring a system-wide proxy and in *Nix land these are usually pre-configured with an initial OS image.
 
 <blockquote class="reaction"><div class="reaction_text">On a personal point, I'm not a fan of Forcepoint's <a target="_blank" href="https://en.wikipedia.org/wiki/Forcepoint#Forcepoint">ties to the military industrial complex</a>, but they are diligent and quick with upkeep of their underlying products like false blocks from <a target="_blank" href="https://en.wikipedia.org/wiki/BlackSpider_Technologies_Limited">blackspider / SurfControl</a>.</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 
@@ -759,8 +776,9 @@ https://www.youtube.com/watch?v=se17_0zbZds&t=10s
 	</tbody>
 </table>
 
-<blockquote class="reaction"><div class="reaction_text">You may have noticed the labels of Source and Target flip.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+So as you can see, even though we are HTTP tunneling, the proxy still knows what's going on.
 
+This tunneling method doesn't hide anything, but I've seen this setup work more often than not.
 
 ## Tunneling
 Let's jump in with the most basic first step.
@@ -787,7 +805,7 @@ httpd = {
       extraConfig = ''
         LoadModule proxy_connect_module modules/mod_proxy_connect.so
         ProxyRequests On
-        AllowCONNECT 44422
+        AllowCONNECT 22
         <Proxy localhost>
         </Proxy>
       '';
@@ -974,6 +992,8 @@ The proxy is [non the wiser](https://www.youtube.com/watch?v=otCpCn0l4Wo&t=15s)!
 There are impressive papers with [LLMs guessing somewhat accurately what LLMs are outputting](https://www.youtube.com/watch?v=UfenH7xKO1s) based purely on <strong>encrypted</strong> packet length, as currently ChatBot interfaces like Microsoft's CoPilot send the output token by token as packet by packet.
 
 Unless... [\*cue scary music\*](https://youtu.be/AfjqL0vaBYU?t=5)
+
+{% clickableImage "img/tunneledHTTPSFirewall.svg", "SSH tunneled via HTTPS" %}
 
 ## Deep Packet Inspection 👻
 There is only one way to detect this properly at scale: [Deep packet inspection (DPI)](https://en.wikipedia.org/wiki/Deep_packet_inspection). In the context of HTTPs or corporate connections, this involved pre-installing a [Trusted Root Certification Authority](https://en.wikipedia.org/wiki/Certificate_authority) on the user's machine (i.e. via Windows' group policy), which allows the corporate proxy to strip encryption. But this is such a bad idea, that even the [NSA](https://en.wikipedia.org/wiki/National_Security_Agency) issued [an advisory](https://web.archive.org/web/20191119195359/https://media.defense.gov/2019/Nov/18/2002212783/-1/-1/0/MANAGING%20RISK%20FROM%20TLS%20INSPECTION_20191106.PDF) and the [Cypersecurity & Infrastructure Security Agency CISA](https://en.wikipedia.org/wiki/Cybersecurity_and_Infrastructure_Security_Agency) outright [cautions against it](https://www.cisa.gov/news-events/alerts/2017/03/16/https-interception-weakens-tls-security).
