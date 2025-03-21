@@ -323,7 +323,7 @@ ssh: connect to host example.com port 22: Connection timed out
 	</tbody>
 </table>
 
-As you might have expected, SSH sends the TCP Handshake `SYN`, which never reaches the server, prompting a bunch of `[TCP Retransmission]` before giving up with a timeout error.
+As you might have expected, SSH sends a TCP Handshake `SYN`, which never reaches the server, prompting a bunch of `[TCP Retransmission]` before giving up with a timeout error.
 
 ### SSH on port 443
 
@@ -1011,3 +1011,9 @@ openssl s_client -proxy <Corporate Proxy IP>:<Corporate Proxy Port> -connect <Si
 Don't retype your SSH Key's password until reboot or time limit. On windows 
 
 ![](keyagent-windows.png)
+
+Everything we talked about applies to circumventing internet filters as well, as SSH [supports Dynamic port forwarding](https://man.openbsd.org/ssh#D), allowing you to browse the web, if you connect via `ssh -D 8080 user@example.com` and point your browser to `localhost:8080` as a `SOCKS5` proxy [in the network settings](https://support.mozilla.org/en-US/kb/connection-settings-firefox).
+
+This turns your server into a quasi browser VPN, browsing the web from the perspective of the server and circumventing content filters.
+
+<blockquote class="reaction"><div class="reaction_text">One of many reason, that Windows allows you to block browser proxy settings via group policy. But it's up <strong>to the browser</strong> to enforce that, making it a useless security measure.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
