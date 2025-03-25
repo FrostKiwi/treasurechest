@@ -3,8 +3,12 @@ import { DateTime } from "luxon";
 import * as crypto from "node:crypto";
 import Image from "@11ty/eleventy-img";
 import pluginRss from "@11ty/eleventy-plugin-rss";
-import syntaxHighlight from "@11ty/eleventy-plugin-syntaxhighlight";
 import eleventyPluginFilesMinifier from "@sherby/eleventy-plugin-files-minifier";
+
+/* Styling */
+import syntaxHighlight from "@11ty/eleventy-plugin-syntaxhighlight";
+import "prismjs/components/prism-bash.js";
+import "prismjs/components/prism-shell-session.js";
 
 /* Navigation */
 import markdownIt from "markdown-it"
@@ -30,7 +34,15 @@ export default function (eleventyConfig) {
 	eleventyConfig.addPassthroughCopy("assets");
 	eleventyConfig.addPassthroughCopy({ "posts": "." });
 	/* Syntax Highlighting */
-	eleventyConfig.addPlugin(syntaxHighlight);
+	eleventyConfig.addPlugin(syntaxHighlight, {
+		init: function ({ Prism }) {
+			/* Tunneling Article console highlight */
+			Prism.languages["tunnelingArticleShell"] = Prism.languages.extend("shell-session", {});
+			const tunnelingArticleShell = Prism.languages["tunnelingArticleShell"];
+			tunnelingArticleShell.command.inside.bash.inside.number = /\b\d+(?:\.\d+)*\b/;
+			tunnelingArticleShell.command.inside.bash.inside["function"].pattern = /\b(?:ssh|proxytunnel|connect|corkscrew)\b(?=\s)/;
+		}
+	});
 	/* The required CSS for the PrismJS color theme */
 	eleventyConfig.addPassthroughCopy({
 		"style/ace/theme-gruvbox_dark_hard.js": "ace/theme-gruvbox_dark_hard.js",

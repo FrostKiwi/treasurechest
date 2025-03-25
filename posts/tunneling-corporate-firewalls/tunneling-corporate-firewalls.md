@@ -28,7 +28,7 @@ If you control both Source and Destination, then you can tunnel everything throu
 - [Internet and SSH over DNS requests](https://github.com/yarrick/iodine)
 - [Internet and SSH over WebSockets](https://github.com/erebe/wstunnel)
 
-As for this article, we'll deep-dive ✨***SSH over HTTP(S)***✨. Be it Linux or Windows, we will look at how to setup everything up, what the underlying network traffic looks like and most importantly: how your digital infrastructure is **already** capable of all this ... even if it wasn't supposed to.
+As for this article, we'll deep-dive ✨***SSH over HTTP(S)***✨. Be it Linux, Mac or Windows, we will look at how to setup everything up, what the underlying network traffic looks like and most importantly: how your digital infrastructure is **already** capable of all this ... even if it wasn't supposed to.
 
 <blockquote class="reaction"><div class="reaction_text">Get your hard hats ready, <a target="_blank" href="https://youtu.be/DrYXGwMZrV4&t=8">for tonight we drill the firewall</a></div><img class="kiwi" src="/assets/kiwis/drillAngry.svg"></blockquote>
 
@@ -41,16 +41,16 @@ We'll go through all the ways you may SSH into your server, with increasing leve
 
 {% clickableImage "img/simple.svg", "Schematic of a direct SSH connection" %}
 
-Let's start with a classic default setup: [SSHD](https://man.openbsd.org/sshd.8), the SSH daemon of OpenSSH is listening on Port 22, your WebApp is accessed via HTTP and HTTPS on Port 80 and 443 respectively. These ports are [port-forwarded](https://en.wikipedia.org/wiki/Port_forwarding) and accessible by anyone via a static IP address or a domain name.
+Let's start with a classic default setup: [SSHD](https://man.openbsd.org/sshd.8), the SSH daemon of OpenSSH is listening on Port 22, your WebApp is accessed via HTTP and HTTPS on Port 80 and 443 respectively. Server-side, these ports are [port-forwarded](https://en.wikipedia.org/wiki/Port_forwarding) and accessible by anyone via a static IP address or a domain name.
 
 You have the basics of SSH security: [fail2ban to prevent password brute forcing](https://github.com/fail2ban/fail2ban) and/or configured `SSHD` to [reject logins via password](https://www.cyberciti.biz/faq/how-to-disable-ssh-password-login-on-linux/) and only allow [key based authentication](https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server). Whilst [security through obscurity](https://en.wikipedia.org/wiki/Security_through_obscurity) is bad, we don't have to make it *too* obvious for [random port scans](https://support.censys.io/hc/en-us/articles/25692846962708-Censys-Internet-Scanning-Introduction) and `SSHD` on ports like [59274](https://datatracker.ietf.org/doc/html/rfc6335#section-6) is just as valid.
 
-This "direct" connection also covers the case, that your proxy has whitelisted this connection to be `direct`, is part of a company internal subnet not going through a proxy to the outside or that the target is within your company VPN.
+This "direct" connection also covers the case, that any intermediate corporate proxy has whitelisted this connection to be `direct`, is part of a company internal subnet not going through a proxy to the outside or that the target is within your company VPN.
 
 #### Network capture
 Let's take a look at what happens inside the network. All [captures](https://en.wikipedia.org/wiki/Packet_analyzer) are performed with [wireshark](https://github.com/wireshark/wireshark). **Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. The capture concerns just this specific [TCP connection](https://en.wikipedia.org/wiki/Transmission_Control_Protocol). As there is no intermediary yet, the capture is performed on **Source** 💻.
 
-Each individual packet's **Direction** is determined by the Source and Destination [IP address](https://en.wikipedia.org/wiki/IP_address	), **Protocol** is judged by wireshark based on packet contents and connection history, **Length** is the packet size in bytes and **Info** is wireshark's quick summary of what the packet is or does.
+Each individual packet's **Direction** is determined by the Source and Destination [IP address](https://en.wikipedia.org/wiki/IP_address), **Protocol** is judged by wireshark based on packet contents and connection history, **Length** is the packet size in bytes and **Info** is wireshark's quick summary of what the packet is or does. IPs and ports are left our for brevity.
 
 <blockquote class="reaction"><div class="reaction_text">Rows with 💻 ➡ 🌍 mean outgoing <a target="_blank" href="https://en.wikipedia.org/wiki/Network_packet">packets</a>, aka <strong>Source ➡ Target</strong>. Rows with 🌍 ➡ 💻 and a <span style="background-color: #0006">dark background</span> indicate incoming packets, aka <strong>Target ➡ Source</strong>.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 <style>
@@ -291,11 +291,13 @@ Even after the communication became fully encrypted, we can still infer this com
 
 A "dumb" [firewall](https://en.wikipedia.org/wiki/Firewall_(computing)), which performs no packet sniffing, is unable to block SSH *specifically*. These firewalls control which type ([UDP](https://en.wikipedia.org/wiki/User_Datagram_Protocol), [TCP](https://en.wikipedia.org/wiki/Transmission_Control_Protocol), [etc.](https://github.com/Hawzen/hdp)) of packet can go from and to which port, address or application. This applies to both stateless firewalls and [stateful firewalls](https://en.wikipedia.org/wiki/Stateful_firewall), a distinction which we'll ignore going forward.
 
-For now we ignore potential server-side firewalls and look at client-side only. A popular "set and forget" firewall ruleset to allow internet access but block users from doing other stuff is to only permit outbound TCP Port 80 for HTTP, TCP Port 443 for HTTPS and block everything else.
+<blockquote class="reaction"><div class="reaction_text">Of course "dumb" and "smart" are not technical, it's all about rule-sets and policies. Specific security products, specific configs, placement in the <a target="_blank" href="https://en.wikipedia.org/wiki/OSI_model">OSI Model</a>, is a can of worms this article will not touch.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
+
+For now we look at client-side firewalls only. A popular "set and forget" firewall ruleset to allow internet access but block users from doing other stuff is to only permit outbound TCP Port 80 for HTTP, TCP Port 443 for HTTPS and block everything else. We are ignoring things like [DNS](https://en.wikipedia.org/wiki/Domain_Name_System), E-Mail, etc. here.
 
 Our default SSH connection attempt will error out in such an environment. Provided the domain itself isn't blacklisted, [DNS](https://en.wikipedia.org/wiki/Domain_Name_System) resolves correctly and the OS isn't aware of the firewall rule giving you a `ssh: connect to host example.com port 44422: Permission denied`, you'll get this [timeout](https://en.wikipedia.org/wiki/Timeout_(computing)) error after waiting a period:
 
-```bash
+```tunnelingArticleShell
 $ ssh user@example.com
 ssh: connect to host example.com port 22: Connection timed out
 ```
@@ -349,7 +351,7 @@ From the perspective of the client, nothing changed as compared to a direct conn
 
 A "smart" firewall can additionally look inside packets and block connections based on what traffic it sees. We'll ignore the semantics and [OSI-Layer](https://en.wikipedia.org/wiki/OSI_model) discussion for now. When faced with a smart firewall setup to block either SSH specifically or only allow "normal" HTTPS traffic, you will get a timeout error like this:
 
-```bash
+```tunnelingArticleShell
 $ ssh user@example.com
 kex_exchange_identification: read: Connection timed out
 banner exchange: Connection to example.com port 22: Connection timed out
@@ -399,19 +401,19 @@ banner exchange: Connection to example.com port 22: Connection timed out
 		<td>💻 ➡ 🌍</td>
 		<td>SSHv2</td>
 		<td>87</td>
-		<td><code>[PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33, Payload: Protocol SSH-2.0-OpenSSH_for_Windows_9.5</code></td>
+		<td><code>[PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33, Payload: SSH-2.0-OpenSSH_for_Windows_9.5</code></td>
 	</tr>
 	<tr class="mobileRow">
-			<td colspan=4><pre>[PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33, Payload: Protocol SSH-2.0-OpenSSH_for_Windows_9.5</pre></td>
+			<td colspan=4><pre>[PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33, Payload: SSH-2.0-OpenSSH_for_Windows_9.5</pre></td>
 	</tr>
 	<tr>
 		<td>💻 ➡ 🌍</td>
 		<td>SSHv2</td>
 		<td>87</td>
-		<td><code>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33, Payload: Protocol SSH-2.0-OpenSSH_for_Windows_9.5</code></td>
+		<td><code>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33, Payload: SSH-2.0-OpenSSH_for_Windows_9.5</code></td>
 	</tr>
 	<tr class="mobileRow">
-			<td colspan=4><pre>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33, Payload: Protocol SSH-2.0-OpenSSH_for_Windows_9.5</pre></td>
+			<td colspan=4><pre>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33, Payload: SSH-2.0-OpenSSH_for_Windows_9.5</pre></td>
 	</tr>	
 	<tr style="text-align: center; border-bottom: 1px solid #40363a;">
 		<td colspan=4>This goes on for 7 more <code>[TCP Retransmission]</code> packets</td>
@@ -428,7 +430,7 @@ banner exchange: Connection to example.com port 22: Connection timed out
 	</tbody>
 </table>
 
-<blockquote class="reaction"><div class="reaction_text">Wireshark wasn't smart enough to label the failed length 87 (payload length 33) packets as SSH, even though the contents clearly indicate it was. I changed it manually above for completeness.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Wireshark wasn't smart enough to label the failed banner exchange packets as SSH, even though the packets clearly indicate it was. I changed it manually above and below for completeness.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 The target successfully answers our call for a TCP connection, but never responds to our requests, before our clients gives up with the [`RST`](https://developers.cloudflare.com/fundamentals/reference/tcp-connections/#tcp-connections-and-keep-alives) signal. In the case of TCP connections, "smart" firewalls allow the initial connection to take place, look at what comes next and judge based on that.
 
@@ -461,35 +463,32 @@ Let's reverse our perspective and take a look at server-side. **Source** 🖥️
 	</tr>
 	<tr class="mobileRow targetSourceRow"><td colspan=4><pre>[ACK] Seq=1 Ack=1 Win=132096 Len=0</pre></td>
 	</tr>
-<tr><td>🖥️ ➡ 🌍</td><td>TCP</td><td>80</td><td><code>[PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+<tr><td>🖥️ ➡ 🌍</td><td>SSHv2</td><td>75</td><td><code>[PSH, ACK] Seq=1 Ack=1 Win=64256 Len=21, Payload: SSH-2.0-OpenSSH_9.9
 </code></td>
 	</tr>
-	<tr class="mobileRow"><td colspan=4><pre>[PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26</pre></td>
+	<tr class="mobileRow"><td colspan=4><pre>[PSH, ACK] Seq=1 Ack=1 Win=64256 Len=21, Payload: SSH-2.0-OpenSSH_9.9</pre></td>
 	</tr>
-<tr><td>🖥️ ➡ 🌍</td><td>TCP</td><td>54</td><td><code>[FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0
+<tr><td>🖥️ ➡ 🌍</td><td>SSHv2</td><td>75</td><td><code>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=64256 Len=21, Payload: SSH-2.0-OpenSSH_9.9
 </code></td>
 	</tr>
-	<tr class="mobileRow"><td colspan=4><pre>[FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0</pre></td>
-	</tr>
-<tr><td>🖥️ ➡ 🌍</td><td>TCP</td><td>54</td><td><code>[TCP Retransmission] [FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0
-</code></td>
-	</tr>
-	<tr class="mobileRow"><td colspan=4><pre>[TCP Retransmission] [FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0</pre></td>
-	</tr>
-<tr><td>🖥️ ➡ 🌍</td><td>TCP</td><td>80</td><td><code>[TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
-</code></td>
-	</tr>
-	<tr class="mobileRow"><td colspan=4><pre>[TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26</pre></td>
+	<tr class="mobileRow"><td colspan=4><pre>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=64256 Len=21, Payload: SSH-2.0-OpenSSH_9.9</pre></td>
 	</tr>
 	<tr style="text-align: center; border-bottom: 1px solid #40363a;">
-		<td colspan=4>This goes on for 5 more <code>[TCP Retransmission]</code> packets</td>
+		<td colspan=4>This goes on for 7 more <code>[TCP Retransmission]</code> packets</td>
+	</tr>
+	<tr><td>🖥️ ➡ 🌍</td><td>TCP</td><td>54</td><td><code>[FIN, ACK] Seq=22 Ack=1 Win=64256 Len=0
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>[FIN, ACK] Seq=22 Ack=1 Win=64256 Len=0</pre></td>
 	</tr>
 		</tbody>
 </table>
 
-Same deal here. We observe the initial TCP connection being established, but with a sudden stop of communication, followed by [slow whimper](https://archive.org/details/poems19091925030616mbp/page/n133/mode/2up) of Retransmission call-outs.
+Same deal here. We observe the initial TCP connection being established, but with a sudden stop of communication, followed by [slow whimper](https://archive.org/details/poems19091925030616mbp/page/n133/mode/2up) of server-side identification string Retransmission call-outs.
 
-<blockquote class="reaction"><div class="reaction_text">Before we get out our hammer drill to circumvent this, let's introduce another antagonist of today's journey...</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">You may see server-side <a target="_blank" href="https://github.com/openssh/openssh-portable/blob/6c49e5f7dcaf886b4a702a6c003cae9dca04d3ea/sshd.c#L596"><code>Not allowed at this time</code></a> packets instead, as OpenSSH is <a target="_blank" href="https://github.com/openssh/openssh-portable/blob/6c49e5f7dcaf886b4a702a6c003cae9dca04d3ea/sshd.c#L596">rate-limiting by default via the <code>MaxStartups</code> and penalty system</a>. Either way, these packets are never heard.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+Before we get out our hammer drill to circumvent this, let's introduce another antagonist of today's journey...
 
 ## The corporate proxy
 
@@ -550,19 +549,23 @@ Both `corkscrew` and `ssh-connect` are very simple and can authenticate if the p
 
 <blockquote class="reaction"><div class="reaction_text">Let's use <a target="_blank" href="https://datatracker.ietf.org/doc/html/rfc5737#section-3"><code>198.51.100.4</code></a> and port <code>8080</code> for our corporate proxy.</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 
-```
+```tunnelingArticleShell
 $ corkscrew 198.51.100.4 8080 example.com 22
 SSH-2.0-OpenSSH_9.9
+
 /* or */
+
 $ connect -H 198.51.100.4:8080 example.com 22
 SSH-2.0-OpenSSH_9.9
 ```
 
 If those proxy commands successfully return the [server-side SSH identification string](https://datatracker.ietf.org/doc/html/rfc4253#section-4.2), we are good to go and can use it with SSH. If not, you can diagnose and look for the reason at this stage, without SSH spewing errors at you. Now to use it with SSH, we can supply the `ProxyCommand` like:
 
-```sh
+```tunnelingArticleShell
 $ ssh -o ProxyCommand="corkscrew 198.51.100.4 8080 example.com 22" user@
+
 /* or */
+
 $ ssh -o ProxyCommand="connect -H 198.51.100.4:8080 example.com 22" user@
 ```
 
@@ -572,7 +575,7 @@ Using this and optionally `-i` for the keyfile, we can connect to our target ser
 
 {% clickableImage "img/tunneledHTTP.svg", "SSH tunneled via HTTP" %}
 
-By using `corkscrew` or `ssh-connect`, we instruct the intermediate proxy to handle to connection to SSH port 22 for us and OpenSSH now gets SSH packets delivered by `ProxyCommand`. But why would a corporate proxies do this? How do you make HTTP talk in SSH? [That's the neat thing, you don't...](https://www.youtube.com/watch?v=se17_0zbZds&t=10s)
+By using `corkscrew` or `ssh-connect`, we instruct the intermediate proxy to handle the connection to SSH port 22 for us and OpenSSH now gets SSH packets delivered by `ProxyCommand`. But why would a corporate proxies do this? How do you make HTTP talk in SSH? [That's the neat thing, you don't...](https://www.youtube.com/watch?v=se17_0zbZds&t=10s)
 
 #### Network capture
 **Source** 💻 is a Laptop performing `ssh -o ProxyCommand="corkscrew 198.51.100.4 8080 example.com 22" user@`. **Target** 🏢 is an intermediate proxy sitting in between a private subnet and the internet. The capture is performed on this intermediate proxy **Target** 🏢.
@@ -730,23 +733,37 @@ By using `corkscrew` or `ssh-connect`, we instruct the intermediate proxy to han
 
 We communicate by SSH (a TCP protocol) over the corporate proxy, which speaks HTTP (also a TCP protocol). Though that term is a bit murky, this classifies our setup as **tunneling**. The center point of all this is packet number 6 - [✨ HTTP CONNECT ✨](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT)
 
-`Corkscrew` and `ssh-connect` instruct the corporate proxy to connect to our target server's SSH port via the command `HTTP CONNECT` and relay back what it sees. HTTP CONNECT works by relaying RAW TCP. Similar to the dumb firewall we talked about previously, HTTP CONNECT doesn't understand ***what*** TCP it's actually relaying.
+`Corkscrew` and `ssh-connect` instruct the corporate proxy to connect to our target server's SSH port via the command `HTTP CONNECT` and relay back what it hears. HTTP CONNECT works by relaying RAW TCP. Similar to the dumb firewall we talked about previously, HTTP CONNECT doesn't understand ***what*** TCP it's actually relaying.
 
-So why not forbid HTTP CONNECT? - Because that would break proxy connections with [HTTP***S***](https://en.wikipedia.org/wiki/HTTPS) a basic building block of modern web. Ignoring the unencrypted [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication), the point of HTTPS is that the communication is encrypted. For the proxy to work in the first place, it has to relay TCP blindly. That's what [HTTP CONNECT](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT) is for.
+So why not forbid HTTP CONNECT? - Because that would break proxy connections with [HTTP***S***](https://en.wikipedia.org/wiki/HTTPS), a basic building block of modern web. Ignoring the unencrypted [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication), the point of HTTPS is that the communication is encrypted. For the proxy to work in the first place, it has to relay TCP blindly. That's what [HTTP CONNECT](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT) is for.
 
 <blockquote class="reaction"><div class="reaction_text">Yes, <a href="https://www.youtube.com/watch?v=5eJl2Y8yh_4">put your hand down</a>, we'll get into TLS decryption and DPI.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
-If you take a look at the traffic, you *still* see the connection being clocked as SSH. The intermediate proxy talks to the target server and thus can see the unencrypted SSH setup. If the corporate proxy performs packet sniffing, it will have no issues blocking this. Let's fix that.
+If you take a look at the traffic, you *still* see the connection being clocked as SSH. The intermediate proxy talks to the target `example.com:22` server and thus can see the unencrypted SSH setup. If the corporate proxy performs packet sniffing, it will have no issues blocking this. Let's fix that.
 
-<blockquote class="reaction"><div class="reaction_text">This tunneling method <strong>doesn't hide anything</strong>, but I've seen this setup work more often than not, even in environments where outgoing SSH was supposedly blocked.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">So far, our tunneling method <strong>doesn't hide anything</strong>, but I've seen this setup work more often than not, even in environments where outgoing SSH was supposedly blocked.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
-## proxytunnel.exe
+## HTTP***S*** Tunneling
+We looked at different setups so far, but ultimately, the reasons they exist and the environments they would fail in. Now we get into the meat and potatoes. If we want to hide from packet inspection based filtering, 
 
 {% clickableImage "img/tunneledHTTPS.svg", "SSH tunneled via HTTPS" %}
 
-All of these need HTTP/1.1 () If the intermediate Proxy communicates with HTTP/2, your connections will error out
+As previously, you don't need to configure SSH to confirm connection to `SSHD`.
 
+```tunnelingArticleShell
+$ proxytunnel -X -z -p 198.51.100.4:8080 -r example.com:443 -d 127.0.0.1:22
+Via 198.51.100.4:8080 -> example.com:443 -> 127.0.0.1:22
+SSH-2.0-OpenSSH_9.9
+```
+
+```tunnelingArticleShell
+$ ssh -o ProxyCommand="proxytunnel -X -z -p 198.51.100.4:8080 -r example.com:443 -d 127.0.0.1:22" user@
+```
+
+All of these need HTTP/1.1 () If the intermediate Proxy communicates with HTTP/2, your connections will error out
 https://github.com/ScoopInstaller/Main/pull/6409
+### Network capture
+
 
 
 <table>
