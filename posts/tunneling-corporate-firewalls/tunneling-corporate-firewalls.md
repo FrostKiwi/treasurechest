@@ -4,7 +4,7 @@ title: Tunneling corporate firewalls for developers
 permalink: "/{{ page.fileSlug }}/"
 date: 2025-02-27
 last_modified:
-description: Establish SSH connections and ensure your dev tools work via HTTPS tunneling, even if proxies and firewalls don't let you
+description: Establish SSH connections and ensure your dev tools work via HTTPS tunneling, even if proxies and firewalls won't let you
 publicTags:
   - cyber security
   - web dev
@@ -273,8 +273,8 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 		<tr class="mobileRow">
 			<td colspan=4><pre>Encrypted packet (len=500)</pre></td>
 		</tr>
-		<tr style="text-align: center">
-			<td colspan=4><code>Encrypted packets</code> go back and forth for the duration of the session</td>
+		<tr style="text-align: center; border-bottom: 1px solid #40363a;">
+			<td colspan=4 ><code>Encrypted packets</code> go back and forth for the duration of the session</td>
 		</tr>
 	</tbody>
 </table>
@@ -317,7 +317,7 @@ ssh: connect to host example.com port 22: Connection timed out
 <tr class="mobileRow"><td colspan=4><pre>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</pre></td></tr>
 <tr><td>💻 ➡ 🌍</td><td>TCP</td><td>74</td><td><code>[TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</code></td></tr>
 <tr class="mobileRow"><td colspan=4><pre>[TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</pre></td></tr>
-		<tr style="text-align: center">
+		<tr style="text-align: center; border-bottom: 1px solid #40363a;">
 			<td colspan=4>This goes on for 5 more <code>[TCP Retransmission]</code> packets</td>
 		</tr>
 	</tbody>
@@ -347,6 +347,8 @@ From the perspective of the client, nothing changed as compared to a direct conn
 
 {% clickableImage "img/smartfirewall.svg", "SSH connection blocked by a packet-inspecting firewall" %}
 
+A "smart" firewall can additionally look inside packets and block connections based on what traffic it sees. We'll ignore the semantics and [OSI-Layer](https://en.wikipedia.org/wiki/OSI_model) discussion for now. When faced with a smart firewall setup to block either SSH specifically or only allow "normal" HTTPS traffic, you will get a timeout error like this:
+
 ```bash
 $ ssh user@example.com
 kex_exchange_identification: read: Connection timed out
@@ -375,7 +377,7 @@ banner exchange: Connection to example.com port 22: Connection timed out
 	<tr class="mobileRow">
 			<td colspan=4><pre>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM</pre></td>
 	</tr>
-	<tr style="background-color: #0004;">
+	<tr class="targetSourceRow">
 		<td>🌍 ➡ 💻</td>
 		<td>TCP</td>
 		<td>66</td>
@@ -421,31 +423,73 @@ banner exchange: Connection to example.com port 22: Connection timed out
 		<td><code>[RST, ACK] Seq=34 Ack=1 Win=0 Len=0</code></td>
 	</tr>
 	<tr class="mobileRow">
-			<td colspan=4 style="border-bottom: unset"><pre>[RST, ACK] Seq=34 Ack=1 Win=0 Len=0</pre></td>
+			<td colspan=4><pre>[RST, ACK] Seq=34 Ack=1 Win=0 Len=0</pre></td>
 	</tr>	
 	</tbody>
 </table>
 
 <blockquote class="reaction"><div class="reaction_text">Wireshark wasn't smart enough to label the failed length 87 (payload length 33) packets as SSH, even though the contents clearly indicate it was. I changed it manually above for completeness.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-The target successfully answers our call for a TCP connection,  never responds to our requests, before our clients gives up with the [`RST`](https://developers.cloudflare.com/fundamentals/reference/tcp-connections/#tcp-connections-and-keep-alives) signal.
+The target successfully answers our call for a TCP connection, but never responds to our requests, before our clients gives up with the [`RST`](https://developers.cloudflare.com/fundamentals/reference/tcp-connections/#tcp-connections-and-keep-alives) signal. In the case of TCP connections, "smart" firewalls allow the initial connection to take place, look at what comes next and judge based on that.
 
-Let's take a look a server side. **Source** 🌍 is the server with SSHD on port 22 and **Target** 💻 is a Laptop attempting `ssh user@example.com`.
+After initial TCP connection, the next thing to be sent is the [SSH identification string](https://datatracker.ietf.org/doc/html/rfc4253#section-4.2), something that unequivocally flags our connection as SSH, which the firewall blocks. That's the reason SSH doesn't timeout outright, but rather with this specific `banner exchange` timeout. The [identification strings](https://datatracker.ietf.org/doc/html/rfc4253#section-4.2) never make it to the other side.
 
-Target → Source TCP 66 [SYN] Seq=0 Win=64240 Len=0 MSS=1452 WS=256 SACK_PERM
-Source → Target TCP 66 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128
-Target → Source TCP 60 [ACK] Seq=1 Ack=1 Win=132096 Len=0
-Source → Target TCP 80 [PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
-Source → Target TCP 54 [FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0
-Source → Target TCP 54 [TCP Retransmission] [FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0
-Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
-Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
-Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
-Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
-Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
-Source → Target TCP 80 [TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+Let's reverse our perspective and take a look at server-side. **Source** 🖥️ is the server with SSHD on port 22 and **Target** 🌍 is a Laptop attempting `ssh user@example.com`, the very same connection attempt as above.
 
-<blockquote class="reaction"><div class="reaction_text">Before we get out our hammer drill, let's introduce another antagonist of today's journey...</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
+<table>
+	<thead>
+	<tr>
+		<th>Direction</th>
+		<th>Protocol</th>
+		<th>Length</th>
+		<th>Info</th>
+	</tr>
+	</thead>
+	<tbody>
+<tr class="targetSourceRow"><td>🌍 ➡ 🖥️</td><td>TCP</td><td>66</td><td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1452 WS=256 SACK_PERM
+</code></td>
+	</tr>
+	<tr class="mobileRow targetSourceRow"><td colspan=4><pre>[SYN] Seq=0 Win=64240 Len=0 MSS=1452 WS=256 SACK_PERM</pre></td>
+	</tr>
+<tr><td>🖥️ ➡ 🌍</td><td>TCP</td><td>66</td><td><code>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128</pre></td>
+	</tr>
+<tr class="targetSourceRow"><td>🌍 ➡ 🖥️</td><td>TCP</td><td>60</td><td><code>[ACK] Seq=1 Ack=1 Win=132096 Len=0
+</code></td>
+	</tr>
+	<tr class="mobileRow targetSourceRow"><td colspan=4><pre>[ACK] Seq=1 Ack=1 Win=132096 Len=0</pre></td>
+	</tr>
+<tr><td>🖥️ ➡ 🌍</td><td>TCP</td><td>80</td><td><code>[PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>[PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26</pre></td>
+	</tr>
+<tr><td>🖥️ ➡ 🌍</td><td>TCP</td><td>54</td><td><code>[FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>[FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0</pre></td>
+	</tr>
+<tr><td>🖥️ ➡ 🌍</td><td>TCP</td><td>54</td><td><code>[TCP Retransmission] [FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>[TCP Retransmission] [FIN, ACK] Seq=27 Ack=1 Win=64256 Len=0</pre></td>
+	</tr>
+<tr><td>🖥️ ➡ 🌍</td><td>TCP</td><td>80</td><td><code>[TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>[TCP Retransmission] [FIN, PSH, ACK] Seq=1 Ack=1 Win=64256 Len=26</pre></td>
+	</tr>
+	<tr style="text-align: center; border-bottom: 1px solid #40363a;">
+		<td colspan=4>This goes on for 5 more <code>[TCP Retransmission]</code> packets</td>
+	</tr>
+		</tbody>
+</table>
+
+Same deal here. We observe the initial TCP connection being established, but with a sudden stop of communication, followed by [slow whimper](https://archive.org/details/poems19091925030616mbp/page/n133/mode/2up) of Retransmission call-outs.
+
+<blockquote class="reaction"><div class="reaction_text">Before we get out our hammer drill to circumvent this, let's introduce another antagonist of today's journey...</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
 
 ## The corporate proxy
 
@@ -459,7 +503,7 @@ These proxies are usually part of an overarching IT and endpoint security packag
 
 <blockquote class="reaction"><div class="reaction_text">On a personal point, I'm not a fan of Forcepoint's <a target="_blank" href="https://en.wikipedia.org/wiki/Forcepoint#Forcepoint">ties to the military industrial complex</a>, but they are diligent and quick with upkeep of their underlying products like false blocks from <a target="_blank" href="https://en.wikipedia.org/wiki/BlackSpider_Technologies_Limited">blackspider / SurfControl</a>.</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 
-Among these corporate proxies, it's not uncommon to have packet sniffing capabilities, preventing connections that don't pass the sniff-test of "looks like normal internet access". Going forward, we will circumvent this and do so in a way that makes dev tools happy. Before that, let's clear the elephants in the room...
+Among these corporate proxies, it's standard to have packet sniffing capabilities, preventing connections that don't pass the sniff-test of "looks like normal internet access". Going forward, we will circumvent this and do so in a way that makes dev tools happy. Before that, let's clear the elephants in the room...
 
 <blockquote class="reaction"><div class="reaction_text">Probably the time to mention, that as much as any other post, my blog's <a target="_blank" href="/about/#disclaimer">disclaimer</a> applies.</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
 
@@ -528,9 +572,7 @@ Using this and optionally `-i` for the keyfile, we can connect to our target ser
 
 {% clickableImage "img/tunneledHTTP.svg", "SSH tunneled via HTTP" %}
 
-Now we communicate with SSH (a TCP protocol) over the corporate Proxy, which speaks HTTP (also a TCP protocol). This classifies our setup as tunneling. SSH talks to `ProxyCommand` and receives SSH packets as if nothing/
-
-https://www.youtube.com/watch?v=se17_0zbZds&t=10s
+By using `corkscrew` or `ssh-connect`, we instruct the intermediate proxy to handle to connection to SSH port 22 for us and OpenSSH now gets SSH packets delivered by `ProxyCommand`. But why would a corporate proxies do this? How do you make HTTP talk in SSH? [That's the neat thing, you don't...](https://www.youtube.com/watch?v=se17_0zbZds&t=10s)
 
 #### Network capture
 **Source** 💻 is a Laptop performing `ssh -o ProxyCommand="corkscrew 198.51.100.4 8080 example.com 22" user@`. **Target** 🏢 is an intermediate proxy sitting in between a private subnet and the internet. The capture is performed on this intermediate proxy **Target** 🏢.
@@ -549,226 +591,136 @@ https://www.youtube.com/watch?v=se17_0zbZds&t=10s
 			<td>💻 ➡ 🏢</td>
 			<td>TCP</td>
 			<td>66</td>
-			<td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1</td>
+			<td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1</pre></td>
 	</tr>
-	<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>66</td>
-<td><code>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</td>
+	<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP</td><td>66</td>
+<td><code>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>TCP</td><td>60</td>
-<td><code>[ACK] Seq=1 Ack=1 Win=131328 Len=0</td>
+<td><code>[ACK] Seq=1 Ack=1 Win=131328 Len=0</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>[ACK] Seq=1 Ack=1 Win=131328 Len=0</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>TCP</td><td>89</td>
-<td><code>CONNECT  example.com:22 HTTP/1.0  [TCP segment of a reassembled PDU]</td>
+<td><code>CONNECT  example.com:22 HTTP/1.0  [TCP segment of a reassembled PDU]</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>CONNECT  example.com:22 HTTP/1.0  [TCP segment of a reassembled PDU]</pre></td>
 	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
-<td><code>[ACK] Seq=1 Ack=36 Win=64256 Len=0</td>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<td><code>[ACK] Seq=1 Ack=36 Win=64256 Len=0</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=1 Ack=36 Win=64256 Len=0</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>HTTP</td><td>60</td>
-<td><code>CONNECT  example.com:22 HTTP/1.0</td>
+<td><code>CONNECT  example.com:22 HTTP/1.0</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>CONNECT  example.com:22 HTTP/1.0</pre></td>
 	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
-<td><code>[ACK] Seq=1 Ack=38 Win=64256 Len=0</td>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<td><code>[ACK] Seq=1 Ack=38 Win=64256 Len=0</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=1 Ack=38 Win=64256 Len=0</pre></td>
 	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>HTTP</td><td>93</td>
-<td><code>HTTP/1.0 200 Connection established</td>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>HTTP</td><td>93</td>
+<td><code>HTTP/1.0 200 Connection established</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>HTTP/1.0 200 Connection established</pre></td>
 	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSH</td><td>95</td>
-<td><code>Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</td>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>SSH</td><td>95</td>
+<td><code>Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>87</td>
-<td><code>Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</td>
+<td><code>Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</pre></td>
 	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
-<td><code>[ACK] Seq=81 Ack=71 Win=64256 Len=0</td>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<td><code>[ACK] Seq=81 Ack=71 Win=64256 Len=0</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=81 Ack=71 Win=64256 Len=0</pre></td>
 	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>1110</td>
-<td><code>Key Exchange Init</td>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>1110</td>
+<td><code>Key Exchange Init</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>Key Exchange Init</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>TCP</td><td>1078</td>
-<td><code>[TCP segment of a reassembled PDU]</td>
+<td><code>[TCP segment of a reassembled PDU]</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>[TCP segment of a reassembled PDU]</pre></td>
 	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
-<td><code>[ACK] Seq=1137 Ack=1095 Win=64128 Len=0</td>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<td><code>[ACK] Seq=1137 Ack=1095 Win=64128 Len=0</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=1137 Ack=1095 Win=64128 Len=0</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>510</td>
-<td><code>Key Exchange Init, Diffie-Hellman Key Exchange Init</td>
+<td><code>Key Exchange Init, Diffie-Hellman Key Exchange Init</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>Key Exchange Init, Diffie-Hellman Key Exchange Init</pre></td>
 	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
-<td><code>[ACK] Seq=1137 Ack=1551 Win=64128 Len=0</td>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<td><code>[ACK] Seq=1137 Ack=1551 Win=64128 Len=0</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=1137 Ack=1551 Win=64128 Len=0</pre></td>
 	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>562</td>
-<td><code>Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</td>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>562</td>
+<td><code>Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>114</td>
-<td><code>New Keys, Encrypted packet (len=44)</td>
+<td><code>New Keys, Encrypted packet (len=44)</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>New Keys, Encrypted packet (len=44)</pre></td>
 	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>98</td>
-<td><code>Encrypted packet (len=44)</td>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>98</td>
+<td><code>Encrypted packet (len=44)</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>Encrypted packet (len=44)</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>114</td>
-<td><code>Encrypted packet (len=60)</td>
+<td><code>Encrypted packet (len=60)</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>Encrypted packet (len=60)</pre></td>
 	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>98</td>
-<td><code>Encrypted packet (len=44)</td>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>98</td>
+<td><code>Encrypted packet (len=44)</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>Encrypted packet (len=44)</pre></td>
 	</tr>
 <tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>554</td>
-<td><code>Encrypted packet (len=500)</td>
+<td><code>Encrypted packet (len=500)</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>Encrypted packet (len=500)</pre></td>
-	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>514</td>
-<td><code>Encrypted packet (len=460)</td>
-	</tr>
-	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Encrypted packet (len=460)</pre></td>
-	</tr>
-<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>962</td>
-<td><code>Encrypted packet (len=908)</td>
-	</tr>
-	<tr class="mobileRow">
-			<td colspan=4><pre>Encrypted packet (len=908)</pre></td>
-	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>82</td>
-<td><code>Encrypted packet (len=28)</td>
-	</tr>
-	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Encrypted packet (len=28)</pre></td>
-	</tr>
-<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>166</td>
-<td><code>Encrypted packet (len=112)</td>
-	</tr>
-	<tr class="mobileRow">
-			<td colspan=4><pre>Encrypted packet (len=112)</pre></td>
-	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
-<td><code>[ACK] Seq=2221 Ack=3191 Win=64128 Len=0</td>
-	</tr>
-	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>[ACK] Seq=2221 Ack=3191 Win=64128 Len=0</pre></td>
-	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>830</td>
-<td><code>Encrypted packet (len=776)</td>
-	</tr>
-	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Encrypted packet (len=776)</pre></td>
-	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>202</td>
-<td><code>Encrypted packet (len=148)</td>
-	</tr>
-	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Encrypted packet (len=148)</pre></td>
-	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>98</td>
-<td><code>Encrypted packet (len=44)</td>
-	</tr>
-	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Encrypted packet (len=44)</pre></td>
-	</tr>
-<tr><td>💻 ➡ 🏢</td><td>TCP</td><td>60</td>
-<td><code>[ACK] Seq=3191 Ack=3189 Win=131328 Len=0</td>
-	</tr>
-	<tr class="mobileRow">
-			<td colspan=4><pre>[ACK] Seq=3191 Ack=3189 Win=131328 Len=0</pre></td>
-	</tr>
-<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>190</td>
-<td><code>Encrypted packet (len=136)</td>
-	</tr>
-	<tr class="mobileRow">
-			<td colspan=4><pre>Encrypted packet (len=136)</pre></td>
-	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
-<td><code>[ACK] Seq=3189 Ack=3327 Win=64128 Len=0</td>
-	</tr>
-	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>[ACK] Seq=3189 Ack=3327 Win=64128 Len=0</pre></td>
-	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>162</td>
-<td><code>Encrypted packet (len=108)</td>
-	</tr>
-	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Encrypted packet (len=108)</pre></td>
-	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>754</td>
-<td><code>Encrypted packet (len=700)</td>
-	</tr>
-	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Encrypted packet (len=700)</pre></td>
-	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>370</td>
-<td><code>Encrypted packet (len=316)</td>
-	</tr>
-	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Encrypted packet (len=316)</pre></td>
-	</tr>
-<tr style="background-color: #0004;"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>346</td>
-<td><code>Encrypted packet (len=292)</td>
-	</tr>
-	<tr class="mobileRow targetSourceRow">
-			<td colspan=4><pre>Encrypted packet (len=292)</pre></td>
 	</tr>
 		<tr style="text-align: center; border-bottom: 1px solid #40363a;">
 		<td colspan=4><code>Encrypted packets</code> go back and forth for the duration of the session</td>
@@ -776,15 +728,183 @@ https://www.youtube.com/watch?v=se17_0zbZds&t=10s
 	</tbody>
 </table>
 
-So as you can see, even though we are HTTP tunneling, the proxy still knows what's going on.
+We communicate by SSH (a TCP protocol) over the corporate proxy, which speaks HTTP (also a TCP protocol). Though that term is a bit murky, this classifies our setup as **tunneling**. The center point of all this is packet number 6 - [✨ HTTP CONNECT ✨](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT)
 
-This tunneling method doesn't hide anything, but I've seen this setup work more often than not.
+`Corkscrew` and `ssh-connect` instruct the corporate proxy to connect to our target server's SSH port via the command `HTTP CONNECT` and relay back what it sees. HTTP CONNECT works by relaying RAW TCP. Similar to the dumb firewall we talked about previously, HTTP CONNECT doesn't understand ***what*** TCP it's actually relaying.
 
-## Tunneling
-Let's jump in with the most basic first step.
+So why not forbid HTTP CONNECT? - Because that would break proxy connections with [HTTP***S***](https://en.wikipedia.org/wiki/HTTPS) a basic building block of modern web. Ignoring the unencrypted [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication), the point of HTTPS is that the communication is encrypted. For the proxy to work in the first place, it has to relay TCP blindly. That's what [HTTP CONNECT](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT) is for.
 
-## [HTTP CONNECT](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT)
-Wait... what? How does the proxy speak with OpenSSH? Since when do HTTP Proxies support SSH? How does a  -insert that's the neat post you don't- Well, they don't. HTTP CONNECT works by relaying RAW TCP. Similar to the dumb firewall we talked about previously, HTTP CONNECT doesn't understand what TCP it's actually relaying. Which bring us to the obvious point: Why don't corporate proxies simply forbid HTTP CONNECT? - Because that would break HTTPS proxy connections. There are stills ways to prohibit this, a bit of a boogie man we'll get into at the end, but corporate proxies are bound by a catch 22 here: You have to look inside to tell apart what is being sent, but looking inside entails breaking encryption.
+<blockquote class="reaction"><div class="reaction_text">Yes, <a href="https://www.youtube.com/watch?v=5eJl2Y8yh_4">put your hand down</a>, we'll get into TLS decryption and DPI.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+If you take a look at the traffic, you *still* see the connection being clocked as SSH. The intermediate proxy talks to the target server and thus can see the unencrypted SSH setup. If the corporate proxy performs packet sniffing, it will have no issues blocking this. Let's fix that.
+
+<blockquote class="reaction"><div class="reaction_text">This tunneling method <strong>doesn't hide anything</strong>, but I've seen this setup work more often than not, even in environments where outgoing SSH was supposedly blocked.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
+
+## proxytunnel.exe
+
+{% clickableImage "img/tunneledHTTPS.svg", "SSH tunneled via HTTPS" %}
+
+All of these need HTTP/1.1 () If the intermediate Proxy communicates with HTTP/2, your connections will error out
+
+https://github.com/ScoopInstaller/Main/pull/6409
+
+
+<table>
+	<thead>
+		<tr>
+			<th>Direction</th>
+			<th>Protocol</th>
+			<th>Length</th>
+			<th>Info</th>
+		</tr>
+	</thead>
+	<tbody>
+	<td>💻 ➡ 🏢</td><td>TCP		</td><td> 66</td>
+<td><code>	[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1</pre></td>
+	</tr>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP		</td><td> 66</td>
+<td><code>	[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</pre></td>
+	</tr>
+<td>💻 ➡ 🏢</td><td>TCP		</td><td> 60</td>
+<td><code>	[ACK] Seq=1 Ack=1 Win=131328 Len=0
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>[ACK] Seq=1 Ack=1 Win=131328 Len=0</pre></td>
+	</tr>
+<td>💻 ➡ 🏢</td><td>HTTP		</td><td> 157</td>
+<td><code>	CONNECT example.com:443 HTTP/1.1
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>CONNECT example.com:443 HTTP/1.1</pre></td>
+	</tr>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP		</td><td> 54</td>
+<td><code>	[ACK] Seq=1 Ack=104 Win=64256 Len=0
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>[ACK] Seq=1 Ack=104 Win=64256 Len=0</pre></td>
+	</tr>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>HTTP		</td><td> 93</td>
+<td><code>	HTTP/1.1 200 Connection established
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>HTTP/1.1 200 Connection established</pre></td>
+	</tr>
+<td>💻 ➡ 🏢</td><td>TLSv1		</td><td> 380</td>
+<td><code>	Client Hello
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>Client Hello</pre></td>
+	</tr>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP		</td><td> 54</td>
+<td><code>	[ACK] Seq=40 Ack=430 Win=64128 Len=0
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>[ACK] Seq=40 Ack=430 Win=64128 Len=0</pre></td>
+	</tr>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TLSv1.2	</td><td>	 2666</td>
+<td><code>	Server Hello, Certificate, Server Key Exchange, Server Hello Done
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>Server Hello, Certificate, Server Key Exchange, Server Hello Done</pre></td>
+	</tr>
+<td>💻 ➡ 🏢</td><td>TCP		</td><td> 60</td>
+<td><code>	[ACK] Seq=430 Ack=2652 Win=131328 Len=0
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>[ACK] Seq=430 Ack=2652 Win=131328 Len=0</pre></td>
+	</tr>
+<td>💻 ➡ 🏢</td><td>TLSv1.2	</td><td>	 212</td>
+<td><code>	Client Key Exchange, Change Cipher Spec, Encrypted Handshake Message
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>Client Key Exchange, Change Cipher Spec, Encrypted Handshake Message</pre></td>
+	</tr>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP		</td><td> 54</td>
+<td><code>	[ACK] Seq=2652 Ack=588 Win=64128 Len=0
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>[ACK] Seq=2652 Ack=588 Win=64128 Len=0</pre></td>
+	</tr>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TLSv1.2	</td><td>	 105</td>
+<td><code>	Change Cipher Spec, Encrypted Handshake Message
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>Change Cipher Spec, Encrypted Handshake Message</pre></td>
+	</tr>
+<td>💻 ➡ 🏢</td><td>TLSv1.2	</td><td>	 184</td>
+<td><code>	Application Data
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>Application Data</pre></td>
+	</tr>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP		</td><td> 54</td>
+<td><code>	[ACK] Seq=2703 Ack=718 Win=64128 Len=0
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>[ACK] Seq=2703 Ack=718 Win=64128 Len=0</pre></td>
+	</tr>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TLSv1.2	</td><td>	 142</td>
+<td><code>	Application Data
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>Application Data</pre></td>
+	</tr>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TLSv1.2	</td><td>	 124</td>
+<td><code>	Application Data
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>Application Data</pre></td>
+	</tr>
+<td>💻 ➡ 🏢</td><td>TLSv1.2	</td><td>	 116</td>
+<td><code>	Application Data
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>Application Data</pre></td>
+	</tr>
+<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TLSv1.2	</td><td>	 1139</td>
+<td><code>	Application Data
+</code></td>
+	</tr>
+	<tr class="mobileRow"><td colspan=4><pre>Application Data</pre></td>
+	</tr>
+		<tr style="text-align: center; border-bottom: 1px solid #40363a;">
+		<td colspan=4><code>Application Data</code> and <code>TCP ACK</code> packets go back and forth for the duration of the session</td>
+		</tr>
+	</tbody>
+</table>
+
+Effectively what we have created with ...
+```
+proxy_connect;
+proxy_connect_allow 22;
+proxy_connect_address 127.0.0.1;
+```
+... is port-forwarding, without the ability to do so.
+
+The proxy is [non the wiser](https://www.youtube.com/watch?v=otCpCn0l4Wo&t=15s)! Now there is no way for the proxy to know what's going on and block our connection. Except [with specialized tooling mostly relegated to research](https://inria.hal.science/hal-01273160/file/HTTPS_traffic_identification_framework_NOMS16.pdf), which looks at the encrypted traffic and squints *really* hard.
+
+There are impressive papers with [LLMs guessing somewhat accurately what LLMs are outputting](https://www.youtube.com/watch?v=UfenH7xKO1s) based purely on <strong>encrypted</strong> packet length, as currently ChatBot interfaces like Microsoft's CoPilot send the output token by token as packet by packet.
+
+Unless... [\*cue scary music\*](https://youtu.be/AfjqL0vaBYU?t=5)
+
+{% clickableImage "img/tunneledHTTPSFirewall.svg", "SSH tunneled via HTTPS" %}
+
+## Deep Packet Inspection 👻
+There is only one way to detect this properly at scale: [Deep packet inspection (DPI)](https://en.wikipedia.org/wiki/Deep_packet_inspection). In the context of HTTPs or corporate connections, this involved pre-installing a [Trusted Root Certification Authority](https://en.wikipedia.org/wiki/Certificate_authority) on the user's machine (i.e. via Windows' group policy), which allows the corporate proxy to strip encryption. But this is such a bad idea, that even the [NSA](https://en.wikipedia.org/wiki/National_Security_Agency) issued [an advisory](https://web.archive.org/web/20191119195359/https://media.defense.gov/2019/Nov/18/2002212783/-1/-1/0/MANAGING%20RISK%20FROM%20TLS%20INSPECTION_20191106.PDF) and the [Cypersecurity & Infrastructure Security Agency CISA](https://en.wikipedia.org/wiki/Cybersecurity_and_Infrastructure_Security_Agency) outright [cautions against it](https://www.cisa.gov/news-events/alerts/2017/03/16/https-interception-weakens-tls-security).
+
+Now browsers are actually supposed to protect against this and do [indeed have ways to do detect DPI](https://www.grc.com/fingerprints.htm). However, the browsers are kinda in cahoots with the corporate proxy on this one. If your system is told to trust a CA, it will.
+
+Also comment `https://stackoverflow.com/questions/58671007` Yes this is detectable, see `https://www.grc.com/fingerprints.htm` on the server it's a simple fingerprint check, but automating it in JS is a bit tougher due to know way of getting the cert, but possible via `https://stackoverflow.com/questions/2402121`
+
+```
+openssl s_client -proxy <Corporate Proxy IP>:<Corporate Proxy Port> -connect <Site which is not blocked>:443 -servername <Site which is not blocked> | openssl x509 -noout -fingerprint -sha1
+```
 
 ### Trust is earned, not bought
 ```nix
@@ -873,9 +993,6 @@ And finally, we don't want to that huge call each time and we can't expect other
 ## Other options
 You can use
 
-
-All of these need HTTP/1.1 () If the intermediate Proxy communicates with HTTP/2, your connections will error out
-
 ## Tunneled
 ### `connect.exe` and `corkscrew.exe`
 Let's see what it looks like from the intermediate, corporate proxy. We are looking at the communication between the Proxy and the Laptop specifically. And this is again the output of wireshark.
@@ -883,128 +1000,6 @@ Let's see what it looks like from the intermediate, corporate proxy. We are look
 
 
 As you can see, even though we speak HTTP, the proxy still clocks that SSH is going here.
-
-## proxytunnel.exe
-
-{% clickableImage "img/tunneledHTTPS.svg", "SSH tunneled via HTTPS" %}
-
-https://github.com/ScoopInstaller/Main/pull/6409
-
-| Direction | Protocol | Length | Info |
-| --- | --- | --- | --- |
-| Source ➡  Target | TCP		|	66 | `49928 → 9999 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM`|
-| Target ➡  Source | TCP		|	66 | `9999 → 49928 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128`|
-| Source ➡  Target | TCP		|	54 | `49928 → 9999 [ACK] Seq=1 Ack=1 Win=131328 Len=0`|
-| Source ➡  Target | HTTP	|	157 | `CONNECT domain.com:443 HTTP/1.1 `|
-| Target ➡  Source | TCP		|	60 | `9999 → 49928 [ACK] Seq=1 Ack=104 Win=64256 Len=0`|
-| Target ➡  Source | HTTP	|	93 | `HTTP/1.1 200 Connection established `|
-| Source ➡  Target | TLSv1.2	|		380 | `Client Hello (SNI=domain.com)`|
-| Target ➡  Source | TCP		|	60 | `9999 → 49928 [ACK] Seq=40 Ack=430 Win=64128 Len=0`|
-| Target ➡  Source | TLSv1.2	|		1514 | `Server Hello`|
-| Target ➡  Source | TLSv1.2	|		1206 | `Certificate, Server Key Exchange, Server Hello Done`|
-| Source ➡  Target | TCP		|	54 | `49928 → 9999 [ACK] Seq=430 Ack=2652 Win=131328 Len=0`|
-| Source ➡  Target | TLSv1.2	|		212 | `Client Key Exchange, Change Cipher Spec, Encrypted Handshake Message`|
-| Target ➡  Source | TCP		|	60 | `9999 → 49928 [ACK] Seq=2652 Ack=588 Win=64128 Len=0`|
-| Target ➡  Source | TLSv1.2	|		105 | `Change Cipher Spec, Encrypted Handshake Message`|
-| Source ➡  Target | TLSv1.2	|		184 | `Application Data`|
-| Target ➡  Source | TCP		|	60 | `9999 → 49928 [ACK] Seq=2703 Ack=718 Win=64128 Len=0`|
-| Target ➡  Source | TLSv1.2	|		142 | `Application Data`|
-| Source ➡  Target | TLSv1.2	|		116 | `Application Data`|
-| Target ➡  Source | TLSv1.2	|		124 | `Application Data`|
-| Source ➡  Target | TLSv1.2	|		1515 | `Application Data`|
-| Target ➡  Source | TLSv1.2	|		1139 | `Application Data`|
-| Source ➡  Target | TLSv1.2	|		131 | `Application Data`|
-| Target ➡  Source | TCP		|	60 | `9999 → 49928 [ACK] Seq=3946 Ack=2241 Win=64128 Len=0`|
-| Target ➡  Source | TLSv1.2	|		591 | `Application Data`|
-| Source ➡  Target | TLSv1.2	|		143 | `Application Data`|
-| Target ➡  Source | TLSv1.2	|		127 | `Application Data`|
-| Source ➡  Target | TLSv1.2	|		143 | `Application Data`|
-| Target ➡  Source | TLSv1.2	|		127 | `Application Data`|
-| Source ➡  Target | TLSv1.2	|		583 | `Application Data`|
-| Target ➡  Source | TLSv1.2	|		543 | `Application Data`|
-
-What does the proxy see?
-
-| Direction | Protocol | Length | Info |
-| --- | --- | --- | --- |
-|Source →  Target	| TCP		| 66	|  `51450 → 9999 [SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1`|
-| Target → Source	| TCP		| 66	|  `9999 → 51450 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128`|
-|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=1 Ack=1 Win=131328 Len=0`|
-|Source →  Target	| HTTP		| 157	|  `CONNECT domain.com:443 HTTP/1.1`|
-| Target → Source	| TCP		| 54	|  `9999 → 51450 [ACK] Seq=1 Ack=104 Win=64256 Len=0`|
-| Target → Source	| HTTP		| 93	|  `HTTP/1.1 200 Connection established`|
-|Source →  Target	| TLSv1		| 380	|  `Client Hello`|
-| Target → Source	| TCP		| 54	|  `9999 → 51450 [ACK] Seq=40 Ack=430 Win=64128 Len=0`|
-| Target → Source	| TLSv1.2	|	 2666	|  `Server Hello, Certificate, Server Key Exchange, Server Hello Done`|
-|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=430 Ack=2652 Win=131328 Len=0`|
-|Source →  Target	| TLSv1.2	|	 212	|  `Client Key Exchange, Change Cipher Spec, Encrypted Handshake Message`|
-| Target → Source	| TCP		| 54	|  `9999 → 51450 [ACK] Seq=2652 Ack=588 Win=64128 Len=0`|
-| Target → Source	| TLSv1.2	|	 105	|  `Change Cipher Spec, Encrypted Handshake Message`|
-|Source →  Target	| TLSv1.2	|	 184	|  `Application Data`|
-| Target → Source	| TCP		| 54	|  `9999 → 51450 [ACK] Seq=2703 Ack=718 Win=64128 Len=0`|
-| Target → Source	| TLSv1.2	|	 142	|  `Application Data`|
-| Target → Source	| TLSv1.2	|	 124	|  `Application Data`|
-|Source →  Target	| TLSv1.2	|	 116	|  `Application Data`|
-| Target → Source	| TLSv1.2	|	 1139	|  `Application Data`|
-|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=780 Ack=3946 Win=130048 Len=0`|
-|Source →  Target	| TCP		| 1514	|  `[TCP segment of a reassembled PDU]`|
-|Source →  Target	| TLSv1.2	|	 103	|  `Application Data`|
-| Target → Source	| TCP		| 54	|  `9999 → 51450 [ACK] Seq=3946 Ack=2289 Win=64128 Len=0`|
-| Target → Source	| TLSv1.2	|	 591	|  `Application Data`|
-|Source →  Target	| TLSv1.2	|	 143	|  `Application Data`|
-| Target → Source	| TLSv1.2	|	 127	|  `Application Data`|
-|Source →  Target	| TLSv1.2	|	 143	|  `Application Data`|
-| Target → Source	| TLSv1.2	|	 127	|  `Application Data`|
-|Source →  Target	| TLSv1.2	|	 583	|  `Application Data`|
-| Target → Source	| TLSv1.2	|	 543	|  `Application Data`|
-|Source →  Target	| TLSv1.2	|	 991	|  `Application Data`|
-| Target → Source	| TLSv1.2	|	 111	|  `Application Data`|
-|Source →  Target	| TLSv1.2	|	 195	|  `Application Data`|
-| Target → Source	| TCP		| 54	|  `9999 → 51450 [ACK] Seq=5175 Ack=4074 Win=64128 Len=0`|
-| Target → Source	| TLSv1.2	|	 859	|  `Application Data`|
-| Target → Source	| TLSv1.2	|	 275	|  `Application Data`|
-|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=4074 Ack=6201 Win=131328 Len=0`|
-|Source →  Target	| TLSv1.2	|	 219	|  `Application Data`|
-| Target → Source	| TCP		| 54	|  `9999 → 51450 [ACK] Seq=6201 Ack=4239 Win=64128 Len=0`|
-| Target → Source	| TLSv1.2	|	 191	|  `Application Data`|
-| Target → Source	| TLSv1.2	|	 1319	|  `Application Data`|
-|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=4239 Ack=7603 Win=129792 Len=0`|
-| Target → Source	| TLSv1.2	|	 1575	|  `Application Data`|
-|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=4239 Ack=9124 Win=131328 Len=0`|
-| Target → Source	| TLSv1.2	|	 232	|  `Application Data, Application Data`|
-| Target → Source	| TLSv1.2	|	 1551	|  `Application Data`|
-| Target → Source	| TLSv1.2	|	 127	|  `Application Data`|
-| Target → Source	| TLSv1.2	|	 127	|  `Application Data`|
-| Target → Source	| TLSv1.2	|	 127	|  `Application Data`|
-|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=4239 Ack=10872 Win=131328 Len=0`|
-|Source →  Target	| TCP		| 60	|  `51450 → 9999 [ACK] Seq=4239 Ack=11018 Win=131072 Len=0`|
-
-Effectively what we have created with ...
-```
-proxy_connect;
-proxy_connect_allow 22;
-proxy_connect_address 127.0.0.1;
-```
-... is port-forwarding, without the ability to do so.
-
-The proxy is [non the wiser](https://www.youtube.com/watch?v=otCpCn0l4Wo&t=15s)! Now there is no way for the proxy to know what's going on and block our connection. Except [with specialized tooling mostly relegated to research](https://inria.hal.science/hal-01273160/file/HTTPS_traffic_identification_framework_NOMS16.pdf), which looks at the encrypted traffic and squints *really* hard.
-
-There are impressive papers with [LLMs guessing somewhat accurately what LLMs are outputting](https://www.youtube.com/watch?v=UfenH7xKO1s) based purely on <strong>encrypted</strong> packet length, as currently ChatBot interfaces like Microsoft's CoPilot send the output token by token as packet by packet.
-
-Unless... [\*cue scary music\*](https://youtu.be/AfjqL0vaBYU?t=5)
-
-{% clickableImage "img/tunneledHTTPSFirewall.svg", "SSH tunneled via HTTPS" %}
-
-## Deep Packet Inspection 👻
-There is only one way to detect this properly at scale: [Deep packet inspection (DPI)](https://en.wikipedia.org/wiki/Deep_packet_inspection). In the context of HTTPs or corporate connections, this involved pre-installing a [Trusted Root Certification Authority](https://en.wikipedia.org/wiki/Certificate_authority) on the user's machine (i.e. via Windows' group policy), which allows the corporate proxy to strip encryption. But this is such a bad idea, that even the [NSA](https://en.wikipedia.org/wiki/National_Security_Agency) issued [an advisory](https://web.archive.org/web/20191119195359/https://media.defense.gov/2019/Nov/18/2002212783/-1/-1/0/MANAGING%20RISK%20FROM%20TLS%20INSPECTION_20191106.PDF) and the [Cypersecurity & Infrastructure Security Agency CISA](https://en.wikipedia.org/wiki/Cybersecurity_and_Infrastructure_Security_Agency) outright [cautions against it](https://www.cisa.gov/news-events/alerts/2017/03/16/https-interception-weakens-tls-security).
-
-Now browsers are actually supposed to protect against this and do [indeed have ways to do detect DPI](https://www.grc.com/fingerprints.htm). However, the browsers are kinda in cahoots with the corporate proxy on this one. If your system is told to trust a CA, it will.
-
-Also comment `https://stackoverflow.com/questions/58671007` Yes this is detectable, see `https://www.grc.com/fingerprints.htm` on the server it's a simple fingerprint check, but automating it in JS is a bit tougher due to know way of getting the cert, but possible via `https://stackoverflow.com/questions/2402121`
-
-```
-openssl s_client -proxy <Corporate Proxy IP>:<Corporate Proxy Port> -connect <Site which is not blocked>:443 -servername <Site which is not blocked> | openssl x509 -noout -fingerprint -sha1
-```
 
 
 ## Quick tip:
