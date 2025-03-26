@@ -2,7 +2,7 @@
 wip: true
 title: Tunneling corporate firewalls for developers
 permalink: "/{{ page.fileSlug }}/"
-date: 2025-02-27
+date: 2025-03-26
 last_modified:
 description: Establish SSH connections and ensure your dev tools work via HTTPS tunneling, even if proxies and firewalls won't let you
 publicTags:
@@ -21,6 +21,8 @@ Being able to setup a connection you trust and where your dev tools work is impo
 
 Ultimately, this is what this post is about - how to SSH into machines, when there is stuff in the way preventing that and make sure that your tools like git, [scp](https://man.openbsd.org/scp.1), [rsync](https://en.wikipedia.org/wiki/Rsync) or editing files directly on the server via [VSCode's SSH integration](https://code.visualstudio.com/docs/remote/ssh) work, with no new software installed and the ***absolute minimum*** of modifications to your server.
 
+<blockquote class="reaction"><div class="reaction_text">Once we are done, we'll gain a bit of a super power: port-forwarding and hole-punching at the same time, <strong>without</strong> touching the settings of firewalls or routers.</div><img class="kiwi" src="/assets/kiwis/cyber.svg"></blockquote>
+
 ## Tunneling - So many flavors
 If you control both Source and Destination, then you can tunnel everything through anything in complete secrecy and ultimately there is nothing anyone can do about it. This shouldn't be news to anyone working with networks. There are countless articles and videos going over a multitude of tunneling combinations.
 
@@ -33,7 +35,7 @@ As for this article, we'll deep-dive ✨***SSH over HTTP(S)***✨. Be it Linux, 
 <blockquote class="reaction"><div class="reaction_text">Get your hard hats ready, <a target="_blank" href="https://youtu.be/DrYXGwMZrV4&t=8">for tonight we drill the firewall</a></div><img class="kiwi" src="/assets/kiwis/drillAngry.svg"></blockquote>
 
 ## Basic SSH Connection Scenarios
-We'll go through all the ways you may SSH into your server, with increasing levels of filtering, monitoring and connection blocking. As this is in the context of web development, I will always include how your main WebApps are reached as well. 
+We'll go through all the ways you may SSH into your server, with increasing levels of filtering, monitoring and connection blocking. Our context is web development, so how your main WebApps are reached is covered as well. Here, let's assume your WebApps are served or [reverse proxied](https://www.cloudflare.com/learning/cdn/glossary/reverse-proxy/) with [NGINX](https://en.wikipedia.org/wiki/Nginx), [Caddy](https://caddyserver.com/) or [Apache / httpd](https://en.wikipedia.org/wiki/Apache_HTTP_Server).
 
 <blockquote class="reaction"><div class="reaction_text">In modern web deployments, your service may sit behind an <a target="_blank" href="https://learn.microsoft.com/en-us/azure/application-gateway/overview">application gateway</a>, potentially with multiple micro-services at play. We are going to simplify and consider no such factors in this article.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
@@ -52,7 +54,7 @@ Let's take a look at what happens inside the network. All [captures](https://en.
 
 Each individual packet's **Direction** is determined by the Source and Destination [IP address](https://en.wikipedia.org/wiki/IP_address), **Protocol** is judged by wireshark based on packet contents and connection history, **Length** is the packet size in bytes and **Info** is wireshark's quick summary of what the packet is or does. IPs and ports are left our for brevity.
 
-<blockquote class="reaction"><div class="reaction_text">Rows with 💻 ➡ 🌍 mean outgoing <a target="_blank" href="https://en.wikipedia.org/wiki/Network_packet">packets</a>, aka <strong>Source ➡ Target</strong>. Rows with 🌍 ➡ 💻 and a <span style="background-color: #0006">dark background</span> indicate incoming packets, aka <strong>Target ➡ Source</strong>.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Rows with 💻 ➡ 🌍 mean outgoing <a target="_blank" href="https://en.wikipedia.org/wiki/Network_packet">packets</a>, aka <strong>Source ➡ Target</strong>. Rows with 🌍 ➡ 💻 and a <span style="background-color: #0006">darker background</span> indicate incoming packets, aka <strong>Target ➡ Source</strong>.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 <style>
 	.targetSourceRow{
 		background-color: #0004;
@@ -303,7 +305,7 @@ ssh: connect to host example.com port 22: Connection timed out
 ```
 
 #### Network capture
-**Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. Here is what traffic look like if the firewall is blocking the outgoing communication via a simple port block. Capture is again on **Source** 💻.
+**Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. Here is what traffic looks like if the firewall is blocking the outgoing communication via a simple port block. Capture is again on **Source** 💻.
 
 <table>
 	<thead>
@@ -349,7 +351,7 @@ From the perspective of the client, nothing changed as compared to a direct conn
 
 {% clickableImage "img/smartfirewall.svg", "SSH connection blocked by a packet-inspecting firewall" %}
 
-A "smart" firewall can additionally look inside packets and block connections based on what traffic it sees. We'll ignore the semantics and [OSI-Layer](https://en.wikipedia.org/wiki/OSI_model) discussion for now. When faced with a smart firewall setup to block either SSH specifically or only allow "normal" HTTPS traffic, you will get a timeout error like this:
+A "smart" firewall can additionally look inside packets and block connections based on what traffic it sees. When faced with a smart firewall setup to block either SSH specifically or only allow "normal" HTTPS traffic, you will get a timeout error like this:
 
 ```tunnelingArticleShell
 $ ssh user@example.com
@@ -358,7 +360,7 @@ banner exchange: Connection to example.com port 22: Connection timed out
 ```
 
 #### Network capture
-**Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. Here is what traffic look like if it's not going through and being filtered by a smart firewall, which inspects traffic.
+**Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. Here is what traffic look like if it's not going through and being filtered by a smart firewall, which inspects traffic. Capture performed on **Source** 💻 Laptop.
 
 <table>
 	<thead>
@@ -436,7 +438,7 @@ The target successfully answers our call for a TCP connection, but never respond
 
 After initial TCP connection, the next thing to be sent is the [SSH identification string](https://datatracker.ietf.org/doc/html/rfc4253#section-4.2), something that unequivocally flags our connection as SSH, which the firewall blocks. That's the reason SSH doesn't timeout outright, but rather with this specific `banner exchange` timeout. The [identification strings](https://datatracker.ietf.org/doc/html/rfc4253#section-4.2) never make it to the other side.
 
-Let's reverse our perspective and take a look at server-side. **Source** 🖥️ is the server with SSHD on port 22 and **Target** 🌍 is a Laptop attempting `ssh user@example.com`, the very same connection attempt as above.
+Let's reverse our perspective and take a look at server-side. **Source** 🖥️ is the server with SSHD on port 22 and **Target** 🌍 is a Laptop attempting `ssh user@example.com`, the very same connection attempt as above. Capture performed on **Source** 🖥️ Server, which hosts SSHD.
 
 <table>
 	<thead>
@@ -484,11 +486,11 @@ Let's reverse our perspective and take a look at server-side. **Source** 🖥️
 		</tbody>
 </table>
 
-Same deal here. We observe the initial TCP connection being established, but with a sudden stop of communication, followed by [slow whimper](https://archive.org/details/poems19091925030616mbp/page/n133/mode/2up) of server-side identification string Retransmission call-outs.
+Same deal here. We observe the initial TCP connection being established, but with a sudden stop of communication, followed by a [slow whimper](https://archive.org/details/poems19091925030616mbp/page/n133/mode/2up) of server-side identification string retransmission call-outs into the void.
 
 <blockquote class="reaction"><div class="reaction_text">You may see server-side <a target="_blank" href="https://github.com/openssh/openssh-portable/blob/6c49e5f7dcaf886b4a702a6c003cae9dca04d3ea/sshd.c#L596"><code>Not allowed at this time</code></a> packets instead, as OpenSSH is <a target="_blank" href="https://github.com/openssh/openssh-portable/blob/6c49e5f7dcaf886b4a702a6c003cae9dca04d3ea/sshd.c#L596">rate-limiting by default via the <code>MaxStartups</code> and penalty system</a>. Either way, these packets are never heard.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-Before we get out our hammer drill to circumvent this, let's introduce another antagonist of today's journey...
+Before we get out our hammer drill to circumvent this, let's introduce another character of today's journey...
 
 ## The corporate proxy
 
@@ -496,7 +498,7 @@ Before we get out our hammer drill to circumvent this, let's introduce another a
 
 A corporate proxy is an exit point to the internet, deployed for security and compliance reasons within a company to monitor for threats and forbid anything that isn't explicitly allowed. Furthermore it's supposed to curb [data exfiltration](https://en.wikipedia.org/wiki/Data_exfiltration) and ensure employees don't setup infrastructure, without clearing it with IT prior.
 
-<blockquote class="reaction"><div class="reaction_text"><strong>Far</strong> beyond any malicious hacking, employees misconfiguring things, uploading sensitive data to 3rd parties and similar faux pas are <strong>the</strong> prime reason far data leaks.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text"><strong>Far</strong> beyond any malicious hacking, employees misconfiguring things, uploading sensitive data to 3rd parties and similar faux pas are <strong>the</strong> prime reason for data leaks.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
 These proxies are usually part of an overarching IT and endpoint security package sold by companies like [ThreatLocker](https://www.threatlocker.com), [Forcepoint](https://forcepoint.com) and [Cisco](https://www.cisco.com), among others. In Windows land, these are usually setup by [Group policies](https://en.wikipedia.org/wiki/Group_Policy) pre-configuring a system-wide proxy and in *Nix land these are usually pre-configured with an initial OS image.
 
@@ -521,7 +523,7 @@ Proxies are such a vital piece of infrastructure, that we expect the operating s
 	<figcaption>Firefox's proxy settings</figcaption>
 </figure>
 
-But what may come as a surprise, is that such a fundamental piece of infrastructure like OpenSSH doesn't support it, with the exception of [SSH as a proxy itself](https://goteleport.com/blog/ssh-proxyjump-ssh-proxycommand/). Because [Unix philosophy](https://en.wikipedia.org/wiki/Unix_philosophy#Origin) and all that. SSH clients like [Putty](https://www.putty.org/) do, but we'll stick with OpenSSH. It's [FOSS](https://en.wikipedia.org/wiki/Free_and_open-source_software), other tools rely on it and it comes pre-installed on every OS by now.
+But what may come as a surprise, is that such a fundamental piece of infrastructure like OpenSSH doesn't support it, with the exception of [SSH as a proxy](https://goteleport.com/blog/ssh-proxyjump-ssh-proxycommand/) itself. [Unix philosophy](https://en.wikipedia.org/wiki/Unix_philosophy#Origin) and all that. SSH clients like [Putty](https://www.putty.org/) do, but we'll stick with OpenSSH. It's [FOSS](https://en.wikipedia.org/wiki/Free_and_open-source_software), other tools rely on it and it comes pre-installed on every OS by now.
 
 <figure>
 	<img src="img/OpenSSH-in-windows.png" alt="OpenSSH Client installed by default in Windows 10 and 11" />
@@ -575,7 +577,7 @@ Using this and optionally `-i` for the keyfile, we can connect to our target ser
 
 {% clickableImage "img/tunneledHTTP.svg", "SSH tunneled via HTTP" %}
 
-By using `corkscrew` or `ssh-connect`, we instruct the intermediate proxy to handle the connection to SSH port 22 for us and OpenSSH now gets SSH packets delivered by `ProxyCommand`. But why would a corporate proxies do this? How do you make HTTP talk in SSH? [That's the neat thing, you don't...](https://www.youtube.com/watch?v=se17_0zbZds&t=10s)
+By using `corkscrew` or `ssh-connect`, we instruct the intermediate proxy to handle the connection to SSH port 22 for us and OpenSSH now gets SSH packets delivered by `ProxyCommand`. But why would a corporate proxy do this? How do you make HTTP talk in SSH? [That's the neat thing, you don't...](https://www.youtube.com/watch?v=se17_0zbZds&t=10s)
 
 #### Network capture
 **Source** 💻 is a Laptop performing `ssh -o ProxyCommand="corkscrew 198.51.100.4 8080 example.com 22" user@`. **Target** 🏢 is an intermediate proxy sitting in between a private subnet and the internet. The capture is performed on this intermediate proxy **Target** 🏢.
@@ -733,9 +735,9 @@ By using `corkscrew` or `ssh-connect`, we instruct the intermediate proxy to han
 
 We communicate by SSH (a TCP protocol) over the corporate proxy, which speaks HTTP (also a TCP protocol). Though that term is a bit murky, this classifies our setup as **tunneling**. The center point of all this is packet number 6 - [✨ HTTP CONNECT ✨](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT)
 
-`Corkscrew` and `ssh-connect` instruct the corporate proxy to connect to our target server's SSH port via the command `HTTP CONNECT` and relay back what it hears. HTTP CONNECT works by relaying RAW TCP. Similar to the dumb firewall we talked about previously, HTTP CONNECT doesn't understand ***what*** TCP it's actually relaying.
+`corkscrew` and `ssh-connect` instruct the corporate proxy to connect to our target server's SSH port and relay back what it hears via the command `HTTP CONNECT`. `HTTP CONNECT` works by relaying RAW TCP. Similar to the dumb firewall previously, HTTP CONNECT doesn't understand ***what*** TCP it's actually relaying.
 
-So why not forbid HTTP CONNECT? - Because that would break proxy connections with [HTTP***S***](https://en.wikipedia.org/wiki/HTTPS), a basic building block of modern web. Ignoring the unencrypted [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication), the point of HTTPS is that the communication is encrypted. For the proxy to work in the first place, it has to relay TCP blindly. That's what [HTTP CONNECT](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT) is for.
+So why not forbid `HTTP CONNECT`? - Because that would break proxy connections with [HTTP***S***](https://en.wikipedia.org/wiki/HTTPS), a basic building block of modern web. Ignoring the unencrypted [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication), the point of HTTPS is that the communication is encrypted. For the proxy to work in the first place, it has to relay TCP blindly. That's what [HTTP CONNECT](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT) is for.
 
 <blockquote class="reaction"><div class="reaction_text">Yes, <a href="https://www.youtube.com/watch?v=5eJl2Y8yh_4">put your hand down</a>, we'll get into TLS decryption and DPI.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
@@ -744,11 +746,180 @@ If you take a look at the traffic, you *still* see the connection being clocked 
 <blockquote class="reaction"><div class="reaction_text">So far, our tunneling method <strong>doesn't hide anything</strong>, but I've seen this setup work more often than not, even in environments where outgoing SSH was supposedly blocked.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
 ## HTTP***S*** Tunneling
-We looked at different setups so far, but ultimately, the reasons they exist and the environments they would fail in. Now we get into the meat and potatoes. If we want to hide from packet inspection based filtering, 
+Now we get into the meat and potatoes. If we want to hide from packet inspection based filtering, we need encryption on top of our communication, so the setup phase doesn't give away the SSH nature of our connection. Luckily there is a super convenient and universally compatible way: Just like HTTPS - [TLS](https://en.wikipedia.org/wiki/HTTPS).
+
+Instead of talking to `SSHD` directly, we let the main HTTP server [NGINX](https://en.wikipedia.org/wiki/Nginx) or [Apache / httpd](https://en.wikipedia.org/wiki/Apache_HTTP_Server) on our server handle the routing to and from `SSHD`. All the automated encryption, certificate handling and IP range whitelisting, ***without*** the need for an open SSH port. Implemented by, once again:  [✨ HTTP CONNECT ✨](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT)
 
 {% clickableImage "img/tunneledHTTPS.svg", "SSH tunneled via HTTPS" %}
 
+The client-side tool for this is the FOSS [proxytunnel](https://github.com/proxytunnel/proxytunnel), which is available for Linux, Mac, BSD and has [automated builds for Windows](https://github.com/proxytunnel/proxytunnel/actions). The previously mentioned `corkscrew` and `ssh-connect` capabilities proxytunnel covers as well, plus the windows specific [NTLM](https://en.wikipedia.org/wiki/NTLM) authentication. Actively maintained, it just had [a new release this month](https://github.com/proxytunnel/proxytunnel/releases/tag/v1.12.3).
+
+<blockquote class="reaction"><div class="reaction_text">It's not available on <a href="https://scoop.sh/">Scoop</a>, though I'm hoping to change that with <a href="https://github.com/ScoopInstaller/Main/pull/6409">this Pull Request</a></div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
+
+`proxytunnel` allows us to talk to our HTTP server and tell it to `HTTP CONNECT` us to the server's `SSHD`. With no intermediate proxy, something `corkscrew` and `ssh-connect` can as well. But `proxytunnel` can chain mutliple `HTTP CONNECT` if there is a corporate proxy in-between and do so with HTTPS encryption on top.
+
+But first, our HTTP server has to play along...
+
+### Server-side requirements
+
+{% clickableImage "img/tunneledHTTPSZoom.svg", "SSH tunneled via HTTPS - Server-Side setup" %}
+
+The neat thing is, we can utilize the very same HTTP server our WebApp is most likely served or [reverse proxied](https://www.cloudflare.com/learning/cdn/glossary/reverse-proxy/) over. To do so, we need to configure `HTTP CONNECT`, restrict it to localhost port 22 only and setup optional authentication. Luckily all the popular FOSS HTTP servers, [NGINX](https://en.wikipedia.org/wiki/Nginx), [Caddy](https://caddyserver.com/) and [Apache / httpd](https://en.wikipedia.org/wiki/Apache_HTTP_Server) can do so.
+
+<blockquote class="reaction"><div class="reaction_text">No new software server-side!</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
+
+Due to how `HTTP CONNECT` works, we can setup the connection on the granularity of a domain or subdomain. So we can do `ssh.example.com` only, but we don't have to and can keep it on the same level as the main WebApp `example.com`. The presence of `HTTP CONNECT` does not impact standard HTTP routing in any way.
+
+You can slap on [`basic auth`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Authentication#basic_authentication_scheme) and/or IP whitelisting, basic HTTP config stuff I won't describe for brevity. It's totally fine to leave this wide open though, as that corresponds to a port-forwarded OpenSSH. Totally normal, given the security mechanisms of OpenSSH and optional hardening mentioned [at the beginning](#simple%2C-direct-connection).
+
+<blockquote class="reaction"><div class="reaction_text">It should go without saying: if your HTTP server goes down, your SSH connection does too, so it's probably a good idea to keep the standard port-forwarded SSH as a backup, given no other means of access.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+We will be setting up on port `443` with HTTPS here, though you may perform the same setup without HTTPS, which simply means moving the setup to the non-HTTPS block in the respective config file. I will cover HTTPS only going forward and, of course, the optional `basic auth` without HTTPS is meaningless.
+
+#### Apache / httpd
+Apache / HTTPD [supports this by default](https://httpd.apache.org/docs/2.4/en/mod/mod_proxy.html), nothing more than a config addition needed. The module responsible for this is `mod_proxy_connect.so` and should is precompiled and included everywhere you can get Apache to my knowledge. The addition happens on the level of a `virtualHost`
+
+<details open><summary>Apache Config to enable <code>HTTP_CONNECT</code> and restrict it to localhost:22</summary>
+
+```apacheconf
+<VirtualHost *:443>
+    ServerName example.com
+
+    SSLEngine on
+    SSLCertificateFile /etc/nixos/proxy-selfsigned.crt # Don't actually handle certs manually, just enable ACME
+    SSLCertificateKeyFile /etc/nixos/proxy-selfsigned.key # Don't actually handle certs manually, just enable ACME
+
+	## ... Main WebApp Config ... ##
+
+	LoadModule proxy_connect_module modules/mod_proxy_connect.so # Module for HTTP_CONNECT
+	ProxyRequests On # Enable it
+	AllowCONNECT 22 # Restrict it to port 22
+	<Proxy localhost> # Only proxy for our localhost server
+	</Proxy>
+</VirtualHost>
+```
+</details>
+
+
+If you fell for the [NixOS](https://nixos.org/) Meme, then your [`services.httpd`](https://search.nixos.org/options?&from=0&size=50&sort=relevance&type=packages&query=services.httpd) config should look like this.
+
+<details open><summary>Apache Config for <code>HTTP_CONNECT</code> on NixOS</summary>
+
+```nix
+httpd = {
+  enable = true;
+  virtualHosts = {
+    "example.com" = {
+      listen = [
+        {
+          ip = "*";
+          port = 443;
+          ssl = true;
+        }
+      ];
+      sslServerCert = "/etc/nixos/proxy-selfsigned.crt"; # Don't actually handle certs manually, just enable ACME
+      sslServerKey = "/etc/nixos/proxy-selfsigned.key"; # Don't actually handle certs manually, just enable ACME
+      documentRoot = "/var/www/static";
+      extraConfig = ''
+        LoadModule proxy_connect_module modules/mod_proxy_connect.so
+        ProxyRequests On
+        AllowCONNECT 22
+        <Proxy localhost>
+        </Proxy>
+      '';
+    };
+  };
+};
+```
+</details>
+
+#### NGINX
+Nginx requires an additional patch applied and plugin compiled to enable `HTTP_CONNECT`: [ngx_http_proxy_connect_module](https://github.com/chobits/ngx_http_proxy_connect_module). Luckily, support goes way back to NGINX `1.4` in 2013 and the patch has remained identical for every version since `1.21.1` in 2021. Build steps are minimal and described on the GitHub page.
+
+After the module is in nginx, you can simply insert `proxy_connect` at the server-block level (or higher).
+```nginx
+proxy_connect;
+proxy_connect_allow 22; # restrict to port 22
+proxy_connect_address 127.0.0.1; # restrict to localhost
+```
+
+For NixOS and its `services.nginx`, module inclusion should be covered by [services.nginx.additionalModules](https://search.nixos.org/options?channel=24.11&show=services.nginx.additionalModules&from=0&size=50&sort=relevance&type=packages&query=services.nginx.addi), but due to a version check, nix will refuse to compile with the newest nginx. I started fixing it [in this PR](https://github.com/NixOS/nixpkgs/pull/351880) and will finish it after releasing this article. In the meantime, here's my config with an override in place:
+
+<details><summary>Nginx Config on NixOS with module override for newest nginx</summary>
+
+```nix
+{ config, lib, pkgs, ... }:
+
+let
+  http_proxy_connect_module = pkgs.stdenv.mkDerivation {
+    pname = "http_proxy_connect_module";
+    version = "4f0b6c2297862148c59a0d585d6c46ccb7e58a39";
+    src = pkgs.fetchFromGitHub {
+      owner = "chobits";
+      repo = "ngx_http_proxy_connect_module";
+      rev = "4f0b6c2297862148c59a0d585d6c46ccb7e58a39";
+      sha256 = "sha256-Yob2Z+a3ex3Ji6Zz8J0peOYnKpYn5PlC9KsQNcHCL9o=";
+    };
+    patches = [ "${pkgs.fetchFromGitHub {
+      owner = "chobits";
+      repo = "ngx_http_proxy_connect_module";
+      rev = "4f0b6c2297862148c59a0d585d6c46ccb7e58a39";
+      sha256 = "sha256-Yob2Z+a3ex3Ji6Zz8J0peOYnKpYn5PlC9KsQNcHCL9o=";
+    }}/patch/proxy_connect_rewrite_102101.patch" ];
+
+    meta = {
+      license = [ lib.licenses.bsd2 ];
+      description = "Forward proxy module for handling CONNECT requests";
+      homepage = "https://github.com/chobits/ngx_http_proxy_connect_module";
+    };
+  };
+in
+{
+	services = {
+		
+		# Rest of the config
+
+	    nginx = {
+	      enable = true;
+
+		  # Rest of the config
+
+	      additionalModules = [ http_proxy_connect_module ];
+
+	      virtualHosts = {
+	        "example.com" =  {
+
+	          # Rest of the config
+
+	          extraConfig = ''
+	            proxy_connect;
+	            proxy_connect_allow 22;
+	            proxy_connect_address 127.0.0.1;
+	          '';
+	        };
+```
+</details>
+
+#### Caddy
+Caddy v2 gained `HTTP_CONNECT` capability last year with an update to module [forwardproxy](https://github.com/caddyserver/forwardproxy). Compiling and module inclusion is [dead simple](https://github.com/caddyserver/forwardproxy?tab=readme-ov-file#quick-start). In the `caddyfile`, on the level of your main WebApp you can then insert
+
 As previously, you don't need to configure SSH to confirm connection to `SSHD`.
+
+```
+{
+        auto_https off
+        order forward_proxy first
+}
+https://example.com {
+        forward_proxy {
+                ports 22
+                acl {
+                        allow example.com
+                        deny all
+                }
+        }
+}
+```
 
 ```tunnelingArticleShell
 $ proxytunnel -X -z -p 198.51.100.4:8080 -r example.com:443 -d 127.0.0.1:22
@@ -761,7 +932,7 @@ $ ssh -o ProxyCommand="proxytunnel -X -z -p 198.51.100.4:8080 -r example.com:443
 ```
 
 All of these need HTTP/1.1 () If the intermediate Proxy communicates with HTTP/2, your connections will error out
-https://github.com/ScoopInstaller/Main/pull/6409
+
 ### Network capture
 
 
@@ -896,14 +1067,6 @@ https://github.com/ScoopInstaller/Main/pull/6409
 	</tbody>
 </table>
 
-Effectively what we have created with ...
-```
-proxy_connect;
-proxy_connect_allow 22;
-proxy_connect_address 127.0.0.1;
-```
-... is port-forwarding, without the ability to do so.
-
 The proxy is [non the wiser](https://www.youtube.com/watch?v=otCpCn0l4Wo&t=15s)! Now there is no way for the proxy to know what's going on and block our connection. Except [with specialized tooling mostly relegated to research](https://inria.hal.science/hal-01273160/file/HTTPS_traffic_identification_framework_NOMS16.pdf), which looks at the encrypted traffic and squints *really* hard.
 
 There are impressive papers with [LLMs guessing somewhat accurately what LLMs are outputting](https://www.youtube.com/watch?v=UfenH7xKO1s) based purely on <strong>encrypted</strong> packet length, as currently ChatBot interfaces like Microsoft's CoPilot send the output token by token as packet by packet.
@@ -921,34 +1084,6 @@ Also comment `https://stackoverflow.com/questions/58671007` Yes this is detectab
 
 ```
 openssl s_client -proxy <Corporate Proxy IP>:<Corporate Proxy Port> -connect <Site which is not blocked>:443 -servername <Site which is not blocked> | openssl x509 -noout -fingerprint -sha1
-```
-
-### Trust is earned, not bought
-```nix
-httpd = {
-  enable = true;
-  virtualHosts = {
-    "example.com" = {
-      listen = [
-        {
-          ip = "*";
-          port = 8080;
-          ssl = true;
-        }
-      ];
-      sslServerCert = "/etc/nixos/proxy-selfsigned.crt"; # Don't actually handle certs manually, just enableACME
-      sslServerKey = "/etc/nixos/proxy-selfsigned.key"; # Don't actually handle certs manually, just enableACME
-      documentRoot = "/var/www/static";
-      extraConfig = ''
-        LoadModule proxy_connect_module modules/mod_proxy_connect.so
-        ProxyRequests On
-        AllowCONNECT 22
-        <Proxy localhost>
-        </Proxy>
-      '';
-    };
-  };
-};
 ```
 
 ## What *not* to do
