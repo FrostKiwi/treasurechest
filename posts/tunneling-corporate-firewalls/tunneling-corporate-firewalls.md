@@ -35,7 +35,7 @@ As for this article, we'll deep-dive ✨***SSH over HTTP(S)***✨. Be it Linux, 
 <blockquote class="reaction"><div class="reaction_text">Get your hard hats ready, <a target="_blank" href="https://youtu.be/DrYXGwMZrV4&t=8">for tonight we drill the firewall</a></div><img class="kiwi" src="/assets/kiwis/drillAngry.svg"></blockquote>
 
 ## Basic SSH Connection Scenarios
-We'll go through all the ways you may SSH into your server, with increasing levels of filtering, monitoring and connection blocking. Our context is web development, so how your main WebApps are reached is covered as well. Here, let's assume your WebApps are served or [reverse proxied](https://www.cloudflare.com/learning/cdn/glossary/reverse-proxy/) with [NGINX](https://en.wikipedia.org/wiki/Nginx), [Caddy](https://caddyserver.com/) or [Apache / httpd](https://en.wikipedia.org/wiki/Apache_HTTP_Server).
+We'll go through all the ways you may SSH into your server, with increasing levels of filtering, monitoring and connection blocking. Our context is web development, so how your main WebApps are reached is covered as well. Here, let's assume your WebApps are served or [reverse proxied](https://www.cloudflare.com/learning/cdn/glossary/reverse-proxy/) with [Nginx](https://en.wikipedia.org/wiki/Nginx), [Caddy](https://caddyserver.com/) or [Apache / httpd](https://en.wikipedia.org/wiki/Apache_HTTP_Server).
 
 <blockquote class="reaction"><div class="reaction_text">In modern web deployments, your service may sit behind an <a target="_blank" href="https://learn.microsoft.com/en-us/azure/application-gateway/overview">application gateway</a>, potentially with multiple micro-services at play. We are going to simplify and consider no such factors in this article.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
@@ -748,25 +748,29 @@ If you take a look at the traffic, you *still* see the connection being clocked 
 ## HTTP***S*** Tunneling
 Now we get into the meat and potatoes. If we want to hide from packet inspection based filtering, we need encryption on top of our communication, so the setup phase doesn't give away the SSH nature of our connection. Luckily there is a super convenient and universally compatible way: Just like HTTPS - [TLS](https://en.wikipedia.org/wiki/HTTPS).
 
-Instead of talking to `SSHD` directly, we let the main HTTP server [NGINX](https://en.wikipedia.org/wiki/Nginx) or [Apache / httpd](https://en.wikipedia.org/wiki/Apache_HTTP_Server) on our server handle the routing to and from `SSHD`. All the automated encryption, certificate handling and IP range whitelisting, ***without*** the need for an open SSH port. Implemented by, once again:  [✨ HTTP CONNECT ✨](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT)
+Instead of talking to `SSHD` directly, we let the main HTTP server [NGINX](https://en.wikipedia.org/wiki/Nginx), [Caddy](https://caddyserver.com/) or [Apache](https://en.wikipedia.org/wiki/Apache_HTTP_Server) on our server handle the routing to and from `SSHD`. All the automated encryption, certificate handling and IP range whitelisting, ***without*** the need for an open SSH port. Implemented by, once again:  [✨ HTTP CONNECT ✨](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT)
 
-{% clickableImage "img/tunneledHTTPS.svg", "SSH tunneled via HTTPS" %}
+{% clickableImage "img/tunneledHTTPS.svg", "SSH tunneled via HTTPS with intermediate proxy" %}
+
+Both corporate proxies ***and*** smart firewalls trying to packet-inspect, will be met with HTTPS encryption. Just like visiting the website of a bank to conduct online financial transactions, intermediates will have no insight into the connection, and most importantly for us, no insight into what ***type*** of connection it is.
+
+{% clickableImage "img/tunneledHTTPSFirewall.svg", "SSH tunneled via HTTPS with packet inspecting firewall" %}
 
 The client-side tool for this is the FOSS [proxytunnel](https://github.com/proxytunnel/proxytunnel), which is available for Linux, Mac, BSD and has [automated builds for Windows](https://github.com/proxytunnel/proxytunnel/actions). The previously mentioned `corkscrew` and `ssh-connect` capabilities proxytunnel covers as well, plus the windows specific [NTLM](https://en.wikipedia.org/wiki/NTLM) authentication. Actively maintained, it just had [a new release this month](https://github.com/proxytunnel/proxytunnel/releases/tag/v1.12.3).
 
 <blockquote class="reaction"><div class="reaction_text">It's not available on <a href="https://scoop.sh/">Scoop</a>, though I'm hoping to change that with <a href="https://github.com/ScoopInstaller/Main/pull/6409">this Pull Request</a></div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
 
-`proxytunnel` allows us to talk to our HTTP server and tell it to `HTTP CONNECT` us to the server's `SSHD`. With no intermediate proxy, something `corkscrew` and `ssh-connect` can as well. But `proxytunnel` can chain mutliple `HTTP CONNECT` if there is a corporate proxy in-between and do so with HTTPS encryption on top.
+`proxytunnel` instructs our HTTP server to `HTTP CONNECT` us to our server's `SSHD`. With no intermediate proxy, something `corkscrew` and `ssh-connect` can as well! But `proxytunnel` can chain mutliple `HTTP CONNECT` if there is a corporate proxy in-between and most importantly: with HTTP***S*** (TLS) encryption on top.
 
 But first, our HTTP server has to play along...
 
-### Server-side requirements
+### Server-side setup
 
 {% clickableImage "img/tunneledHTTPSZoom.svg", "SSH tunneled via HTTPS - Server-Side setup" %}
 
-The neat thing is, we can utilize the very same HTTP server our WebApp is most likely served or [reverse proxied](https://www.cloudflare.com/learning/cdn/glossary/reverse-proxy/) over. To do so, we need to configure `HTTP CONNECT`, restrict it to localhost port 22 only and setup optional authentication. Luckily all the popular FOSS HTTP servers, [NGINX](https://en.wikipedia.org/wiki/Nginx), [Caddy](https://caddyserver.com/) and [Apache / httpd](https://en.wikipedia.org/wiki/Apache_HTTP_Server) can do so.
+The neat thing is, we can utilize the very same HTTP server our WebApp is most likely served or [reverse proxied](https://www.cloudflare.com/learning/cdn/glossary/reverse-proxy/) over. To do so, we need to configure `HTTP CONNECT`, restrict it to localhost port 22 only and setup optional authentication. Luckily all the popular FOSS HTTP servers, [Nginx](https://en.wikipedia.org/wiki/Nginx), [Caddy](https://caddyserver.com/) and [Apache / httpd](https://en.wikipedia.org/wiki/Apache_HTTP_Server) can do so.
 
-<blockquote class="reaction"><div class="reaction_text">No new software server-side!</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">No new software server-side. No port-forwarding besides pre-existing HTTP ones. No need to touch the <code>SSHD</code> config either.</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
 
 Due to how `HTTP CONNECT` works, we can setup the connection on the granularity of a domain or subdomain. So we can do `ssh.example.com` only, but we don't have to and can keep it on the same level as the main WebApp `example.com`. The presence of `HTTP CONNECT` does not impact standard HTTP routing in any way.
 
@@ -777,7 +781,7 @@ You can slap on [`basic auth`](https://developer.mozilla.org/en-US/docs/Web/HTTP
 We will be setting up on port `443` with HTTPS here, though you may perform the same setup without HTTPS, which simply means moving the setup to the non-HTTPS block in the respective config file. I will cover HTTPS only going forward and, of course, the optional `basic auth` without HTTPS is meaningless.
 
 #### Apache / httpd
-Apache / HTTPD [supports this by default](https://httpd.apache.org/docs/2.4/en/mod/mod_proxy.html), nothing more than a config addition needed. The module responsible for this is `mod_proxy_connect.so` and should is precompiled and included everywhere you can get Apache to my knowledge. The addition happens on the level of a `virtualHost`
+Apache / HTTPD [supports this by default](https://httpd.apache.org/docs/2.4/en/mod/mod_proxy.html), nothing more than a config addition needed. The module responsible for this is `mod_proxy_connect.so` and should be precompiled and included everywhere you can get Apache to my knowledge. The addition happens on the level of a `virtualHost`
 
 <details open><summary>Apache Config to enable <code>HTTP_CONNECT</code> and restrict it to localhost:22</summary>
 
@@ -833,8 +837,8 @@ httpd = {
 ```
 </details>
 
-#### NGINX
-Nginx requires an additional patch applied and plugin compiled to enable `HTTP_CONNECT`: [ngx_http_proxy_connect_module](https://github.com/chobits/ngx_http_proxy_connect_module). Luckily, support goes way back to NGINX `1.4` in 2013 and the patch has remained identical for every version since `1.21.1` in 2021. Build steps are minimal and described on the GitHub page.
+#### Nginx
+Nginx requires an additional patch applied and plugin compiled to enable `HTTP_CONNECT`: [ngx_http_proxy_connect_module](https://github.com/chobits/ngx_http_proxy_connect_module). Luckily, support goes way back to Nginx `1.4` in 2013 and the patch has remained identical for every version since `1.21.1` in 2021. Build steps are minimal and described on the GitHub page.
 
 After the module is in nginx, you can simply insert `proxy_connect` at the server-block level (or higher).
 ```nginx
@@ -901,25 +905,28 @@ in
 </details>
 
 #### Caddy
-Caddy v2 gained `HTTP_CONNECT` capability last year with an update to module [forwardproxy](https://github.com/caddyserver/forwardproxy). Compiling and module inclusion is [dead simple](https://github.com/caddyserver/forwardproxy?tab=readme-ov-file#quick-start). In the `caddyfile`, on the level of your main WebApp you can then insert
+Caddy v2 gained `HTTP_CONNECT` capability last year with an [update](https://github.com/caddyserver/forwardproxy/pull/74#) to module [forwardproxy](https://github.com/caddyserver/forwardproxy). Compiling and module inclusion is [dead simple](https://github.com/caddyserver/forwardproxy?tab=readme-ov-file#quick-start). In the `caddyfile`, you can insert the `HTTP CONNECT` config.
 
-As previously, you don't need to configure SSH to confirm connection to `SSHD`.
-
-```
-{
-        auto_https off
-        order forward_proxy first
-}
+```bash
 https://example.com {
-        forward_proxy {
-                ports 22
+        forward_proxy { # Enable HTTP_CONNECT
+                ports 22 # Restrict to port 22
                 acl {
-                        allow example.com
-                        deny all
+                        allow example.com # Restrict to this domain. It should be 127.0.0.1, but doesn't quite work out, more on that below. Also extra context: https://github.com/proxytunnel/proxytunnel/issues/84#issuecomment-2463191906
+                        deny all # Deny everything else
                 }
         }
 }
 ```
+
+Normally, `HTTP CONNECT` and standard HTTP coexist independently. On Caddy it's either or it seems. I'm not a Caddy user and can't comment on how to make both the relay to port 22 and the preservation of the main WebApp on the same (sub)domain block work. I hope Caddy users can chime and I will correct it in an addendum.
+
+<blockquote class="reaction"><div class="reaction_text">With just couple of config lines, we gained the ability to publicly expose any TCP port, without access to any of the underlying infrastructure.</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
+
+### Client-side connection
+Just like previously, we can first test the connection without OpenSSH. We have to specify our own HTTP server as a proxy, the final destination to `localhost:22`, as well the intermediate corporate proxy, if there is any. So **One** proxy if there is a direct connection to our Server, **Two** with an intermediate proxy.
+
+A bit confusingly, `proxytunnel` uses the terms `Local proxy (-p)` for the first and `Remote proxy (-r)` for the second jump. Our HTTP server is `Local proxy` if there is a direct connection (firewall case). If there is an intermediate proxy, our server becomes `Remote proxy`. Example with corporate proxy `198.51.100.4:8080`:
 
 ```tunnelingArticleShell
 $ proxytunnel -X -z -p 198.51.100.4:8080 -r example.com:443 -d 127.0.0.1:22
@@ -927,15 +934,86 @@ Via 198.51.100.4:8080 -> example.com:443 -> 127.0.0.1:22
 SSH-2.0-OpenSSH_9.9
 ```
 
+- `-p 198.51.100.4:8080` specifies the corporate proxy
+- `-r example.com:443` specifies our server, with the (sub)domain of where we configured `HTTP CONNECT`
+  - `-X` specifies, that there is HTTPS on this `Remote Proxy`
+  - Without an intermediate proxy, our server would become `-p`
+  - We would also have to use `-E`, not `-X` in that case to specify HTTPS on `Local Proxy`, again a bit confusing nomenclature
+- `-d 127.0.0.1:22` specifies the final destination to our `SSHD` service.
+  - As the connection happens after our HTTP server receives the information, this is regardless of port-forwarding port 22.
+- `-z` tells to ignore HTTPS certificate checks, especially if you self-sign
+  - Provided there is no `basic auth`, we don't need to trust our connection, as encryption is handled by OpenSSH regardless
+  - Making the certificate check work on Windows is [a bit of a pain](https://github.com/proxytunnel/proxytunnel/issues/82).
+  - We'll cover it below, but you still might want to use the certificate check as a (weak) insurance against DPI, if you intend on staying covert
+
+<blockquote class="reaction"><div class="reaction_text">You can additionally specify <code>-v</code> for more debug information on the <code>HTTP CONNECT</code> connection.</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
+
+`proxytunnel` answers us with a nice arrow `-->` illustrated connection path and finally with the OpenSSH identification string, provided everything worked correctly. If there is no intermediate proxy, then the command will look like this:
+
+```tunnelingArticleShell
+$ proxytunnel -E -z -p example.com:443 -d 127.0.0.1:22
+Via example.com:443 -> 127.0.0.1:22
+SSH-2.0-OpenSSH_9.9
+```
+
+<blockquote class="reaction"><div class="reaction_text">If you see <code>SSH-2.0-OpenSSH_X.X</code>, you hit the jackpot</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
+
+#### Pit falls
+If you don't see a `SSH-2.0-OpenSSH_X.X` reply, there could be a multitude of reasons. ***First***: try your (sub)domain:(ssh port) as a destination. This is technically wrong, but due to [how HTTP CONNECT works](https://github.com/proxytunnel/proxytunnel/issues/84#issuecomment-2463191906), you may need to tell `HTTP CONNECT` that the destination is `example.com:22`, **even if** there is no such thing.
+
+```tunnelingArticleShell
+$ proxytunnel -X -z -p 198.51.100.4:8080 -r example.com:443 -d example.com:22
+Via 198.51.100.4:8080 -> example.com:443 -> example.com:22
+SSH-2.0-OpenSSH_9.9
+```
+
+You can fix this for nginx, by [specifying that server-block as `default_server`](https://github.com/proxytunnel/proxytunnel/issues/84#issuecomment-2463191906), which will make `127.0.0.1:22` work as a destination. If that is not desired, keep using the `-d` workaround. To my understanding, in Caddy you have to use the workaround. Apache should have no such issues, by I never fully confirmed it.
+
+`proxytunnel`, `nginx` and `apache` only support up to `HTTP/1.1` with `HTTP CONNECT`. If the corporate proxy initiates a `HTTP/2` connection, you'll error out. You can restrict it to `HTTP/1.1` server-side or corporate-proxy-side. `Caddy` can also do `HTTP/2` and `HTTP/3`, but again, `proxytunnel` can't.
+
+<blockquote class="reaction"><div class="reaction_text">Performance wise, none of this matters. The theoretical benefits of <code>HTTP/2</code> and <code>HTTP/3</code> don't apply to tunneled SSH.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+Finally: `Caddy` is a cheery lad ヽ(*・ω・)ﾉ and really likes to give a thumbs up, even if everything goes wrong. Even if proxytunnel's `-v` debug info says `Tunnel established.`, but there is no `SSH-2.0-OpenSSH_X.X`, indicates a missing `HTTP CONNECT`, incomplete routing or block due to [`acl`](https://github.com/atenart/caddy-acl).
+
+### SSH Config
+We *could* already connect like this:
+
 ```tunnelingArticleShell
 $ ssh -o ProxyCommand="proxytunnel -X -z -p 198.51.100.4:8080 -r example.com:443 -d 127.0.0.1:22" user@
 ```
 
-All of these need HTTP/1.1 () If the intermediate Proxy communicates with HTTP/2, your connections will error out
+For many of reason like compatibility with dev tools, we'll be specifying a proper [SSH config](https://man.openbsd.org/ssh_config). In your user directory is an ssh config directory. `/home/<username>/.ssh` aka `~/.ssh` on *NIX and `C:\Users\<username>\.ssh` aka `%userprofile%\.ssh` on Windows. Inside is extension-less file `config`. If not, create both.
+
+To for clarity let's use username `kiwi` for the user we want to login at our server and `frost` for as the user name on the client laptop. For reasons we'll get into shortly, if you are on Windows: use absolute paths for everything, starting from `C:\` **and** re-specify the default [UserKnownHostsFile](https://man.openbsd.org/ssh_config#UserKnownHostsFile).
+
+```tunnelingArticleSSH
+UserKnownHostsFile 'C:\Users\frost\.ssh\known_hosts' # Re-specify on Windows with absolute path, Quotes if path contains spaces
+ServerAliveInterval 30 # Keep-Alive Packet every 30 seconds to ensure the connection doesn't terminate
+
+## Configuring 3 Hosts. We only need one, but let's lay them all out for clarity:
+# Case with Corporate Proxy in-between
+Host exampleCorporate
+    User kiwi
+    IdentityFile 'C:\Users\frost\.ssh\keyFile' # Quotes if path contains spaces
+    ProxyCommand proxytunnel.exe -X -z -p 198.51.100.4:8080 -r example.com:443 -d 127.0.0.1:44422
+	# Proxy command takes care of of both HostName and Port
+
+# Case to simply go around a packet-sniffing firewall
+Host exampleFirewall
+    User kiwi
+    IdentityFile 'C:\Users\frost\.ssh\keyFile' # Quotes if path contains spaces
+    ProxyCommand proxytunnel.exe -E -z -p example.com:443 -d 127.0.0.1:44422
+
+# Classic, Direct connection case without ProxyCommand
+Host exampleDirect
+	HostName example.com
+	Port 22 # Only required if OpenSSH port-forwarded on non-standard port
+    User kiwi
+    IdentityFile 'C:\Users\frost\.ssh\keyFile' # Quotes if path contains spaces
+```
 
 ### Network capture
-
-
+**Source** 💻 is a Laptop performing `ssh -o ProxyCommand="proxytunnel -X -z -p 198.51.100.4:8080 -r example.com:443 -d 127.0.0.1:22" user@`. **Target** 🏢 is an intermediate proxy sitting in between a private subnet and the internet. The capture is performed on this intermediate proxy **Target** 🏢.
 
 <table>
 	<thead>
@@ -1062,34 +1140,48 @@ All of these need HTTP/1.1 () If the intermediate Proxy communicates with HTTP/2
 	<tr class="mobileRow"><td colspan=4><pre>Application Data</pre></td>
 	</tr>
 		<tr style="text-align: center; border-bottom: 1px solid #40363a;">
-		<td colspan=4><code>Application Data</code> and <code>TCP ACK</code> packets go back and forth for the duration of the session</td>
+		<td colspan=4><code>Application Data</code> packets go back and forth for the duration of the session</td>
 		</tr>
 	</tbody>
 </table>
 
-The proxy is [non the wiser](https://www.youtube.com/watch?v=otCpCn0l4Wo&t=15s)! Now there is no way for the proxy to know what's going on and block our connection. Except [with specialized tooling mostly relegated to research](https://inria.hal.science/hal-01273160/file/HTTPS_traffic_identification_framework_NOMS16.pdf), which looks at the encrypted traffic and squints *really* hard.
+The proxy is [none the wiser](https://www.youtube.com/watch?v=otCpCn0l4Wo&t=15s)! Now there is no way for the proxy to know what's going on and block us.  Except [with specialized tooling mostly relegated to research](https://inria.hal.science/hal-01273160/file/HTTPS_traffic_identification_framework_NOMS16.pdf), which looks at the encrypted traffic and squints *really* hard, packet-inspection cannot tell the difference between a normal HTTPS Website and our SSH.
 
-There are impressive papers with [LLMs guessing somewhat accurately what LLMs are outputting](https://www.youtube.com/watch?v=UfenH7xKO1s) based purely on <strong>encrypted</strong> packet length, as currently ChatBot interfaces like Microsoft's CoPilot send the output token by token as packet by packet.
 
-Unless... [\*cue scary music\*](https://youtu.be/AfjqL0vaBYU?t=5)
+<blockquote class="reaction"><div class="reaction_text"> Off-topic: <a target="_blank" href="https://www.youtube.com/watch?v=UfenH7xKO1s">LLMs can guess somewhat accurately what LLMs are outputting based purely on <strong>encrypted</strong> packet length</a>, if the chat frontend sends token by token as packet by packet.</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
 
-{% clickableImage "img/tunneledHTTPSFirewall.svg", "SSH tunneled via HTTPS" %}
+Now, so far we have made an assumption: HTTPS won't betray us. This is an assumption that online banking, financial transaction, medical institutions make, that unfortunately cannot be made in general. Advanced IT company security packages may perform ... [\*cue scary music\*](https://youtu.be/AfjqL0vaBYU?t=5) ...
 
 ## Deep Packet Inspection 👻
-There is only one way to detect this properly at scale: [Deep packet inspection (DPI)](https://en.wikipedia.org/wiki/Deep_packet_inspection). In the context of HTTPs or corporate connections, this involved pre-installing a [Trusted Root Certification Authority](https://en.wikipedia.org/wiki/Certificate_authority) on the user's machine (i.e. via Windows' group policy), which allows the corporate proxy to strip encryption. But this is such a bad idea, that even the [NSA](https://en.wikipedia.org/wiki/National_Security_Agency) issued [an advisory](https://web.archive.org/web/20191119195359/https://media.defense.gov/2019/Nov/18/2002212783/-1/-1/0/MANAGING%20RISK%20FROM%20TLS%20INSPECTION_20191106.PDF) and the [Cypersecurity & Infrastructure Security Agency CISA](https://en.wikipedia.org/wiki/Cybersecurity_and_Infrastructure_Security_Agency) outright [cautions against it](https://www.cisa.gov/news-events/alerts/2017/03/16/https-interception-weakens-tls-security).
+Akin to a privacy infringing [deep cavity search](https://en.wikipedia.org/wiki/Body_cavity_search), [DPI aka TLS decryption](https://en.wikipedia.org/wiki/Deep_packet_inspection) is a technique that involves your corporate IT overloads forcing your machine to betray you, allow an intermediate to decrypt your connection for inspection and re-encrypt it after inspection. Theoretically allowing a connection ban by type again.
 
-Now browsers are actually supposed to protect against this and do [indeed have ways to do detect DPI](https://www.grc.com/fingerprints.htm). However, the browsers are kinda in cahoots with the corporate proxy on this one. If your system is told to trust a CA, it will.
+In the context of HTTPS or corporate connections, this involved pre-installing a [Trusted Root Certificate Authority](https://en.wikipedia.org/wiki/Certificate_authority) on the user's machine (i.e. via Windows' group policy). Such a bad idea, that even the [NSA](https://en.wikipedia.org/wiki/National_Security_Agency) issued [an advisory](https://web.archive.org/web/20191119195359/https://media.defense.gov/2019/Nov/18/2002212783/-1/-1/0/MANAGING%20RISK%20FROM%20TLS%20INSPECTION_20191106.PDF) and the [Cypersecurity & Infrastructure Security Agency CISA](https://en.wikipedia.org/wiki/Cybersecurity_and_Infrastructure_Security_Agency) outright [cautions against it](https://www.cisa.gov/news-events/alerts/2017/03/16/https-interception-weakens-tls-security).
+
+A compromise of that intermediate root certificate would mean a whole companie's connections, banking and all being readable in clear text. Luckily, [DPI is easily detectable](https://www.grc.com/fingerprints.htm), as re-encryption rewrites certificate fingerprints. You can check against known fingerprints in the browser's certificate detail view or this command:
+
+```tunnelingArticleShell
+$ openssl s_client -proxy <Corporate Proxy IP>:<Corporate Proxy Port> -connect <Site which is not blocked>:443 -servername <Site which is not blocked> | openssl x509 -noout -fingerprint -sha1
+```
+
+**Ultimately**, on the networking side you can sandwich *another* layer of encryption in-between, making PI's HTTPS stripping meaningless. **Ultimately Ultimately**, everything we talked about is network side and a security package sitting at kernel level can intercept anything on your own PC.
+
 
 Also comment `https://stackoverflow.com/questions/58671007` Yes this is detectable, see `https://www.grc.com/fingerprints.htm` on the server it's a simple fingerprint check, but automating it in JS is a bit tougher due to know way of getting the cert, but possible via `https://stackoverflow.com/questions/2402121`
 
-```
-openssl s_client -proxy <Corporate Proxy IP>:<Corporate Proxy Port> -connect <Site which is not blocked>:443 -servername <Site which is not blocked> | openssl x509 -noout -fingerprint -sha1
-```
-
 ## What *not* to do
+Before we move on how to make dev tools sing, let's quickly go over what to avoid.
+
 There are some projects which go the jackhammer route of exposing the shell as an HTTP service. The more popular ones are [Wetty](https://github.com/butlerx/wetty) and [Shell in a Box](https://github.com/shellinabox/shellinabox). Besides 
 
 ## Dev tools
+
+### VSCode
+
+<figure>
+	<img src="img/vscode.png" alt="Remote SSH file editing in VSCode" />
+	<figcaption>Remote SSH file editing in VSCode</figcaption>
+</figure>
+
 ### Rsync
 #### Rsync on Windows
 This is a bit of an interesting [story](https://en.wikipedia.org/wiki/CwRsync). On Windows there exist two versions of rsync. The standard FOSS rsync client with [source code from the Samba project](https://rsync.samba.org/) and [cwRsync](https://en.wikipedia.org/wiki/CwRsync), which has a free client but is closed sourced and [monetized via it's server component](https://itefix.net/store/buy?product=49.00000004) by [itefix](https://itefix.net/).
@@ -1141,18 +1233,6 @@ And finally, we don't want to that huge call each time and we can't expect other
 
 <blockquote class="reaction"><div class="reaction_text">It's kind of bananas what we have to go through on Windows to get basic tooling without resorting to <a target="_blank" href="https://learn.microsoft.com/en-us/windows/wsl/install">WSL</a> or <a target="_blank" href="https://www.msys2.org/">MSYS 2</a>. Makes me really appreciate what a fine piece of engineering <a target="_blank" href="https://www.msys2.org/">MSYS 2</a> is.</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
 <a></a>
-
-## Other options
-You can use
-
-## Tunneled
-### `connect.exe` and `corkscrew.exe`
-Let's see what it looks like from the intermediate, corporate proxy. We are looking at the communication between the Proxy and the Laptop specifically. And this is again the output of wireshark.
-
-
-
-As you can see, even though we speak HTTP, the proxy still clocks that SSH is going here.
-
 
 ## Quick tip:
 Don't retype your SSH Key's password until reboot or time limit. On windows 

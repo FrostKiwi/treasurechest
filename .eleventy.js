@@ -40,7 +40,13 @@ export default function (eleventyConfig) {
 			Prism.languages["tunnelingArticleShell"] = Prism.languages.extend("shell-session", {});
 			const tunnelingArticleShell = Prism.languages["tunnelingArticleShell"];
 			tunnelingArticleShell.command.inside.bash.inside.number = /\b\d+(?:\.\d+)*\b/;
-			tunnelingArticleShell.command.inside.bash.inside["function"].pattern = /\b(?:ssh|proxytunnel|connect|corkscrew)\b(?=\s)/;
+			tunnelingArticleShell.command.inside.bash.inside["function"].pattern = /\b(?:ssh|proxytunnel|connect|corkscrew|openssl)\b(?=\s)/;
+			
+			/* Tunneling Article ssh-config highlight */
+			Prism.languages["tunnelingArticleSSH"] = Prism.languages.extend("bash", {});
+			const tunnelingArticleSSH = Prism.languages["tunnelingArticleSSH"];
+			tunnelingArticleSSH.number = /\b\d+(?:\.\d+)*\b/;
+			tunnelingArticleSSH["function"].pattern = /\b(?:UserKnownHostsFile|ServerAliveInterval|Host|User|IdentityFile|ProxyCommand|HostName|Port)\b(?=\s)/;
 		}
 	});
 	/* The required CSS for the PrismJS color theme */
