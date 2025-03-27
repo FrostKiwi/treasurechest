@@ -18,7 +18,7 @@ Being able to setup a connection you trust and where your dev tools work is impo
 
 <blockquote class="reaction"><div class="reaction_text">The "correct" answer is: <a target="_blank" href="https://tailscale.com/blog/hamachi">setup a VPN</a>! But that's sometimes not possible. <a target="_blank" href="https://www.microsoft.com/en-us/microsoft-365/business-insights-ideas/resources/what-is-endpoint-management">Endpoint management</a> may forbid it client-side. Server-side infrastructure may be managed by a third party, kicking off costly service requests.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
-Ultimately, this is what this post is about - how to SSH into machines, when there is stuff in the way preventing that and make sure that your tools like git, [scp](https://man.openbsd.org/scp.1), [rsync](https://en.wikipedia.org/wiki/Rsync) or editing files directly on the server via [VSCode's SSH integration](https://code.visualstudio.com/docs/remote/ssh) work, with no new software installed and the ***absolute minimum*** of modifications to your server.
+Ultimately, this is what the article is about - how to SSH into machines, when there is stuff in the way preventing that and make sure that your tools like [git](https://en.wikipedia.org/wiki/Git), [scp](https://man.openbsd.org/scp.1), [rsync](https://en.wikipedia.org/wiki/Rsync) or editing files directly on the server via [VSCode's SSH integration](https://code.visualstudio.com/docs/remote/ssh) work, with no new software installed and the ***absolute minimum*** of modifications to your server.
 
 <blockquote class="reaction"><div class="reaction_text">Once we are done, we'll gain a bit of a super power: <a target="_blank" href="https://en.wikipedia.org/wiki/Hole_punching_(networking)">hole-punching</a> and <a target="_blank" href="https://en.wikipedia.org/wiki/Port_forwarding">port-forwarding</a> at the same time, <strong>without</strong> touching the settings of firewalls or routers on client or server.</div><img class="kiwi" src="/assets/kiwis/cyber.svg"></blockquote>
 
@@ -295,7 +295,7 @@ Even after the communication became fully encrypted, we can still infer this com
 
 A "dumb" [firewall](https://en.wikipedia.org/wiki/Firewall_(computing)), which performs no packet sniffing, is unable to block SSH *specifically*. These firewalls control which type ([UDP](https://en.wikipedia.org/wiki/User_Datagram_Protocol), [TCP](https://en.wikipedia.org/wiki/Transmission_Control_Protocol), [etc.](https://github.com/Hawzen/hdp)) of packet can go from and to which port, address or application. This applies to both stateless firewalls and [stateful firewalls](https://en.wikipedia.org/wiki/Stateful_firewall), a distinction which we'll ignore going forward.
 
-<blockquote class="reaction"><div class="reaction_text">Of course "dumb" and "smart" are not technical, it's all about rule-sets and policies. Specific security products, specific configs, placement in the <a target="_blank" href="https://en.wikipedia.org/wiki/OSI_model">OSI Model</a>, is a can of worms this article will not touch.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Of course, no such thing as "dumb" and "smart", it's all about rule-sets and policies. Specific security products, specific firewall configs, placement in the <a target="_blank" href="https://en.wikipedia.org/wiki/OSI_model">OSI Model</a>, is a can of worms this article will not touch.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
 For now we look at client-side firewalls only. A popular "set and forget" firewall ruleset to allow internet access but block users from doing other stuff is to only permit outbound TCP Port 80 for HTTP, TCP Port 443 for HTTPS and block everything else. We are ignoring things like [DNS](https://en.wikipedia.org/wiki/Domain_Name_System), E-Mail, etc. here.
 
@@ -353,7 +353,7 @@ From the perspective of the client, nothing changed as compared to a direct conn
 
 {% clickableImage "img/smartfirewall.svg", "SSH connection blocked by a packet-inspecting firewall" %}
 
-A "smart" firewall can additionally look inside packets and block connections based on what traffic it sees. When faced with a smart firewall setup to block either SSH specifically or only allow "normal" HTTPS traffic, you will get a timeout error like this:
+A "smart" firewall can additionally look inside packets and block connections based on what traffic it sees. When faced with a smart firewall setup to block either SSH specifically or only allow "normal" web traffic, you will get a timeout error like this:
 
 ```tunnelingArticleShell
 $ ssh user@example.com
@@ -1259,7 +1259,7 @@ total size is 420,857,408  speedup is 68.37
 
 The reason we used absolute paths even in the ssh config, is that rsync is in an invisible *nix environment provided by cygwin and cygwin's path translation won't resolve correctly otherwise. Same reason we re-specified `UserKnownHostsFile`. It would work without, but you'd get annoying `This key is not known by any other names.` each login.
 
-You can ignore the `bash.exe` error, irrelevant for our case. `-e` let's us specify the correct ssh and the related config. If we don't specify it and let the system ssh take over, it ***will*** seem to connect connect, but will fail with a confusing error:
+You can ignore the `bash.exe` error, irrelevant for our case. `-e` let's us specify the correct ssh and the related config. If we don't specify it and let the system ssh take over, it will ***seem*** to connect, but will fail with a confusing error:
 
 ```tunnelingArticleShell
 $ rsync -avz --progress exampleCorporate:/path/to/source/folder /path/to/target/folder
