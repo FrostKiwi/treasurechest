@@ -300,7 +300,7 @@ A "dumb" [firewall](https://en.wikipedia.org/wiki/Firewall_(computing)), which p
 
 For now we look at client-side firewalls only. A popular "set and forget" firewall ruleset to allow internet access but block users from doing other stuff is to only permit outbound TCP Port 80 for HTTP, TCP Port 443 for HTTPS and block everything else. We are ignoring things like [DNS](https://en.wikipedia.org/wiki/Domain_Name_System), E-Mail, etc. here.
 
-Our default SSH connection attempt will error out in such an environment. Provided the domain itself isn't blacklisted, [DNS](https://en.wikipedia.org/wiki/Domain_Name_System) resolves correctly and the OS isn't aware of the firewall rule giving you a `ssh: connect to host example.com port 44422: Permission denied`, you'll get this [timeout](https://en.wikipedia.org/wiki/Timeout_(computing)) error after waiting a period:
+Our default SSH connection attempt will error out in such an environment. Provided the domain itself isn't blacklisted, [DNS](https://en.wikipedia.org/wiki/Domain_Name_System) resolves correctly and the OS isn't aware of the firewall rule giving you a `ssh: connect to host example.com port 22: Permission denied`, you'll get this [timeout](https://en.wikipedia.org/wiki/Timeout_(computing)) error after waiting a period:
 
 ```tunnelingArticleShell
 $ ssh user@example.com
@@ -740,15 +740,15 @@ We communicate by SSH (a TCP protocol) over the corporate proxy, which speaks HT
 
 `corkscrew` and `ssh-connect` instruct the corporate proxy to connect to our target server's SSH port and relay back what it hears via the command `HTTP CONNECT`. `HTTP CONNECT` works by relaying RAW TCP. Similar to the dumb firewall previously, HTTP CONNECT doesn't understand ***what*** TCP it's actually relaying.
 
-So why not forbid `HTTP CONNECT`? - Because that would break proxy connections with [HTTP***S***](https://en.wikipedia.org/wiki/HTTPS), a basic building block of modern web. Ignoring the unencrypted [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication), the point of HTTPS is that the communication is encrypted. For the proxy to work in the first place, it has to relay TCP blindly. That's what [HTTP CONNECT](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT) is for.
+So why not forbid `HTTP CONNECT`? - Because that would break proxy connections with [HTTP***S***](https://en.wikipedia.org/wiki/HTTPS), basic building block of modern web. Ignoring the unencrypted [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication), the point of HTTPS is that the communication is encrypted. For the corporate proxy to work, it has to relay TCP blindly. That's what [HTTP CONNECT](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT) is for.
 
-<blockquote class="reaction"><div class="reaction_text">Yes, <a href="https://www.youtube.com/watch?v=5eJl2Y8yh_4">put your hand down</a>, we'll get into TLS decryption and DPI.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">We will cover DPI / TLS stripping later. There are network setups which can prohibit <code>HTTP CONNECT</code>. In such cases tunneling has to run deeper with projects like <a target="_blank" href="https://github.com/erebe/wstunnel">wstunnel</a>, but we won't be covering that here.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 If you take a look at the traffic, you *still* see the connection being clocked as SSH. The intermediate proxy talks to the target `example.com:22` server and thus can see the unencrypted SSH setup. If the corporate proxy performs packet sniffing, it will have no issues blocking this. Let's fix that.
 
 <blockquote class="reaction"><div class="reaction_text">So far, our tunneling method <strong>doesn't hide anything</strong>, but I've seen this setup work more often than not, even in environments where outgoing SSH was supposedly blocked.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
-## HTTP***S*** Tunneling
+## ✨ HTTP***S*** Tunneling ✨
 Now we get into the meat and potatoes. If we want to hide from packet inspection based filtering, we need encryption on top of our communication, so the setup phase doesn't give away the SSH nature of our connection. Luckily there is a super convenient and universally compatible way: Just like HTTPS - [TLS](https://en.wikipedia.org/wiki/HTTPS).
 
 Instead of talking to `SSHD` directly, we let the main HTTP server [NGINX](https://en.wikipedia.org/wiki/Nginx), [Caddy](https://caddyserver.com/) or [Apache](https://en.wikipedia.org/wiki/Apache_HTTP_Server) on our server handle the routing to and from `SSHD`. All the automated encryption, certificate handling and IP range whitelisting, ***without*** the need for an open SSH port. Implemented by, once again:  [✨ HTTP CONNECT ✨](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/CONNECT)
@@ -759,7 +759,7 @@ Both corporate proxies ***and*** smart firewalls trying to packet-inspect, will 
 
 {% clickableImage "img/tunneledHTTPSFirewall.svg", "SSH tunneled via HTTPS with packet inspecting firewall" %}
 
-The client-side tool for this is the FOSS [proxytunnel](https://github.com/proxytunnel/proxytunnel), which is available for Linux, Mac, BSD and has [automated builds for Windows](https://github.com/proxytunnel/proxytunnel/actions). The previously mentioned `corkscrew` and `ssh-connect` capabilities proxytunnel covers as well, plus the windows specific [NTLM](https://en.wikipedia.org/wiki/NTLM) authentication. Actively maintained, it just had [a new release this month](https://github.com/proxytunnel/proxytunnel/releases/tag/v1.12.3).
+The client-side tool for this is the FOSS [proxytunnel](https://github.com/proxytunnel/proxytunnel), which is available for Linux, Mac, BSD and has [automated builds for Windows](https://github.com/proxytunnel/proxytunnel/actions). Actively maintained, it just had [a new release this month](https://github.com/proxytunnel/proxytunnel/releases/tag/v1.12.3). `proxytunnel` can use windows specific [NTLM](https://en.wikipedia.org/wiki/NTLM) authentication and fully covers previously mentioned `corkscrew` and `ssh-connect` capabilities.
 
 <blockquote class="reaction"><div class="reaction_text">It's not available on <a href="https://scoop.sh/">Scoop</a>, though I'm hoping to change that with <a href="https://github.com/ScoopInstaller/Main/pull/6409">this Pull Request</a></div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
 
@@ -985,9 +985,9 @@ We *could* already connect like this:
 $ ssh -o ProxyCommand="proxytunnel -X -z -p 198.51.100.4:8080 -r example.com:443 -d 127.0.0.1:22" user@
 ```
 
-For many of reason like compatibility with dev tools, we'll be specifying a proper [SSH config](https://man.openbsd.org/ssh_config). In your user directory is an ssh config directory. `/home/<username>/.ssh` aka `~/.ssh` on *NIX and `C:\Users\<username>\.ssh` aka `%userprofile%\.ssh` on Windows. Inside is extension-less file `config`. If not, create both.
+For many reason, like compatibility with dev tools, we'll be specifying a proper [SSH config](https://man.openbsd.org/ssh_config). In your user directory is an ssh config directory. `/home/<username>/.ssh` aka `~/.ssh` on *NIX and `C:\Users\<username>\.ssh` aka `%userprofile%\.ssh` on Windows. Inside is extension-less file `config`. If not, create both.
 
-To for clarity let's use username `kiwi` for the user we want to login at our server and `frost` for as the user name on the client laptop. For reasons we'll get into shortly, if you are on Windows: use absolute paths for everything, starting from `C:\` **and** re-specify the default [UserKnownHostsFile](https://man.openbsd.org/ssh_config#UserKnownHostsFile).
+For clarity let's use user name `kiwi` for the user we want to login at our server as and user name `frost` for the user on the client laptop. For reasons we'll get into shortly, if you are on Windows: use absolute paths for everything starting from `C:\` **and** re-specify the default [UserKnownHostsFile](https://man.openbsd.org/ssh_config#UserKnownHostsFile).
 
 ```tunnelingArticleSSH
 UserKnownHostsFile 'C:\Users\frost\.ssh\known_hosts' # Re-specify on Windows with absolute path, Quotes if path contains spaces
@@ -997,26 +997,28 @@ ServerAliveInterval 30 # Keep-Alive Packet every 30 seconds to ensure the connec
 # Case with Corporate Proxy in-between
 Host exampleCorporate
     User kiwi
-    IdentityFile 'C:\Users\frost\.ssh\keyFile' # Quotes if path contains spaces
-    ProxyCommand proxytunnel.exe -X -z -p 198.51.100.4:8080 -r example.com:443 -d 127.0.0.1:44422
+    IdentityFile 'C:\Users\frost\.ssh\keyFile' # Not required, if password authentication used instead, Quotes if path contains spaces, keep path absolute on Windows! 
+    ProxyCommand proxytunnel.exe -X -z -p 198.51.100.4:8080 -r example.com:443 -d 127.0.0.1:22
 	# Proxy command takes care of of both HostName and Port
 
 # Case to simply go around a packet-sniffing firewall
 Host exampleFirewall
     User kiwi
-    IdentityFile 'C:\Users\frost\.ssh\keyFile' # Quotes if path contains spaces
-    ProxyCommand proxytunnel.exe -E -z -p example.com:443 -d 127.0.0.1:44422
+    IdentityFile 'C:\Users\frost\.ssh\keyFile' # Not required, if password authentication used instead, Quotes if path contains spaces, keep path absolute on Windows! 
+    ProxyCommand proxytunnel.exe -E -z -p example.com:443 -d 127.0.0.1:22
 
 # Classic, Direct connection case without ProxyCommand
 Host exampleDirect
 	HostName example.com
 	Port 22 # Only required if OpenSSH port-forwarded on non-standard port
     User kiwi
-    IdentityFile 'C:\Users\frost\.ssh\keyFile' # Quotes if path contains spaces
+    IdentityFile 'C:\Users\frost\.ssh\keyFile' # Not required, if password authentication used instead, Quotes if path contains spaces, keep path absolute on Windows! 
 ```
 
+Now we have 3 ssh settings. Simply typing `ssh exampleCorporate` should connect you to the target server as user `kiwi`, whilst tunneling along the way. `ssh exampleFirewall` will connect you via the tunnel if there is no intermediate proxy and `ssh exampleDirect` will do the classic direct connection.
+
 ### Network capture
-**Source** 💻 is a Laptop performing `ssh -o ProxyCommand="proxytunnel -X -z -p 198.51.100.4:8080 -r example.com:443 -d 127.0.0.1:22" user@`. **Target** 🏢 is an intermediate proxy sitting in between a private subnet and the internet. The capture is performed on this intermediate proxy **Target** 🏢.
+**Source** 💻 is a Laptop performing `ssh exampleCorporate` aka `ssh -o ProxyCommand="proxytunnel -X -z -p 198.51.100.4:8080 -r example.com:443 -d 127.0.0.1:22" kiwi@`. **Target** 🏢 is a corporate proxy sitting in between a private subnet and the internet. The capture is performed on proxy **Target** 🏢.
 
 <table>
 	<thead>
@@ -1155,95 +1157,129 @@ The proxy is [none the wiser](https://www.youtube.com/watch?v=otCpCn0l4Wo&t=15s)
 
 Now, so far we have made an assumption: HTTPS won't betray us. This is an assumption that online banking, financial transaction, medical institutions make, that unfortunately cannot be made in general. Advanced IT company security packages may perform ... [\*cue scary music\*](https://youtu.be/AfjqL0vaBYU?t=5) ...
 
-## Deep Packet Inspection 👻
+### Deep Packet Inspection 👻
 Akin to a privacy infringing [deep cavity search](https://en.wikipedia.org/wiki/Body_cavity_search), [DPI aka TLS decryption](https://en.wikipedia.org/wiki/Deep_packet_inspection) is a technique that involves your corporate IT overloads forcing your machine to betray you, allow an intermediate to decrypt your connection for inspection and re-encrypt it after inspection. Theoretically allowing a connection ban by type again.
 
 In the context of HTTPS or corporate connections, this involved pre-installing a [Trusted Root Certificate Authority](https://en.wikipedia.org/wiki/Certificate_authority) on the user's machine (i.e. via Windows' group policy). Such a bad idea, that even the [NSA](https://en.wikipedia.org/wiki/National_Security_Agency) issued [an advisory](https://web.archive.org/web/20191119195359/https://media.defense.gov/2019/Nov/18/2002212783/-1/-1/0/MANAGING%20RISK%20FROM%20TLS%20INSPECTION_20191106.PDF) and the [Cypersecurity & Infrastructure Security Agency CISA](https://en.wikipedia.org/wiki/Cybersecurity_and_Infrastructure_Security_Agency) outright [cautions against it](https://www.cisa.gov/news-events/alerts/2017/03/16/https-interception-weakens-tls-security).
 
-A compromise of that intermediate root certificate would mean a whole companie's connections, banking and all being readable in clear text. Luckily, [DPI is easily detectable](https://www.grc.com/fingerprints.htm), as re-encryption rewrites certificate fingerprints. You can check against known fingerprints in the browser's certificate detail view or this command:
+A compromise of that intermediate root certificate would mean a whole company's connections being readable in clear text. Luckily, [DPI is easily detectable](https://www.grc.com/fingerprints.htm), as re-encryption rewrites certificate fingerprints. You can check against known fingerprints in the browser's certificate detail view or this command:
 
 ```tunnelingArticleShell
 $ openssl s_client -proxy <Corporate Proxy IP>:<Corporate Proxy Port> -connect <Site which is not blocked>:443 -servername <Site which is not blocked> | openssl x509 -noout -fingerprint -sha1
 ```
 
-**Ultimately**, on the networking side you can sandwich *another* layer of encryption in-between, making PI's HTTPS stripping meaningless. **Ultimately Ultimately**, everything we talked about is network side and a security package sitting at kernel level can intercept anything on your own PC.
-
-
-Also comment `https://stackoverflow.com/questions/58671007` Yes this is detectable, see `https://www.grc.com/fingerprints.htm` on the server it's a simple fingerprint check, but automating it in JS is a bit tougher due to know way of getting the cert, but possible via `https://stackoverflow.com/questions/2402121`
+**Ultimately**, on the networking side you can sandwich *another* layer of encryption in-between, making DPI's HTTPS stripping meaningless. **Ultimately Ultimately**, everything we talked about is network side and a security package sitting on your PC at kernel level can intercept anything and spawn-kill your ambitions.
 
 ## What *not* to do
-Before we move on how to make dev tools sing, let's quickly go over what to avoid.
+Before we finish by making dev tools sing, let's quickly go over what to avoid. Some projects go the jackhammer route of exposing the system shell as an HTTP service. The more popular ones are [Wetty](https://github.com/butlerx/wetty) and [Shell in a Box](https://github.com/shellinabox/shellinabox). These are excellent projects in their own right and there are situations where they are a good solution...
 
-There are some projects which go the jackhammer route of exposing the shell as an HTTP service. The more popular ones are [Wetty](https://github.com/butlerx/wetty) and [Shell in a Box](https://github.com/shellinabox/shellinabox). Besides 
+...managing public web apps is not one of them. With their reliance on HTTPS for encryption, even ignoring potential DPI, it takes only one config mishap to expose full console access. Especially when web apps change management, things like this are easily forgotten. One misunderstanding away from disaster.
 
 ## Dev tools
-
+Now that we can `ssh exampleCorporate` to automatically connect via our encrypted tunnel, let's make sure our dev tools are happy. If `git` is used via SSH, it should work automatically. Thanks to [Unix philosophy](https://en.wikipedia.org/wiki/Unix_philosophy#Origin), everything mostly works automatically really. Mostly.
 ### VSCode
-
 <figure>
 	<img src="img/vscode.png" alt="Remote SSH file editing in VSCode" />
 	<figcaption>Remote SSH file editing in VSCode</figcaption>
 </figure>
 
+[VSCode's SSH integration](https://code.visualstudio.com/docs/remote/ssh) should work automatically. Browsing, editing and downloading files with no extra settings required. The SSH config should be automatically detected by VS Code and be selectable when initiating a connection. Same goes for [TRAMP](https://www.gnu.org/software/emacs/manual/html_node/tramp/Quick-Start-Guide.html) in [Emacs](https://en.wikipedia.org/wiki/Emacs).
+### SCP
+The basic file copying [`scp`](https://man.openbsd.org/scp) works universally as well and is installed whenever the OpenSSH client is. Syntax remains also the same. Invocations like `scp exampleCorporate:/path/to/source/file /path/to/target` will automatically use the HTTPS tunnel transparently. Nothing interesting here.
 ### Rsync
+Provided your WebApp doesn't have server-side CI/CD, you or your CI/CD system will be uploading files to your target server. A WebApp build usually contains many assets, font files, videos and `scp -r` just doesn't cut it, retransferring everything. [rsync](https://en.wikipedia.org/wiki/Rsync) is widely used to accelerate this task and file copies in general.
+
+It copies folder structures, preserves their permissions, but does so whilst only copying what actually changed and applies compression for faster transfers. This makes `rsync` easily 100x faster when compared to `scp -r` when there are a bunch of assets, but you only changed the code a bit.
+
+Whilst rsync has no running service, it needs to be installed on the server as well. On the client side things are are just as simple, as with `scp`: `rsync -avz --progress exampleCorporate:/path/to/source/folder /path/to/target/folder` to upload a folder and show live progress will work automatically via the tunnel... 
+
+...unless you are on Windows...
+
 #### Rsync on Windows
 This is a bit of an interesting [story](https://en.wikipedia.org/wiki/CwRsync). On Windows there exist two versions of rsync. The standard FOSS rsync client with [source code from the Samba project](https://rsync.samba.org/) and [cwRsync](https://en.wikipedia.org/wiki/CwRsync), which has a free client but is closed sourced and [monetized via it's server component](https://itefix.net/store/buy?product=49.00000004) by [itefix](https://itefix.net/).
 
-<blockquote class="reaction"><div class="reaction_text">cwRsync has a right to exist, though I do find it a bit scummy to capitalize on FOSS projects <a target="_blank" href="https://www.cygwin.com/">Cygwin</a> and Rsync, considering the client presumably mostly the FOSS Rsync source, compiled via cygwin.</div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">cwRsync has a right to exist, though I do find it a bit scummy to capitalize on FOSS projects <a target="_blank" href="https://www.cygwin.com/">Cygwin</a> and Rsync, considering the client is presumably mostly the FOSS Rsync source, compiled via cygwin.</div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
 <a></a>
 
 Anyhow, connecting to proxies with cwRsync simply won't work, if you don't call it from a unix emulating environment. cwRsync will error out with `/bin/sh not found`, due to how [itefix](https://itefix.net/) setup the compilation. Luckily the free open source way works, though the calling convention in windows is a bit of a mess.
 
-The issue is, that rsync needs to be called with the OpenSSH that it was built with, as it is linked against a specific version. But OpenSSH in turn ***also*** needs to call our proxy command. The way this call happens depends on compilation environment and settings. In Windows' Powershell, cygwin is responsible for translating these calls.
+The issue is, that rsync needs to be called with the OpenSSH that it was built with, as it is linked against a specific version. But OpenSSH in turn ***also*** needs to call our proxy command. The way this call-chain happens depends on compilation environment and settings. In Windows' Shell, [cygwin](https://www.cygwin.com/) is responsible for translating these calls.
 
 The call of `rsync.exe` ➡ `ssh.exe` works, but the subsequent call of `ssh.exe` ➡ `proxytunnel.exe`, `connect.exe` or `corkscrew.exe` fails, due to cygwin and its requirement of `sh.exe` to be present. Providing your own `sh.exe` won't work due to binary incompatibility.
 
 <blockquote class="reaction"><div class="reaction_text">With <a target="_blank" href="https://itefix.net/">itefix</a>'s cwRsync there is no way to fix it, since it's closed source. 👎</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 <a></a>
 
-This calling convention needs the binary to be in a `usr/bin/` subfolder with `sh.exe` present, due to how cygwin hardcodes things, otherwise you get a `/bin/sh: No such file or directory`.  Unfortunately, the flexible windows package managers like [scoop](https://scoop.sh/) ships with cwRsync only, something I hope fix in a PR.
+This calling convention needs the binary to be in a `usr/bin/` subfolder with `sh.exe` present, due to how cygwin hardcodes things, otherwise you get a `/bin/sh: No such file or directory`. Unfortunately, the flexible windows package managers like [scoop](https://scoop.sh/) ships with cwRsync only, something I hope fix in a PR.
 
-Without resorting to [WSL](https://learn.microsoft.com/en-us/windows/wsl/install), we would need to install [MSYS2](https://www.msys2.org/), install rsync and make it available in PATH. Big fan of MSYS, but that's too much of a mess. As a shortcut, I extracted rsync `v3.3.0` from MSYS2 and the associated `ssh`. Beware that the `usr/bin/` needs to be intact due to Cygwin hardcoding.
+Without resorting to full [WSL](https://learn.microsoft.com/en-us/windows/wsl/install), we would need to install [MSYS2](https://www.msys2.org/), install rsync and make it available in PATH. Big fan of MSYS, but that's too much of a mess. As a shortcut, I extracted rsync `v3.4.1` from MSYS2 and the associated `ssh`. Beware that the `usr/bin/` structure ***needs*** to be intact due to Cygwin hardcoding.
+
+Here it is: [rsync-3.4.1-windows.zip](rsync-3.4.1-windows.zip)
 
 <blockquote class="reaction"><div class="reaction_text">Took me a while to figure this mess out.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
 <a></a>
 
-Needs the ssh it comes with. You could specify the command via -e or the environment var `RSYNC_RSH`, but it doesn't get you far, as the way cwRsync ships, it won't work as it invokes the ProxyCommand in an incompatible way. /bin/sh not found, but if you give it that it has to use the libraries it was compiled with, which we don't have.
+We could just call it from inside MSYS2 or WSL and everything would be fine, but we would be referring to different SSH configs and you may have *other* tools calling in-turn rsync, so this needs to work outside of MSYS and WSL. Let's start by extracting rsync and configuring exposing its `usr/bin/` in `PATH`:
 
-So we need to give it's own ssh, but we lose the ability to run config, unless we install MSYS to provide that functionality. So it's back to specifying our proxycommand as a long tail of commands. 
+<figure>
+	<img src="PATH.png" alt="Setting the PATH variable for rsync in Windows" />
+	<figcaption>Setting the PATH variable for rsync in Windows</figcaption>
+</figure>
 
-`C:\msys64\usr\bin\rsync.exe -e "C:\msys64\usr\bin\ssh.exe -i C:\Users\<User>\.ssh\key -o ProxyCommand='proxytunnel.exe -X -z -p localproxy:port -r domain:443 -d 127.0.0.1:22'" -avz --progress user@<targetNotRequired>:bulb.bash .`
+There are many tutorials showing how to set `PATH`, so I skip the details here. Restarting your terminal or closing ***all*** VSCode windows, if you use the VSCode integrated one, you will have gained access to command `rsync`. We can invoke rsync with a long command like this:
 
-We could just call it from inside MSYS2 and everything would be fine. But you may have *other* tools calling in-turn rsync, so this needs to work outside of MSYS. This works, but we won't have a `/home` anymore and not config file, or `known_hosts` file. If you don't want to `ED25519 key fingerprint is SHA256:f913xxxxxxxxxxxxxxxxxxxxxxxc. This key is not known by any other names.` each time, you will need to hardcode separate paths.
+```tunnelingArticleShell
+$ rsync -e 'C:\rsync\ssh.exe -F C:\Users\frost\.ssh\config' -avz --progress exampleCorporate:/path/to/source/folder /path/to/target/folder
+bash.exe: warning: could not find /tmp, please create!
+Via 198.51.100.4:8080 -> example.com:443 -> 127.0.0.1:22
+Enter passphrase for key 'C:\Users\frost\.ssh\keyFile':
+sending incremental file list
+/path/to/target/folder/posts/tunneling-corporate-firewalls/rsync-3.4.1-windows.zip
+      7,765,500 100%    4.30MB/s    0:00:01 (xfr#2, to-chk=53/10810)
+/path/to/target/folder/posts/tunneling-corporate-firewalls/tunneling-corporate-firewalls.md
+         83,344 100%  135.20kB/s    0:00:00 (xfr#3, to-chk=52/10810)
 
-or we can specify our default config file and call via
+sent 6,136,784 bytes  received 18,824 bytes  373,067.15 bytes/sec
+total size is 420,857,408  speedup is 68.37
+```
 
-`C:\rsync\rsync.exe -e "C:\rsync\ssh.exe -F C:\Users\<USER>\.ssh\config" -avz --progress CONFIGNAME:bulb.bash .`
+The reason we used absolute paths even in the ssh config, is that rsync is in a *nix environment provided by cygwin paths won't resolve correctly otherwise. Same reason we re-specified `UserKnownHostsFile`, or we would get endless `This key is not known by any other names.` each login.
 
-But we have to take care, that the identity file is specified as an absolute path, so
-`IdentityFile ~/.ssh/key` is a no go.
+You can ignore the `bash.exe` error, irrelevant for `rsync`. `-e` let's us specify the correct ssh and the related config. If we don't specify it and let the system ssh take over, it ***will*** seem to connect connect, but will fail with a confusing error:
 
-Without a unix environment
-also `known_hosts` needs an absolute path, so both windows' ssh and our rsync's ssh can read from the same.
+```tunnelingArticleShell
+$ rsync -avz --progress exampleCorporate:/path/to/source/folder /path/to/target/folder
+Via 198.51.100.4:8080 -> example.com:443 -> 127.0.0.1:22
+Enter passphrase for key 'C:\Users\frost\.ssh\keyFile':
+rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
+rsync error: error in rsync protocol data stream (code 12) at io.c(232) [Receiver=3.4.1]
+rsync: [sender] safe_read failed to read 4 bytes: Connection reset by peer (104)
+rsync error: error in rsync protocol data stream (code 12) at io.c(283) [sender=3.4.1]
+```
 
-And finally, we don't want to that huge call each time and we can't expect other tooling relying on rsync to know this huge command. So we can make rsync fetch it from an environment variable. `RSYNC_RSH`.
+But that's an awfully long command and other tools using rsync won't know it. Luckily, there is a way to specify as default: environment variable `RSYNC_RSH`, which is equivalent to the parameter `-e`. Same deal as before, lot's of online explanations on how to set environment variables in Windows.
+<figure>
+	<img src="RSYNC_RSH.png" alt="Setting the RSYNC_RSH to instruct rsync to know the correct OpenSSH" />
+	<figcaption>Setting the RSYNC_RSH to instruct rsync to know the correct OpenSSH</figcaption>
+</figure>
 
-[corkscrew.zip](corkscrew.zip)
-[rsync-3.3.1-windows.zip](rsync-3.3.1-windows.zip)
+And after all that, we can ***finally*** use rsync via HTTPS tunneling, like we would on any *Nix platform or environment:
 
-![](PATH.png)
-![](RSYNC_RSH.png)
+```tunnelingArticleShell
+$ rsync -avz --progress exampleCorporate:/path/to/source/folder /path/to/target/folder
+```
 
 <blockquote class="reaction"><div class="reaction_text">It's kind of bananas what we have to go through on Windows to get basic tooling without resorting to <a target="_blank" href="https://learn.microsoft.com/en-us/windows/wsl/install">WSL</a> or <a target="_blank" href="https://www.msys2.org/">MSYS 2</a>. Makes me really appreciate what a fine piece of engineering <a target="_blank" href="https://www.msys2.org/">MSYS 2</a> is.</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
 <a></a>
 
 ## Quick tip:
-Don't retype your SSH Key's password until reboot or time limit. On windows 
+Everything we talked about applies to circumventing internet content filtering as well, as SSH [supports Dynamic port forwarding](https://man.openbsd.org/ssh#D), allowing you to browse the web, if you connect via `ssh -D 8888 exampleCorporate` and point your browser to `localhost:8888` as a `SOCKS5` proxy [in the network settings](https://support.mozilla.org/en-US/kb/connection-settings-firefox).
 
-![](keyagent-windows.png)
+Your server turns into a quasi VPN, with you browsing the web from the perspective of the server, no corporate content filters. It's standard practice to [block changes to proxy settings company wide](https://support.google.com/chrome/a/answer/187202). But it's up to the browser to enforce such policies, making it one of the more easily circumvented and useless security measures.
 
-Everything we talked about applies to circumventing internet filters as well, as SSH [supports Dynamic port forwarding](https://man.openbsd.org/ssh#D), allowing you to browse the web, if you connect via `ssh -D 8080 user@example.com` and point your browser to `localhost:8080` as a `SOCKS5` proxy [in the network settings](https://support.mozilla.org/en-US/kb/connection-settings-firefox).
+<blockquote class="reaction"><div class="reaction_text">An unwritten rant bleeds though the letters of this article, a plea for corporate IT security solutions to stop making my dev life unnecessarily hard with measures an actual bad actor wouldn't even care about.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
-This turns your server into a quasi browser VPN, browsing the web from the perspective of the server and circumventing content filters.
+And there we go. We configured, drilled and circumvented, clawing back power to create digital infrastructure in situations where normally we wouldn't be able to.
 
-<blockquote class="reaction"><div class="reaction_text">One of many reason, that Windows allows you to block browser proxy settings via group policy. But it's up <strong>to the browser</strong> to enforce that, making it a useless security measure.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
+
+<blockquote class="reaction"><div class="reaction_text">I won't bore you with the <a target="_blank" href="https://youtu.be/b23wrRfy7SM?t=12">obligatory lecture that belongs here</a>. Hope this article makes your dev life a bit easier.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
