@@ -1284,14 +1284,13 @@ $ rsync -avz --progress exampleCorporate:/path/to/source/folder /path/to/target/
 <blockquote class="reaction"><div class="reaction_text">It's kind of bananas what we have to go through on Windows to get basic tooling without resorting to <a target="_blank" href="https://learn.microsoft.com/en-us/windows/wsl/install">WSL</a> or <a target="_blank" href="https://www.msys2.org/">MSYS 2</a>. Makes me really appreciate what a fine piece of engineering <a target="_blank" href="https://www.msys2.org/">MSYS 2</a> is.</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
 <a></a>
 
-## Quick tip:
+## Finishing up:
+<blockquote class="reaction"><div class="reaction_text">I should clarify what level of power and potential for misuse we are dealing with</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
 Everything we talked about applies to circumventing internet content filtering as well, as SSH [supports Dynamic port forwarding](https://man.openbsd.org/ssh#D), allowing you to browse the web, if you connect via `ssh -D 8888 exampleCorporate` and point your browser to `localhost:8888` as a `SOCKS5` proxy [in the network settings](https://support.mozilla.org/en-US/kb/connection-settings-firefox).
 
 Your server turns into a quasi VPN, with you browsing the web from the perspective of the server, no corporate content filters. It's standard practice to [block changes to proxy settings company wide](https://support.google.com/chrome/a/answer/187202). But it's up to the browser to enforce such policies, making it one of the more easily circumvented and useless security measures.
 
-<blockquote class="reaction"><div class="reaction_text">An unwritten rant bleeds though the letters of this article: a plea for corporate IT security solutions to stop making my dev life unnecessarily hard with measures an actual bad actor wouldn't even care about.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
-
 And there we go. We configured, drilled and circumvented, clawing back power to create digital infrastructure in situations where normally we wouldn't be able to.
-
 
 <blockquote class="reaction"><div class="reaction_text">I won't bore you with the <a target="_blank" href="https://youtu.be/b23wrRfy7SM?t=12">obligatory lecture that belongs here</a>. Hope this article makes your dev life a bit easier.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
