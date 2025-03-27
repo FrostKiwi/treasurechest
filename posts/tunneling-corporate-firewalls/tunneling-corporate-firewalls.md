@@ -1,5 +1,4 @@
 ---
-wip: true
 title: Tunneling corporate firewalls for developers
 permalink: "/{{ page.fileSlug }}/"
 date: 2025-03-27
