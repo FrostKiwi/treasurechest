@@ -21,7 +21,7 @@ Being able to setup a connection you trust and where your dev tools work is impo
 
 Ultimately, this is what this post is about - how to SSH into machines, when there is stuff in the way preventing that and make sure that your tools like git, [scp](https://man.openbsd.org/scp.1), [rsync](https://en.wikipedia.org/wiki/Rsync) or editing files directly on the server via [VSCode's SSH integration](https://code.visualstudio.com/docs/remote/ssh) work, with no new software installed and the ***absolute minimum*** of modifications to your server.
 
-<blockquote class="reaction"><div class="reaction_text">Once we are done, we'll gain a bit of a super power: port-forwarding and hole-punching at the same time, <strong>without</strong> touching the settings of firewalls or routers.</div><img class="kiwi" src="/assets/kiwis/cyber.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Once we are done, we'll gain a bit of a super power: <a target="_blank" href="https://en.wikipedia.org/wiki/Hole_punching_(networking)">hole-punching</a> and <a target="_blank" href="https://en.wikipedia.org/wiki/Port_forwarding">port-forwarding</a> at the same time, <strong>without</strong> touching the settings of firewalls or routers on client or server.</div><img class="kiwi" src="/assets/kiwis/cyber.svg"></blockquote>
 
 ## Tunneling - So many flavors
 If you control both Source and Destination, then you can tunnel everything through anything in complete secrecy and ultimately there is nothing anyone can do about it. This shouldn't be news to anyone working with networks. There are countless articles and videos going over a multitude of tunneling combinations.
@@ -936,7 +936,7 @@ Normally, `HTTP CONNECT` and standard HTTP coexist independently. On Caddy it's 
 
 <blockquote class="reaction"><div class="reaction_text">With just a couple config lines, we gained the ability to publicly expose any TCP port, without access to any of the underlying infrastructure.</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
 
-As long as the client is being fed by `proxytunnel` or understands `HTTP CONNECT` itself, we attained a de-facto port-forwarding to any TCP port we desire, a complete bypass of any server-side firewalls. There *can* be server-side blocks for `HTTP CONNECT`, but it's trivial to go a level deeper with projects [wstunnel](https://github.com/erebe/wstunnel).
+As long as the desired client, not ***just*** `ssh`, is being fed by `proxytunnel` or understands `HTTP CONNECT` itself, then we attained a de-facto port-forwarding to any TCP port we desire, bypassing server-side firewalls. There *can* be server-side blocks for `HTTP CONNECT`, but it's trivial to go a level deeper with projects [wstunnel](https://github.com/erebe/wstunnel).
 
 ### Client-side connection
 Just like previously, we can first test the connection without OpenSSH. We have to specify our own HTTP server as a proxy, the final destination to `localhost:22`, as well the intermediate corporate proxy, if there is any. So **One** proxy if there is a direct connection to our Server, **Two** with an intermediate proxy.
