@@ -510,12 +510,14 @@ Among these corporate proxies, it's standard to have packet sniffing capabilitie
 
 <blockquote class="reaction"><div class="reaction_text">Probably the time to mention, that as much as any other post, my blog's <a target="_blank" href="/about/#disclaimer">disclaimer</a> applies.</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
 
-...why would you need to? Can't you simply open a ticket at your IT department? Certain situations may make a deeper architectural solution impossible on the timescale that a project needs delivering, happenings need to happen and things need to thing. A deep introspection ***is needed*** on whether such a setup is actually required and whether or not this may violate existing security policies.
+...why would you need to? Can't you simply open a ticket at your IT department? Certain situations may make a deeper architectural solution impossible on the timescale that a project needs delivering, happenings need to happen and things need to thing.
 
 There may be intermediary companies which are responsible for digital infrastructure, kicking-off complicated inter-contract reviews; engineer access gateways may be on unreliable subnets; or simply, the present digital infrastructure may be such a mess, that trust just can't be established in the first place.
 
 <blockquote class="reaction"><div class="reaction_text">Man, have I seen some s*#$.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
 <a></a>
+
+***Deep*** consideration ***is needed*** on whether such a setup is **actually** required and whether or not this may violate existing security policies.
 
 ### Honoring the proxy
 Proxies are such a vital piece of infrastructure, that we expect the operating system's proxy settings to be honored by default, built proxy settings into most network connected software and have additional defacto standards to specify them like the environment variables `http_proxy`, `HTTPS_PROXY`, `NO_PROXY` and friends.
