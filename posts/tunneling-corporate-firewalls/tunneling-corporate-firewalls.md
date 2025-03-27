@@ -2,7 +2,7 @@
 wip: true
 title: Tunneling corporate firewalls for developers
 permalink: "/{{ page.fileSlug }}/"
-date: 2025-03-26
+date: 2025-03-27
 last_modified:
 description: Establish SSH connections and ensure your dev tools work via HTTPS tunneling, even if proxies and firewalls won't let you
 publicTags:
@@ -63,6 +63,9 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 		display: none;
 		max-width: 1px;
 	}
+	.noWrap {
+		white-space: nowrap;
+	}
 	.mobileRow pre {
 		margin-bottom: unset;
 		padding-top: 0.5em;
@@ -96,7 +99,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 	</thead>
 	<tbody>
 		<tr>
-			<td>💻 ➡ 🌍</td>
+			<td class="noWrap">💻 ➡ 🌍</td>
 			<td>TCP</td>
 			<td>66</td>
 			<td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM</code></td>
@@ -105,7 +108,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
-			<td>🌍 ➡ 💻</td>
+			<td class="noWrap">🌍 ➡ 💻</td>
 			<td>TCP</td>
 			<td>66</td>
 			<td><code>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128</code></td>
@@ -114,7 +117,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128</pre></td>
 		</tr>
 		<tr>
-			<td>💻 ➡ 🌍</td>
+			<td class="noWrap">💻 ➡ 🌍</td>
 			<td>TCP</td>
 			<td>54</td>
 			<td><code>[ACK] Seq=1 Ack=1 Win=131328 Len=0</code></td>
@@ -123,7 +126,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>[ACK] Seq=1 Ack=1 Win=131328 Len=0</pre></td>
 		</tr>
 		<tr>
-			<td>💻 ➡ 🌍</td>
+			<td class="noWrap">💻 ➡ 🌍</td>
 			<td>SSHv2</td>
 			<td>87</td>
 			<td><code>Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</code></td>
@@ -132,7 +135,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
-			<td>🌍 ➡ 💻</td>
+			<td class="noWrap">🌍 ➡ 💻</td>
 			<td>TCP</td>
 			<td>60</td>
 			<td><code>[ACK] Seq=1 Ack=34 Win=64256 Len=0</code></td>
@@ -141,7 +144,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>[ACK] Seq=1 Ack=34 Win=64256 Len=0</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
-			<td>🌍 ➡ 💻</td>
+			<td class="noWrap">🌍 ➡ 💻</td>
 			<td>SSHv2</td>
 			<td>95</td>
 			<td><code>Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</code></td>
@@ -150,7 +153,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</pre></td>
 		</tr>
 		<tr>
-			<td>💻 ➡ 🌍</td>
+			<td class="noWrap">💻 ➡ 🌍</td>
 			<td>SSHv2</td>
 			<td>1486</td>
 			<td><code>Key Exchange Init</code></td>
@@ -159,7 +162,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>Key Exchange Init</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
-			<td>🌍 ➡ 💻</td>
+			<td class="noWrap">🌍 ➡ 💻</td>
 			<td>SSHv2</td>
 			<td>1110</td>
 			<td><code>Key Exchange Init</code></td>
@@ -168,7 +171,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>Key Exchange Init</pre></td>
 		</tr>
 		<tr>
-			<td>💻 ➡ 🌍</td>
+			<td class="noWrap">💻 ➡ 🌍</td>
 			<td>SSHv2</td>
 			<td>102</td>
 			<td><code>Elliptic Curve Diffie-Hellman Key Exchange Init</code></td>
@@ -177,7 +180,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>Elliptic Curve Diffie-Hellman Key Exchange Init</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
-			<td>🌍 ➡ 💻</td>
+			<td class="noWrap">🌍 ➡ 💻</td>
 			<td>TCP</td>
 			<td>60</td>
 			<td><code>[ACK] Seq=1098 Ack=1514 Win=64128 Len=0</code></td>
@@ -186,7 +189,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>[ACK] Seq=1098 Ack=1514 Win=64128 Len=0</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
-			<td>🌍 ➡ 💻</td>
+			<td class="noWrap">🌍 ➡ 💻</td>
 			<td>SSHv2</td>
 			<td>562</td>
 			<td><code>Elliptic Curve Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</code></td>
@@ -195,7 +198,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>Elliptic Curve Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</pre></td>
 		</tr>
 		<tr>
-			<td>💻 ➡ 🌍</td>
+			<td class="noWrap">💻 ➡ 🌍</td>
 			<td>SSHv2</td>
 			<td>70</td>
 			<td><code>New Keys</code></td>
@@ -204,7 +207,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>New Keys</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
-			<td>🌍 ➡ 💻</td>
+			<td class="noWrap">🌍 ➡ 💻</td>
 			<td>TCP</td>
 			<td>60</td>
 			<td><code>[ACK] Seq=1606 Ack=1530 Win=64128 Len=0</code></td>
@@ -213,7 +216,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>[ACK] Seq=1606 Ack=1530 Win=64128 Len=0</pre></td>
 		</tr>
 		<tr>
-			<td>💻 ➡ 🌍</td>
+			<td class="noWrap">💻 ➡ 🌍</td>
 			<td>SSHv2</td>
 			<td>98</td>
 			<td><code>Encrypted packet (len=44)</code></td>
@@ -222,7 +225,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>Encrypted packet (len=44)</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
-			<td>🌍 ➡ 💻</td>
+			<td class="noWrap">🌍 ➡ 💻</td>
 			<td>TCP</td>
 			<td>60</td>
 			<td><code>[ACK] Seq=1606 Ack=1574 Win=64128 Len=0</code></td>
@@ -231,7 +234,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>[ACK] Seq=1606 Ack=1574 Win=64128 Len=0</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
-			<td>🌍 ➡ 💻</td>
+			<td class="noWrap">🌍 ➡ 💻</td>
 			<td>SSHv2</td>
 			<td>98</td>
 			<td><code>Encrypted packet (len=44)</code></td>
@@ -240,7 +243,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>Encrypted packet (len=44)</pre></td>
 		</tr>
 		<tr>
-			<td>💻 ➡ 🌍</td>
+			<td class="noWrap">💻 ➡ 🌍</td>
 			<td>SSHv2</td>
 			<td>114</td>
 			<td><code>Encrypted packet (len=60)</code></td>
@@ -249,7 +252,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>Encrypted packet (len=60)</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
-			<td>🌍 ➡ 💻</td>
+			<td class="noWrap">🌍 ➡ 💻</td>
 			<td>TCP</td>
 			<td>60</td>
 			<td><code>[ACK] Seq=1650 Ack=1634 Win=64128 Len=0</code></td>
@@ -258,7 +261,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>[ACK] Seq=1650 Ack=1634 Win=64128 Len=0</pre></td>
 		</tr>
 		<tr class="targetSourceRow">
-			<td>🌍 ➡ 💻</td>
+			<td class="noWrap">🌍 ➡ 💻</td>
 			<td>SSHv2</td>
 			<td>98</td>
 			<td><code>Encrypted packet (len=44)</code></td>
@@ -267,7 +270,7 @@ Each individual packet's **Direction** is determined by the Source and Destinati
 			<td colspan=4><pre>Encrypted packet (len=44)</pre></td>
 		</tr>
 		<tr>
-			<td>💻 ➡ 🌍</td>
+			<td class="noWrap">💻 ➡ 🌍</td>
 			<td>SSHv2</td>
 			<td>554</td>
 			<td><code>Encrypted packet (len=500)</code></td>
@@ -317,9 +320,9 @@ ssh: connect to host example.com port 22: Connection timed out
 		</tr>
 	</thead>
 	<tbody>
-<tr><td>💻 ➡ 🌍</td><td>TCP</td><td>74</td><td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</code></td></tr>
+<tr><td class="noWrap">💻 ➡ 🌍</td><td>TCP</td><td>74</td><td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</code></td></tr>
 <tr class="mobileRow"><td colspan=4><pre>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</pre></td></tr>
-<tr><td>💻 ➡ 🌍</td><td>TCP</td><td>74</td><td><code>[TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</code></td></tr>
+<tr><td class="noWrap">💻 ➡ 🌍</td><td>TCP</td><td>74</td><td><code>[TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</code></td></tr>
 <tr class="mobileRow"><td colspan=4><pre>[TCP Retransmission] [SYN] Seq=0 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</pre></td></tr>
 		<tr style="text-align: center; border-bottom: 1px solid #40363a;">
 			<td colspan=4>This goes on for 5 more <code>[TCP Retransmission]</code> packets</td>
@@ -373,7 +376,7 @@ banner exchange: Connection to example.com port 22: Connection timed out
 	</thead>
 	<tbody>
 	<tr>
-		<td>💻 ➡ 🌍</td>
+		<td class="noWrap">💻 ➡ 🌍</td>
 		<td>TCP</td>
 		<td>66</td>
 		<td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM</code></td>
@@ -382,7 +385,7 @@ banner exchange: Connection to example.com port 22: Connection timed out
 			<td colspan=4><pre>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM</pre></td>
 	</tr>
 	<tr class="targetSourceRow">
-		<td>🌍 ➡ 💻</td>
+		<td class="noWrap">🌍 ➡ 💻</td>
 		<td>TCP</td>
 		<td>66</td>
 		<td><code>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1452 SACK_PERM WS=128</code></td>
@@ -391,7 +394,7 @@ banner exchange: Connection to example.com port 22: Connection timed out
 			<td colspan=4><pre>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1452 SACK_PERM WS=128</pre></td>
 	</tr>
 	<tr>
-		<td>💻 ➡ 🌍</td>
+		<td class="noWrap">💻 ➡ 🌍</td>
 		<td>TCP</td>
 		<td>54</td>
 		<td><code>[ACK] Seq=1 Ack=1 Win=132096 Len=0</code></td>
@@ -400,7 +403,7 @@ banner exchange: Connection to example.com port 22: Connection timed out
 			<td colspan=4><pre>[ACK] Seq=1 Ack=1 Win=132096 Len=0</pre></td>
 	</tr>
 	<tr>
-		<td>💻 ➡ 🌍</td>
+		<td class="noWrap">💻 ➡ 🌍</td>
 		<td>SSHv2</td>
 		<td>87</td>
 		<td><code>[PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33, Payload: SSH-2.0-OpenSSH_for_Windows_9.5</code></td>
@@ -409,7 +412,7 @@ banner exchange: Connection to example.com port 22: Connection timed out
 			<td colspan=4><pre>[PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33, Payload: SSH-2.0-OpenSSH_for_Windows_9.5</pre></td>
 	</tr>
 	<tr>
-		<td>💻 ➡ 🌍</td>
+		<td class="noWrap">💻 ➡ 🌍</td>
 		<td>SSHv2</td>
 		<td>87</td>
 		<td><code>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=132096 Len=33, Payload: SSH-2.0-OpenSSH_for_Windows_9.5</code></td>
@@ -421,7 +424,7 @@ banner exchange: Connection to example.com port 22: Connection timed out
 		<td colspan=4>This goes on for 7 more <code>[TCP Retransmission]</code> packets</td>
 	</tr>
 	<tr>
-		<td>💻 ➡ 🌍</td>
+		<td class="noWrap">💻 ➡ 🌍</td>
 		<td>TCP</td>
 		<td>54</td>
 		<td><code>[RST, ACK] Seq=34 Ack=1 Win=0 Len=0</code></td>
@@ -432,7 +435,7 @@ banner exchange: Connection to example.com port 22: Connection timed out
 	</tbody>
 </table>
 
-<blockquote class="reaction"><div class="reaction_text">Wireshark wasn't smart enough to label the failed banner exchange packets as SSH, even though the packets clearly indicate it was. I changed it manually above and below for completeness.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Wireshark wasn't smart enough to label the failed banner exchange packets as SSH, even though the packets clearly indicate it was. I changed it manually in this section for completeness.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 The target successfully answers our call for a TCP connection, but never responds to our requests, before our clients gives up with the [`RST`](https://developers.cloudflare.com/fundamentals/reference/tcp-connections/#tcp-connections-and-keep-alives) signal. In the case of TCP connections, "smart" firewalls allow the initial connection to take place, look at what comes next and judge based on that.
 
@@ -450,27 +453,27 @@ Let's reverse our perspective and take a look at server-side. **Source** 🖥️
 	</tr>
 	</thead>
 	<tbody>
-<tr class="targetSourceRow"><td>🌍 ➡ 🖥️</td><td>TCP</td><td>66</td><td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1452 WS=256 SACK_PERM
+<tr class="targetSourceRow"><td class="noWrap">🌍 ➡ 🖥️</td><td>TCP</td><td>66</td><td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1452 WS=256 SACK_PERM
 </code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow"><td colspan=4><pre>[SYN] Seq=0 Win=64240 Len=0 MSS=1452 WS=256 SACK_PERM</pre></td>
 	</tr>
-<tr><td>🖥️ ➡ 🌍</td><td>TCP</td><td>66</td><td><code>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128
+<tr><td class="noWrap">🖥️ ➡ 🌍</td><td>TCP</td><td>66</td><td><code>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM WS=128</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🌍 ➡ 🖥️</td><td>TCP</td><td>60</td><td><code>[ACK] Seq=1 Ack=1 Win=132096 Len=0
+<tr class="targetSourceRow"><td class="noWrap">🌍 ➡ 🖥️</td><td>TCP</td><td>60</td><td><code>[ACK] Seq=1 Ack=1 Win=132096 Len=0
 </code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow"><td colspan=4><pre>[ACK] Seq=1 Ack=1 Win=132096 Len=0</pre></td>
 	</tr>
-<tr><td>🖥️ ➡ 🌍</td><td>SSHv2</td><td>75</td><td><code>[PSH, ACK] Seq=1 Ack=1 Win=64256 Len=21, Payload: SSH-2.0-OpenSSH_9.9
+<tr><td class="noWrap">🖥️ ➡ 🌍</td><td>SSHv2</td><td>75</td><td><code>[PSH, ACK] Seq=1 Ack=1 Win=64256 Len=21, Payload: SSH-2.0-OpenSSH_9.9
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>[PSH, ACK] Seq=1 Ack=1 Win=64256 Len=21, Payload: SSH-2.0-OpenSSH_9.9</pre></td>
 	</tr>
-<tr><td>🖥️ ➡ 🌍</td><td>SSHv2</td><td>75</td><td><code>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=64256 Len=21, Payload: SSH-2.0-OpenSSH_9.9
+<tr><td class="noWrap">🖥️ ➡ 🌍</td><td>SSHv2</td><td>75</td><td><code>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=64256 Len=21, Payload: SSH-2.0-OpenSSH_9.9
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>[TCP Retransmission] [PSH, ACK] Seq=1 Ack=1 Win=64256 Len=21, Payload: SSH-2.0-OpenSSH_9.9</pre></td>
@@ -478,7 +481,7 @@ Let's reverse our perspective and take a look at server-side. **Source** 🖥️
 	<tr style="text-align: center; border-bottom: 1px solid #40363a;">
 		<td colspan=4>This goes on for 7 more <code>[TCP Retransmission]</code> packets</td>
 	</tr>
-	<tr><td>🖥️ ➡ 🌍</td><td>TCP</td><td>54</td><td><code>[FIN, ACK] Seq=22 Ack=1 Win=64256 Len=0
+	<tr><td class="noWrap">🖥️ ➡ 🌍</td><td>TCP</td><td>54</td><td><code>[FIN, ACK] Seq=22 Ack=1 Win=64256 Len=0
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>[FIN, ACK] Seq=22 Ack=1 Win=64256 Len=0</pre></td>
@@ -593,7 +596,7 @@ By using `corkscrew` or `ssh-connect`, we instruct the intermediate proxy to han
 	</thead>
 	<tbody>
 		<tr>
-			<td>💻 ➡ 🏢</td>
+			<td class="noWrap">💻 ➡ 🏢</td>
 			<td>TCP</td>
 			<td>66</td>
 			<td><code>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1</code></td>
@@ -601,127 +604,127 @@ By using `corkscrew` or `ssh-connect`, we instruct the intermediate proxy to han
 	<tr class="mobileRow">
 			<td colspan=4><pre>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1</pre></td>
 	</tr>
-	<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP</td><td>66</td>
+	<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TCP</td><td>66</td>
 <td><code>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</pre></td>
 	</tr>
-<tr><td>💻 ➡ 🏢</td><td>TCP</td><td>60</td>
+<tr><td class="noWrap">💻 ➡ 🏢</td><td>TCP</td><td>60</td>
 <td><code>[ACK] Seq=1 Ack=1 Win=131328 Len=0</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>[ACK] Seq=1 Ack=1 Win=131328 Len=0</pre></td>
 	</tr>
-<tr><td>💻 ➡ 🏢</td><td>TCP</td><td>89</td>
+<tr><td class="noWrap">💻 ➡ 🏢</td><td>TCP</td><td>89</td>
 <td><code>CONNECT  example.com:22 HTTP/1.0  [TCP segment of a reassembled PDU]</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>CONNECT  example.com:22 HTTP/1.0  [TCP segment of a reassembled PDU]</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TCP</td><td>54</td>
 <td><code>[ACK] Seq=1 Ack=36 Win=64256 Len=0</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=1 Ack=36 Win=64256 Len=0</pre></td>
 	</tr>
-<tr><td>💻 ➡ 🏢</td><td>HTTP</td><td>60</td>
+<tr><td class="noWrap">💻 ➡ 🏢</td><td>HTTP</td><td>60</td>
 <td><code>CONNECT  example.com:22 HTTP/1.0</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>CONNECT  example.com:22 HTTP/1.0</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TCP</td><td>54</td>
 <td><code>[ACK] Seq=1 Ack=38 Win=64256 Len=0</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=1 Ack=38 Win=64256 Len=0</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>HTTP</td><td>93</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>HTTP</td><td>93</td>
 <td><code>HTTP/1.0 200 Connection established</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>HTTP/1.0 200 Connection established</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>SSH</td><td>95</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>SSH</td><td>95</td>
 <td><code>Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.9)</pre></td>
 	</tr>
-<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>87</td>
+<tr><td class="noWrap">💻 ➡ 🏢</td><td>SSHv2</td><td>87</td>
 <td><code>Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>Protocol (SSH-2.0-OpenSSH_for_Windows_9.5)</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TCP</td><td>54</td>
 <td><code>[ACK] Seq=81 Ack=71 Win=64256 Len=0</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=81 Ack=71 Win=64256 Len=0</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>1110</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>SSHv2</td><td>1110</td>
 <td><code>Key Exchange Init</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>Key Exchange Init</pre></td>
 	</tr>
-<tr><td>💻 ➡ 🏢</td><td>TCP</td><td>1078</td>
+<tr><td class="noWrap">💻 ➡ 🏢</td><td>TCP</td><td>1078</td>
 <td><code>[TCP segment of a reassembled PDU]</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>[TCP segment of a reassembled PDU]</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TCP</td><td>54</td>
 <td><code>[ACK] Seq=1137 Ack=1095 Win=64128 Len=0</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=1137 Ack=1095 Win=64128 Len=0</pre></td>
 	</tr>
-<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>510</td>
+<tr><td class="noWrap">💻 ➡ 🏢</td><td>SSHv2</td><td>510</td>
 <td><code>Key Exchange Init, Diffie-Hellman Key Exchange Init</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>Key Exchange Init, Diffie-Hellman Key Exchange Init</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP</td><td>54</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TCP</td><td>54</td>
 <td><code>[ACK] Seq=1137 Ack=1551 Win=64128 Len=0</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>[ACK] Seq=1137 Ack=1551 Win=64128 Len=0</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>562</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>SSHv2</td><td>562</td>
 <td><code>Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)</pre></td>
 	</tr>
-<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>114</td>
+<tr><td class="noWrap">💻 ➡ 🏢</td><td>SSHv2</td><td>114</td>
 <td><code>New Keys, Encrypted packet (len=44)</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>New Keys, Encrypted packet (len=44)</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>98</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>SSHv2</td><td>98</td>
 <td><code>Encrypted packet (len=44)</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>Encrypted packet (len=44)</pre></td>
 	</tr>
-<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>114</td>
+<tr><td class="noWrap">💻 ➡ 🏢</td><td>SSHv2</td><td>114</td>
 <td><code>Encrypted packet (len=60)</code></td>
 	</tr>
 	<tr class="mobileRow">
 			<td colspan=4><pre>Encrypted packet (len=60)</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>SSHv2</td><td>98</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>SSHv2</td><td>98</td>
 <td><code>Encrypted packet (len=44)</code></td>
 	</tr>
 	<tr class="mobileRow targetSourceRow">
 			<td colspan=4><pre>Encrypted packet (len=44)</pre></td>
 	</tr>
-<tr><td>💻 ➡ 🏢</td><td>SSHv2</td><td>554</td>
+<tr><td class="noWrap">💻 ➡ 🏢</td><td>SSHv2</td><td>554</td>
 <td><code>Encrypted packet (len=500)</code></td>
 	</tr>
 	<tr class="mobileRow">
@@ -921,7 +924,7 @@ https://example.com {
 
 Normally, `HTTP CONNECT` and standard HTTP coexist independently. On Caddy it's either or it seems. I'm not a Caddy user and can't comment on how to make both the relay to port 22 and the preservation of the main WebApp on the same (sub)domain block work. I hope Caddy users can chime and I will correct it in an addendum.
 
-<blockquote class="reaction"><div class="reaction_text">With just couple of config lines, we gained the ability to publicly expose any TCP port, without access to any of the underlying infrastructure.</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">With just a couple of config lines, we gained the ability to publicly expose any TCP port, without access to any of the underlying infrastructure.</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
 
 ### Client-side connection
 Just like previously, we can first test the connection without OpenSSH. We have to specify our own HTTP server as a proxy, the final destination to `localhost:22`, as well the intermediate corporate proxy, if there is any. So **One** proxy if there is a direct connection to our Server, **Two** with an intermediate proxy.
@@ -973,7 +976,7 @@ You can fix this for nginx, by [specifying that server-block as `default_server`
 
 <blockquote class="reaction"><div class="reaction_text">Performance wise, none of this matters. The theoretical benefits of <code>HTTP/2</code> and <code>HTTP/3</code> don't apply to tunneled SSH.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
-Finally: `Caddy` is a cheery lad ヽ(*・ω・)ﾉ and really likes to give a thumbs up, even if everything goes wrong. Even if proxytunnel's `-v` debug info says `Tunnel established.`, but there is no `SSH-2.0-OpenSSH_X.X`, indicates a missing `HTTP CONNECT`, incomplete routing or block due to [`acl`](https://github.com/atenart/caddy-acl).
+Finally: `Caddy` is a cheery lad ヽ(*・ω・)ﾉ and really likes to give a thumbs up, even if everything goes wrong. Even if proxytunnel's `-v` debug info says `Tunnel established.`, but there is no `SSH-2.0-OpenSSH_X.X`, it indicates a missing `HTTP CONNECT`, incomplete routing or block due to [`acl`](https://github.com/atenart/caddy-acl).
 
 ### SSH Config
 We *could* already connect like this:
@@ -1025,115 +1028,115 @@ Host exampleDirect
 		</tr>
 	</thead>
 	<tbody>
-	<td>💻 ➡ 🏢</td><td>TCP		</td><td> 66</td>
+	<td class="noWrap">💻 ➡ 🏢</td><td>TCP		</td><td> 66</td>
 <td><code>	[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>[SYN] Seq=0 Win=64240 Len=0 MSS=1460 WS=256 SACK_PERM=1</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP		</td><td> 66</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TCP		</td><td> 66</td>
 <td><code>	[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>[SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460 SACK_PERM=1 WS=128</pre></td>
 	</tr>
-<td>💻 ➡ 🏢</td><td>TCP		</td><td> 60</td>
+<td class="noWrap">💻 ➡ 🏢</td><td>TCP		</td><td> 60</td>
 <td><code>	[ACK] Seq=1 Ack=1 Win=131328 Len=0
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>[ACK] Seq=1 Ack=1 Win=131328 Len=0</pre></td>
 	</tr>
-<td>💻 ➡ 🏢</td><td>HTTP		</td><td> 157</td>
+<td class="noWrap">💻 ➡ 🏢</td><td>HTTP		</td><td> 157</td>
 <td><code>	CONNECT example.com:443 HTTP/1.1
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>CONNECT example.com:443 HTTP/1.1</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP		</td><td> 54</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TCP		</td><td> 54</td>
 <td><code>	[ACK] Seq=1 Ack=104 Win=64256 Len=0
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>[ACK] Seq=1 Ack=104 Win=64256 Len=0</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>HTTP		</td><td> 93</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>HTTP		</td><td> 93</td>
 <td><code>	HTTP/1.1 200 Connection established
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>HTTP/1.1 200 Connection established</pre></td>
 	</tr>
-<td>💻 ➡ 🏢</td><td>TLSv1		</td><td> 380</td>
+<td class="noWrap">💻 ➡ 🏢</td><td>TLSv1		</td><td> 380</td>
 <td><code>	Client Hello
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>Client Hello</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP		</td><td> 54</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TCP		</td><td> 54</td>
 <td><code>	[ACK] Seq=40 Ack=430 Win=64128 Len=0
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>[ACK] Seq=40 Ack=430 Win=64128 Len=0</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TLSv1.2	</td><td>	 2666</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TLSv1.2	</td><td>	 2666</td>
 <td><code>	Server Hello, Certificate, Server Key Exchange, Server Hello Done
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>Server Hello, Certificate, Server Key Exchange, Server Hello Done</pre></td>
 	</tr>
-<td>💻 ➡ 🏢</td><td>TCP		</td><td> 60</td>
+<td class="noWrap">💻 ➡ 🏢</td><td>TCP		</td><td> 60</td>
 <td><code>	[ACK] Seq=430 Ack=2652 Win=131328 Len=0
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>[ACK] Seq=430 Ack=2652 Win=131328 Len=0</pre></td>
 	</tr>
-<td>💻 ➡ 🏢</td><td>TLSv1.2	</td><td>	 212</td>
+<td class="noWrap">💻 ➡ 🏢</td><td>TLSv1.2	</td><td>	 212</td>
 <td><code>	Client Key Exchange, Change Cipher Spec, Encrypted Handshake Message
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>Client Key Exchange, Change Cipher Spec, Encrypted Handshake Message</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP		</td><td> 54</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TCP		</td><td> 54</td>
 <td><code>	[ACK] Seq=2652 Ack=588 Win=64128 Len=0
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>[ACK] Seq=2652 Ack=588 Win=64128 Len=0</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TLSv1.2	</td><td>	 105</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TLSv1.2	</td><td>	 105</td>
 <td><code>	Change Cipher Spec, Encrypted Handshake Message
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>Change Cipher Spec, Encrypted Handshake Message</pre></td>
 	</tr>
-<td>💻 ➡ 🏢</td><td>TLSv1.2	</td><td>	 184</td>
+<td class="noWrap">💻 ➡ 🏢</td><td>TLSv1.2	</td><td>	 184</td>
 <td><code>	Application Data
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>Application Data</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TCP		</td><td> 54</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TCP		</td><td> 54</td>
 <td><code>	[ACK] Seq=2703 Ack=718 Win=64128 Len=0
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>[ACK] Seq=2703 Ack=718 Win=64128 Len=0</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TLSv1.2	</td><td>	 142</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TLSv1.2	</td><td>	 142</td>
 <td><code>	Application Data
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>Application Data</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TLSv1.2	</td><td>	 124</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TLSv1.2	</td><td>	 124</td>
 <td><code>	Application Data
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>Application Data</pre></td>
 	</tr>
-<td>💻 ➡ 🏢</td><td>TLSv1.2	</td><td>	 116</td>
+<td class="noWrap">💻 ➡ 🏢</td><td>TLSv1.2	</td><td>	 116</td>
 <td><code>	Application Data
 </code></td>
 	</tr>
 	<tr class="mobileRow"><td colspan=4><pre>Application Data</pre></td>
 	</tr>
-<tr class="targetSourceRow"><td>🏢 ➡ 💻</td><td>TLSv1.2	</td><td>	 1139</td>
+<tr class="targetSourceRow"><td class="noWrap">🏢 ➡ 💻</td><td>TLSv1.2	</td><td>	 1139</td>
 <td><code>	Application Data
 </code></td>
 	</tr>
