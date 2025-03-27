@@ -300,7 +300,7 @@ A "dumb" [firewall](https://en.wikipedia.org/wiki/Firewall_(computing)), which p
 
 For now we look at client-side firewalls only. A popular "set and forget" firewall ruleset to allow internet access but block users from doing other stuff is to only permit outbound TCP Port 80 for HTTP, TCP Port 443 for HTTPS and block everything else. We are ignoring things like [DNS](https://en.wikipedia.org/wiki/Domain_Name_System), E-Mail, etc. here.
 
-Our default SSH connection attempt will error out in such an environment. Provided the domain itself isn't blacklisted, [DNS](https://en.wikipedia.org/wiki/Domain_Name_System) resolves correctly and the OS isn't aware of the firewall rule giving you a `ssh: connect to host example.com port 22: Permission denied`, you'll get this [timeout](https://en.wikipedia.org/wiki/Timeout_(computing)) error after waiting a period:
+Our default SSH connection attempt will error out in such an environment. Provided the domain itself isn't blacklisted, [DNS](https://en.wikipedia.org/wiki/Domain_Name_System) resolves correctly and the OS isn't aware of the firewall rule giving you a `ssh: connect to host example.com port 22: Permission denied`, you'll get this [timeout](https://en.wikipedia.org/wiki/Timeout_(computing)) error after a waiting period:
 
 ```tunnelingArticleShell
 $ ssh user@example.com
@@ -308,7 +308,7 @@ ssh: connect to host example.com port 22: Connection timed out
 ```
 
 #### Network capture
-**Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. Here is what traffic looks like if the firewall is blocking the outgoing communication via a simple port block. Capture is again on **Source** 💻.
+**Source** 💻 is a Laptop attempting `ssh user@example.com`. **Target** 🌍 is the server with port 22 open. Here is what traffic looks like if a firewall is blocking the outgoing communication via a simple port block. Capture is again on **Source** 💻.
 
 <table>
 	<thead>
@@ -744,7 +744,7 @@ So why not forbid `HTTP CONNECT`? - Because that would break proxy connections w
 
 <blockquote class="reaction"><div class="reaction_text">We will cover DPI / TLS stripping later. There are network setups which can prohibit <code>HTTP CONNECT</code>. In such cases tunneling has to run deeper with projects like <a target="_blank" href="https://github.com/erebe/wstunnel">wstunnel</a>, but we won't be covering that here.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
-If you take a look at the traffic, you *still* see the connection being clocked as SSH. The intermediate proxy talks to the target `example.com:22` server and thus can see the unencrypted SSH setup. If the corporate proxy performs packet sniffing, it will have no issues blocking this. Let's fix that.
+If you take a look at the traffic, you *still* see the connection being clocked as SSH. The intermediate proxy talks to the destination server `example.com:22` and thus can see the unencrypted SSH setup. If the corporate proxy performs packet sniffing, it will have no issues blocking this. Let's fix that.
 
 <blockquote class="reaction"><div class="reaction_text">So far, our tunneling method <strong>doesn't hide anything</strong>, but I've seen this setup work more often than not, even in environments where outgoing SSH was supposedly blocked.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
@@ -761,7 +761,7 @@ Both corporate proxies ***and*** smart firewalls trying to packet-inspect, will 
 
 The client-side tool for this is the FOSS [proxytunnel](https://github.com/proxytunnel/proxytunnel), which is available for Linux, Mac, BSD and has [automated builds for Windows](https://github.com/proxytunnel/proxytunnel/actions). Actively maintained, it just had [a new release this month](https://github.com/proxytunnel/proxytunnel/releases/tag/v1.12.3). `proxytunnel` can use windows specific [NTLM](https://en.wikipedia.org/wiki/NTLM) authentication and fully covers previously mentioned `corkscrew` and `ssh-connect` capabilities.
 
-<blockquote class="reaction"><div class="reaction_text">It's not available on <a href="https://scoop.sh/">Scoop</a>, though I'm hoping to change that with <a href="https://github.com/ScoopInstaller/Main/pull/6409">this Pull Request</a></div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">It's not available on <a target="_blank" href="https://scoop.sh/">Scoop</a>, though I'm hoping to change that with <a target="_blank" href="https://github.com/ScoopInstaller/Main/pull/6409">this Pull Request</a></div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
 
 `proxytunnel` instructs our HTTP server to `HTTP CONNECT` us to our server's `SSHD`. With no intermediate proxy, something `corkscrew` and `ssh-connect` can as well! But `proxytunnel` can chain mutliple `HTTP CONNECT` if there is a corporate proxy in-between and most importantly: with HTTP***S*** (TLS) encryption on top.
 
@@ -773,7 +773,7 @@ But first, our HTTP server has to play along...
 
 The neat thing is, we can utilize the very same HTTP server our WebApp is most likely served or [reverse proxied](https://www.cloudflare.com/learning/cdn/glossary/reverse-proxy/) over. To do so, we need to configure `HTTP CONNECT`, restrict it to localhost port 22 only and setup optional authentication. Luckily all the popular FOSS HTTP servers, [Nginx](https://en.wikipedia.org/wiki/Nginx), [Caddy](https://caddyserver.com/) and [Apache / httpd](https://en.wikipedia.org/wiki/Apache_HTTP_Server) can do so.
 
-<blockquote class="reaction"><div class="reaction_text">No new software server-side. No port-forwarding besides pre-existing HTTP ones. No need to touch the <code>SSHD</code> config either.</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">No new software server-side. No port-forwarding, besides pre-existing HTTP ones. No need to touch the <code>SSHD</code> config either.</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
 
 Due to how `HTTP CONNECT` works, we can setup the connection on the granularity of a domain or subdomain. So we can do `ssh.example.com` only, but we don't have to and can keep it on the same level as the main WebApp `example.com`. The presence of `HTTP CONNECT` does not impact standard HTTP routing in any way.
 
@@ -783,25 +783,31 @@ You can slap on [`basic auth`](https://developer.mozilla.org/en-US/docs/Web/HTTP
 
 We will be setting up on port `443` with HTTPS here, though you may perform the same setup without HTTPS, which simply means moving the setup to the non-HTTPS block in the respective config file. I will cover HTTPS only going forward and, of course, the optional `basic auth` without HTTPS is meaningless.
 
-#### Apache / httpd
-Apache / HTTPD [supports this by default](https://httpd.apache.org/docs/2.4/en/mod/mod_proxy.html), nothing more than a config addition needed. The module responsible for this is `mod_proxy_connect.so` and should be precompiled and included everywhere you can get Apache to my knowledge. The addition happens on the level of a `virtualHost`
+<blockquote class="reaction"><div class="reaction_text">Crucially, one <strong>must</strong> take care to only allow such a connection to <code>localhost:(SSHD Port)</code> A config slip-up here would be <strong>catastrophic</strong>, allowing bad actors to pose as oneself.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-<details open><summary>Apache Config to enable <code>HTTP_CONNECT</code> and restrict it to localhost:22</summary>
+#### Apache / httpd
+Apache / httpd [supports this by default](https://httpd.apache.org/docs/2.4/mod/mod_proxy_connect.html), nothing more than a config addition needed. The module responsible for this is [`mod_proxy_connect`](https://httpd.apache.org/docs/2.4/mod/mod_proxy_connect.html) and should be precompiled and included everywhere you can get Apache to my knowledge. The addition happens on the level of a `virtualHost`
+
+<details open><summary>Apache Config to enable <code>HTTP_CONNECT</code> and restrict it to 127.0.0.1:22</summary>
 
 ```apacheconf
 <VirtualHost *:443>
-    ServerName example.com
+	ServerName example.com
 
-    SSLEngine on
-    SSLCertificateFile /etc/nixos/proxy-selfsigned.crt # Don't actually handle certs manually, just enable ACME
-    SSLCertificateKeyFile /etc/nixos/proxy-selfsigned.key # Don't actually handle certs manually, just enable ACME
+	SSLEngine on
+	SSLCertificateFile /etc/nixos/proxy-selfsigned.crt # Don't actually handle certs manually, just enable ACME
+	SSLCertificateKeyFile /etc/nixos/proxy-selfsigned.key # Don't actually handle certs manually, just enable ACME
 
 	## ... Main WebApp Config ... ##
 
 	LoadModule proxy_connect_module modules/mod_proxy_connect.so # Module for HTTP_CONNECT
 	ProxyRequests On # Enable it
-	AllowCONNECT 22 # Restrict it to port 22
-	<Proxy localhost> # Only proxy for our localhost server
+	AllowCONNECT 22 # Restrict HTTP_CONNECT to port 22
+	<Proxy *>
+		Require all denied # Disable proxying for other targets
+	</Proxy>
+	<Proxy 127.0.0.1:22> # See the article's comments below, you may have to allow for the 'ServerName' here, instead of 127.0.0.1
+		Require all granted # Enable proxying to our localhost:22
 	</Proxy>
 </VirtualHost>
 ```
@@ -831,7 +837,11 @@ httpd = {
         LoadModule proxy_connect_module modules/mod_proxy_connect.so
         ProxyRequests On
         AllowCONNECT 22
-        <Proxy localhost>
+        <Proxy *>
+            Require all denied
+        </Proxy>
+        <Proxy 127.0.0.1:22>
+            Require all granted
         </Proxy>
       '';
     };
@@ -841,7 +851,7 @@ httpd = {
 </details>
 
 #### Nginx
-Nginx requires an additional patch applied and plugin compiled to enable `HTTP_CONNECT`: [ngx_http_proxy_connect_module](https://github.com/chobits/ngx_http_proxy_connect_module). Luckily, support goes way back to Nginx `1.4` in 2013 and the patch has remained identical for every version since `1.21.1` in 2021. Build steps are minimal and described on the GitHub page.
+Nginx requires an additional patch applied and module compiled to enable `HTTP_CONNECT`: [ngx_http_proxy_connect_module](https://github.com/chobits/ngx_http_proxy_connect_module). Luckily, support goes way back to Nginx `1.4` in 2013 and the patch has remained identical for every version since `1.21.1` in 2021. Build steps are minimal and described on the GitHub page.
 
 After the module is in nginx, you can simply insert `proxy_connect` at the server-block level (or higher).
 ```nginx
@@ -924,12 +934,14 @@ https://example.com {
 
 Normally, `HTTP CONNECT` and standard HTTP coexist independently. On Caddy it's either or it seems. I'm not a Caddy user and can't comment on how to make both the relay to port 22 and the preservation of the main WebApp on the same (sub)domain block work. I hope Caddy users can chime and I will correct it in an addendum.
 
-<blockquote class="reaction"><div class="reaction_text">With just a couple of config lines, we gained the ability to publicly expose any TCP port, without access to any of the underlying infrastructure.</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">With just a couple config lines, we gained the ability to publicly expose any TCP port, without access to any of the underlying infrastructure.</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
+
+As long as the client is being fed by `proxytunnel` or understands `HTTP CONNECT` itself, we attained a de-facto port-forwarding to any TCP port we desire, a complete bypass of any server-side firewalls. There *can* be server-side blocks for `HTTP CONNECT`, but it's trivial to go a level deeper with projects [wstunnel](https://github.com/erebe/wstunnel).
 
 ### Client-side connection
 Just like previously, we can first test the connection without OpenSSH. We have to specify our own HTTP server as a proxy, the final destination to `localhost:22`, as well the intermediate corporate proxy, if there is any. So **One** proxy if there is a direct connection to our Server, **Two** with an intermediate proxy.
 
-A bit confusingly, `proxytunnel` uses the terms `Local proxy (-p)` for the first and `Remote proxy (-r)` for the second jump. Our HTTP server is `Local proxy` if there is a direct connection (firewall case). If there is an intermediate proxy, our server becomes `Remote proxy`. Example with corporate proxy `198.51.100.4:8080`:
+A bit confusingly, `proxytunnel` uses the terms `Local proxy (-p)` for the first and `Remote proxy (-r)` for the second jump. Our HTTP server becomes `Local proxy` if there is a direct connection, like with the smart firewall case. If there is an intermediate proxy, our server becomes `Remote proxy`. Example with corporate proxy `198.51.100.4:8080`:
 
 ```tunnelingArticleShell
 $ proxytunnel -X -z -p 198.51.100.4:8080 -r example.com:443 -d 127.0.0.1:22
@@ -945,13 +957,12 @@ SSH-2.0-OpenSSH_9.9
 - `-d 127.0.0.1:22` specifies the final destination to our `SSHD` service.
   - As the connection happens after our HTTP server receives the information, this is regardless of port-forwarding port 22.
 - `-z` tells to ignore HTTPS certificate checks, especially if you self-sign
-  - Provided there is no `basic auth`, we don't need to trust our connection, as encryption is handled by OpenSSH regardless
+  - Provided there is no `basic auth`, we don't actually need to trust our connection, as encryption is handled by OpenSSH regardless
   - Making the certificate check work on Windows is [a bit of a pain](https://github.com/proxytunnel/proxytunnel/issues/82).
-  - We'll cover it below, but you still might want to use the certificate check as a (weak) insurance against DPI, if you intend on staying covert
 
-<blockquote class="reaction"><div class="reaction_text">You can additionally specify <code>-v</code> for more debug information on the <code>HTTP CONNECT</code> connection.</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">You can additionally specify <code>-v</code> for more debug information on the connection.</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
 
-`proxytunnel` answers us with a nice arrow `-->` illustrated connection path and finally with the OpenSSH identification string, provided everything worked correctly. If there is no intermediate proxy, then the command will look like this:
+`proxytunnel` answers us with a nice arrow `->` illustrated connection path and finally with the OpenSSH identification string, provided everything worked correctly. If there is no intermediate proxy, then the command will look like this:
 
 ```tunnelingArticleShell
 $ proxytunnel -E -z -p example.com:443 -d 127.0.0.1:22
@@ -987,7 +998,7 @@ $ ssh -o ProxyCommand="proxytunnel -X -z -p 198.51.100.4:8080 -r example.com:443
 
 For many reason, like compatibility with dev tools, we'll be specifying a proper [SSH config](https://man.openbsd.org/ssh_config). In your user directory is an ssh config directory. `/home/<username>/.ssh` aka `~/.ssh` on *NIX and `C:\Users\<username>\.ssh` aka `%userprofile%\.ssh` on Windows. Inside is extension-less file `config`. If not, create both.
 
-For clarity let's use user name `kiwi` for the user we want to login at our server as and user name `frost` for the user on the client laptop. For reasons we'll get into shortly, if you are on Windows: use absolute paths for everything starting from `C:\` **and** re-specify the default [UserKnownHostsFile](https://man.openbsd.org/ssh_config#UserKnownHostsFile).
+For clarity let's use user name `kiwi` for the user we want to login as at our server and user name `frost` for the user on the client laptop. For reasons we'll get into shortly, if you are on Windows: use absolute paths for everything starting from `C:\` **and** re-specify the default [UserKnownHostsFile](https://man.openbsd.org/ssh_config#UserKnownHostsFile).
 
 ```tunnelingArticleSSH
 UserKnownHostsFile 'C:\Users\frost\.ssh\known_hosts' # Re-specify on Windows with absolute path, Quotes if path contains spaces
@@ -1176,7 +1187,7 @@ Before we finish by making dev tools sing, let's quickly go over what to avoid. 
 ...managing public web apps is not one of them. With their reliance on HTTPS for encryption, even ignoring potential DPI, it takes only one config mishap to expose full console access. Especially when web apps change management, things like this are easily forgotten. One misunderstanding away from disaster.
 
 ## Dev tools
-Now that we can `ssh exampleCorporate` to automatically connect via our encrypted tunnel, let's make sure our dev tools are happy. If `git` is used via SSH, it should work automatically. Thanks to [Unix philosophy](https://en.wikipedia.org/wiki/Unix_philosophy#Origin), everything mostly works automatically really. Mostly.
+Now that we can `ssh exampleCorporate` to automatically connect via our encrypted tunnel, let's make sure our dev tools are happy. If `git` is used via SSH, it should work automatically. Thanks to [Unix philosophy](https://en.wikipedia.org/wiki/Unix_philosophy#Origin), everything mostly works automatically. Mostly.
 ### VSCode
 <figure>
 	<img src="img/vscode.png" alt="Remote SSH file editing in VSCode" />
@@ -1185,18 +1196,20 @@ Now that we can `ssh exampleCorporate` to automatically connect via our encrypte
 
 [VSCode's SSH integration](https://code.visualstudio.com/docs/remote/ssh) should work automatically. Browsing, editing and downloading files with no extra settings required. The SSH config should be automatically detected by VS Code and be selectable when initiating a connection. Same goes for [TRAMP](https://www.gnu.org/software/emacs/manual/html_node/tramp/Quick-Start-Guide.html) in [Emacs](https://en.wikipedia.org/wiki/Emacs).
 ### SCP
-The basic file copying [`scp`](https://man.openbsd.org/scp) works universally as well and is installed whenever the OpenSSH client is. Syntax remains also the same. Invocations like `scp exampleCorporate:/path/to/source/file /path/to/target` will automatically use the HTTPS tunnel transparently. Nothing interesting here.
+The basic file copying [`scp`](https://man.openbsd.org/scp) works universally as well and is installed whenever the OpenSSH client is. Syntax remains also the same. Invocations like `scp exampleCorporate:/path/to/source/file /path/to/target` will automatically use the HTTPS tunnel. Nothing interesting here.
 ### Rsync
 Provided your WebApp doesn't have server-side CI/CD, you or your CI/CD system will be uploading files to your target server. A WebApp build usually contains many assets, font files, videos and `scp -r` just doesn't cut it, retransferring everything. [rsync](https://en.wikipedia.org/wiki/Rsync) is widely used to accelerate this task and file copies in general.
 
 It copies folder structures, preserves their permissions, but does so whilst only copying what actually changed and applies compression for faster transfers. This makes `rsync` easily 100x faster when compared to `scp -r` when there are a bunch of assets, but you only changed the code a bit.
 
-Whilst rsync has no running service, it needs to be installed on the server as well. On the client side things are are just as simple, as with `scp`: `rsync -avz --progress exampleCorporate:/path/to/source/folder /path/to/target/folder` to upload a folder and show live progress will work automatically via the tunnel... 
+<blockquote class="reaction"><div class="reaction_text">Honestly, <code>rsync</code> is a life saver.</div><img class="kiwi" src="/assets/kiwis/love.svg"></blockquote>
+
+Whilst rsync has no running service, it needs to be installed on the server as well. On the client side things are are just as simple, as with `scp`: `rsync -avz --progress /path/to/source/folder exampleCorporate:/path/to/target/folder` to upload a folder and show live progress will work automatically via the tunnel... 
 
 ...unless you are on Windows...
 
 #### Rsync on Windows
-This is a bit of an interesting [story](https://en.wikipedia.org/wiki/CwRsync). On Windows there exist two versions of rsync. The standard FOSS rsync client with [source code from the Samba project](https://rsync.samba.org/) and [cwRsync](https://en.wikipedia.org/wiki/CwRsync), which has a free client but is closed sourced and [monetized via it's server component](https://itefix.net/store/buy?product=49.00000004) by [itefix](https://itefix.net/).
+This is a bit of an interesting [story](https://en.wikipedia.org/wiki/CwRsync). On Windows there exist two versions of rsync. The standard FOSS rsync client with [source code from the Samba project](https://rsync.samba.org/) and [cwRsync](https://en.wikipedia.org/wiki/CwRsync), which has a free client but is closed sourced and [monetized via its server component](https://itefix.net/store/buy?product=49.00000004) by [itefix](https://itefix.net/).
 
 <blockquote class="reaction"><div class="reaction_text">cwRsync has a right to exist, though I do find it a bit scummy to capitalize on FOSS projects <a target="_blank" href="https://www.cygwin.com/">Cygwin</a> and Rsync, considering the client is presumably mostly the FOSS Rsync source, compiled via cygwin.</div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
 <a></a>
@@ -1219,7 +1232,7 @@ Here it is: [rsync-3.4.1-windows.zip](rsync-3.4.1-windows.zip)
 <blockquote class="reaction"><div class="reaction_text">Took me a while to figure this mess out.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
 <a></a>
 
-We could just call it from inside MSYS2 or WSL and everything would be fine, but we would be referring to different SSH configs and you may have *other* tools calling in-turn rsync, so this needs to work outside of MSYS and WSL. Let's start by extracting rsync and configuring exposing its `usr/bin/` in `PATH`:
+We could just call it from inside MSYS2 or WSL and everything would be fine, but we would be referring to different SSH configs and you may have *other* tools in turn calling rsync, so this needs to work outside of MSYS and WSL. Let's start by extracting rsync and exposing its `usr/bin/` in `PATH`:
 
 <figure>
 	<img src="PATH.png" alt="Setting the PATH variable for rsync in Windows" />
@@ -1243,9 +1256,9 @@ sent 6,136,784 bytes  received 18,824 bytes  373,067.15 bytes/sec
 total size is 420,857,408  speedup is 68.37
 ```
 
-The reason we used absolute paths even in the ssh config, is that rsync is in a *nix environment provided by cygwin paths won't resolve correctly otherwise. Same reason we re-specified `UserKnownHostsFile`, or we would get endless `This key is not known by any other names.` each login.
+The reason we used absolute paths even in the ssh config, is that rsync is in an invisible *nix environment provided by cygwin and cygwin's path translation won't resolve correctly otherwise. Same reason we re-specified `UserKnownHostsFile`. It would work without, but you'd get annoying `This key is not known by any other names.` each login.
 
-You can ignore the `bash.exe` error, irrelevant for `rsync`. `-e` let's us specify the correct ssh and the related config. If we don't specify it and let the system ssh take over, it ***will*** seem to connect connect, but will fail with a confusing error:
+You can ignore the `bash.exe` error, irrelevant for our case. `-e` let's us specify the correct ssh and the related config. If we don't specify it and let the system ssh take over, it ***will*** seem to connect connect, but will fail with a confusing error:
 
 ```tunnelingArticleShell
 $ rsync -avz --progress exampleCorporate:/path/to/source/folder /path/to/target/folder
@@ -1257,10 +1270,10 @@ rsync: [sender] safe_read failed to read 4 bytes: Connection reset by peer (104)
 rsync error: error in rsync protocol data stream (code 12) at io.c(283) [sender=3.4.1]
 ```
 
-But that's an awfully long command and other tools using rsync won't know it. Luckily, there is a way to specify as default: environment variable `RSYNC_RSH`, which is equivalent to the parameter `-e`. Same deal as before, lot's of online explanations on how to set environment variables in Windows.
+But that's an awfully long command and other tools using rsync won't know it. Luckily, there is a way to specify a default: environment variable `RSYNC_RSH`, which is equivalent to the parameter `-e`. Same deal as before, lot's of online explanations on how to set environment variables in Windows.
 <figure>
-	<img src="RSYNC_RSH.png" alt="Setting the RSYNC_RSH to instruct rsync to know the correct OpenSSH" />
-	<figcaption>Setting the RSYNC_RSH to instruct rsync to know the correct OpenSSH</figcaption>
+	<img src="RSYNC_RSH.png" alt="Setting the RSYNC_RSH to instruct rsync to use the correct OpenSSH" />
+	<figcaption>Setting the RSYNC_RSH to instruct rsync to use the correct OpenSSH</figcaption>
 </figure>
 
 And after all that, we can ***finally*** use rsync via HTTPS tunneling, like we would on any *Nix platform or environment:
@@ -1277,7 +1290,7 @@ Everything we talked about applies to circumventing internet content filtering a
 
 Your server turns into a quasi VPN, with you browsing the web from the perspective of the server, no corporate content filters. It's standard practice to [block changes to proxy settings company wide](https://support.google.com/chrome/a/answer/187202). But it's up to the browser to enforce such policies, making it one of the more easily circumvented and useless security measures.
 
-<blockquote class="reaction"><div class="reaction_text">An unwritten rant bleeds though the letters of this article, a plea for corporate IT security solutions to stop making my dev life unnecessarily hard with measures an actual bad actor wouldn't even care about.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">An unwritten rant bleeds though the letters of this article: a plea for corporate IT security solutions to stop making my dev life unnecessarily hard with measures an actual bad actor wouldn't even care about.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
 And there we go. We configured, drilled and circumvented, clawing back power to create digital infrastructure in situations where normally we wouldn't be able to.
 
