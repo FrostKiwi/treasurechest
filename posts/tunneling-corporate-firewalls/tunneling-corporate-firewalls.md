@@ -2,12 +2,12 @@
 title: Tunneling corporate firewalls for developers
 permalink: "/{{ page.fileSlug }}/"
 date: 2025-03-27
-last_modified:
+last_modified: 2025-03-27
 description: Establish SSH connections and ensure your dev tools work via HTTPS tunneling, even if proxies and firewalls won't let you
 publicTags:
   - cyber security
   - web dev
-  - hacking
+  - dev ops
 image: img/thumb.png
 ---
 When you have a project, online service or WebApp that you manage and deploy, you usually have something that you [SSH](https://en.wikipedia.org/wiki/Secure_Shell) into. It maybe a real server, a [VPS](https://en.wikipedia.org/wiki/Virtual_private_server), a container, a [Kubernetes](https://kubernetes.io/) node and what have you.
@@ -20,7 +20,7 @@ Being able to setup a connection you trust and where your dev tools work is impo
 
 Ultimately, this is what the article is about - how to SSH into machines, when there is stuff in the way preventing that and make sure that your tools like [git](https://en.wikipedia.org/wiki/Git), [scp](https://man.openbsd.org/scp.1), [rsync](https://en.wikipedia.org/wiki/Rsync) or editing files directly on the server via [VSCode's SSH integration](https://code.visualstudio.com/docs/remote/ssh) work, with no new software installed and the ***absolute minimum*** of modifications to your server.
 
-<blockquote class="reaction"><div class="reaction_text">Once we are done, we'll gain a bit of a super power: <a target="_blank" href="https://en.wikipedia.org/wiki/Hole_punching_(networking)">hole-punching</a> and <a target="_blank" href="https://en.wikipedia.org/wiki/Port_forwarding">port-forwarding</a> at the same time, <strong>without</strong> touching the settings of firewalls or routers on client or server.</div><img class="kiwi" src="/assets/kiwis/cyber.svg"></blockquote>
+I find it fascinating what seemingly simple tools can do if you look closely. Did you know Git for Windows comes with tunneling software? How do these tools interact with network security on a per-packet basis? That's what I will investigate along the way.
 
 ## Tunneling - So many flavors
 If you control both Source and Destination, then you can tunnel everything through anything in complete secrecy and ultimately there is nothing anyone can do about it. This shouldn't be news to anyone working with networks. There are countless articles and videos going over a multitude of tunneling combinations.
@@ -30,8 +30,6 @@ If you control both Source and Destination, then you can tunnel everything throu
 - [Internet and SSH over WebSockets](https://github.com/erebe/wstunnel)
 
 As for this article, we'll deep-dive ✨***SSH over HTTP(S)***✨. Be it Linux, Mac or Windows, we will look at how to setup everything up, what the underlying network traffic looks like and most importantly: how your digital infrastructure is **already** capable of all this ... even if it wasn't supposed to.
-
-<blockquote class="reaction"><div class="reaction_text">Get your hard hats ready, <a target="_blank" href="https://youtu.be/DrYXGwMZrV4&t=8">for tonight we drill the firewall</a></div><img class="kiwi" src="/assets/kiwis/drillAngry.svg"></blockquote>
 
 ## Basic SSH Connection Scenarios
 We'll go through all the ways you may SSH into your server, with increasing levels of filtering, monitoring and connection blocking. Our context is web development, so how your main WebApps are reached is covered as well. Here, let's assume your WebApps are served or [reverse proxied](https://www.cloudflare.com/learning/cdn/glossary/reverse-proxy/) with [Nginx](https://en.wikipedia.org/wiki/Nginx), [Caddy](https://caddyserver.com/) or [Apache / httpd](https://en.wikipedia.org/wiki/Apache_HTTP_Server).
@@ -504,8 +502,6 @@ A corporate proxy is an exit point to the internet, deployed for security and co
 
 These proxies are usually part of an overarching IT and endpoint security package sold by companies like [ThreatLocker](https://www.threatlocker.com), [Forcepoint](https://forcepoint.com) and [Cisco](https://www.cisco.com), among others. In Windows land, these are usually setup by [Group policies](https://en.wikipedia.org/wiki/Group_Policy) pre-configuring a system-wide proxy and in *Nix land these are usually pre-configured with an initial OS image.
 
-<blockquote class="reaction"><div class="reaction_text">On a personal point, I'm not a fan of Forcepoint's <a target="_blank" href="https://en.wikipedia.org/wiki/Forcepoint#Forcepoint">ties to the military industrial complex</a>, but they are diligent and quick with upkeep of their underlying products like false blocks from <a target="_blank" href="https://en.wikipedia.org/wiki/BlackSpider_Technologies_Limited">blackspider / SurfControl</a>.</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
-
 Among these corporate proxies, it's standard to have packet sniffing capabilities, preventing connections that don't pass the sniff-test of "looks like normal internet access". Going forward, we will circumvent this and do so in a way that makes dev tools happy. Before that, let's clear the elephants in the room...
 
 <blockquote class="reaction"><div class="reaction_text">Probably the time to mention, that as much as any other post, my blog's <a target="_blank" href="/about/#disclaimer">disclaimer</a> applies.</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
@@ -514,10 +510,7 @@ Among these corporate proxies, it's standard to have packet sniffing capabilitie
 
 There may be intermediary companies which are responsible for digital infrastructure, kicking-off complicated inter-contract reviews; engineer access gateways may be on unreliable subnets; or simply, the present digital infrastructure may be such a mess, that trust just can't be established in the first place.
 
-<blockquote class="reaction"><div class="reaction_text">Man, have I seen some s*#$.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
-<a></a>
-
-***Deep*** consideration ***is needed*** on whether such a setup is **actually** required and whether or not this may violate existing security policies.
+***Deep*** consideration ***is needed*** on whether such a setup is **actually** required and whether or not this may violate existing security policies. And the previous passage was of course hyperbolic. Infrastructure decisions are made as a team. Let's find out what's possible, with seemingly simple, standard tooling:
 
 ### Honoring the proxy
 Proxies are such a vital piece of infrastructure, that we expect the operating system's proxy settings to be honored by default, built proxy settings into most network connected software and have additional defacto standards to specify them like the environment variables `http_proxy`, `HTTPS_PROXY`, `NO_PROXY` and friends.
@@ -1167,20 +1160,20 @@ The proxy is [none the wiser](https://www.youtube.com/watch?v=otCpCn0l4Wo&t=15s)
 
 <blockquote class="reaction"><div class="reaction_text"> Off-topic: <a target="_blank" href="https://www.youtube.com/watch?v=UfenH7xKO1s">LLMs can guess somewhat accurately what LLMs are outputting based purely on <strong>encrypted</strong> packet length</a>, if the chat frontend sends token by token as packet by packet.</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
 
-Now, so far we have made an assumption: HTTPS won't betray us. This is an assumption that online banking, financial transaction, medical institutions make, that unfortunately cannot be made in general. Advanced IT company security packages may perform ... [\*cue scary music\*](https://youtu.be/AfjqL0vaBYU?t=5) ...
+Now, so far we have made an assumption: HTTPS won't betray us. This is an assumption that online banking, financial transaction, medical institutions make, that unfortunately cannot be made in general. Advanced IT company security packages may perform...
 
-### Deep Packet Inspection 👻
-Akin to a privacy infringing [deep cavity search](https://en.wikipedia.org/wiki/Body_cavity_search), [DPI aka TLS decryption](https://en.wikipedia.org/wiki/Deep_packet_inspection) is a technique that involves your corporate IT overloads forcing your machine to betray you, allow an intermediate to decrypt your connection for inspection and re-encrypt it after inspection. Theoretically allowing a connection ban by type again.
+### Deep Packet Inspection
+[DPI aka TLS decryption](https://en.wikipedia.org/wiki/Deep_packet_inspection) is a technique that involves forcing your machine to trust an intermediate certificate, allow an intermediate to decrypt your connection for inspection and re-encrypt it after inspection.
 
-In the context of HTTPS or corporate connections, this involved pre-installing a [Trusted Root Certificate Authority](https://en.wikipedia.org/wiki/Certificate_authority) on the user's machine (i.e. via Windows' group policy). Such a bad idea, that even the [NSA](https://en.wikipedia.org/wiki/National_Security_Agency) issued [an advisory](https://web.archive.org/web/20191119195359/https://media.defense.gov/2019/Nov/18/2002212783/-1/-1/0/MANAGING%20RISK%20FROM%20TLS%20INSPECTION_20191106.PDF) and the [Cypersecurity & Infrastructure Security Agency CISA](https://en.wikipedia.org/wiki/Cybersecurity_and_Infrastructure_Security_Agency) outright [cautions against it](https://www.cisa.gov/news-events/alerts/2017/03/16/https-interception-weakens-tls-security).
+In the context of HTTPS or corporate connections, this involved pre-installing a [Trusted Root Certificate Authority](https://en.wikipedia.org/wiki/Certificate_authority) on the user's machine (i.e. via Windows' group policy). Such dangerous idea, that even the [NSA](https://en.wikipedia.org/wiki/National_Security_Agency) issued [an advisory](https://web.archive.org/web/20191119195359/https://media.defense.gov/2019/Nov/18/2002212783/-1/-1/0/MANAGING%20RISK%20FROM%20TLS%20INSPECTION_20191106.PDF) and the [Cypersecurity & Infrastructure Security Agency CISA](https://en.wikipedia.org/wiki/Cybersecurity_and_Infrastructure_Security_Agency) outright [cautions against it](https://www.cisa.gov/news-events/alerts/2017/03/16/https-interception-weakens-tls-security).
 
-A compromise of that intermediate root certificate would mean a whole company's connections being readable in clear text. Luckily, [DPI is easily detectable](https://www.grc.com/fingerprints.htm), as re-encryption rewrites certificate fingerprints. You can check against known fingerprints in the browser's certificate detail view or this command:
+A compromise of that intermediate root certificate would mean a whole company's connections being readable in clear text. [DPI is easily detectable](https://www.grc.com/fingerprints.htm), as re-encryption rewrites certificate fingerprints. You can check against known fingerprints in the browser's certificate detail view or this command:
 
 ```tunnelingArticleShell
 $ openssl s_client -proxy <Corporate Proxy IP>:<Corporate Proxy Port> -connect <Site which is not blocked>:443 -servername <Site which is not blocked> | openssl x509 -noout -fingerprint -sha1
 ```
 
-**Ultimately**, on the networking side you can sandwich *another* layer of encryption in-between, making DPI's HTTPS stripping meaningless. **Ultimately Ultimately**, everything we talked about is network side and a security package sitting on your PC at kernel level can intercept anything and spawn-kill your ambitions.
+**Ultimately**, on the networking side you can sandwich *another* layer of encryption in-between, making DPI's HTTPS stripping meaningless. **Ultimately Ultimately**, everything we talked about is network side and a security package sitting on your PC at kernel level can intercept truly anything.
 
 ## What *not* to do
 Before we finish by making dev tools sing, let's quickly go over what to avoid. Some projects go the jackhammer route of exposing the system shell as an HTTP service. The more popular ones are [Wetty](https://github.com/butlerx/wetty) and [Shell in a Box](https://github.com/shellinabox/shellinabox). These are excellent projects in their own right and there are situations where they are a good solution...
@@ -1295,4 +1288,4 @@ Your server turns into a quasi VPN, with you browsing the web from the perspecti
 
 And there we go. We configured, drilled and circumvented, clawing back power to create digital infrastructure in situations where normally we wouldn't be able to.
 
-<blockquote class="reaction"><div class="reaction_text">I won't bore you with the <a target="_blank" href="https://youtu.be/b23wrRfy7SM?t=12">obligatory lecture that belongs here</a>. Hope this article makes your dev life a bit easier.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text"><a target="_blank" href="https://youtu.be/b23wrRfy7SM?t=12">With great power comes great responsibility</a>. Hope this article gave insight into what's possible, besides the classic ways of server access.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
