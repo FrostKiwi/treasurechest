@@ -6,7 +6,11 @@ layout: layout.html
 	{% if not post.data.wip %}
 		<a href="{{ post.url }}">
 			<div class="post-card">
-				<img src="{{ post.data.image }}" alt="{{ post.data.title }}" class="post-image">
+				<picture>
+					<source srcset="{{ post.data.imageAvif }}" type="image/avif" />
+					<source srcset="{{ post.data.imageWebp }}" type="image/webp" />
+					<img src="{{ post.data.image }}" alt="{{ post.data.title }}" class="post-image">
+				</picture>
 				<div class="post-content">
 					<h2>{{ post.data.title }}</h2>
 					<div class="subinfo">

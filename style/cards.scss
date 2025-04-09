@@ -36,6 +36,10 @@
 		margin-bottom: 0;
 	}
 
+	picture {
+		flex-shrink: 0;
+	}
+
 	.post-image {
 		width: 100px;
 		height: 100px;

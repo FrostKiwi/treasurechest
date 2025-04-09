@@ -135,13 +135,16 @@ export default function (eleventyConfig) {
 			if (post.data.image) {
 				const image = await Image('posts/' + post.url + '/' + post.data.image, {
 					widths: [256, "auto"],
-					formats: ['jpeg'],
+					formats: ['jpeg', "avif", "webp"],
 					outputDir: eleventyConfig.dir.output + '/' + post.url
 				});
 				/* Thumbnail */
 				post.data.image = post.url + image.jpeg[0].filename;
 				/* Opengraph social media image */
 				post.data.social = post.url + image.jpeg[1].filename;
+				/* Optimized Images */
+				post.data.imageAvif = post.url + image.avif[0].filename;
+				post.data.imageWebp = post.url + image.webp[0].filename;
 			}
 		}
 
