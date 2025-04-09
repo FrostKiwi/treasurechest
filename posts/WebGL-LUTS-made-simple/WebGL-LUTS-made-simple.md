@@ -292,7 +292,7 @@ Unless your data has specific structure, there is actually one colormap type tha
 
 Reasons for this and why other colormaps are dangerous for judging critical information are presented by [Stefan van der Walt](https://github.com/stefanv) and [Nathaniel J. Smith](https://github.com/njsmith) in this talk.
 
-<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube.com/embed/xAoljeRJ3lU?si=vxcupZ7q-JhcCXFm&amp;start=50" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/xAoljeRJ3lU?si=vxcupZ7q-JhcCXFm&amp;start=50" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
 
 #### Still performance free?
 
@@ -547,7 +547,7 @@ Using 3D LUTs to style your game's colors via outside tools is a very well known
 
 Continuing the use of Left 4 Dead as an example, Left 4 Dead does exactly the same. Here is a tutorial walking you through the process for Left 4 Dead 2 specifically.
 
-<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube.com/embed/xXVzJ_CfnfQ?si=4hMkpjkRX86xD2yT&amp;start=250" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/xXVzJ_CfnfQ?si=4hMkpjkRX86xD2yT&amp;start=250" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
 
 You can use any color correction tool of Photoshop freely. The only limitation is that you may not use any filters influencing the relation of multiple pixels. So all [convolutions](<https://en.wikipedia.org/wiki/Kernel_(image_processing)>) like blur, sharpen, emboss, etc., cannot be used. Or rather, they will lead to unexpected results by blurring the remapped colors.
 
@@ -631,4 +631,4 @@ This article covered uses of LUTs in the context of graphics programming, but th
 
 The Game Boy Advanced has no 3D features, so much of it is software magic. Among that magic is a [LUT implementing integer division](https://github.com/XProger/OpenLara/commit/e9ba3a278499fd61768a6ab148b72d9f7d5d5828), placed at the beginning of ROM address space to skip a load instruction. The details of this port were covered in a video by [Modern Vintage Gamer](https://www.youtube.com/@ModernVintageGamer) and the relevant passage is here:
 
-<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube.com/embed/_GVSLcqGP7g?si=NST1tXJb7_oB3acl&amp;start=303" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/_GVSLcqGP7g?si=NST1tXJb7_oB3acl&amp;start=303" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
