@@ -49,14 +49,21 @@
 				<img class="kiwi" alt="Cute Kiwi doing cute things" src="/assets/kiwis/book.svg">
 				<script>
 					(() => {
+						/* Kiwi switcher and pre-fetcher */
 						const kiwis = [
 							'detective', 'facepalm', 'drillMiffed', 'happy', 'ice', 'love', 'miffed', 'party', 'drillAngry', 'sad', 'surprised', 'dead', 'teach', 'think', 'book', 'cyber', 'laugh', 'sleep'
 						].map(name => `/assets/kiwis/${name}.svg`);
 						let currentKiwi = Math.floor(Math.random() * kiwis.length);
-						const nextKiwi = () => document.querySelector('.kiwi').src = kiwis[++currentKiwi % kiwis.length];
-						new Image().src = kiwis[(currentKiwi + 1) % kiwis.length];
-						document.querySelector('.kiwi').onclick = nextKiwi;
-						nextKiwi();
+						const kiwiElement = document.querySelector('.kiwi');
+						const prefetchKiwi = () => new Image().src = kiwis[(currentKiwi + 1) % kiwis.length];
+
+						kiwiElement.src = kiwis[currentKiwi];
+						prefetchKiwi();
+						kiwiElement.onclick = () => {
+							currentKiwi = (currentKiwi + 1) % kiwis.length;
+							kiwiElement.src = kiwis[currentKiwi];
+							prefetchKiwi();
+						};
 					})();
 				</script>
 				<a class="no_border" href="/">
