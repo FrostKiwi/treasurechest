@@ -19,7 +19,7 @@ https://www.youtube.com/watch?v=SiJpkucGa1o
 
 Playdead used it to get HDR Bloom
 [Low Complexity, High Fidelity - INSIDE Rendering](https://gdcvault.com/play/1023304/Low-Complexity-High-Fidelity-INSIDE)
-Check against Jimenez 14
+Check against Jimenez 14  5:45 onwards
 
 This article kicked it off: [Link](https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/)
 

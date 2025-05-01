@@ -1,7 +1,10 @@
 {
-  "name": "FrostKiwi",
+  "name": "Frost Kiwi",
   "icons": [
     { "src": "/assets/icon-192.png", "type": "image/png", "sizes": "192x192" },
     { "src": "/assets/icon-512.png", "type": "image/png", "sizes": "512x512" }
-  ]
+  ],
+  "short_name": "Frost Kiwi",
+  "background_color": "#241f20",
+  "theme_color": "#241f20"
 }
