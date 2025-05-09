@@ -1,6 +1,6 @@
 ---
 wip: true
-title: At the limit of hardware - Dual Kawase
+title: Dual Kawase - A blur to rule them all & interview with Masaki Kawase 
 permalink: "/{{ page.fileSlug }}/"
 date:
 last_modified:
@@ -11,7 +11,21 @@ publicTags:
   - GameDev
 image:
 ---
-Apple is bad at blur, switching to box blur. With higher kernels
+Blur is essential - a fundamental tool, that a lot of graphics programming builds upon. [Depth of Field](https://en.wikipedia.org/wiki/Depth_of_field), [Bloom](https://learnopengl.com/Guest-Articles/2022/Phys.-Based-Bloom), [Frosted glass in UI elements](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#kde-kwin-blur) all make use of it.
+
+
+## Apple switches algorithms
+Either reduced resolution, a switch to box blur with settings corresponding to the reduced resolution or guassian blur with a [small kernel but high sigma](https://usage.imagemagick.org/blur/#blur_args).
+iPad 9th gen, iPadOS 18.4.1 10.2", 2160 x 1620 px --> 11x11 px
+iPhone SE 34d gen, iOS 18.4.1, 1334 x 750 px --> 6x6 px
+
+<figure>
+	<video poster="vid/iPadSidebar_thumb.jpg" width="960" height="720" loop controls><source src="vid/iPadSidebar.mp4" type="video/mp4"></video>
+	<figcaption>iPad sidebar blur</figcaption>
+</figure>
+
+<blockquote class="reaction"><div class="reaction_text">Apple misconfigured the blur switch on iPadOS, for the top right settings pull down. The switch happens too soon, regressing blur strength and resulting in a pulse like artifact.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
 
 YouTube Channel [Computerphile](https://www.youtube.com/@Computerphile) did a lot on blurs and covered the mathematics behind them. I won't jump deep into the basic building blocks of kernels, convolutions and separability, as they have covered it already really well.
 
