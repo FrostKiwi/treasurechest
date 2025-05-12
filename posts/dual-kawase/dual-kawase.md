@@ -18,11 +18,20 @@ image:
 <script id="simpleVert" type="x-shader/x-vertex">{% include "posts/dual-kawase/shader/simple.vs" %}</script>
 <script id="simpleFrag" type="x-shader/x-fragment">{% include "posts/dual-kawase/shader/simple.fs" %}</script>
 
-<canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasSimple"></canvas>
-<script>setupSimple("canvasSimple", "simpleVert", "simpleFrag");</script>
+<div style="display: flex; flex-wrap: wrap; gap: 0px 12px; justify-content: space-around;">
+    <span style="display: flex; gap: 8px; white-space: nowrap">
+        <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
+            <input style="margin-bottom: unset;" type="checkbox" id="pauseCheck" name="Play / Pause" checked />
+            Animate
+        </label>
+    </span>
+</div>
+<canvas width="100%" height="400px" style="aspect-ratio: 4/3" id="canvasSimple"></canvas>
+<script>setupSimple("canvasSimple", "simpleVert", "simpleFrag", "pauseCheck");</script>
 
 Blur is essential - a fundamental tool, that a lot of graphics programming builds upon. [Depth of Field](https://en.wikipedia.org/wiki/Depth_of_field), [Bloom](https://learnopengl.com/Guest-Articles/2022/Phys.-Based-Bloom), [Frosted glass in UI elements](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#kde-kwin-blur) all make use of it.
 
+When talking about blurs and especially bloom, motion stability is incredibly important. Our image will rotate slowly to tease out artifacts when bright highlights move across the frame. You can toggle this above each WebGL Canvas.
 
 ## Apple switches algorithms
 Either reduced resolution, a switch to box blur with settings corresponding to the reduced resolution or guassian blur with a [small kernel but high sigma](https://usage.imagemagick.org/blur/#blur_args).

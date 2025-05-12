@@ -1,7 +1,9 @@
-function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc) {
+function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, pauseCheckboxID) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	let buffersInitialized = false;
+	let pause = false;
+	let textureSDR = null;
 	const gl = canvas.getContext('webgl',
 		{
 			preserveDrawingBuffer: false,
@@ -9,9 +11,18 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc) {
 			alpha: false,
 		}
 	);
+
+	const pauseCheckbox = document.getElementById(pauseCheckboxID);
+	pauseCheckbox.addEventListener('change', () => {
+		pause = !pauseCheckbox.checked;
+	});
+	
 	/* Shaders */
 	/* Circle Shader */
 	const simpleShd = compileAndLinkShader(gl, simpleVtxSrc, simpleFragSrc);
+	gl.useProgram(simpleShd);
+	const offsetLocationCircle = gl.getUniformLocation(simpleShd, "offset");
+	const radiusLocationCircle = gl.getUniformLocation(simpleShd, "radius");
 
 	const vertex_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
@@ -22,18 +33,32 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc) {
 	setupTextureBuffers();
 
 	let aspect_ratio = 0;
+	let last_time = 0;
 	let redrawActive = false;
 
-	function setupTextureBuffers() {
+	async function setupTextureBuffers() {
 		/* Setup Buffers */
 		buffersInitialized = true;
+		const response = await fetch("/dual-kawase/img/SDR.png");
+		const blob = await response.blob();
+		const bitmap = await createImageBitmap(blob, { colorSpaceConversion: 'none' });
+		textureSDR = setupTexture(gl, 1920, 1440, textureSDR, gl.LINEAR, bitmap);
+		gl.bindTexture(gl.TEXTURE_2D, textureSDR);
 	}
 
-	function redraw() {
+	function redraw(time) {
 		redrawActive = true;
 		if (!buffersInitialized) {
 			setupTextureBuffers();
 		}
+		last_time = time;
+
+		/* Circle Motion */
+		var radius = !pause ? 0.1 : 0.0;
+		var speed = (time / 10000) % Math.PI * 2;
+		const offset = [ radius * Math.cos(speed), radius * Math.sin(speed) ];
+		gl.uniform2fv(offsetLocationCircle, offset);
+		gl.uniform1f(radiusLocationCircle, radius);
 
 		/* Setup PostProcess Framebuffer */
 		gl.viewport(0, 0, canvas.width, canvas.height);
@@ -68,9 +93,9 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc) {
 	window.addEventListener('resize', onResize, true);
 	onResize();
 
-	function renderLoop() {
+	function renderLoop(time) {
 		if (isRendering) {
-			redraw();
+			redraw(time);
 			animationFrameId = requestAnimationFrame(renderLoop);
 		}
 	}
@@ -78,7 +103,7 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc) {
 	function startRendering() {
 		/* Start rendering, when canvas visible */
 		isRendering = true;
-		renderLoop();
+		renderLoop(last_time);
 	}
 
 	function stopRendering() {
@@ -94,6 +119,7 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc) {
 		gl.finish();
 
 		/* Delete the buffers to free up memory */
+		gl.deleteTexture(textureSDR);
 		buffersInitialized = false;
 	}
 
@@ -102,7 +128,7 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc) {
 			if (entry.isIntersecting) {
 				if (!isRendering) startRendering();
 			} else {
-				stopRendering();
+				stopRendering(last_time);
 			}
 		});
 	}

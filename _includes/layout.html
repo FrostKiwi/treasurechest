@@ -122,6 +122,7 @@
 			</a>
 		</div>
 		<hr>
+		{% if not wip %}
 		<div class="comment_group">
 			<h2 id="comments" class="site_title">Comment via GitHub <a href="#comments" class="anchor-link">#</a></h2>
 			<img class="kiwi" src="/assets/kiwis/speak.svg">
@@ -140,7 +141,8 @@
 				}
 			});
 		</script>
-	</footer>
+		{% endif %}
+	</footer>	
 	{% endif %}
 </body>
 
