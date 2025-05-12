@@ -3,7 +3,8 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, pauseCheckboxID) {
 	const canvas = document.getElementById(canvasId);
 	let buffersInitialized = false;
 	let pause = false;
-	let textureSDR = null;
+	/* Texture Objects */
+	let textureSDR, textureSelfIllum = null;
 	const gl = canvas.getContext('webgl',
 		{
 			preserveDrawingBuffer: false,
@@ -16,7 +17,7 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, pauseCheckboxID) {
 	pauseCheckbox.addEventListener('change', () => {
 		pause = !pauseCheckbox.checked;
 	});
-	
+
 	/* Shaders */
 	/* Circle Shader */
 	const simpleShd = compileAndLinkShader(gl, simpleVtxSrc, simpleFragSrc);
@@ -39,10 +40,23 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, pauseCheckboxID) {
 	async function setupTextureBuffers() {
 		/* Setup Buffers */
 		buffersInitialized = true;
-		const response = await fetch("/dual-kawase/img/SDR.png");
-		const blob = await response.blob();
-		const bitmap = await createImageBitmap(blob, { colorSpaceConversion: 'none' });
-		textureSDR = setupTexture(gl, 1920, 1440, textureSDR, gl.LINEAR, bitmap);
+
+		let [base, selfIllum] = await Promise.all([
+			fetch("/dual-kawase/img/SDR_Bloom_No_Sprites.png"),
+			fetch("/dual-kawase/img/Selfillumination.png")
+		]);
+		let [baseBlob, selfIllumBlob] = await Promise.all([
+			base.blob(),
+			selfIllum.blob()
+		]);
+		let [baseBitmap, selfIllumBitmap] = await Promise.all([
+			createImageBitmap(baseBlob, { colorSpaceConversion: 'none' }),
+			createImageBitmap(selfIllumBlob, { colorSpaceConversion: 'none' })
+		]);
+		textureSDR = setupTexture(gl, 1368, 1026, textureSDR, gl.LINEAR, baseBitmap);
+		textureSelfIllum = setupTexture(gl, 1368, 1026, textureSelfIllum, gl.LINEAR, baseBitmap);
+		baseBitmap.close();
+		selfIllumBitmap.close();
 		gl.bindTexture(gl.TEXTURE_2D, textureSDR);
 	}
 
@@ -56,7 +70,7 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, pauseCheckboxID) {
 		/* Circle Motion */
 		var radius = !pause ? 0.1 : 0.0;
 		var speed = (time / 10000) % Math.PI * 2;
-		const offset = [ radius * Math.cos(speed), radius * Math.sin(speed) ];
+		const offset = [radius * Math.cos(speed), radius * Math.sin(speed)];
 		gl.uniform2fv(offsetLocationCircle, offset);
 		gl.uniform1f(radiusLocationCircle, radius);
 
@@ -120,6 +134,7 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, pauseCheckboxID) {
 
 		/* Delete the buffers to free up memory */
 		gl.deleteTexture(textureSDR);
+		gl.deleteTexture(selfIllumBitmap);
 		buffersInitialized = false;
 	}
 
