@@ -11,6 +11,16 @@ publicTags:
   - GameDev
 image:
 ---
+
+<script src="js/simple.js"></script>
+<script src="js/utility.js"></script>
+
+<script id="simpleVert" type="x-shader/x-vertex">{% include "posts/dual-kawase/shader/simple.vs" %}</script>
+<script id="simpleFrag" type="x-shader/x-fragment">{% include "posts/dual-kawase/shader/simple.fs" %}</script>
+
+<canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasSimple"></canvas>
+<script>setupSimple("canvasSimple", "simpleVert", "simpleFrag");</script>
+
 Blur is essential - a fundamental tool, that a lot of graphics programming builds upon. [Depth of Field](https://en.wikipedia.org/wiki/Depth_of_field), [Bloom](https://learnopengl.com/Guest-Articles/2022/Phys.-Based-Bloom), [Frosted glass in UI elements](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#kde-kwin-blur) all make use of it.
 
 
