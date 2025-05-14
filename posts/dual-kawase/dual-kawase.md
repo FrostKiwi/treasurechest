@@ -20,16 +20,99 @@ image:
 <script id="simpleVert" type="x-shader/x-vertex">{% include "posts/dual-kawase/shader/simple.vs" %}</script>
 <script id="simpleFrag" type="x-shader/x-fragment">{% include "posts/dual-kawase/shader/simple.fs" %}</script>
 
+<style>
+    .settingsTable .noborder td {
+        border-bottom: unset;
+    }
+    .variable-name-row {
+        display: none;
+    }
+    @media screen and (max-width: 500px) {
+        .variable-name-row {
+            display: table-row;
+			text-align: center;
+        }
+        .variable-name-cell {
+            display: none;
+        }
+    }
+	.settingsTable pre {
+    	overflow-x: auto;
+    	max-width: 100%;
+    	white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+	.precolumn {
+		padding: 0px;
+	}
+</style>
+
+## Setup
+<div class="toggleRes">
+	<div>
+	  <input type="radio" id="native" name="resSimple" value="1" checked />
+	  <label for="native">Scene<div>Blur</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="half" name="resSimple" value="2" />
+	  <label for="half">Self Illumination<div>Resolution</div></label>
+	</div>
+	<div>
+	  <input type="radio" id="quarter" name="resSimple" value="4" />
+	  <label for="quarter">Bloom<div>Resolution</div></label>
+	</div>
+</div>
 <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; justify-content: space-around;">
     <span style="display: flex; gap: 8px; white-space: nowrap">
         <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
-            <input style="margin-bottom: unset;" type="checkbox" id="pauseCheck" name="Play / Pause" checked />
+            <input style="margin-bottom: unset;" type="checkbox" id="pauseCheckSimple" name="Play / Pause" checked />
             Animate
         </label>
     </span>
 </div>
 <canvas width="100%" height="400px" style="aspect-ratio: 4/3" id="canvasSimple"></canvas>
-<script>setupSimple("canvasSimple", "simpleVert", "simpleFrag", "blitVert", "blitFrag", "pauseCheck");</script>
+<script>setupSimple("canvasSimple", "simpleVert", "simpleFrag", "blitVert", "blitFrag", "pauseCheckSimple");</script>
+
+## Box Blur
+
+<script src="js/boxBlur.js"></script>
+<script id="boxBlurVert" type="x-shader/x-vertex">{% include "posts/dual-kawase/shader/boxBlur.vs" %}</script>
+<script id="boxBlurFrag" type="x-shader/x-fragment">{% include "posts/dual-kawase/shader/boxBlur.fs" %}</script>
+<div><canvas width="100%" height="400px" style="aspect-ratio: 4/3;" id="canvasBoxBlur"></canvas></div>
+<table class="settingsTable" style="width: 100%; max-width: 100%;">
+	<tr>
+		<td colspan=4 style="width:100%">
+			<div style="display: flex; gap: 0px 12px; align-items: center;">
+			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-around;">
+			        <span style="display: flex; gap: 8px; white-space: nowrap;">
+        				<label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
+            				<input style="margin-bottom: unset;" type="checkbox" id="pauseCheckBox" name="Play / Pause" checked />
+            				Animate
+        				</label>
+					</span>
+				</div>
+			</div>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>blurSize</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>blurSize</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="1" min="0" max="512" value="12" id="boxBlurRange" oninput="boxBlurSize.value = parseFloat(this.value).toFixed(0)">
+		</td>
+		<td style="text-align: center;">
+			<output id="boxBlurSize">12</output>px
+		</td>
+	</tr>
+</table>
+
+<script>setupBoxBlur("canvasBoxBlur", "simpleVert", "simpleFrag", "boxBlurVert", "boxBlurFrag", "pauseCheckBox", "boxBlurRange");</script>
 
 Blur is essential - a fundamental tool, that a lot of graphics programming builds upon. [Depth of Field](https://en.wikipedia.org/wiki/Depth_of_field), [Bloom](https://learnopengl.com/Guest-Articles/2022/Phys.-Based-Bloom), [Frosted glass in UI elements](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#kde-kwin-blur) all make use of it.
 
