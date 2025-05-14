@@ -1,10 +1,17 @@
-function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, pauseCheckboxID) {
+function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFragSrc, pauseCheckboxID) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	let buffersInitialized = false;
+	let initComplete = false;
 	let pause = false;
 	/* Texture Objects */
 	let textureSDR, textureSelfIllum = null;
+	/* Framebuffer Objects */
+	let circleDrawFramebuffer, frameTexture;
+
+	/* Circle Rotation size */
+	const radius = 0.1;
+
 	const gl = canvas.getContext('webgl',
 		{
 			preserveDrawingBuffer: false,
@@ -19,30 +26,41 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, pauseCheckboxID) {
 	});
 
 	/* Shaders */
-	/* Circle Shader */
+	/* Draw Texture Shader */
 	const simpleShd = compileAndLinkShader(gl, simpleVtxSrc, simpleFragSrc);
 	gl.useProgram(simpleShd);
 	const offsetLocationCircle = gl.getUniformLocation(simpleShd, "offset");
 	const radiusLocationCircle = gl.getUniformLocation(simpleShd, "radius");
+
+	/* Draw Framebuffer Shader */
+	/* Blit Shader */
+	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);
 
 	const vertex_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
 	gl.bufferData(gl.ARRAY_BUFFER, unitQuad, gl.STATIC_DRAW);
 	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(0);
-
-	setupTextureBuffers();
-
+	
 	let aspect_ratio = 0;
 	let last_time = 0;
 	let redrawActive = false;
-
+	
 	async function setupTextureBuffers() {
-		/* Setup Buffers */
 		buffersInitialized = true;
-
+		initComplete = false;
+		console.log("Setup Texture Entered")
+		/* Setup Buffers */
+		gl.deleteFramebuffer(circleDrawFramebuffer);
+		circleDrawFramebuffer = gl.createFramebuffer();
+		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
+		
+		frameTexture = setupTexture(gl, canvas.width, canvas.height, frameTexture, gl.NEAREST);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTexture, 0);
+		
+		/* Setup textures */
 		let [base, selfIllum] = await Promise.all([
-			fetch("/dual-kawase/img/SDR_Bloom_No_Sprites.png"),
+			fetch("/dual-kawase/img/SDR_No_Sprite.png"),
 			fetch("/dual-kawase/img/Selfillumination.png")
 		]);
 		let [baseBlob, selfIllumBlob] = await Promise.all([
@@ -50,35 +68,49 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, pauseCheckboxID) {
 			selfIllum.blob()
 		]);
 		let [baseBitmap, selfIllumBitmap] = await Promise.all([
-			createImageBitmap(baseBlob, { colorSpaceConversion: 'none' }),
-			createImageBitmap(selfIllumBlob, { colorSpaceConversion: 'none' })
+			createImageBitmap(baseBlob, { colorSpaceConversion: 'none', resizeWidth: canvas.width * (1.0 + radius), resizeHeight: canvas.height * (1.0 + radius), resizeQuality: "high" }),
+			createImageBitmap(selfIllumBlob, { colorSpaceConversion: 'none', resizeWidth: canvas.width * (1.0 + radius), resizeHeight: canvas.height * (1.0 + radius), resizeQuality: "high" })
 		]);
-		textureSDR = setupTexture(gl, 1368, 1026, textureSDR, gl.LINEAR, baseBitmap);
-		textureSelfIllum = setupTexture(gl, 1368, 1026, textureSelfIllum, gl.LINEAR, baseBitmap);
+		textureSDR = setupTexture(gl, null, null, textureSDR, gl.LINEAR, baseBitmap);
+		textureSelfIllum = setupTexture(gl, null, null, textureSelfIllum, gl.LINEAR, selfIllumBitmap);
 		baseBitmap.close();
 		selfIllumBitmap.close();
-		gl.bindTexture(gl.TEXTURE_2D, textureSDR);
+		initComplete = true;
 	}
-
+	
 	function redraw(time) {
 		redrawActive = true;
 		if (!buffersInitialized) {
 			setupTextureBuffers();
 		}
+		if(!initComplete){
+			redrawActive = false;
+			return;
+		}
 		last_time = time;
 
 		/* Circle Motion */
-		var radius = !pause ? 0.1 : 0.0;
+		var radiusSwitch = !pause ? radius : 0.0;
 		var speed = (time / 10000) % Math.PI * 2;
-		const offset = [radius * Math.cos(speed), radius * Math.sin(speed)];
+		const offset = [radiusSwitch * Math.cos(speed), radiusSwitch * Math.sin(speed)];
+		gl.useProgram(simpleShd);
+		gl.bindTexture(gl.TEXTURE_2D, textureSDR);
 		gl.uniform2fv(offsetLocationCircle, offset);
-		gl.uniform1f(radiusLocationCircle, radius);
+		gl.uniform1f(radiusLocationCircle, radiusSwitch);
 
 		/* Setup PostProcess Framebuffer */
+		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
 		gl.viewport(0, 0, canvas.width, canvas.height);
-		gl.useProgram(simpleShd);
-
+		
 		/* Draw Call */
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+		
+		/* Setup Draw to screen */
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		gl.useProgram(blitShd);
+		gl.bindTexture(gl.TEXTURE_2D, frameTexture);
+
+		/* Drawcall */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		redrawActive = false;
@@ -94,10 +126,10 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, pauseCheckboxID) {
 		const height = Math.round(devicePixelRatio * dipRect.bottom) - Math.round(devicePixelRatio * dipRect.top);
 
 		if (canvas.width !== width || canvas.height !== height) {
+			console.log("Resize Event with new size")
 			canvas.width = width;
 			canvas.height = height;
 
-			setupTextureBuffers();
 			aspect_ratio = 1.0 / (width / height);
 			stopRendering();
 			startRendering();
@@ -115,12 +147,14 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, pauseCheckboxID) {
 	}
 
 	function startRendering() {
+		console.log("Start Rendering")
 		/* Start rendering, when canvas visible */
 		isRendering = true;
 		renderLoop(last_time);
 	}
 
 	function stopRendering() {
+		console.log("Stop Rendering")
 		/* Stop another redraw being called */
 		isRendering = false;
 		cancelAnimationFrame(animationFrameId);
@@ -134,8 +168,11 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, pauseCheckboxID) {
 
 		/* Delete the buffers to free up memory */
 		gl.deleteTexture(textureSDR);
-		gl.deleteTexture(selfIllumBitmap);
+		gl.deleteTexture(textureSelfIllum);
+		gl.deleteTexture(frameTexture);
+		gl.deleteFramebuffer(circleDrawFramebuffer);
 		buffersInitialized = false;
+		initComplete = false;
 	}
 
 	function handleIntersection(entries) {

@@ -15,6 +15,8 @@ image:
 <script src="js/simple.js"></script>
 <script src="js/utility.js"></script>
 
+<script id="blitVert" type="x-shader/x-vertex">{% include "posts/dual-kawase/shader/blit.vs" %}</script>
+<script id="blitFrag" type="x-shader/x-fragment">{% include "posts/dual-kawase/shader/blit.fs" %}</script>
 <script id="simpleVert" type="x-shader/x-vertex">{% include "posts/dual-kawase/shader/simple.vs" %}</script>
 <script id="simpleFrag" type="x-shader/x-fragment">{% include "posts/dual-kawase/shader/simple.fs" %}</script>
 
@@ -27,7 +29,7 @@ image:
     </span>
 </div>
 <canvas width="100%" height="400px" style="aspect-ratio: 4/3" id="canvasSimple"></canvas>
-<script>setupSimple("canvasSimple", "simpleVert", "simpleFrag", "pauseCheck");</script>
+<script>setupSimple("canvasSimple", "simpleVert", "simpleFrag", "blitVert", "blitFrag", "pauseCheck");</script>
 
 Blur is essential - a fundamental tool, that a lot of graphics programming builds upon. [Depth of Field](https://en.wikipedia.org/wiki/Depth_of_field), [Bloom](https://learnopengl.com/Guest-Articles/2022/Phys.-Based-Bloom), [Frosted glass in UI elements](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#kde-kwin-blur) all make use of it.
 
