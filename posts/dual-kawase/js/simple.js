@@ -41,23 +41,21 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFrag
 	gl.bufferData(gl.ARRAY_BUFFER, unitQuad, gl.STATIC_DRAW);
 	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(0);
-	
-	let aspect_ratio = 0;
+
 	let last_time = 0;
 	let redrawActive = false;
-	
+
 	async function setupTextureBuffers() {
 		buffersInitialized = true;
 		initComplete = false;
-		console.log("Setup Texture Entered")
 		/* Setup Buffers */
 		gl.deleteFramebuffer(circleDrawFramebuffer);
 		circleDrawFramebuffer = gl.createFramebuffer();
 		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
-		
+
 		frameTexture = setupTexture(gl, canvas.width, canvas.height, frameTexture, gl.NEAREST);
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTexture, 0);
-		
+
 		/* Setup textures */
 		let [base, selfIllum] = await Promise.all([
 			fetch("/dual-kawase/img/SDR_No_Sprite.png"),
@@ -67,6 +65,9 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFrag
 			base.blob(),
 			selfIllum.blob()
 		]);
+		/* We the browser pre-filter the textures what correspond to 1:1 pixel
+		   mapping. This to side-step MipMaps, as we need just a simple demo.
+		   Otherwise, aliasing messes with what the article tries to explain */
 		let [baseBitmap, selfIllumBitmap] = await Promise.all([
 			createImageBitmap(baseBlob, { colorSpaceConversion: 'none', resizeWidth: canvas.width * (1.0 + radius), resizeHeight: canvas.height * (1.0 + radius), resizeQuality: "high" }),
 			createImageBitmap(selfIllumBlob, { colorSpaceConversion: 'none', resizeWidth: canvas.width * (1.0 + radius), resizeHeight: canvas.height * (1.0 + radius), resizeQuality: "high" })
@@ -77,13 +78,13 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFrag
 		selfIllumBitmap.close();
 		initComplete = true;
 	}
-	
+
 	function redraw(time) {
 		redrawActive = true;
 		if (!buffersInitialized) {
 			setupTextureBuffers();
 		}
-		if(!initComplete){
+		if (!initComplete) {
 			redrawActive = false;
 			return;
 		}
@@ -101,10 +102,10 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFrag
 		/* Setup PostProcess Framebuffer */
 		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
 		gl.viewport(0, 0, canvas.width, canvas.height);
-		
+
 		/* Draw Call */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-		
+
 		/* Setup Draw to screen */
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		gl.useProgram(blitShd);
@@ -120,24 +121,31 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFrag
 	let animationFrameId;
 
 	/* Render at Native Resolution */
-	function onResize() {
+	function nativeResize() {
 		const dipRect = canvas.getBoundingClientRect();
 		const width = Math.round(devicePixelRatio * dipRect.right) - Math.round(devicePixelRatio * dipRect.left);
 		const height = Math.round(devicePixelRatio * dipRect.bottom) - Math.round(devicePixelRatio * dipRect.top);
 
-		if (canvas.width !== width || canvas.height !== height) {
-			console.log("Resize Event with new size")
+		if (width && canvas.width !== width || height && canvas.height !== height) {
 			canvas.width = width;
 			canvas.height = height;
 
-			aspect_ratio = 1.0 / (width / height);
 			stopRendering();
 			startRendering();
 		}
 	}
 
+	/* Resize Event */
+	let resizeTimer = null;
+	function onResize() {
+		clearTimeout(resizeTimer);
+		resizeTimer = setTimeout(() => {
+			nativeResize();
+		}, 100);
+	}
+
 	window.addEventListener('resize', onResize, true);
-	onResize();
+	nativeResize();
 
 	function renderLoop(time) {
 		if (isRendering) {
@@ -147,14 +155,12 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFrag
 	}
 
 	function startRendering() {
-		console.log("Start Rendering")
 		/* Start rendering, when canvas visible */
 		isRendering = true;
 		renderLoop(last_time);
 	}
 
 	function stopRendering() {
-		console.log("Stop Rendering")
 		/* Stop another redraw being called */
 		isRendering = false;
 		cancelAnimationFrame(animationFrameId);
