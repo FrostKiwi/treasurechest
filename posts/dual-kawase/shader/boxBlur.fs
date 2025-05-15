@@ -1,8 +1,10 @@
+/* Kernel Size added by during compilation */
 precision mediump float;
 varying vec2 uv;
 
-uniform vec2 frameSizeRCP;
-uniform float blurSize;
+uniform vec2 frameSizeRCP; /* Resolution Reciprocal */
+uniform float samplePosMult; /* Multiplier, to push blur strength past the kernel size, if wished */
+uniform float sigma; /* Sigma in Pixels */
 
 uniform sampler2D texture;
 
@@ -12,9 +14,9 @@ void main() {
 
 	for (int x = -KERNEL_SIZE; x <= KERNEL_SIZE; ++x) {
 		for (int y = -KERNEL_SIZE; y <= KERNEL_SIZE; ++y) {
-			vec2 offset = vec2(float(x), float(y)) * blurSize * frameSizeRCP;
+			vec2 offset = vec2(float(x), float(y)) * samplePosMult * frameSizeRCP;
 			sum += texture2D(texture, uv + offset);
-			samples += 1;
+			samples++;
 		}
 	}
 

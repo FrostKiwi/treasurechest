@@ -1,4 +1,4 @@
-function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFragSrc, pauseCheckboxID, sizeID) {
+function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFragSrc, pauseCheckboxID) {
 	/* Init */
 	const canvas = document.getElementById(canvasId);
 	let buffersInitialized = false;
@@ -8,7 +8,6 @@ function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFra
 	let textureSDR, textureSelfIllum = null;
 	/* Framebuffer Objects */
 	let circleDrawFramebuffer, frameTexture;
-	let blurSize = 12;
 
 	/* Circle Rotation size */
 	const radius = 0.1;
@@ -16,7 +15,7 @@ function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFra
 	/* Shader for recompilation */
 	let blitShd;
 	let frameSizeRCPLocation;
-	let blurSizeLocation;
+	let samplePosMultLocation;
 
 	const gl = canvas.getContext('webgl',
 		{
@@ -31,26 +30,26 @@ function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFra
 		pause = !pauseCheckbox.checked;
 	});
 
-
-	const blurSizeRange = document.getElementById(sizeID);
-	blurSizeRange.addEventListener('input', function () {
-		blurSize = blurSizeRange.value;
-		blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc, "#define KERNEL_SIZE " + blurSize + '\n');
+	function reCompileBlurShader(blurSize) {
+		blitShd = compileAndLinkShader(gl, boxBlurVert, boxBlurFrag, "#define KERNEL_SIZE " + blurSize + '\n');
 		frameSizeRCPLocation = gl.getUniformLocation(blitShd, "frameSizeRCP");
-		blurSizeLocation = gl.getUniformLocation(blitShd, "blurSize");
+		samplePosMultLocation = gl.getUniformLocation(blitShd, "samplePosMult");
+		sigmaLocation = gl.getUniformLocation(blitShd, "sigma");
+	}
+
+	boxKernelSizeRange.addEventListener('input', function () {
+		reCompileBlurShader(boxKernelSizeRange.value);
 	});
 
 	/* Shaders */
 	/* Draw Texture Shader */
-	const simpleShd = compileAndLinkShader(gl, simpleVtxSrc, simpleFragSrc);
+	const simpleShd = compileAndLinkShader(gl, simpleVert, simpleFrag);
 	const offsetLocationCircle = gl.getUniformLocation(simpleShd, "offset");
 	const radiusLocationCircle = gl.getUniformLocation(simpleShd, "radius");
 
 	/* Draw Framebuffer Shader */
 	/* Blit Shader */
-	blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc, "#define KERNEL_SIZE 24");
-	frameSizeRCPLocation = gl.getUniformLocation(blitShd, "frameSizeRCP");
-	blurSizeLocation = gl.getUniformLocation(blitShd, "blurSize");
+	reCompileBlurShader(3)
 
 	const vertex_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
@@ -114,21 +113,22 @@ function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFra
 		gl.bindTexture(gl.TEXTURE_2D, textureSDR);
 		gl.uniform2fv(offsetLocationCircle, offset);
 		gl.uniform1f(radiusLocationCircle, radiusSwitch);
-		
+
 		/* Setup PostProcess Framebuffer */
 		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
 		gl.viewport(0, 0, canvas.width, canvas.height);
-		
+
 		/* Draw Call */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-		
+
 		/* Setup Draw to screen */
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		gl.useProgram(blitShd);
 		gl.bindTexture(gl.TEXTURE_2D, frameTexture);
-		
+
 		gl.uniform2f(frameSizeRCPLocation, 1.0 / canvas.width, 1.0 / canvas.height);
-		gl.uniform1f(blurSizeLocation, 1);
+		gl.uniform1f(samplePosMultLocation, samplePosRange.value);
+		gl.uniform1f(sigmaLocation, sigmaRange.value);
 
 		/* Drawcall */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);

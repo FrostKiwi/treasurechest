@@ -48,6 +48,10 @@ image:
 </style>
 
 ## Setup
+From here on out, everything you see will be done by your device's GPU. You will see how many variables can be tuned and we will need to build quite a bunch of intuition.
+
+We are in the realm of realtime graphics.
+
 <div class="toggleRes">
 	<div>
 	  <input type="radio" id="native" name="resSimple" value="1" checked />
@@ -96,27 +100,85 @@ image:
 	</tr>
 	<tr class="variable-name-row noborder">
 		<td colspan=4>
-			<code>blurSize</code>
+			<code>sigma</code>
 		</td>
 	</tr>
-	<tr class="noborder">
+	<tr>
 		<td class="variable-name-cell">
-			<code>blurSize</code>
+			<code>sigma</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="1" min="0" max="512" value="12" id="boxBlurRange" oninput="boxBlurSize.value = parseFloat(this.value).toFixed(0)">
+			<input class="slider" type="range" step="1" min="0" max="32" value="1" id="sigmaRange" oninput="sigma.textContent = this.value">
 		</td>
 		<td style="text-align: center;">
-			<output id="boxBlurSize">12</output>px
+			<output id="sigma">1</output> px
+		</td>
+		<td style="text-align: center;">
+			<button style="border-radius: 50%; font-weight: 600; aspect-ratio: 1" onclick="sigmaRange.value = 3; sigma.textContent = '7x7';sigmaRange.dispatchEvent(new Event('input'));">↺</button>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>kernelSize</code>
+		</td>
+	</tr>
+	<tr>
+		<td class="variable-name-cell">
+			<code>kernelSize</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="1" min="0" max="32" value="3" id="boxKernelSizeRange" oninput="boxKernelSize.textContent = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
+		</td>
+		<td style="text-align: center;">
+			<output id="boxKernelSize">7x7</output> px
+		</td>
+		<td style="text-align: center;">
+			<button style="border-radius: 50%; font-weight: 600; aspect-ratio: 1" onclick="boxKernelSizeRange.value = 3; boxKernelSize.textContent = '7x7';boxKernelSizeRange.dispatchEvent(new Event('input'));">↺</button>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>samplePosMultiplier</code>
+		</td>
+	</tr>
+	<tr>
+		<td class="variable-name-cell">
+			<code>samplePosMultiplier</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="0.01" min="0" max="10" value="1" id="samplePosRange" oninput="samplePos.textContent = parseInt(this.value * 100)">
+		</td>
+		<td style="text-align: center;">
+			<output id="samplePos">100</output> %
+		</td>
+		<td style="text-align: center;">
+			<button style="border-radius: 50%; font-weight: 600; aspect-ratio: 1" onclick="samplePosRange.value = 1;samplePos.textContent = 100">↺</button>
+		</td>
+	</tr>
+	<tr>
+		<td colspan=4 style="width:100%">
+			<div style="display: flex; gap: 0px 12px; align-items: center;">
+			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-around;">
+			        <span style="display: flex; gap: 8px; white-space: nowrap;">
+        				Resolution <output id="resolution">12</output>
+					</span>
+				</div>
+			</div>
 		</td>
 	</tr>
 </table>
 
-<script>setupBoxBlur("canvasBoxBlur", "simpleVert", "simpleFrag", "boxBlurVert", "boxBlurFrag", "pauseCheckBox", "boxBlurRange");</script>
+<script>setupBoxBlur("canvasBoxBlur", "simpleVert", "simpleFrag", "boxBlurVert", "boxBlurFrag", "pauseCheckBox", "boxKernelSizeRange");</script>
+
+So what did we achieve? A bad looking blur, that wrecks even my RTX 4090.
+
+Apple devices are very strict with 3D in the browser usage, so if you overdo the next part, the browser will disable WebGL for this site refuse 
 
 Blur is essential - a fundamental tool, that a lot of graphics programming builds upon. [Depth of Field](https://en.wikipedia.org/wiki/Depth_of_field), [Bloom](https://learnopengl.com/Guest-Articles/2022/Phys.-Based-Bloom), [Frosted glass in UI elements](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#kde-kwin-blur) all make use of it.
 
 When talking about blurs and especially bloom, motion stability is incredibly important. Our image will rotate slowly to tease out artifacts when bright highlights move across the frame. You can toggle this above each WebGL Canvas.
+
+<blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/dead.svg"></blockquote>
 
 ## Apple switches algorithms
 Either reduced resolution, a switch to box blur with settings corresponding to the reduced resolution or guassian blur with a [small kernel but high sigma](https://usage.imagemagick.org/blur/#blur_args).
