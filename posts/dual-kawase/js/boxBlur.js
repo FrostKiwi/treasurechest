@@ -13,6 +13,11 @@ function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFra
 	/* Circle Rotation size */
 	const radius = 0.1;
 
+	/* Shader for recompilation */
+	let blitShd;
+	let frameSizeRCPLocation;
+	let blurSizeLocation;
+
 	const gl = canvas.getContext('webgl',
 		{
 			preserveDrawingBuffer: false,
@@ -30,6 +35,9 @@ function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFra
 	const blurSizeRange = document.getElementById(sizeID);
 	blurSizeRange.addEventListener('input', function () {
 		blurSize = blurSizeRange.value;
+		blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc, "#define KERNEL_SIZE " + blurSize + '\n');
+		frameSizeRCPLocation = gl.getUniformLocation(blitShd, "frameSizeRCP");
+		blurSizeLocation = gl.getUniformLocation(blitShd, "blurSize");
 	});
 
 	/* Shaders */
@@ -40,9 +48,9 @@ function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFra
 
 	/* Draw Framebuffer Shader */
 	/* Blit Shader */
-	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);
-	const frameSizeRCPLocation = gl.getUniformLocation(blitShd, "frameSizeRCP");
-	const blurSizeLocation = gl.getUniformLocation(blitShd, "blurSize");
+	blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc, "#define KERNEL_SIZE 24");
+	frameSizeRCPLocation = gl.getUniformLocation(blitShd, "frameSizeRCP");
+	blurSizeLocation = gl.getUniformLocation(blitShd, "blurSize");
 
 	const vertex_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
@@ -120,7 +128,7 @@ function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFra
 		gl.bindTexture(gl.TEXTURE_2D, frameTexture);
 		
 		gl.uniform2f(frameSizeRCPLocation, 1.0 / canvas.width, 1.0 / canvas.height);
-		gl.uniform1i(blurSizeLocation, blurSize);
+		gl.uniform1f(blurSizeLocation, 1);
 
 		/* Drawcall */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
