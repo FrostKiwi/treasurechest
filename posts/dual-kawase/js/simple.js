@@ -27,14 +27,14 @@ function setupSimple(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFrag
 
 	/* Shaders */
 	/* Draw Texture Shader */
-	const simpleShd = compileAndLinkShader(gl, simpleVert, simpleFrag);
+	const simpleShd = compileAndLinkShader(gl, simpleVtxSrc, simpleFragSrc);
 	gl.useProgram(simpleShd);
 	const offsetLocationCircle = gl.getUniformLocation(simpleShd, "offset");
 	const radiusLocationCircle = gl.getUniformLocation(simpleShd, "radius");
 
 	/* Draw Framebuffer Shader */
 	/* Blit Shader */
-	const blitShd = compileAndLinkShader(gl, blitVert, blitFrag);
+	const blitShd = compileAndLinkShader(gl, blitVtxSrc, blitFragSrc);
 
 	const vertex_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);

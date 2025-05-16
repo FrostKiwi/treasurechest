@@ -1,22 +1,21 @@
-function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFragSrc, pauseCheckboxID) {
+function setupBoxBlur() {
 	/* Init */
-	const canvas = document.getElementById(canvasId);
+	const canvas = document.getElementById('canvasBoxBlur');
+	
+	/* State tracking */
 	let buffersInitialized = false;
 	let initComplete = false;
-	let pause = false;
+	let animate = true;
+	
 	/* Texture Objects */
-	let textureSDR, textureSelfIllum = null;
+	let textureSDR, textureSelfIllum;
 	/* Framebuffer Objects */
 	let circleDrawFramebuffer, frameTexture;
 
 	/* Circle Rotation size */
 	const radius = 0.1;
 
-	/* Shader for recompilation */
-	let blitShd;
-	let frameSizeRCPLocation;
-	let samplePosMultLocation;
-
+	/* Main WebGL 1.0 Context */
 	const gl = canvas.getContext('webgl',
 		{
 			preserveDrawingBuffer: false,
@@ -25,32 +24,47 @@ function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFra
 		}
 	);
 
-	const pauseCheckbox = document.getElementById(pauseCheckboxID);
-	pauseCheckbox.addEventListener('change', () => {
-		pause = !pauseCheckbox.checked;
-	});
+	/* UI Elements */
+	const samplePosRange = document.getElementById('samplePosRange');
+	const sigmaRange = document.getElementById('sigmaRange');
+	const boxKernelSizeRange = document.getElementById('boxKernelSizeRange');
+	const animateCheckBox = document.getElementById('animateCheck_Boxblur');
+	const fpsBoxBlur = document.getElementById('fpsBoxBlur');
+	const widthBoxBlur = document.getElementById('widthBoxBlur');
+	const heightBoxBlur = document.getElementById('heightBoxBlur');
+	const tapsBoxBlur = document.getElementById('tapsBoxBlur');
 
-	function reCompileBlurShader(blurSize) {
-		blitShd = compileAndLinkShader(gl, boxBlurVert, boxBlurFrag, "#define KERNEL_SIZE " + blurSize + '\n');
-		frameSizeRCPLocation = gl.getUniformLocation(blitShd, "frameSizeRCP");
-		samplePosMultLocation = gl.getUniformLocation(blitShd, "samplePosMult");
-		sigmaLocation = gl.getUniformLocation(blitShd, "sigma");
-	}
+	/* Events */
+	animateCheckBox.addEventListener('change', () => {
+		animate = animateCheckBox.checked;
+	});
 
 	boxKernelSizeRange.addEventListener('input', function () {
 		reCompileBlurShader(boxKernelSizeRange.value);
 	});
 
+	/* Shaders for recompilation */
+	let blitShd;
+	let frameSizeRCPLocation;
+	let samplePosMultLocation;
+
 	/* Shaders */
 	/* Draw Texture Shader */
-	const simpleShd = compileAndLinkShader(gl, simpleVert, simpleFrag);
+	const simpleShd = compileAndLinkShader(gl, 'simpleVert', 'simpleFrag');
 	const offsetLocationCircle = gl.getUniformLocation(simpleShd, "offset");
 	const radiusLocationCircle = gl.getUniformLocation(simpleShd, "radius");
 
-	/* Draw Framebuffer Shader */
+	/* Helper for recompilation */
+	function reCompileBlurShader(blurSize) {
+		blitShd = compileAndLinkShader(gl, 'boxBlurVert', 'boxBlurFrag', "#define KERNEL_SIZE " + blurSize + '\n');
+		frameSizeRCPLocation = gl.getUniformLocation(blitShd, "frameSizeRCP");
+		samplePosMultLocation = gl.getUniformLocation(blitShd, "samplePosMult");
+		sigmaLocation = gl.getUniformLocation(blitShd, "sigma");
+	}
 	/* Blit Shader */
 	reCompileBlurShader(3)
 
+	/* Send Unit code verts to the GPU */
 	const vertex_buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
 	gl.bufferData(gl.ARRAY_BUFFER, unitQuad, gl.STATIC_DRAW);
@@ -94,6 +108,7 @@ function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFra
 		initComplete = true;
 	}
 
+	let avgFPS = 60;
 	function redraw(time) {
 		redrawActive = true;
 		if (!buffersInitialized) {
@@ -103,10 +118,9 @@ function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFra
 			redrawActive = false;
 			return;
 		}
-		last_time = time;
 
 		/* Circle Motion */
-		var radiusSwitch = !pause ? radius : 0.0;
+		var radiusSwitch = animate ? radius : 0.0;
 		var speed = (time / 10000) % Math.PI * 2;
 		const offset = [radiusSwitch * Math.cos(speed), radiusSwitch * Math.sin(speed)];
 		gl.useProgram(simpleShd);
@@ -133,6 +147,19 @@ function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFra
 		/* Drawcall */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
+		/* Force Sync to prevent overloading the GPU during compositing */
+		gl.finish();
+
+		/* UI Stats */
+		const KernelSizeSide = boxKernelSizeRange.value * 2 + 1;
+		tapsBoxBlur.value = (canvas.width * canvas.height * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1);
+		tapsBoxBlur.value = tapsBoxBlur.value + " Million";
+
+		const instFPS = 1000 / Math.max(1, time - last_time);
+		avgFPS = avgFPS ? avgFPS + 0.05 * (instFPS - avgFPS) : instFPS;
+		fpsBoxBlur.value = Math.round(avgFPS);
+		last_time = time;
+
 		redrawActive = false;
 	}
 
@@ -148,6 +175,10 @@ function setupBoxBlur(canvasId, simpleVtxSrc, simpleFragSrc, blitVtxSrc, blitFra
 		if (width && canvas.width !== width || height && canvas.height !== height) {
 			canvas.width = width;
 			canvas.height = height;
+
+			/* Report in UI */
+			widthBoxBlur.value = width;
+			heightBoxBlur.value = height;
 
 			stopRendering();
 			startRendering();

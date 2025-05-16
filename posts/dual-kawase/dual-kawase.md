@@ -90,9 +90,26 @@ We are in the realm of realtime graphics.
 			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-around;">
 			        <span style="display: flex; gap: 8px; white-space: nowrap;">
         				<label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
-            				<input style="margin-bottom: unset;" type="checkbox" id="pauseCheckBox" name="Play / Pause" checked />
+            				<input style="margin-bottom: unset;" type="checkbox" id="animateCheck_Boxblur" name="Play / Pause" checked />
             				Animate
         				</label>
+					</span>
+				</div>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td colspan=4 style="width:100%">
+			<div style="display: flex; gap: 0px 12px; align-items: center;">
+			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-around;">
+			        <span style="display: flex; gap: 8px; white-space: nowrap;">
+						<strong>FPS:</strong> <output id="fpsBoxBlur">?</output>
+					</span>
+			        <span style="display: flex; gap: 8px; white-space: nowrap;">
+						<strong>Resolution:</strong> <output id="widthBoxBlur">312</output>x<output id="heightBoxBlur">543</output>
+					</span>
+			        <span style="display: flex; gap: 8px; white-space: nowrap;">
+						<strong>Texture Taps:</strong> <output id="tapsBoxBlur">312</output>
 					</span>
 				</div>
 			</div>
@@ -168,7 +185,7 @@ We are in the realm of realtime graphics.
 	</tr>
 </table>
 
-<script>setupBoxBlur("canvasBoxBlur", "simpleVert", "simpleFrag", "boxBlurVert", "boxBlurFrag", "pauseCheckBox", "boxKernelSizeRange");</script>
+<script>setupBoxBlur();</script>
 
 So what did we achieve? A bad looking blur, that wrecks even my RTX 4090.
 
