@@ -1,6 +1,6 @@
 ---
 wip: true
-title: Dual Kawase - A blur to rule them all & interview with Masaki Kawase 
+title: Dual Kawase - A blur to rule them all & interview with Masaki Kawase
 permalink: "/{{ page.fileSlug }}/"
 date:
 last_modified:
@@ -48,6 +48,7 @@ image:
 </style>
 
 ## Setup
+
 From here on out, everything you see will be done by your device's GPU. You will see how many variables can be tuned and we will need to build quite a bunch of intuition.
 
 We are in the realm of realtime graphics.
@@ -55,8 +56,7 @@ We are in the realm of realtime graphics.
 When writing shaders, we don't care about execution order or.
 These are convolutions, but we aren't actually bound by rules of the classical convolution implies.
 
-
-In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We *could* use many [older](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/finish) and [newer](https://developer.mozilla.org/en-US/docs/Web/API/WebGLSync) GPU pipeline synchronization features of WebGL and measure just the time of the blur pass. Whilst you can double check if you get reliable numbers with platform specific debuggers like NV?? on one type of device, unfortunately, it's not possible in the general case and it's too easy to get not a number that measures now how long it took us to blur, but some other part of the GPU pipeline. Same goes for trying to find out how many iterations of blur we can run within X amount of time. Especially once on mobile Apple devices, getting reliable numbers goes out the window.
+In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We _could_ use many [older](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/finish) and [newer](https://developer.mozilla.org/en-US/docs/Web/API/WebGLSync) GPU pipeline synchronization features of WebGL and measure just the time of the blur pass. Whilst you can double check if you get reliable numbers with platform specific debuggers like NV?? on one type of device, unfortunately, it's not possible in the general case and it's too easy to get not a number that measures now how long it took us to blur, but some other part of the GPU pipeline. Same goes for trying to find out how many iterations of blur we can run within X amount of time. Especially once on mobile Apple devices, getting reliable numbers goes out the window.
 
 <blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/dead.svg"></blockquote>
 
@@ -102,12 +102,6 @@ In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We *could* use 
             				Animate
         				</label>
 					</span>
-			        <span style="display: flex; gap: 8px; white-space: nowrap;">
-        				<label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
-            				<input style="margin-bottom: unset;" type="checkbox" id="benchmarkCheck_Boxblur" name="Benchmark" />
-            				Benchmark
-        				</label>
-					</span>
 				</div>
 			</div>
 		</td>
@@ -116,9 +110,6 @@ In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We *could* use 
 		<td colspan=4 style="width:100%">
 			<div style="display: flex; gap: 0px 12px; align-items: center;">
 			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-around;">
-			        <span style="display: flex; gap: 8px; white-space: nowrap;">
-						<strong>Iterations:</strong><output id="iterationsBoxBlur">?</output>
-					</span>
 			        <span style="display: flex; gap: 8px; white-space: nowrap;">
 						<strong>FPS:</strong> <output id="fpsBoxBlur">?</output> / <output id="msBoxBlur">?</output> ms
 					</span>
@@ -148,7 +139,7 @@ In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We *could* use 
 			<output id="sigma">1</output> px
 		</td>
 		<td style="text-align: center;">
-			<button style="border-radius: 50%; font-weight: 600; aspect-ratio: 1" onclick="sigmaRange.value = 3; sigma.textContent = '7x7';sigmaRange.dispatchEvent(new Event('input'));">↺</button>
+			<button style="border-radius: 50%; font-weight: 600; aspect-ratio: 1" onclick="sigmaRange.value = 3; sigma.textContent = '7x7';sigmaRange.dispatchEvent(new Event('input'));">⟲</button>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
@@ -167,7 +158,7 @@ In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We *could* use 
 			<output id="boxKernelSize">7x7</output> px
 		</td>
 		<td style="text-align: center;">
-			<button style="border-radius: 50%; font-weight: 600; aspect-ratio: 1" onclick="boxKernelSizeRange.value = 3; boxKernelSize.textContent = '7x7';boxKernelSizeRange.dispatchEvent(new Event('input'));">↺</button>
+			<button style="border-radius: 50%; font-weight: 600; aspect-ratio: 1" onclick="boxKernelSizeRange.value = 3; boxKernelSize.textContent = '7x7';boxKernelSizeRange.dispatchEvent(new Event('input'));">⟲</button>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
@@ -186,16 +177,29 @@ In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We *could* use 
 			<output id="samplePos">100</output> %
 		</td>
 		<td style="text-align: center;">
-			<button style="border-radius: 50%; font-weight: 600; aspect-ratio: 1" onclick="samplePosRange.value = 1;samplePos.textContent = 100">↺</button>
+			<button style="border-radius: 50%; font-weight: 600; aspect-ratio: 1" onclick="samplePosRange.value = 1;samplePos.textContent = 100">⟲</button>
 		</td>
 	</tr>
 	<tr>
 		<td colspan=4 style="width:100%">
 			<div style="display: flex; gap: 0px 12px; align-items: center;">
 			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-around;">
-			        <span style="display: flex; gap: 8px; white-space: nowrap;">
-        				Resolution <output id="resolution">12</output>
-					</span>
+					<div class="multiButton">
+						<button id="benchmarkBoxBlur">
+							<label id="benchmarkBoxBlurLabel">Benchmark</label>
+							<div><output id="iterOut">100</output> Iterations</div>
+						</button>
+						<button onclick="(s=this.nextElementSibling).showPicker?.()||s.click()">🠫</button>
+						<select onchange="iterOut.textContent=this.value;benchmarkBoxBlurLabel.textContent='Benchmark'">
+							<optgroup label="Iterations">
+								<option value="10">10</option>
+								<option value="100" selected>100</option>
+								<option value="1000">1000</option>
+								<option value="10000">10000</option>
+								<option value="100000">100000</option>
+							</optgroup>
+						</select>
+					</div>
 				</div>
 			</div>
 		</td>
@@ -206,7 +210,7 @@ In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We *could* use 
 
 So what did we achieve? A bad looking blur, that wrecks even my RTX 4090.
 
-Apple devices are very strict with 3D in the browser usage, so if you overdo the next part, the browser will disable WebGL for this site refuse 
+Apple devices are very strict with 3D in the browser usage, so if you overdo the next part, the browser will disable WebGL for this site refuse
 
 Blur is essential - a fundamental tool, that a lot of graphics programming builds upon. [Depth of Field](https://en.wikipedia.org/wiki/Depth_of_field), [Bloom](https://learnopengl.com/Guest-Articles/2022/Phys.-Based-Bloom), [Frosted glass in UI elements](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#kde-kwin-blur) all make use of it.
 
@@ -215,6 +219,7 @@ When talking about blurs and especially bloom, motion stability is incredibly im
 <blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/dead.svg"></blockquote>
 
 ## Apple switches algorithms
+
 Either reduced resolution, a switch to box blur with settings corresponding to the reduced resolution or guassian blur with a [small kernel but high sigma](https://usage.imagemagick.org/blur/#blur_args).
 iPad 9th gen, iPadOS 18.4.1 10.2", 2160 x 1620 px --> 11x11 px
 iPhone SE 34d gen, iOS 18.4.1, 1334 x 750 px --> 6x6 px
@@ -226,23 +231,22 @@ iPhone SE 34d gen, iOS 18.4.1, 1334 x 750 px --> 6x6 px
 
 <blockquote class="reaction"><div class="reaction_text">Apple misconfigured the blur switch on iPadOS, for the top right settings pull down. The switch happens too soon, regressing blur strength and resulting in a pulse like artifact.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-
 YouTube Channel [Computerphile](https://www.youtube.com/@Computerphile) did a lot on blurs and covered the mathematics behind them. I won't jump deep into the basic building blocks of kernels, convolutions and separability, as they have covered it already really well.
 
 https://www.youtube.com/watch?v=SiJpkucGa1o
 
 Playdead used it to get HDR Bloom
 [Low Complexity, High Fidelity - INSIDE Rendering](https://gdcvault.com/play/1023304/Low-Complexity-High-Fidelity-INSIDE)
-Check against Jimenez 14  5:45 onwards
+Check against Jimenez 14 5:45 onwards
 
 This article kicked it off: [Link](https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/)
 
-Marius Bjørge picked it up and [did a talk in 2015](https://dl.acm.org/doi/10.1145/2776880.2787664) direct [video link](https://dl.acm.org/doi/suppl/10.1145/2776880.2787664/suppl_file/a184.mp4) 
+Marius Bjørge picked it up and [did a talk in 2015](https://dl.acm.org/doi/10.1145/2776880.2787664) direct [video link](https://dl.acm.org/doi/suppl/10.1145/2776880.2787664/suppl_file/a184.mp4)
 Indepth article by Intel [link](https://www.intel.com/content/www/us/en/developer/articles/technical/an-investigation-of-fast-real-time-gpu-based-image-blur-algorithms.html) with Link to original ppt by Masaki Kawase.
 
-Yoshiharu Gotanda 五反田義治  ceo of https://www.tri-ace.co.jp/en/
+Yoshiharu Gotanda 五反田義治 ceo of https://www.tri-ace.co.jp/en/
 Masaki Kawase 川瀬正樹 history goes back some time, including modding and a personal page with [high and low graphics settings](https://web.archive.org/web/20040201224946/http://www.daionet.gr.jp/~masa/index.html)
 
-To be able to innovate in blurs today you need to be very deep in mathematics and signal theory ***and*** computer graphics. Just looking at the level of genius needed to get fast bokeh blur is kinda insane. Functions cancelling each-other out, complex number theory
+To be able to innovate in blurs today you need to be very deep in mathematics and signal theory **_and_** computer graphics. Just looking at the level of genius needed to get fast bokeh blur is kinda insane. Functions cancelling each-other out, complex number theory
 
 https://www.youtube.com/watch?v=vNG3ZAd8wCc

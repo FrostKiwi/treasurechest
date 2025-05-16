@@ -5,6 +5,7 @@ function setupBoxBlur() {
 	/* State tracking */
 	let buffersInitialized = false;
 	let initComplete = false;
+	let benchmode = false;
 
 	/* Texture Objects */
 	let textureSDR, textureSelfIllum;
@@ -28,29 +29,29 @@ function setupBoxBlur() {
 	const sigmaRange = document.getElementById('sigmaRange');
 	const boxKernelSizeRange = document.getElementById('boxKernelSizeRange');
 	const animateCheckBox = document.getElementById('animateCheck_Boxblur');
-	const benchmarkCheckBox = document.getElementById('benchmarkCheck_Boxblur');
+	const benchmarkBoxBlur = document.getElementById('benchmarkBoxBlur');
+	const benchmarkBoxBlurLabel = document.getElementById('benchmarkBoxBlurLabel');
 	const fpsBoxBlur = document.getElementById('fpsBoxBlur');
 	const msBoxBlur = document.getElementById('msBoxBlur');
 	const widthBoxBlur = document.getElementById('widthBoxBlur');
 	const heightBoxBlur = document.getElementById('heightBoxBlur');
 	const tapsBoxBlur = document.getElementById('tapsBoxBlur');
+	const iterOut = document.getElementById('iterOut');
 
 	/* Events */
 	boxKernelSizeRange.addEventListener('input', function () {
 		reCompileBlurShader(boxKernelSizeRange.value);
 	});
 
-	benchmarkCheckBox.addEventListener('input', function () {
-		if (benchmarkCheckBox.checked) {
-			canvas.width = 1600;
-			canvas.height = 1200;
-			widthBoxBlur.value = 1600;
-			heightBoxBlur.value = 1200;
-			stopRendering();
-			startRendering();
-		} else {
-			nativeResize();
-		}
+	benchmarkBoxBlur.addEventListener('click', function () {
+		benchmarkBoxBlur.disabled = true;
+		benchmode = true;
+		canvas.width = 1600;
+		canvas.height = 1200;
+		widthBoxBlur.value = 1600;
+		heightBoxBlur.value = 1200;
+		stopRendering();
+		startRendering();
 	});
 
 	/* Shaders for recompilation */
@@ -162,8 +163,21 @@ function setupBoxBlur() {
 		/* Force CPU-GPU Sync to prevent overloading the GPU during compositing.
 		   Whether this leads to more accurate or less accurate
 		   benchmarking numbers kinda depends on context */
-		if(!benchmarkCheckBox.checked)
+		gl.finish();
+
+		/* Why is FPS going beserk on after standard mode is restored? */
+		if (benchmode) {
+			const benchNow = performance.now();
+			for (let x = 0; x < iterOut.value; x++) {
+				gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+			}
 			gl.finish();
+			benchmarkBoxBlurLabel.textContent = performance.now() - benchNow + " ms";
+			benchmode = false;
+			benchmarkBoxBlur.disabled = false;
+			redrawActive = false;
+			nativeResize();
+		}
 
 		const now = performance.now();
 		let dt = now - prevNow;
@@ -195,7 +209,7 @@ function setupBoxBlur() {
 		const width = Math.round(devicePixelRatio * dipRect.right) - Math.round(devicePixelRatio * dipRect.left);
 		const height = Math.round(devicePixelRatio * dipRect.bottom) - Math.round(devicePixelRatio * dipRect.top);
 
-		if (!benchmarkCheckBox.checked && width && canvas.width !== width || height && canvas.height !== height) {
+		if (!benchmode && width && canvas.width !== width || height && canvas.height !== height) {
 			canvas.width = width;
 			canvas.height = height;
 
