@@ -165,7 +165,6 @@ function setupBoxBlur() {
 		   benchmarking numbers kinda depends on context */
 		gl.finish();
 
-		/* Why is FPS going beserk on after standard mode is restored? */
 		if (benchmode) {
 			const benchNow = performance.now();
 			for (let x = 0; x < iterOut.value; x++) {
@@ -175,8 +174,7 @@ function setupBoxBlur() {
 			benchmarkBoxBlurLabel.textContent = performance.now() - benchNow + " ms";
 			benchmode = false;
 			benchmarkBoxBlur.disabled = false;
-			redrawActive = false;
-			nativeResize();
+			onResize();
 		}
 
 		const now = performance.now();
