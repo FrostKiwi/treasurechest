@@ -1,11 +1,11 @@
 function setupBoxBlur() {
 	/* Init */
 	const canvas = document.getElementById('canvasBoxBlur');
-	
+
 	/* State tracking */
 	let buffersInitialized = false;
 	let initComplete = false;
-	
+
 	/* Texture Objects */
 	let textureSDR, textureSelfIllum;
 	/* Framebuffer Objects */
@@ -29,7 +29,6 @@ function setupBoxBlur() {
 	const boxKernelSizeRange = document.getElementById('boxKernelSizeRange');
 	const animateCheckBox = document.getElementById('animateCheck_Boxblur');
 	const benchmarkCheckBox = document.getElementById('benchmarkCheck_Boxblur');
-	const iterationsBoxBlur = document.getElementById('iterationsBoxBlur');
 	const fpsBoxBlur = document.getElementById('fpsBoxBlur');
 	const msBoxBlur = document.getElementById('msBoxBlur');
 	const widthBoxBlur = document.getElementById('widthBoxBlur');
@@ -105,8 +104,11 @@ function setupBoxBlur() {
 		initComplete = true;
 	}
 
-	let avgFPS = 60;
-	let avgMS = 16;
+	const ALPHA = 0.05;          // 1/100 ≈ 100-frame window
+	let lastT = 0;               // previous rAF timestamp
+	let fpsEMA = 60;              // exponential-moving FPS
+	let msEMA = 16;              // exponential-moving frametime
+
 	function redraw(time) {
 		redrawActive = true;
 		if (!buffersInitialized) {
@@ -137,15 +139,11 @@ function setupBoxBlur() {
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		gl.useProgram(blitShd);
 		gl.bindTexture(gl.TEXTURE_2D, frameTexture);
-		
+
 		gl.uniform2f(frameSizeRCPLocation, 1.0 / canvas.width, 1.0 / canvas.height);
 		gl.uniform1f(samplePosMultLocation, samplePosRange.value);
 		gl.uniform1f(sigmaLocation, sigmaRange.value);
 
-		/* Finish command queue to measure just the Blur Time */
-		gl.finish();
-		
-		const preBlurTime = performance.now();
 		/* Drawcall */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
@@ -153,18 +151,27 @@ function setupBoxBlur() {
 		   Especially apple devices may kill all WebGL contexts if we don't
 		   perform this. Whether this leads to more accurate or less accurate
 		   benchmarking numbers kinda depends on context */
-		gl.finish();
+		if (benchmarkCheckBox.checked)
+			gl.finish();
 
 		/* UI Stats */
 		const KernelSizeSide = boxKernelSizeRange.value * 2 + 1;
 		tapsBoxBlur.value = (canvas.width * canvas.height * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1) + " Million";
 
-		const instMS = performance.now() - preBlurTime;
-		const instFPS = 1000 / instMS;
-		avgFPS = avgFPS ? avgFPS + 0.05 * (instFPS - avgFPS) : instFPS;
-		avgMS = avgMS ? avgMS + 0.05 * (instMS - avgMS) : instMS;
-		fpsBoxBlur.value = Math.min(999, Math.round(avgFPS));
-		msBoxBlur.value = avgMS.toFixed(1);
+		if (lastT) {
+			const dt = time - lastT;
+
+			if (dt > 0) {
+				const instFPS = 1000 / dt;
+				fpsEMA = fpsEMA ? ALPHA * instFPS + (1 - ALPHA) * fpsEMA : instFPS;
+				msEMA = msEMA ? ALPHA * dt + (1 - ALPHA) * msEMA : dt;
+
+
+				fpsBoxBlur.value = fpsEMA.toFixed(0);
+				msBoxBlur.value = msEMA.toFixed(2);
+			}
+		}
+		lastT = time;
 
 		redrawActive = false;
 	}
