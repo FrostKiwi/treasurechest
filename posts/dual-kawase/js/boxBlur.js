@@ -40,6 +40,19 @@ function setupBoxBlur() {
 		reCompileBlurShader(boxKernelSizeRange.value);
 	});
 
+	benchmarkCheckBox.addEventListener('input', function () {
+		if (benchmarkCheckBox.checked) {
+			canvas.width = 1600;
+			canvas.height = 1200;
+			widthBoxBlur.value = 1600;
+			heightBoxBlur.value = 1200;
+			stopRendering();
+			startRendering();
+		} else {
+			nativeResize();
+		}
+	});
+
 	/* Shaders for recompilation */
 	let blitShd;
 	let frameSizeRCPLocation;
@@ -108,7 +121,7 @@ function setupBoxBlur() {
 	let fpsEMA = 60;
 	let msEMA = 16;
 
-	function redraw(time) {
+	function redraw() {
 		redrawActive = true;
 		if (!buffersInitialized) {
 			setupTextureBuffers();
@@ -120,7 +133,7 @@ function setupBoxBlur() {
 
 		/* Circle Motion */
 		var radiusSwitch = animateCheckBox.checked ? radius : 0.0;
-		var speed = (time / 10000) % Math.PI * 2;
+		var speed = (performance.now() / 10000) % Math.PI * 2;
 		const offset = [radiusSwitch * Math.cos(speed), radiusSwitch * Math.sin(speed)];
 		gl.useProgram(simpleShd);
 		gl.bindTexture(gl.TEXTURE_2D, textureSDR);
@@ -147,10 +160,9 @@ function setupBoxBlur() {
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		/* Force CPU-GPU Sync to prevent overloading the GPU during compositing.
-		   Especially apple devices may kill all WebGL contexts if we don't
-		   perform this. Whether this leads to more accurate or less accurate
+		   Whether this leads to more accurate or less accurate
 		   benchmarking numbers kinda depends on context */
-		if (benchmarkCheckBox.checked)
+		if(!benchmarkCheckBox.checked)
 			gl.finish();
 
 		const now = performance.now();
@@ -161,8 +173,6 @@ function setupBoxBlur() {
 			const ALPHA = 0.05;
 			fpsEMA = fpsEMA ? ALPHA * instFPS + (1 - ALPHA) * fpsEMA : instFPS;
 			msEMA = msEMA ? ALPHA * dt + (1 - ALPHA) * msEMA : dt;
-
-			console.log(now, dt, instFPS)
 
 			fpsBoxBlur.value = fpsEMA.toFixed(0);
 			msBoxBlur.value = msEMA.toFixed(2);
@@ -185,7 +195,7 @@ function setupBoxBlur() {
 		const width = Math.round(devicePixelRatio * dipRect.right) - Math.round(devicePixelRatio * dipRect.left);
 		const height = Math.round(devicePixelRatio * dipRect.bottom) - Math.round(devicePixelRatio * dipRect.top);
 
-		if (width && canvas.width !== width || height && canvas.height !== height) {
+		if (!benchmarkCheckBox.checked && width && canvas.width !== width || height && canvas.height !== height) {
 			canvas.width = width;
 			canvas.height = height;
 
@@ -210,9 +220,9 @@ function setupBoxBlur() {
 	window.addEventListener('resize', onResize, true);
 	nativeResize();
 
-	function renderLoop(time) {
+	function renderLoop() {
 		if (isRendering) {
-			redraw(time);
+			redraw();
 			animationFrameId = requestAnimationFrame(renderLoop);
 		}
 	}

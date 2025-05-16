@@ -105,7 +105,7 @@ In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We *could* use 
 			        <span style="display: flex; gap: 8px; white-space: nowrap;">
         				<label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
             				<input style="margin-bottom: unset;" type="checkbox" id="benchmarkCheck_Boxblur" name="Benchmark" />
-            				gl.Finish()
+            				Benchmark
         				</label>
 					</span>
 				</div>
