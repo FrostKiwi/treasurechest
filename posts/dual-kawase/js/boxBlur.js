@@ -5,7 +5,6 @@ function setupBoxBlur() {
 	/* State tracking */
 	let buffersInitialized = false;
 	let initComplete = false;
-	let animate = true;
 	
 	/* Texture Objects */
 	let textureSDR, textureSelfIllum;
@@ -29,16 +28,15 @@ function setupBoxBlur() {
 	const sigmaRange = document.getElementById('sigmaRange');
 	const boxKernelSizeRange = document.getElementById('boxKernelSizeRange');
 	const animateCheckBox = document.getElementById('animateCheck_Boxblur');
+	const benchmarkCheckBox = document.getElementById('benchmarkCheck_Boxblur');
+	const iterationsBoxBlur = document.getElementById('iterationsBoxBlur');
 	const fpsBoxBlur = document.getElementById('fpsBoxBlur');
+	const msBoxBlur = document.getElementById('msBoxBlur');
 	const widthBoxBlur = document.getElementById('widthBoxBlur');
 	const heightBoxBlur = document.getElementById('heightBoxBlur');
 	const tapsBoxBlur = document.getElementById('tapsBoxBlur');
 
 	/* Events */
-	animateCheckBox.addEventListener('change', () => {
-		animate = animateCheckBox.checked;
-	});
-
 	boxKernelSizeRange.addEventListener('input', function () {
 		reCompileBlurShader(boxKernelSizeRange.value);
 	});
@@ -71,7 +69,6 @@ function setupBoxBlur() {
 	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(0);
 
-	let last_time = 0;
 	let redrawActive = false;
 
 	async function setupTextureBuffers() {
@@ -109,6 +106,7 @@ function setupBoxBlur() {
 	}
 
 	let avgFPS = 60;
+	let avgMS = 16;
 	function redraw(time) {
 		redrawActive = true;
 		if (!buffersInitialized) {
@@ -120,7 +118,7 @@ function setupBoxBlur() {
 		}
 
 		/* Circle Motion */
-		var radiusSwitch = animate ? radius : 0.0;
+		var radiusSwitch = animateCheckBox.checked ? radius : 0.0;
 		var speed = (time / 10000) % Math.PI * 2;
 		const offset = [radiusSwitch * Math.cos(speed), radiusSwitch * Math.sin(speed)];
 		gl.useProgram(simpleShd);
@@ -139,26 +137,34 @@ function setupBoxBlur() {
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		gl.useProgram(blitShd);
 		gl.bindTexture(gl.TEXTURE_2D, frameTexture);
-
+		
 		gl.uniform2f(frameSizeRCPLocation, 1.0 / canvas.width, 1.0 / canvas.height);
 		gl.uniform1f(samplePosMultLocation, samplePosRange.value);
 		gl.uniform1f(sigmaLocation, sigmaRange.value);
 
+		/* Finish command queue to measure just the Blur Time */
+		gl.finish();
+		
+		const preBlurTime = performance.now();
 		/* Drawcall */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
-		/* Force Sync to prevent overloading the GPU during compositing */
+		/* Force CPU-GPU Sync to prevent overloading the GPU during compositing.
+		   Especially apple devices may kill all WebGL contexts if we don't
+		   perform this. Whether this leads to more accurate or less accurate
+		   benchmarking numbers kinda depends on context */
 		gl.finish();
 
 		/* UI Stats */
 		const KernelSizeSide = boxKernelSizeRange.value * 2 + 1;
-		tapsBoxBlur.value = (canvas.width * canvas.height * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1);
-		tapsBoxBlur.value = tapsBoxBlur.value + " Million";
+		tapsBoxBlur.value = (canvas.width * canvas.height * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1) + " Million";
 
-		const instFPS = 1000 / Math.max(1, time - last_time);
+		const instMS = performance.now() - preBlurTime;
+		const instFPS = 1000 / instMS;
 		avgFPS = avgFPS ? avgFPS + 0.05 * (instFPS - avgFPS) : instFPS;
-		fpsBoxBlur.value = Math.round(avgFPS);
-		last_time = time;
+		avgMS = avgMS ? avgMS + 0.05 * (instMS - avgMS) : instMS;
+		fpsBoxBlur.value = Math.min(999, Math.round(avgFPS));
+		msBoxBlur.value = avgMS.toFixed(1);
 
 		redrawActive = false;
 	}
@@ -207,7 +213,7 @@ function setupBoxBlur() {
 	function startRendering() {
 		/* Start rendering, when canvas visible */
 		isRendering = true;
-		renderLoop(last_time);
+		renderLoop();
 	}
 
 	function stopRendering() {
@@ -236,7 +242,7 @@ function setupBoxBlur() {
 			if (entry.isIntersecting) {
 				if (!isRendering) startRendering();
 			} else {
-				stopRendering(last_time);
+				stopRendering();
 			}
 		});
 	}

@@ -52,6 +52,14 @@ From here on out, everything you see will be done by your device's GPU. You will
 
 We are in the realm of realtime graphics.
 
+When writing shaders, we don't care about execution order or.
+These are convolutions, but we aren't actually bound by rules of the classical convolution implies.
+
+
+In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We *could* use many [older](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/finish) and [newer](https://developer.mozilla.org/en-US/docs/Web/API/WebGLSync) GPU pipeline synchronization features of WebGL and measure just the time of the blur pass. Whilst you can double check if you get reliable numbers with platform specific debuggers like NV?? on one type of device, unfortunately, it's not possible in the general case and it's too easy to get not a number that measures now how long it took us to blur, but some other part of the GPU pipeline. Same goes for trying to find out how many iterations of blur we can run within X amount of time.
+
+<blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/dead.svg"></blockquote>
+
 <div class="toggleRes">
 	<div>
 	  <input type="radio" id="native" name="resSimple" value="1" checked />
@@ -94,6 +102,12 @@ We are in the realm of realtime graphics.
             				Animate
         				</label>
 					</span>
+			        <span style="display: flex; gap: 8px; white-space: nowrap;">
+        				<label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
+            				<input style="margin-bottom: unset;" type="checkbox" id="benchmarkCheck_Boxblur" name="Benchmark" />
+            				Benchmark
+        				</label>
+					</span>
 				</div>
 			</div>
 		</td>
@@ -103,7 +117,10 @@ We are in the realm of realtime graphics.
 			<div style="display: flex; gap: 0px 12px; align-items: center;">
 			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-around;">
 			        <span style="display: flex; gap: 8px; white-space: nowrap;">
-						<strong>FPS:</strong> <output id="fpsBoxBlur">?</output>
+						<strong>Iterations:</strong><output id="iterationsBoxBlur">?</output>
+					</span>
+			        <span style="display: flex; gap: 8px; white-space: nowrap;">
+						<strong>BlurTime:</strong> <output id="fpsBoxBlur">?</output> / <output id="msBoxBlur">?</output> ms
 					</span>
 			        <span style="display: flex; gap: 8px; white-space: nowrap;">
 						<strong>Resolution:</strong> <output id="widthBoxBlur">312</output>x<output id="heightBoxBlur">543</output>
@@ -144,7 +161,7 @@ We are in the realm of realtime graphics.
 			<code>kernelSize</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="1" min="0" max="32" value="3" id="boxKernelSizeRange" oninput="boxKernelSize.textContent = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
+			<input class="slider" type="range" step="1" min="0" max="64" value="3" id="boxKernelSizeRange" oninput="boxKernelSize.textContent = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
 		</td>
 		<td style="text-align: center;">
 			<output id="boxKernelSize">7x7</output> px
@@ -163,7 +180,7 @@ We are in the realm of realtime graphics.
 			<code>samplePosMultiplier</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="0.01" min="0" max="10" value="1" id="samplePosRange" oninput="samplePos.textContent = parseInt(this.value * 100)">
+			<input class="slider" type="range" step="0.01" min="0" max="20" value="1" id="samplePosRange" oninput="samplePos.textContent = parseInt(this.value * 100)">
 		</td>
 		<td style="text-align: center;">
 			<output id="samplePos">100</output> %
