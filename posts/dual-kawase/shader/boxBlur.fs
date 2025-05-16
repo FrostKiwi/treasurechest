@@ -1,5 +1,5 @@
 /* Kernel Size added by during compilation */
-precision mediump float;
+precision highp float;
 varying vec2 uv;
 
 uniform vec2 frameSizeRCP; /* Resolution Reciprocal */

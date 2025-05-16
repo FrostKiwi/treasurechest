@@ -104,10 +104,9 @@ function setupBoxBlur() {
 		initComplete = true;
 	}
 
-	const ALPHA = 0.05;          // 1/100 ≈ 100-frame window
-	let lastT = 0;               // previous rAF timestamp
-	let fpsEMA = 60;              // exponential-moving FPS
-	let msEMA = 16;              // exponential-moving frametime
+	let prevNow = performance.now();
+	let fpsEMA = 60;
+	let msEMA = 16;
 
 	function redraw(time) {
 		redrawActive = true;
@@ -154,24 +153,25 @@ function setupBoxBlur() {
 		if (benchmarkCheckBox.checked)
 			gl.finish();
 
+		const now = performance.now();
+		let dt = now - prevNow;
+
+		if (dt > 0) {
+			const instFPS = 1000 / dt;
+			const ALPHA = 0.05;
+			fpsEMA = fpsEMA ? ALPHA * instFPS + (1 - ALPHA) * fpsEMA : instFPS;
+			msEMA = msEMA ? ALPHA * dt + (1 - ALPHA) * msEMA : dt;
+
+			console.log(now, dt, instFPS)
+
+			fpsBoxBlur.value = fpsEMA.toFixed(0);
+			msBoxBlur.value = msEMA.toFixed(2);
+			prevNow = now;
+		}
+
 		/* UI Stats */
 		const KernelSizeSide = boxKernelSizeRange.value * 2 + 1;
 		tapsBoxBlur.value = (canvas.width * canvas.height * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1) + " Million";
-
-		if (lastT) {
-			const dt = time - lastT;
-
-			if (dt > 0) {
-				const instFPS = 1000 / dt;
-				fpsEMA = fpsEMA ? ALPHA * instFPS + (1 - ALPHA) * fpsEMA : instFPS;
-				msEMA = msEMA ? ALPHA * dt + (1 - ALPHA) * msEMA : dt;
-
-
-				fpsBoxBlur.value = fpsEMA.toFixed(0);
-				msBoxBlur.value = msEMA.toFixed(2);
-			}
-		}
-		lastT = time;
 
 		redrawActive = false;
 	}
