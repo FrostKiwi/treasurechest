@@ -189,9 +189,10 @@ function setupBoxBlur() {
 			const benchNow = performance.now();
 			for (let x = 0; x < iterOut.value; x++)
 				gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-			gl.finish();
 			if (query)
 				gl.endQuery(ext.TIME_ELAPSED_EXT);
+			const pixels = new Uint8Array(4);
+				gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
 			benchmarkBoxBlurLabel.textContent = (performance.now() - benchNow).toFixed(1) + " ms";
 			benchmode = false;
 			benchmarkBoxBlur.disabled = false;
