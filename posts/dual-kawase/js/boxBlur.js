@@ -3,10 +3,7 @@ function setupBoxBlur() {
 	const canvas = document.getElementById('canvasBoxBlur');
 
 	/* State tracking */
-	let buffersInitialized = false;
-	let initComplete = false;
-	let benchmode = false;
-
+	let buffersInitialized = false, initComplete = false, benchmode = false;
 	/* Texture Objects */
 	let textureSDR, textureSelfIllum;
 	/* Framebuffer Objects */
@@ -16,13 +13,21 @@ function setupBoxBlur() {
 	const radius = 0.1;
 
 	/* Main WebGL 1.0 Context */
-	const gl = canvas.getContext('webgl',
-		{
-			preserveDrawingBuffer: false,
-			antialias: false,
-			alpha: false,
-		}
-	);
+	const gl = canvas.getContext('webgl2', {
+		preserveDrawingBuffer: false,
+		antialias: false,
+		alpha: false,
+	}) || canvas.getContext('webgl', {
+		preserveDrawingBuffer: false,
+		antialias: false,
+		alpha: false,
+	});
+	const isWebGL2 = gl && gl instanceof WebGL2RenderingContext;
+	const ext = gl.getExtension('EXT_disjoint_timer_query_webgl2');
+
+	let query = null;
+	if (ext)
+		query = gl.createQuery();
 
 	/* UI Elements */
 	const samplePosRange = document.getElementById('samplePosRange');
@@ -37,6 +42,9 @@ function setupBoxBlur() {
 	const heightBoxBlur = document.getElementById('heightBoxBlur');
 	const tapsBoxBlur = document.getElementById('tapsBoxBlur');
 	const iterOut = document.getElementById('iterOut');
+	const extTest = document.getElementById('extTest');
+
+	extTest.textContent = ext;
 
 	/* Events */
 	boxKernelSizeRange.addEventListener('input', function () {
@@ -119,9 +127,11 @@ function setupBoxBlur() {
 	}
 
 	let prevNow = performance.now();
+	let lastStatsUpdate = prevNow;
 	let fpsEMA = 60;
 	let msEMA = 16;
 
+	let queried = false;
 	function redraw() {
 		redrawActive = true;
 		if (!buffersInitialized) {
@@ -131,6 +141,12 @@ function setupBoxBlur() {
 			redrawActive = false;
 			return;
 		}
+
+		/* UI Stats */
+		const KernelSizeSide = boxKernelSizeRange.value * 2 + 1;
+		const tapsNewText = (canvas.width * canvas.height * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1) + " Million";
+		if (tapsBoxBlur.value != tapsNewText)
+			tapsBoxBlur.value = tapsNewText;
 
 		/* Circle Motion */
 		var radiusSwitch = animateCheckBox.checked ? radius : 0.0;
@@ -166,15 +182,28 @@ function setupBoxBlur() {
 		gl.finish();
 
 		if (benchmode) {
-			const benchNow = performance.now();
-			for (let x = 0; x < iterOut.value; x++) {
-				gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+			if (query) {
+				gl.beginQuery(ext.TIME_ELAPSED_EXT, query);
+				queried = true;
 			}
+			const benchNow = performance.now();
+			for (let x = 0; x < iterOut.value; x++)
+				gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 			gl.finish();
-			benchmarkBoxBlurLabel.textContent = performance.now() - benchNow + " ms";
+			if (query)
+				gl.endQuery(ext.TIME_ELAPSED_EXT);
+			benchmarkBoxBlurLabel.textContent = (performance.now() - benchNow).toFixed(1) + " ms";
 			benchmode = false;
 			benchmarkBoxBlur.disabled = false;
 			onResize();
+		}
+
+		if (queried) {
+			const available = gl.getQueryParameter(query, gl.QUERY_RESULT_AVAILABLE);
+			if (available) {
+				const elapsedNanos = gl.getQueryParameter(query, gl.QUERY_RESULT);
+				benchmarkBoxBlurLabel.textContent = (elapsedNanos / 1000000).toFixed(1) + " HQ MS";
+			}
 		}
 
 		const now = performance.now();
@@ -183,17 +212,16 @@ function setupBoxBlur() {
 		if (dt > 0) {
 			const instFPS = 1000 / dt;
 			const ALPHA = 0.05;
-			fpsEMA = fpsEMA ? ALPHA * instFPS + (1 - ALPHA) * fpsEMA : instFPS;
-			msEMA = msEMA ? ALPHA * dt + (1 - ALPHA) * msEMA : dt;
+			fpsEMA = ALPHA * instFPS + (1 - ALPHA) * fpsEMA;
+			msEMA = ALPHA * dt + (1 - ALPHA) * msEMA;
+		}
+		prevNow = now;
 
+		if (now - lastStatsUpdate >= 1000) {
 			fpsBoxBlur.value = fpsEMA.toFixed(0);
 			msBoxBlur.value = msEMA.toFixed(2);
-			prevNow = now;
+			lastStatsUpdate = now;
 		}
-
-		/* UI Stats */
-		const KernelSizeSide = boxKernelSizeRange.value * 2 + 1;
-		tapsBoxBlur.value = (canvas.width * canvas.height * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1) + " Million";
 
 		redrawActive = false;
 	}

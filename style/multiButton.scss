@@ -1,3 +1,5 @@
+@use 'sakura.css/scss/sakura-vader' as sakura;
+
 .multiButton {
 	position: relative;
 	display: flex;
@@ -30,6 +32,9 @@
 	}
 
 	button:last-of-type {
+		img {
+			width: 15px;
+		}
 		border: unset;
 		border-radius: 0 12px 12px 0;
 	}
