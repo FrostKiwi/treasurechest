@@ -56,7 +56,9 @@ We are in the realm of realtime graphics.
 When writing shaders, we don't care about execution order or.
 These are convolutions, but we aren't actually bound by rules of the classical convolution implies.
 
-In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We _could_ use many [older](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/finish) and [newer](https://developer.mozilla.org/en-US/docs/Web/API/WebGLSync) GPU pipeline synchronization features of WebGL and measure just the time of the blur pass. Whilst you can double check if you get reliable numbers with platform specific debuggers like NV?? on one type of device, unfortunately, it's not possible in the general case and it's too easy to get not a number that measures now how long it took us to blur, but some other part of the GPU pipeline. Same goes for trying to find out how many iterations of blur we can run within X amount of time. Especially once on mobile Apple devices, getting reliable numbers goes out the window.
+Old info: In benchmark mode we run at 1600x1200. We _could_ use many [older](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/finish) and [newer](https://developer.mozilla.org/en-US/docs/Web/API/WebGLSync) GPU pipeline synchronization features of WebGL and measure just the time of the blur pass. Whilst you can double check if you get reliable numbers with platform specific debuggers like NV?? on one type of device, unfortunately, it's not possible in the general case and it's too easy to get not a number that measures now how long it took us to blur, but some other part of the GPU pipeline. Same goes for trying to find out how many iterations of blur we can run within X amount of time. Especially once on mobile Apple devices, getting reliable numbers goes out the window.
+
+Performance measurements via [`EXT_disjoint_timer_query_webgl2`](https://registry.khronos.org/webgl/extensions/EXT_disjoint_timer_query_webgl2/) are pretty reliable, but only supported on Desktop Chrome. So for the sake of comparability, we do it the only way that is guaranteed to sync, [`gl.readPixels()`](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/readPixels)
 
 <blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/dead.svg"></blockquote>
 
@@ -184,7 +186,6 @@ In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We _could_ use 
 		<td colspan=4 style="width:100%">
 			<div style="display: flex; gap: 0px 12px; align-items: center;">
 			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-around;">
-				<div id="extTest"></div>
 				<div class="multiButton">
 				  <button type="button" class="main" id="benchmarkBoxBlur">
 				    <span id="benchmarkBoxBlurLabel">Benchmark</span>
@@ -192,12 +193,12 @@ In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We _could_ use 
 				  </button>
 				  <div class="arrowWrap">
 				    <select id="iterations" onchange="iterOut.textContent=this.value; benchmarkBoxBlurLabel.textContent='Benchmark'">
-				      <optgroup label="Iterations">
+				      <optgroup label="Iterations at 1600x1200">
 				        <option value="10">10</option>
 				        <option value="100" selected>100</option>
 				        <option value="1000">1000</option>
 				        <option value="10000">10000</option>
-				        <option value="100000">100000</option>
+				        <option value="100000">100000	</option>
 				      </optgroup>
 				    </select>
 				    <span class="arrow">

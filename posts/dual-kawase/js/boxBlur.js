@@ -13,21 +13,11 @@ function setupBoxBlur() {
 	const radius = 0.1;
 
 	/* Main WebGL 1.0 Context */
-	const gl = canvas.getContext('webgl2', {
-		preserveDrawingBuffer: false,
-		antialias: false,
-		alpha: false,
-	}) || canvas.getContext('webgl', {
+	const gl = canvas.getContext('webgl', {
 		preserveDrawingBuffer: false,
 		antialias: false,
 		alpha: false,
 	});
-	const isWebGL2 = gl && gl instanceof WebGL2RenderingContext;
-	const ext = gl.getExtension('EXT_disjoint_timer_query_webgl2');
-
-	let query = null;
-	if (ext)
-		query = gl.createQuery();
 
 	/* UI Elements */
 	const samplePosRange = document.getElementById('samplePosRange');
@@ -42,9 +32,6 @@ function setupBoxBlur() {
 	const heightBoxBlur = document.getElementById('heightBoxBlur');
 	const tapsBoxBlur = document.getElementById('tapsBoxBlur');
 	const iterOut = document.getElementById('iterOut');
-	const extTest = document.getElementById('extTest');
-
-	extTest.textContent = ext;
 
 	/* Events */
 	boxKernelSizeRange.addEventListener('input', function () {
@@ -177,34 +164,33 @@ function setupBoxBlur() {
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		/* Force CPU-GPU Sync to prevent overloading the GPU during compositing.
-		   Whether this leads to more accurate or less accurate
-		   benchmarking numbers kinda depends on context */
+		   In reality this is more likely to be flush, but still, it seems to
+		   help on multiple devices with during low FPS */
 		gl.finish();
 
 		if (benchmode) {
-			if (query) {
-				gl.beginQuery(ext.TIME_ELAPSED_EXT, query);
-				queried = true;
-			}
-			const benchNow = performance.now();
+			const dummyPixels = new Uint8Array(4);
+			/* Make sure the Command Queue is empty */;
+			gl.readPixels(256, 256, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
+
+			/* Measure the rough length of a pixel Readback */
+			const readPixelsTimeStart = performance.now();
+			for (let x = 0; x < 10; x++)
+				gl.readPixels(Math.round(Math.random() * 512), Math.round(Math.random() * 512), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
+			const readPixelsTimeEnd = performance.now();
+			
+			/* Measure blur iterations */
+			const benchNow = performance.now()
 			for (let x = 0; x < iterOut.value; x++)
 				gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-			if (query)
-				gl.endQuery(ext.TIME_ELAPSED_EXT);
-			const pixels = new Uint8Array(4);
-				gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-			benchmarkBoxBlurLabel.textContent = (performance.now() - benchNow).toFixed(1) + " ms";
+			gl.readPixels(128, 128, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
+
+			/* Display results */
+			const benchTime = performance.now() - benchNow - ((readPixelsTimeEnd - readPixelsTimeStart) / 10);
+			benchmarkBoxBlurLabel.textContent = benchTime >= 1000 ? (benchTime / 1000).toFixed(1) + " s" : benchTime.toFixed(1) + " ms";
 			benchmode = false;
 			benchmarkBoxBlur.disabled = false;
 			onResize();
-		}
-
-		if (queried) {
-			const available = gl.getQueryParameter(query, gl.QUERY_RESULT_AVAILABLE);
-			if (available) {
-				const elapsedNanos = gl.getQueryParameter(query, gl.QUERY_RESULT);
-				benchmarkBoxBlurLabel.textContent = (elapsedNanos / 1000000).toFixed(1) + " HQ MS";
-			}
 		}
 
 		const now = performance.now();
