@@ -4,10 +4,6 @@ function setupBoxBlur() {
 
 	/* State tracking */
 	let buffersInitialized = false, initComplete = false, benchmode = false;
-	/* Texture Objects */
-	let textureSDR, textureSelfIllum;
-	/* Framebuffer Objects */
-	let circleDrawFramebuffer, frameTexture;
 
 	/* Circle Rotation size */
 	const radius = 0.1;
@@ -19,60 +15,70 @@ function setupBoxBlur() {
 		alpha: false,
 	});
 
+	/* To be removed */
+	const floatTest = document.getElementById('floatTest');
+	const ext = gl.getExtension('OES_texture_float');
+	floatTest.textContent = ext;
+
+	const ctx = {
+		tex: { sdr: null, selfIllum: null, frame: null },
+		fb: { circle: null },
+		shd: {
+			simple: { handle: null, uniforms: { offset: null, radius: null } },
+			blit: { handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null } },
+		},
+	};
+
 	/* UI Elements */
-	const samplePosRange = document.getElementById('samplePosRange');
-	const sigmaRange = document.getElementById('sigmaRange');
-	const boxKernelSizeRange = document.getElementById('boxKernelSizeRange');
-	const animateCheckBox = document.getElementById('animateCheck_Boxblur');
-	const benchmarkBoxBlur = document.getElementById('benchmarkBoxBlur');
-	const benchmarkBoxBlurLabel = document.getElementById('benchmarkBoxBlurLabel');
-	const fpsBoxBlur = document.getElementById('fpsBoxBlur');
-	const msBoxBlur = document.getElementById('msBoxBlur');
-	const widthBoxBlur = document.getElementById('widthBoxBlur');
-	const heightBoxBlur = document.getElementById('heightBoxBlur');
-	const tapsBoxBlur = document.getElementById('tapsBoxBlur');
-	const iterOut = document.getElementById('iterOut');
+	const ui = {
+		samplePosRange: document.getElementById('samplePosRange'),
+		sigmaRange: document.getElementById('sigmaRange'),
+		kernelSizeRange: document.getElementById('boxKernelSizeRange'),
+		animateCheckBox: document.getElementById('animateCheck_Boxblur'),
+		benchmark: document.getElementById('benchmarkBoxBlur'),
+		benchmarkLabel: document.getElementById('benchmarkBoxBlurLabel'),
+		fps: document.getElementById('fpsBoxBlur'),
+		ms: document.getElementById('msBoxBlur'),
+		width: document.getElementById('widthBoxBlur'),
+		height: document.getElementById('heightBoxBlur'),
+		tapsCount: document.getElementById('tapsBoxBlur'),
+		iterOut: document.getElementById('iterOutBoxBlur'),
+	};
 
 	/* Events */
-	boxKernelSizeRange.addEventListener('input', function () {
-		reCompileBlurShader(boxKernelSizeRange.value);
+	ui.kernelSizeRange.addEventListener('input', function () {
+		reCompileBlurShader(ui.kernelSizeRange.value);
 	});
 
-	benchmarkBoxBlur.addEventListener('click', function () {
-		benchmarkBoxBlur.disabled = true;
+	ui.benchmark.addEventListener('click', function () {
+		ui.benchmark.disabled = true;
 		benchmode = true;
 		canvas.width = 1600;
 		canvas.height = 1200;
-		widthBoxBlur.value = 1600;
-		heightBoxBlur.value = 1200;
+		ui.width.value = 1600;
+		ui.height.value = 1200;
 		stopRendering();
 		startRendering();
 	});
 
-	/* Shaders for recompilation */
-	let blitShd;
-	let frameSizeRCPLocation;
-	let samplePosMultLocation;
-
 	/* Shaders */
 	/* Draw Texture Shader */
-	const simpleShd = compileAndLinkShader(gl, 'simpleVert', 'simpleFrag');
-	const offsetLocationCircle = gl.getUniformLocation(simpleShd, "offset");
-	const radiusLocationCircle = gl.getUniformLocation(simpleShd, "radius");
+	ctx.shd.simple.handle = compileAndLinkShader(gl, 'simpleVert', 'simpleFrag');
+	ctx.shd.simple.uniforms.offset = gl.getUniformLocation(ctx.shd.simple.handle, "offset");
+	ctx.shd.simple.uniforms.radius = gl.getUniformLocation(ctx.shd.simple.handle, "radius");
 
 	/* Helper for recompilation */
 	function reCompileBlurShader(blurSize) {
-		blitShd = compileAndLinkShader(gl, 'boxBlurVert', 'boxBlurFrag', "#define KERNEL_SIZE " + blurSize + '\n');
-		frameSizeRCPLocation = gl.getUniformLocation(blitShd, "frameSizeRCP");
-		samplePosMultLocation = gl.getUniformLocation(blitShd, "samplePosMult");
-		sigmaLocation = gl.getUniformLocation(blitShd, "sigma");
+		ctx.shd.blit.handle = compileAndLinkShader(gl, 'boxBlurVert', 'boxBlurFrag', "#define KERNEL_SIZE " + blurSize + '\n');
+		ctx.shd.blit.uniforms.frameSizeRCP = gl.getUniformLocation(ctx.shd.blit.handle, "frameSizeRCP");
+		ctx.shd.blit.uniforms.samplePosMult = gl.getUniformLocation(ctx.shd.blit.handle, "samplePosMult");
+		ctx.shd.blit.uniforms.sigma = gl.getUniformLocation(ctx.shd.blit.handle, "sigma");
 	}
 	/* Blit Shader */
 	reCompileBlurShader(3)
 
 	/* Send Unit code verts to the GPU */
-	const vertex_buffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+	gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
 	gl.bufferData(gl.ARRAY_BUFFER, unitQuad, gl.STATIC_DRAW);
 	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(0);
@@ -83,12 +89,12 @@ function setupBoxBlur() {
 		buffersInitialized = true;
 		initComplete = false;
 		/* Setup Buffers */
-		gl.deleteFramebuffer(circleDrawFramebuffer);
-		circleDrawFramebuffer = gl.createFramebuffer();
-		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
+		gl.deleteFramebuffer(ctx.fb.circle);
+		ctx.fb.circle = gl.createFramebuffer();
+		gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.circle);
 
-		frameTexture = setupTexture(gl, canvas.width, canvas.height, frameTexture, gl.NEAREST);
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, frameTexture, 0);
+		ctx.tex.frame = setupTexture(gl, canvas.width, canvas.height, ctx.tex.frame, gl.NEAREST);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, ctx.tex.frame, 0);
 
 		/* Setup textures */
 		let [base, selfIllum] = await Promise.all([
@@ -106,8 +112,8 @@ function setupBoxBlur() {
 			createImageBitmap(baseBlob, { colorSpaceConversion: 'none', resizeWidth: canvas.width * (1.0 + radius), resizeHeight: canvas.height * (1.0 + radius), resizeQuality: "high" }),
 			createImageBitmap(selfIllumBlob, { colorSpaceConversion: 'none', resizeWidth: canvas.width * (1.0 + radius), resizeHeight: canvas.height * (1.0 + radius), resizeQuality: "high" })
 		]);
-		textureSDR = setupTexture(gl, null, null, textureSDR, gl.LINEAR, baseBitmap);
-		textureSelfIllum = setupTexture(gl, null, null, textureSelfIllum, gl.LINEAR, selfIllumBitmap);
+		ctx.tex.sdr = setupTexture(gl, null, null, ctx.tex.sdr, gl.LINEAR, baseBitmap);
+		ctx.tex.selfIllum = setupTexture(gl, null, null, ctx.tex.selfIllum, gl.LINEAR, selfIllumBitmap);
 		baseBitmap.close();
 		selfIllumBitmap.close();
 		initComplete = true;
@@ -118,7 +124,6 @@ function setupBoxBlur() {
 	let fpsEMA = 60;
 	let msEMA = 16;
 
-	let queried = false;
 	function redraw() {
 		redrawActive = true;
 		if (!buffersInitialized) {
@@ -130,22 +135,22 @@ function setupBoxBlur() {
 		}
 
 		/* UI Stats */
-		const KernelSizeSide = boxKernelSizeRange.value * 2 + 1;
+		const KernelSizeSide = ui.kernelSizeRange.value * 2 + 1;
 		const tapsNewText = (canvas.width * canvas.height * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1) + " Million";
-		if (tapsBoxBlur.value != tapsNewText)
-			tapsBoxBlur.value = tapsNewText;
+		if (ui.tapsCount.value != tapsNewText)
+			ui.tapsCount.value = tapsNewText;
 
 		/* Circle Motion */
-		var radiusSwitch = animateCheckBox.checked ? radius : 0.0;
+		var radiusSwitch = ui.animateCheckBox.checked ? radius : 0.0;
 		var speed = (performance.now() / 10000) % Math.PI * 2;
 		const offset = [radiusSwitch * Math.cos(speed), radiusSwitch * Math.sin(speed)];
-		gl.useProgram(simpleShd);
-		gl.bindTexture(gl.TEXTURE_2D, textureSDR);
-		gl.uniform2fv(offsetLocationCircle, offset);
-		gl.uniform1f(radiusLocationCircle, radiusSwitch);
+		gl.useProgram(ctx.shd.simple.handle);
+		gl.bindTexture(gl.TEXTURE_2D, ctx.tex.sdr);
+		gl.uniform2fv(ctx.shd.simple.uniforms.offset, offset);
+		gl.uniform1f(ctx.shd.simple.uniforms.radius, radiusSwitch);
 
 		/* Setup PostProcess Framebuffer */
-		gl.bindFramebuffer(gl.FRAMEBUFFER, circleDrawFramebuffer);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.circle);
 		gl.viewport(0, 0, canvas.width, canvas.height);
 
 		/* Draw Call */
@@ -153,12 +158,12 @@ function setupBoxBlur() {
 
 		/* Setup Draw to screen */
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		gl.useProgram(blitShd);
-		gl.bindTexture(gl.TEXTURE_2D, frameTexture);
+		gl.useProgram(ctx.shd.blit.handle);
+		gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
 
-		gl.uniform2f(frameSizeRCPLocation, 1.0 / canvas.width, 1.0 / canvas.height);
-		gl.uniform1f(samplePosMultLocation, samplePosRange.value);
-		gl.uniform1f(sigmaLocation, sigmaRange.value);
+		gl.uniform2f(ctx.shd.blit.uniforms.frameSizeRCP, 1.0 / canvas.width, 1.0 / canvas.height);
+		gl.uniform1f(ctx.shd.blit.uniforms.samplePosMult, ui.samplePosRange.value);
+		gl.uniform1f(ctx.shd.blit.uniforms.sigma, ui.sigmaRange.value);
 
 		/* Drawcall */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
@@ -178,18 +183,18 @@ function setupBoxBlur() {
 			for (let x = 0; x < 10; x++)
 				gl.readPixels(Math.round(Math.random() * 512), Math.round(Math.random() * 512), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
 			const readPixelsTimeEnd = performance.now();
-			
+
 			/* Measure blur iterations */
 			const benchNow = performance.now()
-			for (let x = 0; x < iterOut.value; x++)
+			for (let x = 0; x < ui.iterOut.value; x++)
 				gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 			gl.readPixels(128, 128, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
 
 			/* Display results */
 			const benchTime = performance.now() - benchNow - ((readPixelsTimeEnd - readPixelsTimeStart) / 10);
-			benchmarkBoxBlurLabel.textContent = benchTime >= 1000 ? (benchTime / 1000).toFixed(1) + " s" : benchTime.toFixed(1) + " ms";
+			ui.benchmarkLabel.textContent = benchTime >= 1000 ? (benchTime / 1000).toFixed(1) + " s" : benchTime.toFixed(1) + " ms";
 			benchmode = false;
-			benchmarkBoxBlur.disabled = false;
+			ui.benchmark.disabled = false;
 			onResize();
 		}
 
@@ -205,8 +210,8 @@ function setupBoxBlur() {
 		prevNow = now;
 
 		if (now - lastStatsUpdate >= 1000) {
-			fpsBoxBlur.value = fpsEMA.toFixed(0);
-			msBoxBlur.value = msEMA.toFixed(2);
+			ui.fps.value = fpsEMA.toFixed(0);
+			ui.ms.value = msEMA.toFixed(2);
 			lastStatsUpdate = now;
 		}
 
@@ -227,8 +232,8 @@ function setupBoxBlur() {
 			canvas.height = height;
 
 			/* Report in UI */
-			widthBoxBlur.value = width;
-			heightBoxBlur.value = height;
+			ui.width.value = width;
+			ui.height.value = height;
 
 			stopRendering();
 			startRendering();
@@ -239,9 +244,7 @@ function setupBoxBlur() {
 	let resizeTimer = null;
 	function onResize() {
 		clearTimeout(resizeTimer);
-		resizeTimer = setTimeout(() => {
-			nativeResize();
-		}, 100);
+		resizeTimer = setTimeout(() => { nativeResize(); }, 100);
 	}
 
 	window.addEventListener('resize', onResize, true);
@@ -273,10 +276,10 @@ function setupBoxBlur() {
 		gl.finish();
 
 		/* Delete the buffers to free up memory */
-		gl.deleteTexture(textureSDR);
-		gl.deleteTexture(textureSelfIllum);
-		gl.deleteTexture(frameTexture);
-		gl.deleteFramebuffer(circleDrawFramebuffer);
+		gl.deleteTexture(ctx.tex.sdr);
+		gl.deleteTexture(ctx.tex.selfIllum);
+		gl.deleteTexture(ctx.tex.frame);
+		gl.deleteFramebuffer(ctx.fb.circle);
 		buffersInitialized = false;
 		initComplete = false;
 	}

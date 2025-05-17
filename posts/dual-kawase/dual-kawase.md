@@ -182,6 +182,7 @@ Performance measurements via [`EXT_disjoint_timer_query_webgl2`](https://registr
 			<button class="roundButton" onclick="samplePosRange.value = 1;samplePos.textContent = 100">{% include "style/icons/rotate-right.svg" %}</button>
 		</td>
 	</tr>
+	<div id="floatTest"></div>
 	<tr>
 		<td colspan=4 style="width:100%">
 			<div style="display: flex; gap: 0px 12px; align-items: center;">
@@ -189,10 +190,10 @@ Performance measurements via [`EXT_disjoint_timer_query_webgl2`](https://registr
 				<div class="multiButton">
 				  <button type="button" class="main" id="benchmarkBoxBlur">
 				    <span id="benchmarkBoxBlurLabel">Benchmark</span>
-				    <span><output id="iterOut">100</output> Iterations</span>
+				    <span><output id="iterOutBoxBlur">100</output> Iterations</span>
 				  </button>
 				  <div class="arrowWrap">
-				    <select id="iterations" onchange="iterOut.textContent=this.value; benchmarkBoxBlurLabel.textContent='Benchmark'">
+				    <select id="iterations" onchange="iterOutBoxBlur.textContent=this.value; benchmarkBoxBlurLabel.textContent='Benchmark'">
 				      <optgroup label="Iterations at 1600x1200">
 				        <option value="10">10</option>
 				        <option value="100" selected>100</option>
