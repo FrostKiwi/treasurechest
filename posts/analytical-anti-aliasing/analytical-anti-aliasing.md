@@ -494,7 +494,7 @@ A scene from my favorite piece of software in existence: [NeoTokyo°](https://st
 			            </label>
 			        </span>
 			    </div>
-			    <button style="border-radius: 50%; font-weight: 600;" onclick="var element = document.getElementById('LumaExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+			    <button class="roundButton" onclick="var element = document.getElementById('LumaExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">{% include "style/icons/question.svg" %}</button>
 			</div>
 		</td>
 	</tr>
@@ -575,7 +575,7 @@ Getting luma correct is required for the algorithm to work correctly.</pre>
 </select>
 		</td>
 		<td>
-			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('fxaaQualityExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+			<button class="roundButton" onclick="var element = document.getElementById('fxaaQualityExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">{% include "style/icons/question.svg" %}</button>
 		</td>
 	</tr>
 	<tr>
@@ -602,7 +602,7 @@ _  = the highest digit is directly related to style</pre>
 			<output id="fxaaQualitySubpixValue">0.75</output>
 		</td>
 		<td>
-			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('fxaaQualitySubpixExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+			<button class="roundButton" onclick="var element = document.getElementById('fxaaQualitySubpixExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">{% include "style/icons/question.svg" %}</button>
 		</td>
 	</tr>
 	<tr>
@@ -637,7 +637,7 @@ The lowpass value used to filter sub-pixel aliasing at the end of the algorithm 
 			<output id="fxaaQualityEdgeThresholdValue">0.166</output>
 		</td>
 		<td>
-			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('fxaaQualityEdgeThresholdExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+			<button class="roundButton" onclick="var element = document.getElementById('fxaaQualityEdgeThresholdExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">{% include "style/icons/question.svg" %}</button>
 		</td>
 	</tr>
 	<tr>
@@ -667,7 +667,7 @@ The minimum amount of local contrast required to apply algorithm.
 			<output id="fxaaQualityEdgeThresholdMinValue">0.0833</output>
 		</td>
 		<td>
-			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('fxaaQualityEdgeThresholdMinExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+			<button class="roundButton" onclick="var element = document.getElementById('fxaaQualityEdgeThresholdMinExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">{% include "style/icons/question.svg" %}</button>
 		</td>
 	</tr>
 	<tr class="noborder">
@@ -912,7 +912,7 @@ Based on that distance we fade out the border of the shape. If we fade by the si
 			</select>
 		</td>
 		<td>
-			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('pixelSizeMethodExplain'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+			<button class="roundButton" onclick="var element = document.getElementById('pixelSizeMethodExplain'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">{% include "style/icons/question.svg" %}</button>
 		</td>
 	</tr>
 	<tr>
@@ -939,7 +939,7 @@ The shader code works in NDC space with no concept of how big a pixel is. How do
 </select>
 		</td>
 		<td>
-			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('BLENDMETHODExplain'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+			<button class="roundButton" onclick="var element = document.getElementById('BLENDMETHODExplain'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">{% include "style/icons/question.svg" %}</button>
 		</td>
 	</tr>
 	<tr>
@@ -960,10 +960,10 @@ The shader code works in NDC space with no concept of how big a pixel is. How do
 			<input class="slider" type="range" step="0.1" min="0" max="9.9" value="1" id="SmoothingPxRange" oninput="SmoothingPxValue.value = parseFloat(this.value).toFixed(1)">
 		</td>
 		<td style="text-align: center;">
-			<output id="SmoothingPxValue">1.0</output> px
+			<output id="SmoothingPxValue">1.0</output>&nbsp;px
 		</td>
 		<td>
-			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('SmoothingPxExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+			<button class="roundButton" onclick="var element = document.getElementById('SmoothingPxExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">{% include "style/icons/question.svg" %}</button>
 		</td>
 	</tr>
 	<tr>
@@ -984,10 +984,10 @@ The shader code works in NDC space with no concept of how big a pixel is. How do
 <input class="slider" type="range" step="0.1" min="-20" max="20" value="1" id="ShrinkAmountRange" oninput="let dec = (Math.abs(parseFloat(this.value)) >= 10) ? 0 : 1; ShrinkAmountValue.value = parseFloat(this.value).toFixed(dec)">
 		</td>
 		<td style="text-align: center;">
-			<output id="ShrinkAmountValue">0.0</output> px
+			<output id="ShrinkAmountValue">0.0</output>&nbsp;px
 		</td>
 		<td>
-			<button style="border-radius: 50%; font-weight: 600" onclick="var element = document.getElementById('ShrinkAmountExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">?</button>
+			<button class="roundButton" onclick="var element = document.getElementById('ShrinkAmountExplanation'); element.style.display = (element.style.display === 'none' || element.style.display === '') ? 'block' : 'none';">{% include "style/icons/question.svg" %}</button>
 		</td>
 	</tr>
 	<tr class="noborder">

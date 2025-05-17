@@ -32,8 +32,9 @@
 	}
 
 	button:last-of-type {
-		img {
+		svg {
 			width: 15px;
+			display: flex;
 		}
 		border: unset;
 		border-radius: 0 12px 12px 0;

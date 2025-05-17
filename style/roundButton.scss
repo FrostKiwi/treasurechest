@@ -1,7 +1,15 @@
 .roundButton{
+	display: flex;
+	justify-content: center;
+	align-items: center;
 	border-radius: 50%;
 	font-weight: 600;
-	aspect-ratio: 1;
+	width: 36px;
 	height: 36px;
+	padding: unset;
 	border: unset;
+	
+	svg {
+		height: 50%;
+	}
 }

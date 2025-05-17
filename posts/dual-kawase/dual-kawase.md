@@ -139,7 +139,7 @@ In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We _could_ use 
 			<output id="sigma">1</output> px
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" onclick="sigmaRange.value = 3; sigma.textContent = '7x7';sigmaRange.dispatchEvent(new Event('input'));"><img src="/assets/icons/rotate-right.svg"></button>
+			<button class="roundButton" onclick="sigmaRange.value = 3; sigma.textContent = '7x7';sigmaRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
@@ -158,7 +158,7 @@ In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We _could_ use 
 			<output id="boxKernelSize">7x7</output> px
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" onclick="boxKernelSizeRange.value = 3; boxKernelSize.textContent = '7x7';boxKernelSizeRange.dispatchEvent(new Event('input'));"><img src="/assets/icons/rotate-right.svg"></button>
+			<button class="roundButton" onclick="boxKernelSizeRange.value = 3; boxKernelSize.textContent = '7x7';boxKernelSizeRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
@@ -177,7 +177,7 @@ In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We _could_ use 
 			<output id="samplePos">100</output> %
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" onclick="samplePosRange.value = 1;samplePos.textContent = 100"><img src="/assets/icons/rotate-right.svg"></button>
+			<button class="roundButton" onclick="samplePosRange.value = 1;samplePos.textContent = 100">{% include "style/icons/rotate-right.svg" %}</button>
 		</td>
 	</tr>
 	<tr>
@@ -190,7 +190,7 @@ In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We _could_ use 
 							<label id="benchmarkBoxBlurLabel">Benchmark</label>
 							<div><output id="iterOut">100</output> Iterations</div>
 						</button>
-						<button onclick="(s=this.nextElementSibling).showPicker?.()||s.click()"><img src="/assets/icons/arrow-down.svg"></button>
+						<button onclick="(s=this.nextElementSibling).showPicker?.()||s.click()">{% include "style/icons/arrow-down.svg" %}</button>
 						<select onchange="iterOut.textContent=this.value;benchmarkBoxBlurLabel.textContent='Benchmark'">
 							<optgroup label="Iterations">
 								<option value="10">10</option>
