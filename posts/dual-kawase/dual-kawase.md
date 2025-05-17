@@ -185,28 +185,31 @@ In benchmark mode we run at 1600x1200 and lift the V-Sync limit. We _could_ use 
 			<div style="display: flex; gap: 0px 12px; align-items: center;">
 			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-around;">
 				<div id="extTest"></div>
-					<div class="multiButton">
-						<button id="benchmarkBoxBlur">
-							<label id="benchmarkBoxBlurLabel">Benchmark</label>
-							<div><output id="iterOut">100</output> Iterations</div>
-						</button>
-						<button onclick="(s=this.nextElementSibling).showPicker?.()||s.click()">{% include "style/icons/arrow-down.svg" %}</button>
-						<select onchange="iterOut.textContent=this.value;benchmarkBoxBlurLabel.textContent='Benchmark'">
-							<optgroup label="Iterations">
-								<option value="10">10</option>
-								<option value="100" selected>100</option>
-								<option value="1000">1000</option>
-								<option value="10000">10000</option>
-								<option value="100000">100000</option>
-							</optgroup>
-						</select>
-					</div>
+				<div class="multiButton">
+				  <button type="button" class="main" id="benchmarkBoxBlur">
+				    <span id="benchmarkBoxBlurLabel">Benchmark</span>
+				    <span><output id="iterOut">100</output> Iterations</span>
+				  </button>
+				  <div class="arrowWrap">
+				    <select id="iterations" onchange="iterOut.textContent=this.value; benchmarkBoxBlurLabel.textContent='Benchmark'">
+				      <optgroup label="Iterations">
+				        <option value="10">10</option>
+				        <option value="100" selected>100</option>
+				        <option value="1000">1000</option>
+				        <option value="10000">10000</option>
+				        <option value="100000">100000</option>
+				      </optgroup>
+				    </select>
+				    <span class="arrow">
+				      {% include "style/icons/arrow-down.svg" %}
+				    </span>
+				  </div>
+				</div>
 				</div>
 			</div>
 		</td>
 	</tr>
 </table>
-
 <script>setupBoxBlur();</script>
 
 So what did we achieve? A bad looking blur, that wrecks even my RTX 4090.
