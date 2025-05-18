@@ -12,14 +12,6 @@ publicTags:
 image:
 ---
 
-<script src="js/simple.js"></script>
-<script src="js/utility.js"></script>
-
-<script id="blitVert" type="x-shader/x-vertex">{% include "posts/dual-kawase/shader/blit.vs" %}</script>
-<script id="blitFrag" type="x-shader/x-fragment">{% include "posts/dual-kawase/shader/blit.fs" %}</script>
-<script id="simpleVert" type="x-shader/x-vertex">{% include "posts/dual-kawase/shader/simple.vs" %}</script>
-<script id="simpleFrag" type="x-shader/x-fragment">{% include "posts/dual-kawase/shader/simple.fs" %}</script>
-
 <style>
     .settingsTable .noborder td {
         border-bottom: unset;
@@ -85,13 +77,10 @@ Performance measurements via [`EXT_disjoint_timer_query_webgl2`](https://registr
     </span>
 </div>
 <canvas width="100%" height="400px" style="aspect-ratio: 4/3" id="canvasSimple"></canvas>
-<script>setupSimple("canvasSimple", "simpleVert", "simpleFrag", "blitVert", "blitFrag", "pauseCheckSimple");</script>
+<!-- <script>setupSimple("canvasSimple", "simpleVert", "simpleFrag", "blitVert", "blitFrag", "pauseCheckSimple");</script> -->
 
 ## Box Blur
 
-<script src="js/boxBlur.js"></script>
-<script id="boxBlurVert" type="x-shader/x-vertex">{% include "posts/dual-kawase/shader/boxBlur.vs" %}</script>
-<script id="boxBlurFrag" type="x-shader/x-fragment">{% include "posts/dual-kawase/shader/boxBlur.fs" %}</script>
 <div><canvas width="100%" height="400px" style="aspect-ratio: 4/3;" id="canvasBoxBlur"></canvas></div>
 <table class="settingsTable" style="width: 100%; max-width: 100%;">
 	<tr>
@@ -116,10 +105,10 @@ Performance measurements via [`EXT_disjoint_timer_query_webgl2`](https://registr
 						<strong>FPS:</strong> <output id="fpsBoxBlur">?</output> / <output id="msBoxBlur">?</output> ms
 					</span>
 			        <span style="display: flex; gap: 8px; white-space: nowrap;">
-						<strong>Resolution:</strong> <output id="widthBoxBlur">312</output>x<output id="heightBoxBlur">543</output>
+						<strong>Resolution:</strong> <output id="widthBoxBlur">?</output>x<output id="heightBoxBlur">?</output>
 					</span>
 			        <span style="display: flex; gap: 8px; white-space: nowrap;">
-						<strong>Texture Taps:</strong> <output id="tapsBoxBlur">312</output>
+						<strong>Texture Taps:</strong> <output id="tapsBoxBlur">?</output>
 					</span>
 				</div>
 			</div>
@@ -212,7 +201,11 @@ Performance measurements via [`EXT_disjoint_timer_query_webgl2`](https://registr
 		</td>
 	</tr>
 </table>
-<script>setupBoxBlur();</script>
+
+<script type="module">
+	import { setupBoxBlur } from "./js/boxBlur.js";
+	setupBoxBlur();
+</script>
 
 So what did we achieve? A bad looking blur, that wrecks even my RTX 4090.
 

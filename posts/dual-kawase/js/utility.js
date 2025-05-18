@@ -1,6 +1,6 @@
 "use strict";
 /* Vertex Buffer of a simple Quad */
-const unitQuad = new Float32Array([
+export const unitQuad = new Float32Array([
 	-1.0, 1.0,
 	1.0, 1.0,
 	1.0, -1.0,
@@ -8,46 +8,38 @@ const unitQuad = new Float32Array([
 ]);
 
 /* Standard shader compilation */
-function compileAndLinkShader(gl, vtxShdSrc, FragShdSrc, FragPrefix) {
-	/* Vertex Shader Compilation */
+export function compileAndLinkShader(gl, vtxSrc, fragSrc, fragPrefix = "") {
+	/* Vertex Shader */
 	const vtxShd = gl.createShader(gl.VERTEX_SHADER);
-	gl.shaderSource(vtxShd, document.getElementById(vtxShdSrc).text);
+	gl.shaderSource(vtxShd, vtxSrc);
 	gl.compileShader(vtxShd);
-
 	if (!gl.getShaderParameter(vtxShd, gl.COMPILE_STATUS))
 		console.error("Vertex shader compilation error: ", gl.getShaderInfoLog(vtxShd));
 
-	/* Fragment Shader Compilation */
-	const FragShd = gl.createShader(gl.FRAGMENT_SHADER);
-	let fragmentSource = document.getElementById(FragShdSrc).text;
+	/* Fragment Shader */
+	const fragShd = gl.createShader(gl.FRAGMENT_SHADER);
+	gl.shaderSource(fragShd, fragPrefix + "\n" + fragSrc);
+	gl.compileShader(fragShd);
+	if (!gl.getShaderParameter(fragShd, gl.COMPILE_STATUS))
+		console.error("Fragment shader compilation error: ", gl.getShaderInfoLog(fragShd));
 
-	if (FragPrefix)
-		fragmentSource = FragPrefix + '\n' + fragmentSource;
+	/* Linking */
+	const linkedShd = gl.createProgram();
+	gl.attachShader(linkedShd, vtxShd);
+	gl.attachShader(linkedShd, fragShd);
+	gl.linkProgram(linkedShd);
+	if (!gl.getProgramParameter(linkedShd, gl.LINK_STATUS))
+		console.error("Shader linking error: ", gl.getProgramInfoLog(linkedShd));
 
-	gl.shaderSource(FragShd, fragmentSource);
-	gl.compileShader(FragShd);
-
-	if (!gl.getShaderParameter(FragShd, gl.COMPILE_STATUS))
-		console.error("Fragment shader compilation error: ", gl.getShaderInfoLog(FragShd));
-
-	/* Shader Linking */
-	const LinkedShd = gl.createProgram();
-	gl.attachShader(LinkedShd, vtxShd);
-	gl.attachShader(LinkedShd, FragShd);
-	gl.linkProgram(LinkedShd);
-
-	if (!gl.getProgramParameter(LinkedShd, gl.LINK_STATUS))
-		console.error("Shader program linking error: ", gl.getProgramInfoLog(LinkedShd));
-
-	return LinkedShd;
+	return linkedShd;
 }
 
 /* Standard Texture loading */
-function setupTexture(gl, width, height, target, filter, source) {
+export function setupTexture(gl, width, height, target, filter, source) {
 	gl.deleteTexture(target);
 	target = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, target);
-
+	
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -55,8 +47,14 @@ function setupTexture(gl, width, height, target, filter, source) {
 
 	if (source)
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, source);
-	else {
+	else
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
-	}
+
 	return target;
+}
+
+/* Fetch Shader Text */
+export async function fetchShader(path) {
+	const response = await fetch(path);
+	return await response.text();
 }

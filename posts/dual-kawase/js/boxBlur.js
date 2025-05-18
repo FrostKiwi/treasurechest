@@ -1,4 +1,6 @@
-function setupBoxBlur() {
+import * as util from './utility.js'
+
+export async function setupBoxBlur() {
 	/* Init */
 	const canvas = document.getElementById('canvasBoxBlur');
 
@@ -62,14 +64,19 @@ function setupBoxBlur() {
 	});
 
 	/* Shaders */
+	const simpleVert = await util.fetchShader("shader/simple.vs");
+	const simpleFrag = await util.fetchShader("shader/simple.fs");
+	const boxBlurVert = await util.fetchShader("shader/boxBlur.vs");
+	const boxBlurFrag = await util.fetchShader("shader/boxBlur.fs");
+
 	/* Draw Texture Shader */
-	ctx.shd.simple.handle = compileAndLinkShader(gl, 'simpleVert', 'simpleFrag');
+	ctx.shd.simple.handle = util.compileAndLinkShader(gl, simpleVert, simpleFrag);
 	ctx.shd.simple.uniforms.offset = gl.getUniformLocation(ctx.shd.simple.handle, "offset");
 	ctx.shd.simple.uniforms.radius = gl.getUniformLocation(ctx.shd.simple.handle, "radius");
 
 	/* Helper for recompilation */
 	function reCompileBlurShader(blurSize) {
-		ctx.shd.blit.handle = compileAndLinkShader(gl, 'boxBlurVert', 'boxBlurFrag', "#define KERNEL_SIZE " + blurSize + '\n');
+		ctx.shd.blit.handle = util.compileAndLinkShader(gl, boxBlurVert, boxBlurFrag, "#define KERNEL_SIZE " + blurSize + '\n');
 		ctx.shd.blit.uniforms.frameSizeRCP = gl.getUniformLocation(ctx.shd.blit.handle, "frameSizeRCP");
 		ctx.shd.blit.uniforms.samplePosMult = gl.getUniformLocation(ctx.shd.blit.handle, "samplePosMult");
 		ctx.shd.blit.uniforms.sigma = gl.getUniformLocation(ctx.shd.blit.handle, "sigma");
@@ -79,7 +86,7 @@ function setupBoxBlur() {
 
 	/* Send Unit code verts to the GPU */
 	gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-	gl.bufferData(gl.ARRAY_BUFFER, unitQuad, gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, util.unitQuad, gl.STATIC_DRAW);
 	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(0);
 
@@ -93,7 +100,7 @@ function setupBoxBlur() {
 		ctx.fb.circle = gl.createFramebuffer();
 		gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.circle);
 
-		ctx.tex.frame = setupTexture(gl, canvas.width, canvas.height, ctx.tex.frame, gl.NEAREST);
+		ctx.tex.frame = util.setupTexture(gl, canvas.width, canvas.height, ctx.tex.frame, gl.NEAREST);
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, ctx.tex.frame, 0);
 
 		/* Setup textures */
@@ -112,8 +119,8 @@ function setupBoxBlur() {
 			createImageBitmap(baseBlob, { colorSpaceConversion: 'none', resizeWidth: canvas.width * (1.0 + radius), resizeHeight: canvas.height * (1.0 + radius), resizeQuality: "high" }),
 			createImageBitmap(selfIllumBlob, { colorSpaceConversion: 'none', resizeWidth: canvas.width * (1.0 + radius), resizeHeight: canvas.height * (1.0 + radius), resizeQuality: "high" })
 		]);
-		ctx.tex.sdr = setupTexture(gl, null, null, ctx.tex.sdr, gl.LINEAR, baseBitmap);
-		ctx.tex.selfIllum = setupTexture(gl, null, null, ctx.tex.selfIllum, gl.LINEAR, selfIllumBitmap);
+		ctx.tex.sdr = util.setupTexture(gl, null, null, ctx.tex.sdr, gl.LINEAR, baseBitmap);
+		ctx.tex.selfIllum = util.setupTexture(gl, null, null, ctx.tex.selfIllum, gl.LINEAR, selfIllumBitmap);
 		baseBitmap.close();
 		selfIllumBitmap.close();
 		initComplete = true;
