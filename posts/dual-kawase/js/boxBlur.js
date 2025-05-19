@@ -64,7 +64,7 @@ export async function setupBoxBlur() {
 		reCompileBlurShader(ui.kernelSizeRange.value);
 	});
 
-	ui.benchmark.addEventListener("click", async () => {
+	ui.benchmark.addEventListener("click", () => {
 		ctx.flags.benchMode = true;
 		stopRendering();
 		ui.spinner.style.display = "block";
