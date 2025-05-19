@@ -30,8 +30,8 @@ export async function setupBoxBlur() {
 		/* Shaders and their respective Resource Locations */
 		shd: {
 			scene: { handle: null, uniforms: { offset: null, radius: null } },
-			blur: { handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null } },
-		},
+			blur: { handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null } }
+		}
 	};
 
 	/* UI Elements */
@@ -75,6 +75,7 @@ export async function setupBoxBlur() {
 
 		/* pass all data the worker needs */
 		worker.postMessage({
+			iterations: ui.iterOut.value,
 			blurShaderSrc: boxBlurFrag,
 			kernelSize: ui.kernelSizeRange.value,
 			samplePos: ui.samplePosRange.value,
@@ -87,6 +88,7 @@ export async function setupBoxBlur() {
 
 			const blob = ev.data.blob;
 			debugIMG.src = URL.createObjectURL(blob);
+			ui.benchmarkLabel.textContent = ev.data.benchText;
 
 			worker.terminate();
 			startRendering();

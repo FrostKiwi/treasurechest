@@ -2,7 +2,7 @@
 import * as util from "./utility.js";
 
 self.addEventListener("message", async (ev) => {
-	const { blurShaderSrc, kernelSize, samplePos, sigma } = ev.data;
+	const { iterations, blurShaderSrc, kernelSize, samplePos, sigma } = ev.data;
 
 	const ctx = {
 		tex: { sdr: null, selfIllum: null, frame: null },
@@ -19,10 +19,13 @@ self.addEventListener("message", async (ev) => {
 		alpha: false
 	});
 
+	const dummyPixels = new Uint8Array(4);
+
 	const simpleQuad = await util.fetchShader("../shader/simpleQuad.vs");
 	const noiseFrag = await util.fetchShader("../shader/noise.fs");
 
-	gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+	const quadBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
 	gl.bufferData(gl.ARRAY_BUFFER, util.unitQuad, gl.STATIC_DRAW);
 	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(0);
@@ -50,6 +53,7 @@ self.addEventListener("message", async (ev) => {
 	
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	
+	/* Run a draw Call with the blur Shader to ensure it's loaded */
 	gl.useProgram(ctx.shd.handle);
 	gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
 	gl.uniform2f(ctx.shd.uniforms.frameSizeRCP, 1.0 / 1600, 1.0 / 1200);
@@ -58,11 +62,39 @@ self.addEventListener("message", async (ev) => {
 	
 	gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
-	/* ReadBack */
-	const dummy = new Uint8Array(4);
-	gl.readPixels(Math.random() * 512, Math.random() * 512, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummy);
+	/* Make sure the Command Queue is empty */;
+	gl.readPixels(Math.random() * 512, Math.random() * 512, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
+
+	/* Measure the rough length of a pixel Readback */
+	const readPixelsTimeStart = performance.now();
+	for (let x = 0; x < 10; x++)
+		gl.readPixels(Math.random() * 512, Math.random() * 512, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
+	const readPixelsTimeEnd = performance.now();
+
+	/* Measure blur iterations */
+	const benchNow = performance.now()
+	for (let x = 0; x < iterations; x++)
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+	gl.readPixels(Math.random() * 512, Math.random() * 512, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
+
+	/* Display results */
+	const benchTime = performance.now() - benchNow - ((readPixelsTimeEnd - readPixelsTimeStart) / 10);
+	const benchText = benchTime >= 1000 ? (benchTime / 1000).toFixed(1) + " s" : benchTime.toFixed(1) + " ms";
+
+	/* Clean Up */
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+	gl.bindBuffer(gl.ARRAY_BUFFER, null);
+	gl.useProgram(null);
+	gl.disableVertexAttribArray(0);
+
+	gl.deleteBuffer(quadBuffer);
+	gl.deleteFramebuffer(ctx.fb.scene);
+	gl.deleteTexture(ctx.tex.frame);
+	gl.deleteProgram(ctx.shd.handle);
+	gl.deleteProgram(bgShd);
 
 	/* debug */
 	const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.92 });
-	self.postMessage({ type: "done", blob });
+	self.postMessage({ type: "done", blob, benchText });
 });
