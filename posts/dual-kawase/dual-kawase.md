@@ -81,7 +81,7 @@ Performance measurements via [`EXT_disjoint_timer_query_webgl2`](https://registr
 
 ## Box Blur
 
-<div><canvas width="100%" height="400px" style="aspect-ratio: 4/3;" id="canvasBoxBlur"></canvas></div>
+<div class="canvasParent"><canvas width="100%" height="400px" style="aspect-ratio: 4/3;" id="canvasBoxBlur"></canvas>{% include "style/icons/clock.svg" %}</div>
 <table class="settingsTable" style="width: 100%; max-width: 100%;">
 	<tr>
 		<td colspan=4 style="width:100%">
@@ -202,6 +202,7 @@ Performance measurements via [`EXT_disjoint_timer_query_webgl2`](https://registr
 	</tr>
 </table>
 
+<img id="debugIMG"></img>
 <script type="module">
 	import { setupBoxBlur } from "./js/boxBlur.js";
 	setupBoxBlur();

@@ -248,11 +248,40 @@ h6 {
 
 .spinnerContainer {
 	width: 100%;
-	display: flex;
+	display: none;
 	justify-content: center;
 
-	.spinner {
-		display: none;
+	svg {
 		width: 25%;
+
+		rect {
+			fill: sakura.$color-blossom;
+		}
+
+		circle {
+			stroke: sakura.$color-blossom;
+		}
+	}
+}
+
+.canvasParent {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	svg {
+		display: none;
+		position: absolute;
+		height: 50%;
+		pointer-events: none;
+
+		rect {
+			fill: sakura.$color-text;
+		}
+
+		circle {
+			stroke: sakura.$color-text;
+		}
 	}
 }

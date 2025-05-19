@@ -4,7 +4,6 @@ varying vec2 uv;
 
 uniform vec2 frameSizeRCP; /* Resolution Reciprocal */
 uniform float samplePosMult; /* Multiplier, to push blur strength past the kernel size, if wished */
-uniform float sigma; /* Sigma in Pixels */
 
 uniform sampler2D texture;
 

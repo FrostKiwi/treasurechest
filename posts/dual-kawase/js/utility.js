@@ -58,3 +58,12 @@ export async function fetchShader(path) {
 	const response = await fetch(path);
 	return await response.text();
 }
+
+/* True pixel size of the canvas */
+/* Awesome code from https://stackoverflow.com/a/23937767 by @Buster */
+export function getNativeSize(canvas){
+	const dipRect = canvas.getBoundingClientRect();
+	const width = Math.round(devicePixelRatio * dipRect.right) - Math.round(devicePixelRatio * dipRect.left);
+	const height = Math.round(devicePixelRatio * dipRect.bottom) - Math.round(devicePixelRatio * dipRect.top);
+	return [width, height]
+}

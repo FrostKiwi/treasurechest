@@ -128,16 +128,16 @@
 			<img class="kiwi" src="/assets/kiwis/speak.svg">
 		</div>
 		<div class="spinnerContainer">
-			<img class="spinner" src="/assets/clock.svg">
+			{% include "style/icons/clock.svg" %}
 		</div>
 		<script src="https://utteranc.es/client.js" repo="FrostKiwi/treasurechest" issue-term="pathname"
 			theme="gruvbox-dark" crossorigin="anonymous" async></script>
 		<script>
-			const spinner = document.querySelector('.spinner');
-			spinner.style.display = 'block';
+			const spinnerContainer = document.querySelector('.spinnerContainer');
+			spinnerContainer.style.display = 'flex';
 			window.addEventListener('message', (event) => {
 				if (event.origin.startsWith('https://utteranc.es') && event.data?.type === 'resize') {
-					spinner.style.display = 'none';
+					spinnerContainer.style.display = 'none';
 				}
 			});
 		</script>

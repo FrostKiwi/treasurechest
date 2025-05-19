@@ -4,9 +4,6 @@ export async function setupBoxBlur() {
 	/* Init */
 	const canvas = document.getElementById('canvasBoxBlur');
 
-	/* State tracking */
-	let buffersInitialized = false, initComplete = false, benchmode = false;
-
 	/* Circle Rotation size */
 	const radius = 0.1;
 
@@ -22,12 +19,18 @@ export async function setupBoxBlur() {
 	const ext = gl.getExtension('OES_texture_float');
 	floatTest.textContent = ext;
 
+	/* State and Objects */
 	const ctx = {
+		/* State for of the Rendering */
+		flags: { isRendering: false, redrawActive: false, buffersInitialized: false, initComplete: false, benchMode: false},
+		/* Textures */
 		tex: { sdr: null, selfIllum: null, frame: null },
-		fb: { circle: null },
+		/* Framebuffers */
+		fb: { scene: null },
+		/* Shaders and their respective Resource Locations */
 		shd: {
-			simple: { handle: null, uniforms: { offset: null, radius: null } },
-			blit: { handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null } },
+			scene: { handle: null, uniforms: { offset: null, radius: null } },
+			blur: { handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null } },
 		},
 	};
 
@@ -45,44 +48,68 @@ export async function setupBoxBlur() {
 		height: document.getElementById('heightBoxBlur'),
 		tapsCount: document.getElementById('tapsBoxBlur'),
 		iterOut: document.getElementById('iterOutBoxBlur'),
+		spinner: canvas.parentElement.querySelector('svg'),
+		debugIMG: document.getElementById('debugIMG'),
 	};
+
+	
+	/* Shaders */
+	const circleAnimation = await util.fetchShader("shader/circleAnimation.vs");
+	const simpleTexture = await util.fetchShader("shader/simpleTexture.fs");
+	const simpleQuad = await util.fetchShader("shader/simpleQuad.vs");
+	const boxBlurFrag = await util.fetchShader("shader/boxBlur.fs");
 
 	/* Events */
 	ui.kernelSizeRange.addEventListener('input', function () {
 		reCompileBlurShader(ui.kernelSizeRange.value);
 	});
 
-	ui.benchmark.addEventListener('click', function () {
-		ui.benchmark.disabled = true;
-		benchmode = true;
-		canvas.width = 1600;
-		canvas.height = 1200;
-		ui.width.value = 1600;
-		ui.height.value = 1200;
+	ui.benchmark.addEventListener("click", async () => {
+		ctx.flags.benchMode = true;
 		stopRendering();
-		startRendering();
+		ui.spinner.style.display = "block";
+		ui.benchmark.disabled = true;
+
+		/* spin up the Worker (ES-module) */
+		const worker = new Worker("./js/benchmark.js", { type: "module" });
+
+		/* pass all data the worker needs */
+		worker.postMessage({
+			blurShaderSrc: boxBlurFrag,
+			kernelSize: ui.kernelSizeRange.value,
+			samplePos: ui.samplePosRange.value,
+			sigma: ui.sigmaRange.value
+		});
+
+		/* Benchmark */
+		worker.addEventListener("message", (ev) => {
+			if (ev.data.type !== "done") return;
+
+			const blob = ev.data.blob;
+			debugIMG.src = URL.createObjectURL(blob);
+
+			worker.terminate();
+			startRendering();
+			ctx.flags.benchMode = false;
+			ui.benchmark.disabled = false;
+		});
 	});
 
-	/* Shaders */
-	const simpleVert = await util.fetchShader("shader/simple.vs");
-	const simpleFrag = await util.fetchShader("shader/simple.fs");
-	const boxBlurVert = await util.fetchShader("shader/boxBlur.vs");
-	const boxBlurFrag = await util.fetchShader("shader/boxBlur.fs");
-
 	/* Draw Texture Shader */
-	ctx.shd.simple.handle = util.compileAndLinkShader(gl, simpleVert, simpleFrag);
-	ctx.shd.simple.uniforms.offset = gl.getUniformLocation(ctx.shd.simple.handle, "offset");
-	ctx.shd.simple.uniforms.radius = gl.getUniformLocation(ctx.shd.simple.handle, "radius");
+	ctx.shd.scene.handle = util.compileAndLinkShader(gl, circleAnimation, simpleTexture);
+	ctx.shd.scene.uniforms.offset = gl.getUniformLocation(ctx.shd.scene.handle, "offset");
+	ctx.shd.scene.uniforms.radius = gl.getUniformLocation(ctx.shd.scene.handle, "radius");
 
 	/* Helper for recompilation */
 	function reCompileBlurShader(blurSize) {
-		ctx.shd.blit.handle = util.compileAndLinkShader(gl, boxBlurVert, boxBlurFrag, "#define KERNEL_SIZE " + blurSize + '\n');
-		ctx.shd.blit.uniforms.frameSizeRCP = gl.getUniformLocation(ctx.shd.blit.handle, "frameSizeRCP");
-		ctx.shd.blit.uniforms.samplePosMult = gl.getUniformLocation(ctx.shd.blit.handle, "samplePosMult");
-		ctx.shd.blit.uniforms.sigma = gl.getUniformLocation(ctx.shd.blit.handle, "sigma");
+		ctx.shd.blur.handle = util.compileAndLinkShader(gl, simpleQuad, boxBlurFrag, "#define KERNEL_SIZE " + blurSize + '\n');
+		ctx.shd.blur.uniforms.frameSizeRCP = gl.getUniformLocation(ctx.shd.blur.handle, "frameSizeRCP");
+		ctx.shd.blur.uniforms.samplePosMult = gl.getUniformLocation(ctx.shd.blur.handle, "samplePosMult");
+		ctx.shd.blur.uniforms.sigma = gl.getUniformLocation(ctx.shd.blur.handle, "sigma");
 	}
-	/* Blit Shader */
-	reCompileBlurShader(3)
+
+	/* blur Shader */
+	reCompileBlurShader(ui.kernelSizeRange.value)
 
 	/* Send Unit code verts to the GPU */
 	gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
@@ -90,15 +117,14 @@ export async function setupBoxBlur() {
 	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(0);
 
-	let redrawActive = false;
-
 	async function setupTextureBuffers() {
-		buffersInitialized = true;
-		initComplete = false;
+		ui.spinner.style.display = "block";
+		ctx.flags.buffersInitialized = true;
+		ctx.flags.initComplete = false;
 		/* Setup Buffers */
-		gl.deleteFramebuffer(ctx.fb.circle);
-		ctx.fb.circle = gl.createFramebuffer();
-		gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.circle);
+		gl.deleteFramebuffer(ctx.fb.scene);
+		ctx.fb.scene = gl.createFramebuffer();
+		gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.scene);
 
 		ctx.tex.frame = util.setupTexture(gl, canvas.width, canvas.height, ctx.tex.frame, gl.NEAREST);
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, ctx.tex.frame, 0);
@@ -123,7 +149,8 @@ export async function setupBoxBlur() {
 		ctx.tex.selfIllum = util.setupTexture(gl, null, null, ctx.tex.selfIllum, gl.LINEAR, selfIllumBitmap);
 		baseBitmap.close();
 		selfIllumBitmap.close();
-		initComplete = true;
+		ctx.flags.initComplete = true;
+		ui.spinner.style.display = "none";
 	}
 
 	let prevNow = performance.now();
@@ -132,12 +159,12 @@ export async function setupBoxBlur() {
 	let msEMA = 16;
 
 	function redraw() {
-		redrawActive = true;
-		if (!buffersInitialized) {
+		ctx.flags.redrawActive = true;
+		if (!ctx.flags.buffersInitialized) {
 			setupTextureBuffers();
 		}
-		if (!initComplete) {
-			redrawActive = false;
+		if (!ctx.flags.initComplete) {
+			ctx.flags.redrawActive = false;
 			return;
 		}
 
@@ -151,13 +178,13 @@ export async function setupBoxBlur() {
 		var radiusSwitch = ui.animateCheckBox.checked ? radius : 0.0;
 		var speed = (performance.now() / 10000) % Math.PI * 2;
 		const offset = [radiusSwitch * Math.cos(speed), radiusSwitch * Math.sin(speed)];
-		gl.useProgram(ctx.shd.simple.handle);
+		gl.useProgram(ctx.shd.scene.handle);
 		gl.bindTexture(gl.TEXTURE_2D, ctx.tex.sdr);
-		gl.uniform2fv(ctx.shd.simple.uniforms.offset, offset);
-		gl.uniform1f(ctx.shd.simple.uniforms.radius, radiusSwitch);
+		gl.uniform2fv(ctx.shd.scene.uniforms.offset, offset);
+		gl.uniform1f(ctx.shd.scene.uniforms.radius, radiusSwitch);
 
 		/* Setup PostProcess Framebuffer */
-		gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.circle);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.scene);
 		gl.viewport(0, 0, canvas.width, canvas.height);
 
 		/* Draw Call */
@@ -165,45 +192,20 @@ export async function setupBoxBlur() {
 
 		/* Setup Draw to screen */
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		gl.useProgram(ctx.shd.blit.handle);
+		gl.useProgram(ctx.shd.blur.handle);
 		gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
 
-		gl.uniform2f(ctx.shd.blit.uniforms.frameSizeRCP, 1.0 / canvas.width, 1.0 / canvas.height);
-		gl.uniform1f(ctx.shd.blit.uniforms.samplePosMult, ui.samplePosRange.value);
-		gl.uniform1f(ctx.shd.blit.uniforms.sigma, ui.sigmaRange.value);
+		gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / canvas.width, 1.0 / canvas.height);
+		gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.samplePosRange.value);
+		gl.uniform1f(ctx.shd.blur.uniforms.sigma, ui.sigmaRange.value);
 
 		/* Drawcall */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
-		/* Force CPU-GPU Sync to prevent overloading the GPU during compositing.
+		/* Ask for CPU-GPU Sync to prevent overloading the GPU during compositing.
 		   In reality this is more likely to be flush, but still, it seems to
 		   help on multiple devices with during low FPS */
 		gl.finish();
-
-		if (benchmode) {
-			const dummyPixels = new Uint8Array(4);
-			/* Make sure the Command Queue is empty */;
-			gl.readPixels(256, 256, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
-
-			/* Measure the rough length of a pixel Readback */
-			const readPixelsTimeStart = performance.now();
-			for (let x = 0; x < 10; x++)
-				gl.readPixels(Math.round(Math.random() * 512), Math.round(Math.random() * 512), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
-			const readPixelsTimeEnd = performance.now();
-
-			/* Measure blur iterations */
-			const benchNow = performance.now()
-			for (let x = 0; x < ui.iterOut.value; x++)
-				gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-			gl.readPixels(128, 128, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
-
-			/* Display results */
-			const benchTime = performance.now() - benchNow - ((readPixelsTimeEnd - readPixelsTimeStart) / 10);
-			ui.benchmarkLabel.textContent = benchTime >= 1000 ? (benchTime / 1000).toFixed(1) + " s" : benchTime.toFixed(1) + " ms";
-			benchmode = false;
-			ui.benchmark.disabled = false;
-			onResize();
-		}
 
 		const now = performance.now();
 		let dt = now - prevNow;
@@ -222,19 +224,15 @@ export async function setupBoxBlur() {
 			lastStatsUpdate = now;
 		}
 
-		redrawActive = false;
+		ctx.flags.redrawActive = false;
 	}
-
-	let isRendering = false;
 	let animationFrameId;
 
 	/* Render at Native Resolution */
 	function nativeResize() {
-		const dipRect = canvas.getBoundingClientRect();
-		const width = Math.round(devicePixelRatio * dipRect.right) - Math.round(devicePixelRatio * dipRect.left);
-		const height = Math.round(devicePixelRatio * dipRect.bottom) - Math.round(devicePixelRatio * dipRect.top);
+		const [width, height] = util.getNativeSize(canvas);
 
-		if (!benchmode && width && canvas.width !== width || height && canvas.height !== height) {
+		if (width && canvas.width !== width || height && canvas.height !== height) {
 			canvas.width = width;
 			canvas.height = height;
 
@@ -242,8 +240,10 @@ export async function setupBoxBlur() {
 			ui.width.value = width;
 			ui.height.value = height;
 
-			stopRendering();
-			startRendering();
+			if (!ctx.flags.benchMode) {
+				stopRendering();
+				startRendering();
+			}
 		}
 	}
 
@@ -258,7 +258,7 @@ export async function setupBoxBlur() {
 	nativeResize();
 
 	function renderLoop() {
-		if (isRendering) {
+		if (ctx.flags.isRendering) {
 			redraw();
 			animationFrameId = requestAnimationFrame(renderLoop);
 		}
@@ -266,15 +266,15 @@ export async function setupBoxBlur() {
 
 	function startRendering() {
 		/* Start rendering, when canvas visible */
-		isRendering = true;
+		ctx.flags.isRendering = true;
 		renderLoop();
 	}
 
 	function stopRendering() {
 		/* Stop another redraw being called */
-		isRendering = false;
+		ctx.flags.isRendering = false;
 		cancelAnimationFrame(animationFrameId);
-		while (redrawActive) {
+		while (ctx.flags.redrawActive) {
 			/* Spin on draw calls being processed. To simplify sync.
 			   In reality this code is block is never reached, but just
 			   in case, we have this here. */
@@ -286,15 +286,15 @@ export async function setupBoxBlur() {
 		gl.deleteTexture(ctx.tex.sdr);
 		gl.deleteTexture(ctx.tex.selfIllum);
 		gl.deleteTexture(ctx.tex.frame);
-		gl.deleteFramebuffer(ctx.fb.circle);
-		buffersInitialized = false;
-		initComplete = false;
+		gl.deleteFramebuffer(ctx.fb.scene);
+		ctx.flags.buffersInitialized = false;
+		ctx.flags.initComplete = false;
 	}
 
 	function handleIntersection(entries) {
 		entries.forEach(entry => {
 			if (entry.isIntersecting) {
-				if (!isRendering) startRendering();
+				if (!ctx.flags.isRendering && !ctx.flags.benchMode) startRendering();
 			} else {
 				stopRendering();
 			}
