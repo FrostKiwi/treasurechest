@@ -22,7 +22,7 @@ export async function setupBoxBlur() {
 	/* State and Objects */
 	const ctx = {
 		/* State for of the Rendering */
-		flags: { isRendering: false, redrawActive: false, buffersInitialized: false, initComplete: false, benchMode: false},
+		flags: { isRendering: false, redrawActive: false, buffersInitialized: false, initComplete: false, benchMode: false },
 		/* Textures */
 		tex: { sdr: null, selfIllum: null, frame: null },
 		/* Framebuffers */
@@ -42,6 +42,7 @@ export async function setupBoxBlur() {
 		animateCheckBox: document.getElementById('animateCheck_Boxblur'),
 		benchmark: document.getElementById('benchmarkBoxBlur'),
 		benchmarkLabel: document.getElementById('benchmarkBoxBlurLabel'),
+		renderer: document.getElementById('rendererBox'),
 		fps: document.getElementById('fpsBoxBlur'),
 		ms: document.getElementById('msBoxBlur'),
 		width: document.getElementById('widthBoxBlur'),
@@ -49,10 +50,10 @@ export async function setupBoxBlur() {
 		tapsCount: document.getElementById('tapsBoxBlur'),
 		iterOut: document.getElementById('iterOutBoxBlur'),
 		spinner: canvas.parentElement.querySelector('svg'),
+		contextLoss: document.getElementById('contextLoss'),
 		debugIMG: document.getElementById('debugIMG'),
 	};
 
-	
 	/* Shaders */
 	const circleAnimation = await util.fetchShader("shader/circleAnimation.vs");
 	const simpleTexture = await util.fetchShader("shader/simpleTexture.fs");
@@ -60,6 +61,11 @@ export async function setupBoxBlur() {
 	const boxBlurFrag = await util.fetchShader("shader/boxBlur.fs");
 
 	/* Events */
+	canvas.addEventListener("webglcontextlost", (e) => {
+		ui.contextLoss.style.display = "block";
+		e.preventDefault();
+	});
+
 	ui.kernelSizeRange.addEventListener('input', function () {
 		reCompileBlurShader(ui.kernelSizeRange.value);
 	});
@@ -86,14 +92,16 @@ export async function setupBoxBlur() {
 		worker.addEventListener("message", (ev) => {
 			if (ev.data.type !== "done") return;
 
-			const blob = ev.data.blob;
-			debugIMG.src = URL.createObjectURL(blob);
 			ui.benchmarkLabel.textContent = ev.data.benchText;
+			ui.renderer.textContent = ev.data.renderer;
+			if (ev.data.blob) {
+				ui.debugIMG.src = URL.createObjectURL(ev.data.blob);
+			}
 
 			worker.terminate();
 			startRendering();
-			ctx.flags.benchMode = false;
 			ui.benchmark.disabled = false;
+			ctx.flags.benchMode = false;
 		});
 	});
 

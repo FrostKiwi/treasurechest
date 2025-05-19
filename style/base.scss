@@ -269,6 +269,16 @@ h6 {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	
+
+	.contextLoss {
+		display: none;
+		position: absolute;
+		text-align: justify;
+		background-color: sakura.$color-bg;
+		padding: 5%;
+		margin: 10%;
+	}
 
 	svg {
 		display: none;

@@ -5,6 +5,7 @@ self.addEventListener("message", async (ev) => {
 	const { iterations, blurShaderSrc, kernelSize, samplePos, sigma } = ev.data;
 
 	const ctx = {
+		flags: { contextLoss: false },
 		tex: { sdr: null, selfIllum: null, frame: null },
 		fb: { scene: null },
 		shd: {
@@ -17,6 +18,23 @@ self.addEventListener("message", async (ev) => {
 		preserveDrawingBuffer: false,
 		antialias: false,
 		alpha: false
+	});
+
+	let renderer = gl.getParameter(gl.RENDERER);
+	const rendererInfoExt = gl.getExtension('WEBGL_debug_renderer_info');
+	if (rendererInfoExt)
+		renderer = gl.getParameter(rendererInfoExt.UNMASKED_RENDERER_WEBGL);
+
+	canvas.addEventListener("webglcontextlost", (e) => {
+		e.preventDefault();
+		ctx.flags.contextLoss = true;
+		self.postMessage({
+			type: "done",
+			blob: null,
+			benchText: "Benchmark Canceled",
+			renderer: "⚠ WebGL Context Lost, use a smaller iteration count! " + renderer
+		});
+		self.close();
 	});
 
 	const dummyPixels = new Uint8Array(4);
@@ -50,16 +68,16 @@ self.addEventListener("message", async (ev) => {
 	gl.viewport(0, 0, 1600, 1200);
 	gl.useProgram(bgShd);
 	gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-	
+
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	
+
 	/* Run a draw Call with the blur Shader to ensure it's loaded */
 	gl.useProgram(ctx.shd.handle);
 	gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
 	gl.uniform2f(ctx.shd.uniforms.frameSizeRCP, 1.0 / 1600, 1.0 / 1200);
 	gl.uniform1f(ctx.shd.uniforms.samplePosMult, samplePos);
 	gl.uniform1f(ctx.shd.uniforms.sigma, sigma);
-	
+
 	gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 	/* Make sure the Command Queue is empty */;
@@ -96,5 +114,6 @@ self.addEventListener("message", async (ev) => {
 
 	/* debug */
 	const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.92 });
-	self.postMessage({ type: "done", blob, benchText });
+	if (!ctx.flags.contextLoss)
+		self.postMessage({ type: "done", blob, benchText, renderer });
 });

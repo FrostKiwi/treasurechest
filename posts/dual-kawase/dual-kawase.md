@@ -52,6 +52,10 @@ Old info: In benchmark mode we run at 1600x1200. We _could_ use many [older](htt
 
 Performance measurements via [`EXT_disjoint_timer_query_webgl2`](https://registry.khronos.org/webgl/extensions/EXT_disjoint_timer_query_webgl2/) are pretty reliable, but only supported on Desktop Chrome. So for the sake of comparability, we do it the only way that is guaranteed to sync, [`gl.readPixels()`](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/readPixels)
 
+Especially dedicated Laptop GPUs are rather slow with getting out of their power saving state, so on some platforms, hitting the benchmark button twice in succession may produce faster results.
+
+If you set the benchmark with parameters resulting in 10s+ run times, then you'll see just how brittle browsers on even the most premium Apple devices become, once we load the GPU mercilessly. Even though the main thread does nothing during a benchmark run, we'll trigger interesting error states.
+
 <blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/dead.svg"></blockquote>
 
 <div class="toggleRes">
@@ -81,7 +85,11 @@ Performance measurements via [`EXT_disjoint_timer_query_webgl2`](https://registr
 
 ## Box Blur
 
-<div class="canvasParent"><canvas width="100%" height="400px" style="aspect-ratio: 4/3;" id="canvasBoxBlur"></canvas>{% include "style/icons/clock.svg" %}</div>
+<div class="canvasParent">
+	<canvas width="100%" height="400px" style="aspect-ratio: 4/3;" id="canvasBoxBlur"></canvas>
+	<div class="contextLoss" id="contextLoss">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms you may have to restart the browser completely.</div>
+	{% include "style/icons/clock.svg" %}
+</div>
 <table class="settingsTable" style="width: 100%; max-width: 100%;">
 	<tr>
 		<td colspan=4 style="width:100%">
@@ -175,7 +183,8 @@ Performance measurements via [`EXT_disjoint_timer_query_webgl2`](https://registr
 	<tr>
 		<td colspan=4 style="width:100%">
 			<div style="display: flex; gap: 0px 12px; align-items: center;">
-			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-around;">
+			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-between;">
+				<div><code id="rendererBox"></code></div>
 				<div class="multiButton">
 				  <button type="button" class="main" id="benchmarkBoxBlur">
 				    <span id="benchmarkBoxBlurLabel">Benchmark</span>
@@ -216,7 +225,7 @@ Blur is essential - a fundamental tool, that a lot of graphics programming build
 
 When talking about blurs and especially bloom, motion stability is incredibly important. Our image will rotate slowly to tease out artifacts when bright highlights move across the frame. You can toggle this above each WebGL Canvas.
 
-<blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/dead.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
 
 ## Apple switches algorithms
 
