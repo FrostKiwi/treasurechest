@@ -89,6 +89,11 @@ self.addEventListener("message", async (ev) => {
 		gl.readPixels(Math.random() * 512, Math.random() * 512, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
 	const readPixelsTimeEnd = performance.now();
 
+	/* Warm Up the pipeline */
+	for (let x = 0; x < iterations / 10; x++)
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+	gl.readPixels(Math.random() * 512, Math.random() * 512, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
+
 	/* Measure blur iterations */
 	const benchNow = performance.now()
 	for (let x = 0; x < iterations; x++)
@@ -97,7 +102,11 @@ self.addEventListener("message", async (ev) => {
 
 	/* Display results */
 	const benchTime = performance.now() - benchNow - ((readPixelsTimeEnd - readPixelsTimeStart) / 10);
-	const benchText = benchTime >= 1000 ? (benchTime / 1000).toFixed(1) + " s" : benchTime.toFixed(1) + " ms";
+	let benchText;
+	if(benchTime < 1)
+		benchText = "Unreliable Measurement"
+	else
+		benchText = benchTime >= 1000 ? (benchTime / 1000).toFixed(1) + " s" : benchTime.toFixed(1) + " ms";
 
 	/* Clean Up */
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);

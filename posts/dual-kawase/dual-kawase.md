@@ -181,30 +181,35 @@ If you set the benchmark with parameters resulting in 10s+ run times, then you'l
 	</tr>
 	<div id="floatTest"></div>
 	<tr>
-		<td colspan=4 style="width:100%">
-			<div style="display: flex; gap: 0px 12px; align-items: center;">
-			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-between;">
-				<div><code id="rendererBox"></code></div>
-				<div class="multiButton">
-				  <button type="button" class="main" id="benchmarkBoxBlur">
-				    <span id="benchmarkBoxBlurLabel">Benchmark</span>
-				    <span><output id="iterOutBoxBlur">100</output> Iterations</span>
-				  </button>
-				  <div class="arrowWrap">
-				    <select id="iterations" onchange="iterOutBoxBlur.textContent=this.value; benchmarkBoxBlurLabel.textContent='Benchmark'">
-				      <optgroup label="Iterations at 1600x1200">
-				        <option value="10">10</option>
-				        <option value="100" selected>100</option>
-				        <option value="1000">1000</option>
-				        <option value="10000">10000</option>
-				        <option value="100000">100000	</option>
-				      </optgroup>
-				    </select>
-				    <span class="arrow">
-				      {% include "style/icons/arrow-down.svg" %}
-				    </span>
-				  </div>
+		<td colspan="4" style="width: 100%;">
+			<div style="display: flex; flex-wrap: nowrap; gap: 0px 12px; width: 100%; justify-content: space-between;">
+				<div style="white-space: normal; word-break: break-word;">
+					<div>
+						~<output>312</output> ms / iteration
+					</div>
+					<code id="rendererBox"></code>
 				</div>
+				<div class="multiButton">
+					<button type="button" class="main" id="benchmarkBoxBlur">
+						<span id="benchmarkBoxBlurLabel">Benchmark</span>
+						<span>
+							<output id="iterOutBoxBlur">100</output> Iterations
+						</span>
+					</button>
+					<div class="arrowWrap">
+						<select id="iterations" onchange="iterOutBoxBlur.textContent=this.value; benchmarkBoxBlurLabel.textContent='Benchmark'">
+							<optgroup label="Iterations at 1600x1200">
+								<option value="10">10</option>
+								<option value="100" selected>100</option>
+								<option value="1000">1000</option>
+								<option value="10000">10000</option>
+								<option value="100000">100000</option>
+		    				</optgroup>
+						</select>
+						<span class="arrow">
+							{% include "style/icons/arrow-down.svg" %}
+						</span>
+					</div>
 				</div>
 			</div>
 		</td>
@@ -212,6 +217,7 @@ If you set the benchmark with parameters resulting in 10s+ run times, then you'l
 </table>
 
 <img id="debugIMG"></img>
+
 <script type="module">
 	import { setupBoxBlur } from "./js/boxBlur.js";
 	setupBoxBlur();
