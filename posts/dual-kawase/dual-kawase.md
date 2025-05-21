@@ -12,6 +12,9 @@ publicTags:
 image:
 ---
 
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
+
 <style>
     .settingsTable .noborder td {
         border-bottom: unset;
