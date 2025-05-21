@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xml:space="preserve" viewBox="0 0 5 5" version="1.1" xmlns="http://www.w3.org/2000/svg"
+	xmlns:svg="http://www.w3.org/2000/svg">
+	<defs>
+		<style type="text/css">
+			.grid { stroke: #1F1A17; stroke-opacity:0.4; stroke-width:0.05; stroke-linecap:round; }
+			.samplePosition {fill:#292929}
+			.centerPixel {fill:#ffecee; stroke:#1F1A17; stroke-width:0.01}
+			.sidePixel {fill:#ffecee; stroke:#1F1A17; stroke-width:0.01; fill-opacity: 0.5}
+			.bg {width=100%; height=100%; fill:#eb99a1;fill-opacity:0.5;}
+		</style>
+	</defs>
+	<rect width="100%" height="100%" x="0" y="0" class="bg" />
+	<g>
+		<rect width="0.9" height="0.9" x="0.05" y="0.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="1.05" y="0.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="2.05" y="0.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="3.05" y="0.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="4.05" y="0.05" class="sidePixel"/>
+
+		<rect width="0.9" height="0.9" x="0.05" y="1.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="1.05" y="1.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="2.05" y="1.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="3.05" y="1.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="4.05" y="1.05" class="sidePixel"/>
+		
+		<rect width="0.9" height="0.9" x="0.05" y="2.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="1.05" y="2.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="2.05" y="2.05" class="centerPixel"/>
+		<rect width="0.9" height="0.9" x="3.05" y="2.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="4.05" y="2.05" class="sidePixel"/>
+		
+		<rect width="0.9" height="0.9" x="0.05" y="3.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="1.05" y="3.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="2.05" y="3.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="3.05" y="3.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="4.05" y="3.05" class="sidePixel"/>
+
+		<rect width="0.9" height="0.9" x="0.05" y="4.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="1.05" y="4.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="2.05" y="4.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="3.05" y="4.05" class="sidePixel"/>
+		<rect width="0.9" height="0.9" x="4.05" y="4.05" class="sidePixel"/>
+
+		<circle cx="1.5" cy="1.5" r="0.1" class="samplePosition"/>
+		<circle cx="2.5" cy="1.5" r="0.1" class="samplePosition"/>
+		<circle cx="3.5" cy="1.5" r="0.1" class="samplePosition"/>
+
+		<circle cx="1.5" cy="2.5" r="0.1" class="samplePosition"/>
+		<circle cx="2.5" cy="2.5" r="0.1" class="samplePosition"/>
+		<circle cx="3.5" cy="2.5" r="0.1" class="samplePosition"/>
+		
+		<circle cx="1.5" cy="3.5" r="0.1" class="samplePosition"/>
+		<circle cx="2.5" cy="3.5" r="0.1" class="samplePosition"/>
+		<circle cx="3.5" cy="3.5" r="0.1" class="samplePosition"/>
+	</g>
+</svg>
+
+<!-- For later -->
+<!-- <line x1="0" y1="0.5" x2="2" y2="0.5" class="grid" /> -->
+<!-- <line x1="0" y1="1.5" x2="2" y2="1.5" class="grid" /> -->

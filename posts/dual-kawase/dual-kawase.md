@@ -12,8 +12,6 @@ publicTags:
 image:
 ---
 
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
 <style>
     .settingsTable .noborder td {
         border-bottom: unset;
@@ -40,6 +38,38 @@ image:
 		padding: 0px;
 	}
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
+
+<svg id="kernelSimple"></svg>
+
+<table class="settingsTable" style="width: 100%; max-width: 100%;">
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>kernelSize</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>kernelSize</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="1" min="0" max="32" value="1" id="svgKernelRange" oninput="svgKernelSize.textContent = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
+		</td>
+		<td style="text-align: center;">
+			<output id="svgKernelSize">3x3</output>
+		</td>
+		<td style="text-align: center;">
+			<button class="roundButton" onclick="svgKernelRange.value = 1; svgKernelSize.textContent = '3x3';svgKernelRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+		</td>
+	</tr>
+</table>
+
+<script type="module">
+	import { setupSVG } from "./js/kernelPreview.js";
+	setupSVG();
+</script>
 
 ## Setup
 
