@@ -20,7 +20,7 @@ Being able to setup a connection you trust and where your dev tools work is impo
 
 Ultimately, this is what the article is about - how to SSH into machines, when there is stuff in the way preventing that and make sure that your tools like [git](https://en.wikipedia.org/wiki/Git), [scp](https://man.openbsd.org/scp.1), [rsync](https://en.wikipedia.org/wiki/Rsync) or editing files directly on the server via [VSCode's SSH integration](https://code.visualstudio.com/docs/remote/ssh) work, with no new software installed and the ***absolute minimum*** of modifications to your server.
 
-I find it fascinating what seemingly simple tools can do if you look closely. Did you know Git for Windows comes with tunneling software? How do these tools interact with network security on a per-packet basis? That's what I will investigate along the way.
+I find it *fascinating* what seemingly simple tools can do if you look closely. Did you know [Git for Windows](https://git-scm.com/downloads/win) comes with tunneling software, [whitelisted](https://www.virustotal.com/gui/file/ceb2fd60cd2bb94ce37c875ca502094208c2bfd04b96cde9a4f994f1d08a3318) by all Anti-Virus software? How do these tools interact with network security on a per-packet basis? Let's investigate! 🔍
 
 ## Tunneling - So many flavors
 If you control both Source and Destination, then you can tunnel everything through anything in complete secrecy and ultimately there is nothing anyone can do about it. This shouldn't be news to anyone working with networks. There are countless articles and videos going over a multitude of tunneling combinations.
@@ -1165,7 +1165,7 @@ Now, so far we have made an assumption: HTTPS won't betray us. This is an assump
 ### Deep Packet Inspection
 [DPI aka TLS decryption](https://en.wikipedia.org/wiki/Deep_packet_inspection) is a technique that involves forcing your machine to trust an intermediate certificate, allow an intermediate to decrypt your connection for inspection and re-encrypt it after inspection.
 
-In the context of HTTPS or corporate connections, this involved pre-installing a [Trusted Root Certificate Authority](https://en.wikipedia.org/wiki/Certificate_authority) on the user's machine (i.e. via Windows' group policy). Such dangerous idea, that even the [NSA](https://en.wikipedia.org/wiki/National_Security_Agency) issued [an advisory](https://web.archive.org/web/20191119195359/https://media.defense.gov/2019/Nov/18/2002212783/-1/-1/0/MANAGING%20RISK%20FROM%20TLS%20INSPECTION_20191106.PDF) and the [Cypersecurity & Infrastructure Security Agency CISA](https://en.wikipedia.org/wiki/Cybersecurity_and_Infrastructure_Security_Agency) outright [cautions against it](https://www.cisa.gov/news-events/alerts/2017/03/16/https-interception-weakens-tls-security).
+In the context of HTTPS or corporate connections, this involved pre-installing a [Trusted Root Certificate Authority](https://en.wikipedia.org/wiki/Certificate_authority) on the user's machine (i.e. via Windows' group policy). Such a dangerous idea, that even the [NSA](https://en.wikipedia.org/wiki/National_Security_Agency) issued [an advisory](https://web.archive.org/web/20191119195359/https://media.defense.gov/2019/Nov/18/2002212783/-1/-1/0/MANAGING%20RISK%20FROM%20TLS%20INSPECTION_20191106.PDF) and the [Cypersecurity & Infrastructure Security Agency CISA](https://en.wikipedia.org/wiki/Cybersecurity_and_Infrastructure_Security_Agency) outright [cautions against it](https://www.cisa.gov/news-events/alerts/2017/03/16/https-interception-weakens-tls-security).
 
 A compromise of that intermediate root certificate would mean a whole company's connections being readable in clear text. [DPI is easily detectable](https://www.grc.com/fingerprints.htm), as re-encryption changes certificate fingerprints. You can check against known fingerprints in the browser's certificate detail view or this command:
 
@@ -1217,7 +1217,7 @@ The call of `rsync.exe` → `ssh.exe` works, but the subsequent call of `ssh.exe
 <blockquote class="reaction"><div class="reaction_text">With <a target="_blank" href="https://itefix.net/">itefix</a>'s cwRsync there is no way to fix it, since it's closed source. 👎</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 <a></a>
 
-This calling convention needs the binary to be in a `usr/bin/` subfolder with `sh.exe` present, due to how cygwin hardcodes things, otherwise you get a `/bin/sh: No such file or directory`. Unfortunately, the flexible windows package managers like [scoop](https://scoop.sh/) ships with cwRsync only, something I hope fix in a PR.
+This calling convention needs the binary to be in a `usr/bin/` subfolder with `sh.exe` present, due to how cygwin hardcodes things, otherwise you get a `/bin/sh: No such file or directory`. Unfortunately, the flexible windows package managers like [scoop](https://scoop.sh/) ships with cwRsync only, something I hope to fix in a PR.
 
 Without resorting to full [WSL](https://learn.microsoft.com/en-us/windows/wsl/install), we would need to install [MSYS2](https://www.msys2.org/), install rsync and make it available in PATH. Big fan of MSYS, but that's too much of a mess. As a shortcut, I extracted rsync `v3.4.1` from MSYS2 and the associated `ssh`. Beware that the `usr/bin/` structure ***needs*** to be intact due to Cygwin hardcoding.
 
@@ -1250,7 +1250,7 @@ sent 6,136,784 bytes  received 18,824 bytes  373,067.15 bytes/sec
 total size is 420,857,408  speedup is 68.37
 ```
 
-The reason we used absolute paths even in the ssh config, is that rsync is in an invisible *nix environment provided by cygwin and cygwin's path translation won't resolve correctly otherwise. Same reason we re-specified `UserKnownHostsFile`. It would work without, but you'd get annoying `This key is not known by any other names.` each login.
+The reason we used absolute paths even in the ssh config, is that rsync is in an invisible *nix environment provided by cygwin and cygwin's path translation won't resolve correctly otherwise. Same reason we re-specified `UserKnownHostsFile`. It would work without, but you'd get annoying `This key is not known by any other names` messages each login.
 
 You can ignore the `bash.exe` error, irrelevant for our case. `-e` let's us specify the correct ssh and the related config. If we don't specify it and let the system ssh take over, it will ***seem*** to connect, but will fail with a confusing error:
 
@@ -1286,6 +1286,6 @@ Everything we talked about applies to circumventing internet content filtering a
 
 Your server turns into a quasi VPN, with you browsing the web from the perspective of the server, no corporate content filters. It's standard practice to [block changes to proxy settings company wide](https://support.google.com/chrome/a/answer/187202). But it's up to the browser to enforce such policies, making it one of the more easily circumvented and useless security measures.
 
-And there we go. We configured, drilled and circumvented, clawing back power to create digital infrastructure in situations where normally we wouldn't be able to.
+And there we go. We configured, drilled and circumvented, creating power to build digital infrastructure in situations where normally we wouldn't be able to.
 
 <blockquote class="reaction"><div class="reaction_text"><a target="_blank" href="https://youtu.be/b23wrRfy7SM?t=12">With great power comes great responsibility</a>. Hope this article gave insight into what's possible, besides the classic ways of server access.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>

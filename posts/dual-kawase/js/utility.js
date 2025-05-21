@@ -8,7 +8,7 @@ export const unitQuad = new Float32Array([
 ]);
 
 /* Standard shader compilation */
-export function compileAndLinkShader(gl, vtxSrc, fragSrc, fragPrefix = "") {
+export function compileAndLinkShader(gl, vtxSrc, fragSrc, uniforms = [], fragPrefix = "") {
 	/* Vertex Shader */
 	const vtxShd = gl.createShader(gl.VERTEX_SHADER);
 	gl.shaderSource(vtxShd, vtxSrc);
@@ -31,7 +31,11 @@ export function compileAndLinkShader(gl, vtxSrc, fragSrc, fragPrefix = "") {
 	if (!gl.getProgramParameter(linkedShd, gl.LINK_STATUS))
 		console.error("Shader linking error: ", gl.getProgramInfoLog(linkedShd));
 
-	return linkedShd;
+	const uniformsLocations = {};
+	for (const uniform of uniforms)
+		uniformsLocations[uniform] = gl.getUniformLocation(linkedShd, uniform);
+
+	return { handle: linkedShd, uniforms: uniformsLocations };
 }
 
 /* Standard Texture loading */
@@ -61,7 +65,7 @@ export async function fetchShader(path) {
 
 /* True pixel size of the canvas */
 /* Awesome code from https://stackoverflow.com/a/23937767 by @Buster */
-export function getNativeSize(canvas){
+export function getNativeSize(canvas) {
 	const dipRect = canvas.getBoundingClientRect();
 	const width = Math.round(devicePixelRatio * dipRect.right) - Math.round(devicePixelRatio * dipRect.left);
 	const height = Math.round(devicePixelRatio * dipRect.bottom) - Math.round(devicePixelRatio * dipRect.top);

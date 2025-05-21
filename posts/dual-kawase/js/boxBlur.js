@@ -23,7 +23,7 @@ export async function setupBoxBlur() {
 	const ctx = {
 		/* State for of the Rendering */
 		mode: "scene",
-		flags: { isRendering: false, redrawActive: false, buffersInitialized: false, initComplete: false, benchMode: false },
+		flags: { isRendering: false, buffersInitialized: false, initComplete: false, benchMode: false, redrawActive: false },
 		/* Textures */
 		tex: { sdr: null, selfIllum: null, frame: null, frameFinal: null },
 		/* Framebuffers */
@@ -32,7 +32,7 @@ export async function setupBoxBlur() {
 		shd: {
 			scene: { handle: null, uniforms: { offset: null, radius: null } },
 			blur: { handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null, bloomStrength: null } },
-			bloom: { handle: null, uniforms: { offset: null, radius: null, tex0: null, tex1: null } }
+			bloom: { handle: null, uniforms: { offset: null, radius: null, texture: null, textureAdd: null } }
 		}
 	};
 
@@ -41,7 +41,7 @@ export async function setupBoxBlur() {
 		samplePosRange: document.getElementById('samplePosRange'),
 		sigmaRange: document.getElementById('sigmaRange'),
 		kernelSizeRange: document.getElementById('boxKernelSizeRange'),
-		animateCheckBox: document.getElementById('animateCheck_Boxblur'),
+		animate: document.getElementById('animateCheck_Boxblur'),
 		benchmark: document.getElementById('benchmarkBoxBlur'),
 		benchmarkLabel: document.getElementById('benchmarkBoxBlurLabel'),
 		renderer: document.getElementById('rendererBox'),
@@ -68,13 +68,28 @@ export async function setupBoxBlur() {
 	const simpleQuad = await util.fetchShader("shader/simpleQuad.vs");
 	const boxBlurFrag = await util.fetchShader("shader/boxBlur.fs");
 
+	/* Elements that cause a redraw in the non-animation mode */
+	ui.kernelSizeRange.addEventListener('input', () => { if (!ui.animate.checked) redraw(); });
+	ui.samplePosRange.addEventListener('input', () => { if (!ui.animate.checked) redraw(); });
+	ui.bloomBrightnessRange.addEventListener('input', () => { if (!ui.animate.checked) redraw(); });
+
 	/* Events */
-	canvas.addEventListener("webglcontextlost", (e) => {
-		ui.contextLoss.style.display = "block";
-		e.preventDefault();
+	ui.animate.addEventListener("change", () => {
+		if (ui.animate.checked)
+			startRendering();
+		else {
+			ui.fps.value = "-";
+			ui.ms.value = "-";
+			ctx.flags.isRendering = false;
+			redraw()
+		}
 	});
 
-	ui.kernelSizeRange.addEventListener('input', function () {
+	canvas.addEventListener("webglcontextlost", (e) => {
+		ui.contextLoss.style.display = "block";
+	});
+
+	ui.kernelSizeRange.addEventListener('input', () => {
 		reCompileBlurShader(ui.kernelSizeRange.value);
 	});
 
@@ -85,6 +100,7 @@ export async function setupBoxBlur() {
 			radio.checked = true;
 		radio.addEventListener('change', (event) => {
 			ctx.mode = event.target.value;
+			if (!ui.animate.checked) redraw();
 		});
 	});
 
@@ -119,31 +135,24 @@ export async function setupBoxBlur() {
 			}
 
 			worker.terminate();
-			startRendering();
 			ui.benchmark.disabled = false;
 			ctx.flags.benchMode = false;
+			if (ui.animate.checked)
+				startRendering();
+			else
+				redraw();
 		});
 	});
 
 	/* Draw Texture Shader */
-	ctx.shd.scene.handle = util.compileAndLinkShader(gl, circleAnimation, simpleTexture);
-	ctx.shd.scene.uniforms.offset = gl.getUniformLocation(ctx.shd.scene.handle, "offset");
-	ctx.shd.scene.uniforms.radius = gl.getUniformLocation(ctx.shd.scene.handle, "radius");
+	ctx.shd.scene = util.compileAndLinkShader(gl, circleAnimation, simpleTexture, ["offset", "radius"]);
 
 	/* Draw bloom Shader */
-	ctx.shd.bloom.handle = util.compileAndLinkShader(gl, bloomVert, bloomFrag);
-	ctx.shd.bloom.uniforms.tex0 = gl.getUniformLocation(ctx.shd.bloom.handle, "texture");
-	ctx.shd.bloom.uniforms.tex1 = gl.getUniformLocation(ctx.shd.bloom.handle, "textureAdd");
-	ctx.shd.bloom.uniforms.offset = gl.getUniformLocation(ctx.shd.bloom.handle, "offset");
-	ctx.shd.bloom.uniforms.radius = gl.getUniformLocation(ctx.shd.bloom.handle, "radius");
+	ctx.shd.bloom = util.compileAndLinkShader(gl, bloomVert, bloomFrag, ["texture", "textureAdd", "offset", "radius"]);
 
 	/* Helper for recompilation */
 	function reCompileBlurShader(blurSize) {
-		ctx.shd.blur.handle = util.compileAndLinkShader(gl, simpleQuad, boxBlurFrag, "#define KERNEL_SIZE " + blurSize + '\n');
-		ctx.shd.blur.uniforms.frameSizeRCP = gl.getUniformLocation(ctx.shd.blur.handle, "frameSizeRCP");
-		ctx.shd.blur.uniforms.samplePosMult = gl.getUniformLocation(ctx.shd.blur.handle, "samplePosMult");
-		ctx.shd.blur.uniforms.bloomStrength = gl.getUniformLocation(ctx.shd.blur.handle, "bloomStrength");
-		ctx.shd.blur.uniforms.sigma = gl.getUniformLocation(ctx.shd.blur.handle, "sigma");
+		ctx.shd.blur = util.compileAndLinkShader(gl, simpleQuad, boxBlurFrag, ["frameSizeRCP", "samplePosMult", "bloomStrength", "sigma"], "#define KERNEL_SIZE " + blurSize + '\n');
 	}
 
 	/* Blur Shader */
@@ -201,15 +210,19 @@ export async function setupBoxBlur() {
 	let fpsEMA = 60;
 	let msEMA = 16;
 
-	function redraw() {
-		ctx.flags.redrawActive = true;
+	async function redraw() {
 		if (!ctx.flags.buffersInitialized) {
-			setupTextureBuffers();
+			await setupTextureBuffers();
 		}
 		if (!ctx.flags.initComplete) {
-			ctx.flags.redrawActive = false;
 			return;
 		}
+		/* Just in case debug */
+		if (ctx.flags.redrawActive) {
+			console.warn("double redraw");
+			return;
+		}
+		ctx.flags.redrawActive = true;
 
 		/* UI Stats */
 		const KernelSizeSide = ui.kernelSizeRange.value * 2 + 1;
@@ -218,7 +231,7 @@ export async function setupBoxBlur() {
 			ui.tapsCount.value = tapsNewText;
 
 		/* Circle Motion */
-		var radiusSwitch = ui.animateCheckBox.checked ? radius : 0.0;
+		var radiusSwitch = ui.animate.checked ? radius : 0.0;
 		var speed = (performance.now() / 10000) % Math.PI * 2;
 		const offset = [radiusSwitch * Math.cos(speed), radiusSwitch * Math.sin(speed)];
 		gl.useProgram(ctx.shd.scene.handle);
@@ -264,11 +277,11 @@ export async function setupBoxBlur() {
 
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D, ctx.tex.sdr);
-			gl.uniform1i(ctx.shd.bloom.uniforms.tex0, 0);
+			gl.uniform1i(ctx.shd.bloom.uniforms.texture, 0);
 
 			gl.activeTexture(gl.TEXTURE1);
 			gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frameFinal);
-			gl.uniform1i(ctx.shd.bloom.uniforms.tex1, 1);
+			gl.uniform1i(ctx.shd.bloom.uniforms.textureAdd, 1);
 
 			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 		}
@@ -289,14 +302,14 @@ export async function setupBoxBlur() {
 		}
 		prevNow = now;
 
-		if (now - lastStatsUpdate >= 1000) {
+		if (ui.animate.checked && now - lastStatsUpdate >= 1000) {
 			ui.fps.value = fpsEMA.toFixed(0);
 			ui.ms.value = msEMA.toFixed(2);
 			lastStatsUpdate = now;
 		}
-
 		ctx.flags.redrawActive = false;
 	}
+
 	let animationFrameId;
 
 	/* Render at Native Resolution */
@@ -315,6 +328,8 @@ export async function setupBoxBlur() {
 				stopRendering();
 				startRendering();
 			}
+			if (!ui.animate.checked)
+				redraw();
 		}
 	}
 
@@ -329,7 +344,7 @@ export async function setupBoxBlur() {
 	nativeResize();
 
 	function renderLoop() {
-		if (ctx.flags.isRendering) {
+		if (ctx.flags.isRendering && ui.animate.checked) {
 			redraw();
 			animationFrameId = requestAnimationFrame(renderLoop);
 		}
@@ -345,11 +360,6 @@ export async function setupBoxBlur() {
 		/* Stop another redraw being called */
 		ctx.flags.isRendering = false;
 		cancelAnimationFrame(animationFrameId);
-		while (ctx.flags.redrawActive) {
-			/* Spin on draw calls being processed. To simplify sync.
-			   In reality this code is block is never reached, but just
-			   in case, we have this here. */
-		}
 		/* Force the rendering pipeline to sync with CPU before we mess with it */
 		gl.finish();
 

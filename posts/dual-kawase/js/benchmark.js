@@ -9,7 +9,12 @@ self.addEventListener("message", async (ev) => {
 		tex: { sdr: null, selfIllum: null, frame: null },
 		fb: { scene: null },
 		shd: {
-			handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null, bloomStrength: null }
+			blur: {
+				handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null, bloomStrength: null }
+			},
+			bg: {
+				handle: null
+			}
 		}
 	};
 
@@ -56,29 +61,25 @@ self.addEventListener("message", async (ev) => {
 	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, ctx.tex.frame, 0);
 	gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
 
-	const bgShd = util.compileAndLinkShader(gl, simpleQuad, noiseFrag);
+	ctx.shd.bg = util.compileAndLinkShader(gl, simpleQuad, noiseFrag);
 
 	/* Blur Shader */
-	ctx.shd.handle = util.compileAndLinkShader(gl, simpleQuad, blurShaderSrc, "#define KERNEL_SIZE " + kernelSize + '\n');
-	ctx.shd.uniforms.samplePosMult = gl.getUniformLocation(ctx.shd.handle, "samplePosMult");
-	ctx.shd.uniforms.bloomStrength = gl.getUniformLocation(ctx.shd.handle, "bloomStrength");
-	ctx.shd.uniforms.frameSizeRCP = gl.getUniformLocation(ctx.shd.handle, "frameSizeRCP");
-	ctx.shd.uniforms.sigma = gl.getUniformLocation(ctx.shd.handle, "sigma");
+	ctx.shd.blur = util.compileAndLinkShader(gl, simpleQuad, blurShaderSrc, ["samplePosMult", "bloomStrength", "frameSizeRCP", "sigma"], "#define KERNEL_SIZE " + kernelSize + '\n');
 
 	gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.scene);
 	gl.viewport(0, 0, 1600, 1200);
-	gl.useProgram(bgShd);
+	gl.useProgram(ctx.shd.bg.handle);
 	gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
 	/* Run a draw Call with the blur Shader to ensure it's loaded */
-	gl.useProgram(ctx.shd.handle);
+	gl.useProgram(ctx.shd.blur.handle);
 	gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
-	gl.uniform2f(ctx.shd.uniforms.frameSizeRCP, 1.0 / 1600, 1.0 / 1200);
-	gl.uniform1f(ctx.shd.uniforms.samplePosMult, samplePos);
-	gl.uniform1f(ctx.shd.uniforms.bloomStrength, 1.0);
-	gl.uniform1f(ctx.shd.uniforms.sigma, sigma);
+	gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / 1600, 1.0 / 1200);
+	gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, samplePos);
+	gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, 1.0);
+	gl.uniform1f(ctx.shd.blur.uniforms.sigma, sigma);
 
 	gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
@@ -115,7 +116,7 @@ self.addEventListener("message", async (ev) => {
 	else
 		benchText = benchTime >= 1000 ? (benchTime / 1000).toFixed(1) + " s" : benchTime.toFixed(1) + " ms";
 
-	if(testPixel[0] + testPixel[1] + testPixel[2] == 0){
+	if (testPixel[0] + testPixel[1] + testPixel[2] == 0) {
 		benchText = "Invalid Measurement"
 	}
 
@@ -129,8 +130,8 @@ self.addEventListener("message", async (ev) => {
 	gl.deleteBuffer(quadBuffer);
 	gl.deleteFramebuffer(ctx.fb.scene);
 	gl.deleteTexture(ctx.tex.frame);
-	gl.deleteProgram(ctx.shd.handle);
-	gl.deleteProgram(bgShd);
+	gl.deleteProgram(ctx.shd.blur.handle);
+	gl.deleteProgram(ctx.shd.bg.handle);
 
 	/* debug */
 	const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.92 });

@@ -12,6 +12,8 @@ publicTags:
 image:
 ---
 
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
 <style>
     .settingsTable .noborder td {
         border-bottom: unset;
@@ -110,7 +112,7 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 	<tr>
 		<td colspan=4 style="width:100%">
 			<div style="display: flex; gap: 0px 12px; align-items: center;">
-			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-around;">
+			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-around;  font-size: smaller">
 			        <span style="display: flex; gap: 8px; white-space: nowrap;">
 						<strong>FPS:</strong> <output id="fpsBoxBlur">?</output> / <output id="msBoxBlur">?</output> ms
 					</span>
@@ -159,7 +161,7 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 			<output id="samplePos">100</output> %
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" onclick="samplePosRange.value = 1;samplePos.textContent = 100">{% include "style/icons/rotate-right.svg" %}</button>
+			<button class="roundButton" onclick="samplePosRange.value = 1;samplePos.textContent = 100;samplePosRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
@@ -178,7 +180,7 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 			<output id="bloomBrightness">100</output> %
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" onclick="bloomBrightnessRange.value = 1; bloomBrightness.textContent = 100">{% include "style/icons/rotate-right.svg" %}</button>
+			<button class="roundButton" onclick="bloomBrightnessRange.value = 1; bloomBrightness.textContent = 100;bloomBrightnessRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
