@@ -37,7 +37,7 @@ self.addEventListener("message", async (ev) => {
 		self.close();
 	});
 
-	const dummyPixels = new Uint8Array(4);
+	const testPixel = new Uint8Array(4);
 
 	const simpleQuad = await util.fetchShader("../shader/simpleQuad.vs");
 	const noiseFrag = await util.fetchShader("../shader/noise.fs");
@@ -81,32 +81,41 @@ self.addEventListener("message", async (ev) => {
 	gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 	/* Make sure the Command Queue is empty */;
-	gl.readPixels(Math.random() * 512, Math.random() * 512, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
+	gl.readPixels(Math.random() * 512, Math.random() * 512, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, testPixel);
 
 	/* Measure the rough length of a pixel Readback */
 	const readPixelsTimeStart = performance.now();
 	for (let x = 0; x < 10; x++)
-		gl.readPixels(Math.random() * 512, Math.random() * 512, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
+		gl.readPixels(Math.random() * 512, Math.random() * 512, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, testPixel);
 	const readPixelsTimeEnd = performance.now();
 
 	/* Warm Up the pipeline */
 	for (let x = 0; x < iterations / 10; x++)
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-	gl.readPixels(Math.random() * 512, Math.random() * 512, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
+	gl.readPixels(Math.random() * 512, Math.random() * 512, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, testPixel);
 
 	/* Measure blur iterations */
 	const benchNow = performance.now()
 	for (let x = 0; x < iterations; x++)
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-	gl.readPixels(Math.random() * 512, Math.random() * 512, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, dummyPixels);
+	gl.readPixels(Math.random() * 512, Math.random() * 512, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, testPixel);
 
 	/* Display results */
+	const kernelSizeSide = kernelSize * 2 + 1;
+	const tapsCount = (1600 * 1200 * kernelSizeSide * kernelSizeSide / 1000000).toFixed(1);
 	const benchTime = performance.now() - benchNow - ((readPixelsTimeEnd - readPixelsTimeStart) / 10);
+	const iterationTime = benchTime / iterations;
+	const iterationText = iterationTime < 1 ? (iterationTime * 1000).toFixed(2) + " µs" : iterationTime.toFixed(2) + " ms";
+
 	let benchText;
-	if(benchTime < 1)
+	if (benchTime < 1)
 		benchText = "Unreliable Measurement"
 	else
 		benchText = benchTime >= 1000 ? (benchTime / 1000).toFixed(1) + " s" : benchTime.toFixed(1) + " ms";
+
+	if(testPixel[0] + testPixel[1] + testPixel[2] == 0){
+		benchText = "Invalid Measurement"
+	}
 
 	/* Clean Up */
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -124,5 +133,5 @@ self.addEventListener("message", async (ev) => {
 	/* debug */
 	const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.92 });
 	if (!ctx.flags.contextLoss)
-		self.postMessage({ type: "done", blob, benchText, renderer });
+		self.postMessage({ type: "done", blob, benchText, iterationText, renderer, tapsCount });
 });

@@ -9,5 +9,5 @@ float gradientNoise(in vec2 uv)
 
 void main(void)
 {
-	gl_FragColor = vec4(vec3(0.0) + gradientNoise(gl_FragCoord.xy), 1.0);
+	gl_FragColor = vec4(vec3(0.0) + gradientNoise(gl_FragCoord.xy) + 0.1, 1.0);
 }

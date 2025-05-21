@@ -5,7 +5,7 @@ export async function setupBoxBlur() {
 	const canvas = document.getElementById('canvasBoxBlur');
 
 	/* Circle Rotation size */
-	const radius = 0.1;
+	const radius = 0.12;
 
 	/* Main WebGL 1.0 Context */
 	const gl = canvas.getContext('webgl', {
@@ -22,15 +22,17 @@ export async function setupBoxBlur() {
 	/* State and Objects */
 	const ctx = {
 		/* State for of the Rendering */
+		mode: "scene",
 		flags: { isRendering: false, redrawActive: false, buffersInitialized: false, initComplete: false, benchMode: false },
 		/* Textures */
-		tex: { sdr: null, selfIllum: null, frame: null },
+		tex: { sdr: null, selfIllum: null, frame: null, frameFinal: null },
 		/* Framebuffers */
-		fb: { scene: null },
+		fb: { scene: null, final: null },
 		/* Shaders and their respective Resource Locations */
 		shd: {
 			scene: { handle: null, uniforms: { offset: null, radius: null } },
-			blur: { handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null } }
+			blur: { handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null, bloomStrength: null } },
+			bloom: { handle: null, uniforms: { offset: null, radius: null, tex0: null, tex1: null } }
 		}
 	};
 
@@ -48,15 +50,21 @@ export async function setupBoxBlur() {
 		width: document.getElementById('widthBoxBlur'),
 		height: document.getElementById('heightBoxBlur'),
 		tapsCount: document.getElementById('tapsBoxBlur'),
+		tapsCountBench: document.getElementById('tapsCountBenchBox'),
 		iterOut: document.getElementById('iterOutBoxBlur'),
 		spinner: canvas.parentElement.querySelector('svg'),
 		contextLoss: document.getElementById('contextLoss'),
+		bloomBrightnessRange: document.getElementById('bloomBrightnessRange'),
+		iterTime: document.getElementById('iterTimeBox'),
+		radios: document.querySelectorAll('input[name="modeBox"]'),
 		debugIMG: document.getElementById('debugIMG'),
 	};
 
 	/* Shaders */
 	const circleAnimation = await util.fetchShader("shader/circleAnimation.vs");
 	const simpleTexture = await util.fetchShader("shader/simpleTexture.fs");
+	const bloomVert = await util.fetchShader("shader/bloom.vs");
+	const bloomFrag = await util.fetchShader("shader/bloom.fs");
 	const simpleQuad = await util.fetchShader("shader/simpleQuad.vs");
 	const boxBlurFrag = await util.fetchShader("shader/boxBlur.fs");
 
@@ -68,6 +76,16 @@ export async function setupBoxBlur() {
 
 	ui.kernelSizeRange.addEventListener('input', function () {
 		reCompileBlurShader(ui.kernelSizeRange.value);
+	});
+
+	/* Render Mode */
+	ui.radios.forEach(radio => {
+		/* Force set to scene to fix a reload bug in Firefox Android */
+		if (radio.value === "scene")
+			radio.checked = true;
+		radio.addEventListener('change', (event) => {
+			ctx.mode = event.target.value;
+		});
 	});
 
 	ui.benchmark.addEventListener("click", () => {
@@ -93,6 +111,8 @@ export async function setupBoxBlur() {
 			if (ev.data.type !== "done") return;
 
 			ui.benchmarkLabel.textContent = ev.data.benchText;
+			ui.tapsCountBench.textContent = ev.data.tapsCount;
+			ui.iterTime.textContent = ev.data.iterationText;
 			ui.renderer.textContent = ev.data.renderer;
 			if (ev.data.blob) {
 				ui.debugIMG.src = URL.createObjectURL(ev.data.blob);
@@ -110,15 +130,23 @@ export async function setupBoxBlur() {
 	ctx.shd.scene.uniforms.offset = gl.getUniformLocation(ctx.shd.scene.handle, "offset");
 	ctx.shd.scene.uniforms.radius = gl.getUniformLocation(ctx.shd.scene.handle, "radius");
 
+	/* Draw bloom Shader */
+	ctx.shd.bloom.handle = util.compileAndLinkShader(gl, bloomVert, bloomFrag);
+	ctx.shd.bloom.uniforms.tex0 = gl.getUniformLocation(ctx.shd.bloom.handle, "texture");
+	ctx.shd.bloom.uniforms.tex1 = gl.getUniformLocation(ctx.shd.bloom.handle, "textureAdd");
+	ctx.shd.bloom.uniforms.offset = gl.getUniformLocation(ctx.shd.bloom.handle, "offset");
+	ctx.shd.bloom.uniforms.radius = gl.getUniformLocation(ctx.shd.bloom.handle, "radius");
+
 	/* Helper for recompilation */
 	function reCompileBlurShader(blurSize) {
 		ctx.shd.blur.handle = util.compileAndLinkShader(gl, simpleQuad, boxBlurFrag, "#define KERNEL_SIZE " + blurSize + '\n');
 		ctx.shd.blur.uniforms.frameSizeRCP = gl.getUniformLocation(ctx.shd.blur.handle, "frameSizeRCP");
 		ctx.shd.blur.uniforms.samplePosMult = gl.getUniformLocation(ctx.shd.blur.handle, "samplePosMult");
+		ctx.shd.blur.uniforms.bloomStrength = gl.getUniformLocation(ctx.shd.blur.handle, "bloomStrength");
 		ctx.shd.blur.uniforms.sigma = gl.getUniformLocation(ctx.shd.blur.handle, "sigma");
 	}
 
-	/* blur Shader */
+	/* Blur Shader */
 	reCompileBlurShader(ui.kernelSizeRange.value)
 
 	/* Send Unit code verts to the GPU */
@@ -133,11 +161,16 @@ export async function setupBoxBlur() {
 		ctx.flags.initComplete = false;
 		/* Setup Buffers */
 		gl.deleteFramebuffer(ctx.fb.scene);
+		gl.deleteFramebuffer(ctx.fb.final);
 		ctx.fb.scene = gl.createFramebuffer();
-		gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.scene);
+		ctx.fb.final = gl.createFramebuffer();
 
 		ctx.tex.frame = util.setupTexture(gl, canvas.width, canvas.height, ctx.tex.frame, gl.NEAREST);
+		ctx.tex.frameFinal = util.setupTexture(gl, canvas.width, canvas.height, ctx.tex.frameFinal, gl.NEAREST);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.scene);
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, ctx.tex.frame, 0);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.final);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, ctx.tex.frameFinal, 0);
 
 		/* Setup textures */
 		let [base, selfIllum] = await Promise.all([
@@ -189,7 +222,9 @@ export async function setupBoxBlur() {
 		var speed = (performance.now() / 10000) % Math.PI * 2;
 		const offset = [radiusSwitch * Math.cos(speed), radiusSwitch * Math.sin(speed)];
 		gl.useProgram(ctx.shd.scene.handle);
-		gl.bindTexture(gl.TEXTURE_2D, ctx.tex.sdr);
+		const texture = ctx.mode == "scene" ? ctx.tex.sdr : ctx.tex.selfIllum;
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D, texture);
 		gl.uniform2fv(ctx.shd.scene.uniforms.offset, offset);
 		gl.uniform1f(ctx.shd.scene.uniforms.radius, radiusSwitch);
 
@@ -200,9 +235,16 @@ export async function setupBoxBlur() {
 		/* Draw Call */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
-		/* Setup Draw to screen */
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		/* Setup Blur to Buffer */
 		gl.useProgram(ctx.shd.blur.handle);
+		if (ctx.mode == "bloom")
+			gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.final);
+		else
+			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		if (ctx.mode == "scene")
+			gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, 1.0);
+		else
+			gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ui.bloomBrightnessRange.value);
 		gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
 
 		gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / canvas.width, 1.0 / canvas.height);
@@ -211,6 +253,25 @@ export async function setupBoxBlur() {
 
 		/* Drawcall */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+		/* Output to the Screen */
+		if (ctx.mode == "bloom") {
+			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+			gl.useProgram(ctx.shd.bloom.handle);
+
+			gl.uniform2fv(ctx.shd.bloom.uniforms.offset, offset);
+			gl.uniform1f(ctx.shd.bloom.uniforms.radius, radiusSwitch);
+
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D, ctx.tex.sdr);
+			gl.uniform1i(ctx.shd.bloom.uniforms.tex0, 0);
+
+			gl.activeTexture(gl.TEXTURE1);
+			gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frameFinal);
+			gl.uniform1i(ctx.shd.bloom.uniforms.tex1, 1);
+
+			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+		}
 
 		/* Ask for CPU-GPU Sync to prevent overloading the GPU during compositing.
 		   In reality this is more likely to be flush, but still, it seems to
@@ -296,7 +357,9 @@ export async function setupBoxBlur() {
 		gl.deleteTexture(ctx.tex.sdr);
 		gl.deleteTexture(ctx.tex.selfIllum);
 		gl.deleteTexture(ctx.tex.frame);
+		gl.deleteTexture(ctx.tex.frameFinal);
 		gl.deleteFramebuffer(ctx.fb.scene);
+		gl.deleteFramebuffer(ctx.fb.final);
 		ctx.flags.buffersInitialized = false;
 		ctx.flags.initComplete = false;
 	}

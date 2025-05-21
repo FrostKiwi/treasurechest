@@ -1,6 +1,6 @@
 ---
 wip: true
-title: Dual Kawase - A blur to rule them all & interview with Masaki Kawase
+title: Video Game Blurs (and how the best one works)
 permalink: "/{{ page.fileSlug }}/"
 date:
 last_modified:
@@ -56,22 +56,10 @@ Especially dedicated Laptop GPUs are rather slow with getting out of their power
 
 If you set the benchmark with parameters resulting in 10s+ run times, then you'll see just how brittle browsers on even the most premium Apple devices become, once we load the GPU mercilessly. Even though the main thread does nothing during a benchmark run, we'll trigger interesting error states.
 
+On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `samplePosMultiplier` will negatively impact performance (up to a point), even though the required texture reads stay the same. This is due hardware texture caches accelerating texture reads which are spatially close together and not being able to do so effectively, if the texture reads are all too far apart.
+
 <blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/dead.svg"></blockquote>
 
-<div class="toggleRes">
-	<div>
-	  <input type="radio" id="native" name="resSimple" value="1" checked />
-	  <label for="native">Scene<div>Blur</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="half" name="resSimple" value="2" />
-	  <label for="half">Self Illumination<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="quarter" name="resSimple" value="4" />
-	  <label for="quarter">Bloom<div>Resolution</div></label>
-	</div>
-</div>
 <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; justify-content: space-around;">
     <span style="display: flex; gap: 8px; white-space: nowrap">
         <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
@@ -85,7 +73,21 @@ If you set the benchmark with parameters resulting in 10s+ run times, then you'l
 
 ## Box Blur
 
-<div class="canvasParent">
+<div class="toggleRes">
+	<div>
+	  <input type="radio" id="sceneBox" name="modeBox" value="scene" checked />
+	  <label for="sceneBox">Scene</label>
+	</div>
+	<div>
+	  <input type="radio" id="selfIllumBox" name="modeBox" value="selfIllum" />
+	  <label for="selfIllumBox">Self Illumination</label>
+	</div>
+	<div>
+	  <input type="radio" id="bloomBox" name="modeBox" value="bloom" />
+	  <label for="bloomBox">Bloom</label>
+	</div>
+</div>
+<div style="margin-top: 13px" class="canvasParent">
 	<canvas width="100%" height="400px" style="aspect-ratio: 4/3;" id="canvasBoxBlur"></canvas>
 	<div class="contextLoss" id="contextLoss">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms you may have to restart the browser completely.</div>
 	{% include "style/icons/clock.svg" %}
@@ -124,29 +126,10 @@ If you set the benchmark with parameters resulting in 10s+ run times, then you'l
 	</tr>
 	<tr class="variable-name-row noborder">
 		<td colspan=4>
-			<code>sigma</code>
-		</td>
-	</tr>
-	<tr>
-		<td class="variable-name-cell">
-			<code>sigma</code>
-		</td>
-		<td style="width:100%">
-			<input class="slider" type="range" step="1" min="0" max="32" value="1" id="sigmaRange" oninput="sigma.textContent = this.value">
-		</td>
-		<td style="text-align: center;">
-			<output id="sigma">1</output> px
-		</td>
-		<td style="text-align: center;">
-			<button class="roundButton" onclick="sigmaRange.value = 3; sigma.textContent = '7x7';sigmaRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
-		</td>
-	</tr>
-	<tr class="variable-name-row noborder">
-		<td colspan=4>
 			<code>kernelSize</code>
 		</td>
 	</tr>
-	<tr>
+	<tr class="noborder">
 		<td class="variable-name-cell">
 			<code>kernelSize</code>
 		</td>
@@ -179,15 +162,58 @@ If you set the benchmark with parameters resulting in 10s+ run times, then you'l
 			<button class="roundButton" onclick="samplePosRange.value = 1;samplePos.textContent = 100">{% include "style/icons/rotate-right.svg" %}</button>
 		</td>
 	</tr>
-	<div id="floatTest"></div>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>bloomBrightness</code>
+		</td>
+	</tr>
+	<tr>
+		<td class="variable-name-cell">
+			<code>bloomBrightness</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="0.01" min="0" max="20" value="1" id="bloomBrightnessRange" oninput="bloomBrightness.textContent = parseInt(this.value * 100)">
+		</td>
+		<td style="text-align: center;">
+			<output id="bloomBrightness">100</output> %
+		</td>
+		<td style="text-align: center;">
+			<button class="roundButton" onclick="bloomBrightnessRange.value = 1; bloomBrightness.textContent = 100">{% include "style/icons/rotate-right.svg" %}</button>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>sigma</code>
+		</td>
+	</tr>
+	<tr>
+		<td class="variable-name-cell">
+			<code>sigma</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="1" min="0" max="32" value="1" id="sigmaRange" oninput="sigma.textContent = this.value">
+		</td>
+		<td style="text-align: center;">
+			<output id="sigma">1</output> px
+		</td>
+		<td style="text-align: center;">
+			<button class="roundButton" onclick="sigmaRange.value = 3; sigma.textContent = '7x7';sigmaRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+		</td>
+	</tr>
 	<tr>
 		<td colspan="4" style="width: 100%;">
 			<div style="display: flex; flex-wrap: nowrap; gap: 0px 12px; width: 100%; justify-content: space-between;">
-				<div style="white-space: normal; word-break: break-word;">
+				<div style="white-space: normal; word-break: break-word; font-size: smaller;">
 					<div>
-						~<output>312</output> ms / iteration
+						~<output id="iterTimeBox">?</output> / iteration
 					</div>
-					<code id="rendererBox"></code>
+					<div>
+						<output id="tapsCountBenchBox">?</output> Million texture reads / iteration
+					</div>
+					<div>
+						GPU info: <code id="rendererBox"></code>
+					</div>
+					<div id="floatTest"></div>
 				</div>
 				<div class="multiButton">
 					<button type="button" class="main" id="benchmarkBoxBlur">

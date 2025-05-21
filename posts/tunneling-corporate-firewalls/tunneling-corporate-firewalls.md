@@ -539,7 +539,7 @@ OpenSSH supplies `ProxyCommand` and relies on other tools proxying for it. Many 
 
 <blockquote class="reaction"><div class="reaction_text">Linux, BSD and MacOS have <a target="_blank" href="https://en.wikipedia.org/wiki/Netcat"><code>nc</code></a> preinstalled, which can also be used. But we are ignoring it for brevity, as it's more of a general purpose tool and the <a target="_blank" href="https://scoop.sh/#/apps?q=netcat&id=8bec774707c893d2baf0cb999c13936c7bebc306">windows builds</a> are flagged by Windows Defender.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
-`ssh-connect` created by [@gotoh](https://github.com/gotoh) recently moved to GitHub. Most online documentation now points to [a dead bitbucket repo](https://bitbucket.org/gotoh/connect). On Windows specifically it comes as `connect.exe`, installed by default with [Git for Windows](https://gitforwindows.org/) and can also [be installed via Sccop](https://scoop.sh/#/apps?q=connect&id=bdf819b2986269a3c7c29074c2d26870a17c4a88) or [MSYS](https://packages.msys2.org/base/mingw-w64-connect).
+`ssh-connect` created by [@gotoh](https://github.com/gotoh) recently moved to GitHub. Most online documentation now points to [a dead bitbucket repo](https://bitbucket.org/gotoh/connect). On Windows specifically it comes as `connect.exe`, installed by default with [Git for Windows](https://gitforwindows.org/) and can also [be installed via Scoop](https://scoop.sh/#/apps?q=connect&id=bdf819b2986269a3c7c29074c2d26870a17c4a88) or [MSYS](https://packages.msys2.org/base/mingw-w64-connect).
 
 Though not quite the same, in the context of the article [corkscrew](https://github.com/bryanpkc/corkscrew) does the same. It is more well known as a project, [just 260 lines of C](https://github.com/bryanpkc/corkscrew/blob/master/corkscrew.c), but in contrast to `ssh-connect` has no widely distributed Windows build. For x64 Windows, I have compiled it myself and here it is as a shortcut for testing: [corkscrew.zip](corkscrew.zip).
 
@@ -930,7 +930,7 @@ Normally, `HTTP CONNECT` and standard HTTP coexist independently. On Caddy it's 
 
 <blockquote class="reaction"><div class="reaction_text">With just a couple config lines, we gained the ability to publicly expose any TCP port, without access to any of the underlying infrastructure.</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
 
-As long as the desired client, not ***just*** `ssh`, is being fed by `proxytunnel` or understands `HTTP CONNECT` itself, then we attained a de-facto port-forwarding to any TCP port we desire, bypassing server-side firewalls. There *can* be server-side blocks for `HTTP CONNECT`, but it's trivial to go a level deeper with projects [wstunnel](https://github.com/erebe/wstunnel).
+As long as the desired client, not ***just*** `ssh`, is being fed by `proxytunnel` or understands `HTTP CONNECT` itself, then we attained a de-facto port-forwarding to any TCP port we desire, bypassing server-side firewalls. There *can* be server-side blocks for `HTTP CONNECT`, but it's trivial to go a level deeper with projects like [wstunnel](https://github.com/erebe/wstunnel).
 
 ### Client-side connection
 Just like previously, we can first test the connection without OpenSSH. We have to specify our own HTTP server as a proxy, the final destination to `localhost:22`, as well the intermediate corporate proxy, if there is any. So **One** proxy if there is a direct connection to our Server, **Two** with an intermediate proxy.
@@ -1167,7 +1167,7 @@ Now, so far we have made an assumption: HTTPS won't betray us. This is an assump
 
 In the context of HTTPS or corporate connections, this involved pre-installing a [Trusted Root Certificate Authority](https://en.wikipedia.org/wiki/Certificate_authority) on the user's machine (i.e. via Windows' group policy). Such dangerous idea, that even the [NSA](https://en.wikipedia.org/wiki/National_Security_Agency) issued [an advisory](https://web.archive.org/web/20191119195359/https://media.defense.gov/2019/Nov/18/2002212783/-1/-1/0/MANAGING%20RISK%20FROM%20TLS%20INSPECTION_20191106.PDF) and the [Cypersecurity & Infrastructure Security Agency CISA](https://en.wikipedia.org/wiki/Cybersecurity_and_Infrastructure_Security_Agency) outright [cautions against it](https://www.cisa.gov/news-events/alerts/2017/03/16/https-interception-weakens-tls-security).
 
-A compromise of that intermediate root certificate would mean a whole company's connections being readable in clear text. [DPI is easily detectable](https://www.grc.com/fingerprints.htm), as re-encryption rewrites certificate fingerprints. You can check against known fingerprints in the browser's certificate detail view or this command:
+A compromise of that intermediate root certificate would mean a whole company's connections being readable in clear text. [DPI is easily detectable](https://www.grc.com/fingerprints.htm), as re-encryption changes certificate fingerprints. You can check against known fingerprints in the browser's certificate detail view or this command:
 
 ```tunnelingArticleShell
 $ openssl s_client -proxy <Corporate Proxy IP>:<Corporate Proxy Port> -connect <Site which is not blocked>:443 -servername <Site which is not blocked> | openssl x509 -noout -fingerprint -sha1
