@@ -9,7 +9,7 @@ self.addEventListener("message", async (ev) => {
 		tex: { sdr: null, selfIllum: null, frame: null },
 		fb: { scene: null },
 		shd: {
-			handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null }
+			handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null, bloomStrength: null }
 		}
 	};
 
@@ -60,8 +60,9 @@ self.addEventListener("message", async (ev) => {
 
 	/* Blur Shader */
 	ctx.shd.handle = util.compileAndLinkShader(gl, simpleQuad, blurShaderSrc, "#define KERNEL_SIZE " + kernelSize + '\n');
-	ctx.shd.uniforms.frameSizeRCP = gl.getUniformLocation(ctx.shd.handle, "frameSizeRCP");
 	ctx.shd.uniforms.samplePosMult = gl.getUniformLocation(ctx.shd.handle, "samplePosMult");
+	ctx.shd.uniforms.bloomStrength = gl.getUniformLocation(ctx.shd.handle, "bloomStrength");
+	ctx.shd.uniforms.frameSizeRCP = gl.getUniformLocation(ctx.shd.handle, "frameSizeRCP");
 	ctx.shd.uniforms.sigma = gl.getUniformLocation(ctx.shd.handle, "sigma");
 
 	gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.scene);
@@ -76,6 +77,7 @@ self.addEventListener("message", async (ev) => {
 	gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
 	gl.uniform2f(ctx.shd.uniforms.frameSizeRCP, 1.0 / 1600, 1.0 / 1200);
 	gl.uniform1f(ctx.shd.uniforms.samplePosMult, samplePos);
+	gl.uniform1f(ctx.shd.uniforms.bloomStrength, 1.0);
 	gl.uniform1f(ctx.shd.uniforms.sigma, sigma);
 
 	gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
