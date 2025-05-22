@@ -10,7 +10,8 @@ const STYLES = {
 
 export function setupSVG() {
 	const svg = document.getElementById("kernelSimple");
-	const range = document.getElementById("svgKernelRange");
+	const kernelRange = document.getElementById("svgKernelRange");
+	const sampleMultRange = document.getElementById("svgSamplePosMult");
 	svg.setAttribute("viewBox", "-1 -1 2 2");
 
 	/* BG */
@@ -28,13 +29,14 @@ export function setupSVG() {
 	g.style.transition = "transform 0.3s ease";
 	svg.appendChild(g);
 
-	range.addEventListener("input", () => draw(range.value, g));
-	draw(range.value, g);
+	kernelRange.addEventListener("input", () => draw(kernelRange.value, g, sampleMultRange.value));
+	sampleMultRange.addEventListener("input", () => draw(kernelRange.value, g, sampleMultRange.value));
+	draw(kernelRange.value, g, sampleMultRange.value);
 }
 
-function draw(k, g) {
+function draw(k, g, mult) {
 	const kernelSize = 2 * k + 1;
-	const scale = 1 / (kernelSize * 0.5 + 1.5);
+	const scale = 1 / (kernelSize * mult * 0.5 + 1.5);
 	g.style.transform = `scale(${scale})`;
 
 	const pixelSize = 0.9;
@@ -52,7 +54,7 @@ function draw(k, g) {
 	g.appendChild(centerPixel);
 
 	/* Side Pixels */
-	const extraRows = 5;
+	const extraRows = 6;
 	const half = (kernelSize - 1) / 2;
 	for (let y = -half - extraRows; y <= half + extraRows; ++y) {
 		for (let x = -half - extraRows; x <= half + extraRows; ++x) {
@@ -64,8 +66,10 @@ function draw(k, g) {
 			r.setAttribute("height", pixelSize);
 			r.setAttribute("style", STYLES.sidePixel);
 
-			const distance = Math.max(Math.abs(x) - half, Math.abs(y) - half);
-			const opacity = Math.pow(0.5, distance);
+			const dx = Math.max(Math.abs(x) - half, 0);
+			const dy = Math.max(Math.abs(y) - half, 0);
+			const radial = Math.sqrt(dx * dx + dy * dy);
+			const opacity = radial > 0 ? Math.pow(0.5, radial) : 1;
 			r.setAttribute("opacity", opacity);
 			g.appendChild(r);
 		}
@@ -75,9 +79,9 @@ function draw(k, g) {
 	for (let y = -half; y <= half; ++y) {
 		for (let x = -half; x <= half; ++x) {
 			const c = document.createElementNS(NS, "circle");
-			c.setAttribute("cx", x);
-			c.setAttribute("cy", y);
-			c.setAttribute("r", 0.1);
+			c.setAttribute("cx", x * mult);
+			c.setAttribute("cy", y * mult);
+			c.setAttribute("r", 0.12);
 			c.setAttribute("style", STYLES.samplePosition);
 			g.appendChild(c);
 		}
