@@ -12,6 +12,10 @@ publicTags:
 image:
 ---
 
+Blurs are the basic building block of many post processing effects and essential for sleek and modern UIs.
+
+Living in Japan, I got the chance to interview an idol of me: Graphics Programmer Masaki Kawase.
+
 <style>
     .settingsTable .noborder td {
         border-bottom: unset;
