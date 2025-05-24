@@ -43,7 +43,7 @@ export function setupTexture(gl, width, height, target, filter, source) {
 	gl.deleteTexture(target);
 	target = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, target);
-	
+
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -55,6 +55,25 @@ export function setupTexture(gl, width, height, target, filter, source) {
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
 
 	return target;
+}
+
+/* Create Framebuffer */
+export function setupFramebuffer(gl, w, h, filter = gl.LINEAR) {
+	const tex = setupTexture(gl, w, h, null, filter);
+	const fb = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+	return [ fb, tex ];
+}
+
+/* Upload and bind UnitQuad */
+export function bindUnitQuad(gl) {
+	const buf = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+	gl.bufferData(gl.ARRAY_BUFFER, unitQuad, gl.STATIC_DRAW);
+	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(0);
+	return buf;
 }
 
 /* Fetch Shader Text */

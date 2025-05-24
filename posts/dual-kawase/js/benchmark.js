@@ -47,19 +47,11 @@ self.addEventListener("message", async (ev) => {
 	const simpleQuad = await util.fetchShader("../shader/simpleQuad.vs");
 	const noiseFrag = await util.fetchShader("../shader/noise.fs");
 
-	const quadBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, util.unitQuad, gl.STATIC_DRAW);
-	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(0);
+	const quadBuffer = util.bindUnitQuad(gl);
 
 	/* Setup Buffers */
 	gl.deleteFramebuffer(ctx.fb.scene);
-	ctx.fb.scene = gl.createFramebuffer();
-	gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.scene);
-	ctx.tex.frame = util.setupTexture(gl, 1600, 1200, ctx.tex.frame, gl.NEAREST);
-	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, ctx.tex.frame, 0);
-	gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
+	[ctx.fb.scene, ctx.tex.frame] = util.setupFramebuffer(gl, 1600, 1200);
 
 	ctx.shd.bg = util.compileAndLinkShader(gl, simpleQuad, noiseFrag);
 

@@ -159,27 +159,18 @@ export async function setupBoxBlur() {
 	reCompileBlurShader(ui.kernelSizeRange.value)
 
 	/* Send Unit code verts to the GPU */
-	gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-	gl.bufferData(gl.ARRAY_BUFFER, util.unitQuad, gl.STATIC_DRAW);
-	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-	gl.enableVertexAttribArray(0);
+	util.bindUnitQuad(gl);
 
 	async function setupTextureBuffers() {
 		ui.spinner.style.display = "block";
 		ctx.flags.buffersInitialized = true;
 		ctx.flags.initComplete = false;
+
 		/* Setup Buffers */
 		gl.deleteFramebuffer(ctx.fb.scene);
 		gl.deleteFramebuffer(ctx.fb.final);
-		ctx.fb.scene = gl.createFramebuffer();
-		ctx.fb.final = gl.createFramebuffer();
-
-		ctx.tex.frame = util.setupTexture(gl, canvas.width, canvas.height, ctx.tex.frame, gl.NEAREST);
-		ctx.tex.frameFinal = util.setupTexture(gl, canvas.width, canvas.height, ctx.tex.frameFinal, gl.NEAREST);
-		gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.scene);
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, ctx.tex.frame, 0);
-		gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.final);
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, ctx.tex.frameFinal, 0);
+		[ctx.fb.scene, ctx.tex.frame] = util.setupFramebuffer(gl, canvas.width, canvas.height);
+		[ctx.fb.final, ctx.tex.frameFinal] = util.setupFramebuffer(gl, canvas.width, canvas.height);
 
 		/* Setup textures */
 		let [base, selfIllum] = await Promise.all([
