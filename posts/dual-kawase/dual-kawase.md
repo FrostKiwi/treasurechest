@@ -43,8 +43,8 @@ Living in Japan, I got the chance to interview an idol of me: Graphics Programme
 	}
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script> -->
 
 <svg id="kernelSimple"></svg>
 
@@ -334,6 +334,8 @@ https://www.youtube.com/watch?v=SiJpkucGa1o
 Playdead used it to get HDR Bloom
 [Low Complexity, High Fidelity - INSIDE Rendering](https://gdcvault.com/play/1023304/Low-Complexity-High-Fidelity-INSIDE)
 Check against Jimenez 14 5:45 onwards
+
+Main theory: https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
 
 This article kicked it off: [Link](https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/)
 

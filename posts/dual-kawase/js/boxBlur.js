@@ -1,5 +1,46 @@
 import * as util from './utility.js'
 
+function gaussianKernel(radius, sigma = radius * 0.5) {
+	const kernelSide = radius * 2 + 1;
+	const area = kernelSide * kernelSide;
+	const kernel = new Float32Array(area);
+
+	const twoSig2 = 2.0 * sigma * sigma;
+	let sum = 0.0;
+
+	let i = 0;
+	for (let y = -radius; y <= radius; ++y) {
+		for (let x = -radius; x <= radius; ++x, ++i) {
+			const w = Math.exp(-(x * x + y * y) / twoSig2);
+			kernel[i] = w;
+			sum += w;
+		}
+	}
+
+	/* Normalize */
+	for (let k = 0; k < area; ++k) kernel[k] /= sum;
+	return kernel;
+}
+
+function gaussianUnrolled(radius) {
+	const weights = gaussianKernel(radius);
+	const side = radius * 2 + 1;
+	const area = side * side;
+
+	let accumulateSrc = "";
+	let i = 0;
+	for (let y = -radius; y <= radius; ++y) {
+		for (let x = -radius; x <= radius; ++x, ++i) {
+			accumulateSrc +=
+				`sum += texture2D(texture, uv + vec2(${x}.0, ${y}.0) * samplePosMult * frameSizeRCP) * ${weights[i]};\\\n`;
+		}
+	}
+
+	return (
+		`#define KERNEL_ACCUMULATE \\\n${accumulateSrc}\n`
+	);
+}
+
 export async function setupBoxBlur() {
 	/* Init */
 	const canvas = document.getElementById('canvasBoxBlur');
@@ -67,9 +108,11 @@ export async function setupBoxBlur() {
 	const bloomFrag = await util.fetchShader("shader/bloom.fs");
 	const simpleQuad = await util.fetchShader("shader/simpleQuad.vs");
 	const boxBlurFrag = await util.fetchShader("shader/boxBlur.fs");
+	const gaussianBlurFrag = await util.fetchShader("shader/gaussianBlur.fs");
 
 	/* Elements that cause a redraw in the non-animation mode */
 	ui.kernelSizeRange.addEventListener('input', () => { if (!ui.animate.checked) redraw(); });
+	ui.sigmaRange.addEventListener('input', () => { if (!ui.animate.checked) redraw(); });
 	ui.samplePosRange.addEventListener('input', () => { if (!ui.animate.checked) redraw(); });
 	ui.bloomBrightnessRange.addEventListener('input', () => { if (!ui.animate.checked) redraw(); });
 
@@ -90,6 +133,10 @@ export async function setupBoxBlur() {
 	});
 
 	ui.kernelSizeRange.addEventListener('input', () => {
+		reCompileBlurShader(ui.kernelSizeRange.value);
+	});
+
+	ui.sigmaRange.addEventListener("input", () => {
 		reCompileBlurShader(ui.kernelSizeRange.value);
 	});
 
@@ -152,7 +199,12 @@ export async function setupBoxBlur() {
 
 	/* Helper for recompilation */
 	function reCompileBlurShader(blurSize) {
-		ctx.shd.blur = util.compileAndLinkShader(gl, simpleQuad, boxBlurFrag, ["frameSizeRCP", "samplePosMult", "bloomStrength", "sigma"], "#define KERNEL_SIZE " + blurSize + '\n');
+		const prefix = gaussianUnrolled(blurSize)
+		console.log(prefix);
+		const t0 = performance.now();
+		ctx.shd.blur = util.compileAndLinkShader(gl, simpleQuad, gaussianBlurFrag, ["frameSizeRCP", "samplePosMult", "bloomStrength", "sigma"], prefix);
+		const t1 = performance.now();
+		console.log(blurSize + ` Compilation ${(t1 - t0).toFixed(2)} ms`);
 	}
 
 	/* Blur Shader */
