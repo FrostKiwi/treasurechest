@@ -62,10 +62,10 @@ Living in Japan, I got the chance to interview an idol of me: Graphics Programme
 			<input class="slider" type="range" step="1" min="0" max="16" value="1" id="svgKernelRange" oninput="svgKernelSize.textContent = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
 		</td>
 		<td style="text-align: center;">
-			<output id="svgKernelSize">3x3</output>
+			<output id="svgKernelSize">3×3</output>
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" onclick="svgKernelRange.value = 1; svgKernelSize.textContent = '3x3';svgKernelRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+			<button class="roundButton" onclick="svgKernelRange.value = 1; svgKernelSize.textContent = '3×3';svgKernelRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
@@ -94,11 +94,13 @@ Living in Japan, I got the chance to interview an idol of me: Graphics Programme
 	setupSVG();
 </script>
 
+We can express sigma as it is usually done. Insert Sigma joke.
+
 <svg id="kernelIso"></svg>
 
 <table class="settingsTable" style="width: 100%; max-width: 100%;">
 	<tr class="variable-name-row noborder">
-		<td colspan=4>
+		<td colspan=5>
 			<code>kernelSizeIso</code>
 		</td>
 	</tr>
@@ -110,15 +112,25 @@ Living in Japan, I got the chance to interview an idol of me: Graphics Programme
 			<input class="slider" type="range" step="1" min="0" max="16" value="1" id="svgKernelIsoRange" oninput="svgKernelIsoSize.textContent = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
 		</td>
 		<td style="text-align: center;">
-			<output id="svgKernelIsoSize">3x3</output>
+			<output id="svgKernelIsoSize">3×3</output>
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" onclick="svgKernelIsoRange.value = 1; svgKernelIsoSize.textContent = '3x3';svgKernelIsoRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+			<button class="roundButton" onclick="svgKernelIsoRange.value = 1; svgKernelIsoSize.textContent = '3×3';svgKernelIsoRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
-		<td colspan=4>
+		<td colspan=5>
 			<code>sigma</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td colspan=5>
+			<span style="display: flex; gap: 8px; white-space: nowrap; justify-content: center">
+				<label style="display: flex; gap: 8px; margin-bottom: unset">
+        	    	<input style="margin-bottom: unset;" type="checkbox" id="sigmaAbsoluteExplain" name="Absolute / Relative" checked />
+        	    	Absolute Sigma
+        		</label>
+			</span>
 		</td>
 	</tr>
 	<tr class="noborder">
@@ -129,10 +141,12 @@ Living in Japan, I got the chance to interview an idol of me: Graphics Programme
 			<input class="slider" type="range" step="0.01" min="0.01" max="10" value="1" id="sigmaIso" oninput="sigmaIsoOut.value = this.value">
 		</td>
 		<td style="text-align: center;">
-			<output id="sigmaIsoOut">100</output>
+			<output id="sigmaIsoOut">1</output>
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" onclick="sigmaIso.value = 1; sigmaIsoOut.value = 1; sigmaIso.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+			<button class="roundButton" onclick="
+				sigmaIso.value = 1; sigmaIsoOut.value = 1; sigmaIso.dispatchEvent(new Event('input'));
+			">{% include "style/icons/rotate-right.svg" %}</button>
 		</td>
 	</tr>
 </table>

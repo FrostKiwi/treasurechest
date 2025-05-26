@@ -22,26 +22,29 @@ export function setupSVGIso() {
 	g.style.transition = "transform 0.5s ease";
 	svg.appendChild(g);
 
-	const redraw = () => drawIso(kernelRange.value, sigmaRange.value, g);
+
+	let timeout;
+	const redraw = () => {
+		clearTimeout(timeout);
+		timeout = setTimeout(() => {
+			drawIso(kernelRange.value, sigmaRange.value, g);
+		}, 10);
+	};
+
 	kernelRange.addEventListener("input", redraw);
 	sigmaRange.addEventListener("input", redraw);
 	redraw();
 }
 
-function drawIso(k, sigma, g) {
-	g.innerHTML = "";
+function drawIso(kernelSize, sigma, g) {
+	const radius = parseInt(kernelSize);
 
-	const radius = parseInt(k, 10);
-	const sigmaSq = (sigma || 1e-6) ** 2;
-	const twoSig2 = 2 * sigmaSq;
-
-	/* Build Kernel */
+	/* Gaussian kernel */
 	const bars = [];
 	let sumW = 0;
-
 	for (let y = -radius; y <= radius; ++y) {
 		for (let x = -radius; x <= radius; ++x) {
-			const w = Math.exp(-(x * x + y * y) / twoSig2);
+			const w = Math.exp(-(x * x + y * y) / (2 * sigma * sigma));
 			bars.push({ x, y, w });
 			sumW += w;
 		}
@@ -49,10 +52,9 @@ function drawIso(k, sigma, g) {
 	bars.forEach(b => (b.w /= sumW));
 	const maxW = Math.max(...bars.map(b => b.w));
 
-	/* Scene bounds */
+	/* Calculate Scene bounds */
 	let minX = Infinity, minY = Infinity;
 	let maxX = -Infinity, maxY = -Infinity;
-
 	bars.forEach(b => {
 		b.isoX = (b.x - b.y) * TILE_W / 2;
 		b.isoY = (b.x + b.y) * TILE_H / 2;
@@ -78,7 +80,8 @@ function drawIso(k, sigma, g) {
 
 	const rgb = v => `rgb(${v | 0},${v | 0},${v | 0})`;
 
-	/* Back to front */
+	/* Generate SVG string */
+	let content = "";
 	bars
 		.sort((a, b) => (a.x + a.y) - (b.x + b.y))
 		.forEach(b => {
@@ -99,18 +102,18 @@ function drawIso(k, sigma, g) {
 			const colL = rgb(base * 0.6);
 
 			/* Right Face */
-			appendPoly(g, [RR, BB, B, R], colR);
+			content += poly([RR, BB, B, R], colR);
 			/* Left Face */
-			appendPoly(g, [LL, BB, B, L], colL);
+			content += poly([LL, BB, B, L], colL);
 			/* Top Face */
-			appendPoly(g, [TT, RR, BB, LL], colT);
+			content += poly([TT, RR, BB, LL], colT);
 		});
+	g.innerHTML = content;
 }
 
-function appendPoly(parent, ptsArr, fill) {
-	const p = document.createElementNS(NS, "polygon");
-	p.setAttribute("points", ptsArr.map(pt => pt.join(",")).join(" "));
-	p.setAttribute("fill", fill);
-	p.setAttribute("style", STYLES.sidePixel);
-	parent.appendChild(p);
+/* A bit ugly due to it's literal text nature, but doing the nice setAttributes
+   and createElementNS angers Safari Apple Devices, so we don't modify the DOM
+   too fast by doing it in text form here */
+function poly(ptsArr, fill) {
+	return `<polygon points="${ptsArr.map(pt => pt.join(",")).join(" ")}" fill="${fill}" style="${STYLES.sidePixel}"/>`;
 }
