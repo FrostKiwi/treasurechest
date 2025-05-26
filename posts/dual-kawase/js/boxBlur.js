@@ -136,10 +136,6 @@ export async function setupBoxBlur() {
 		reCompileBlurShader(ui.kernelSizeRange.value);
 	});
 
-	ui.sigmaRange.addEventListener("input", () => {
-		reCompileBlurShader(ui.kernelSizeRange.value);
-	});
-
 	/* Render Mode */
 	ui.radios.forEach(radio => {
 		/* Force set to scene to fix a reload bug in Firefox Android */
@@ -199,12 +195,7 @@ export async function setupBoxBlur() {
 
 	/* Helper for recompilation */
 	function reCompileBlurShader(blurSize) {
-		const prefix = gaussianUnrolled(blurSize)
-		console.log(prefix);
-		const t0 = performance.now();
-		ctx.shd.blur = util.compileAndLinkShader(gl, simpleQuad, gaussianBlurFrag, ["frameSizeRCP", "samplePosMult", "bloomStrength", "sigma"], prefix);
-		const t1 = performance.now();
-		console.log(blurSize + ` Compilation ${(t1 - t0).toFixed(2)} ms`);
+		ctx.shd.blur = util.compileAndLinkShader(gl, simpleQuad, gaussianBlurFrag, ["frameSizeRCP", "samplePosMult", "bloomStrength", "sigma"], "#define KERNEL_SIZE " + blurSize + '\n');
 	}
 
 	/* Blur Shader */

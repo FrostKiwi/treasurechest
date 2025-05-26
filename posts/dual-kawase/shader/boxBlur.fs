@@ -1,5 +1,3 @@
-/* Kernel Size added during compilation */
-
 /* Float precision to highp, if supported. Large Kernel Sizes result many color
    contributions and thus require the highest precision to avoid clipping.
    Required in WebGL 1 Shaders and depending on platform may have no effect */
@@ -13,19 +11,21 @@ uniform float samplePosMult; /* Multiply to push blur strength past the kernel s
 uniform float bloomStrength; /* bloom strength */
 
 uniform sampler2D texture;
+/* `KERNEL_SIZE` added during compilation */
+const int kernel_size = KERNEL_SIZE;
 
 void main() {
 	/* Variable to hold our final color for the current pixel */
 	vec4 sum = vec4(0.0);
 	/* How big one side of the sampled square is */
-	const int size = 2 * KERNEL_SIZE + 1;
+	const int size = 2 * kernel_size + 1;
 	/* Total number of samples we are going to read */
 	const float totalSamples = float(size * size);
 
 	/* Read from the texture y amount of pixels above and below */
-	for (int y = -KERNEL_SIZE; y <= KERNEL_SIZE; ++y) {
+	for (int y = -kernel_size; y <= kernel_size; ++y) {
 	/* Read from the texture x amount of pixels to the left and the right */
-		for (int x = -KERNEL_SIZE; x <= KERNEL_SIZE; ++x) {
+		for (int x = -kernel_size; x <= kernel_size; ++x) {
 			/* Offset from the current pixel, indicating which pixel to read */
 			vec2 offset = vec2(x, y) * samplePosMult * frameSizeRCP;
 			/* Read and sum up the contribution of that pixel */

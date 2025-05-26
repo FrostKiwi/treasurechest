@@ -54,7 +54,7 @@ function draw(k, g, mult) {
 	g.appendChild(centerPixel);
 
 	/* Side Pixels */
-	const extraRows = 6;
+	const extraRows = 3;
 	const half = (kernelSize - 1) / 2;
 	for (let y = -half - extraRows; y <= half + extraRows; ++y) {
 		for (let x = -half - extraRows; x <= half + extraRows; ++x) {
@@ -69,7 +69,7 @@ function draw(k, g, mult) {
 			const dx = Math.max(Math.abs(x) - half, 0);
 			const dy = Math.max(Math.abs(y) - half, 0);
 			const radial = Math.sqrt(dx * dx + dy * dy);
-			const opacity = radial > 0 ? Math.pow(0.5, radial) : 1;
+			const opacity = radial > 0 ? Math.pow(0.25, radial) : 1;
 			r.setAttribute("opacity", opacity);
 			g.appendChild(r);
 		}

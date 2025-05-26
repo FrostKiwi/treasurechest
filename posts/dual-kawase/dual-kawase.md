@@ -43,8 +43,8 @@ Living in Japan, I got the chance to interview an idol of me: Graphics Programme
 	}
 </style>
 
-<!-- <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script> -->
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
 
 <svg id="kernelSimple"></svg>
 
@@ -93,6 +93,55 @@ Living in Japan, I got the chance to interview an idol of me: Graphics Programme
 	import { setupSVG } from "./js/kernelPreview.js";
 	setupSVG();
 </script>
+
+<svg id="kernelIso"></svg>
+
+<table class="settingsTable" style="width: 100%; max-width: 100%;">
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>kernelSizeIso</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>kernelSizeIso</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="1" min="0" max="16" value="1" id="svgKernelIsoRange" oninput="svgKernelIsoSize.textContent = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
+		</td>
+		<td style="text-align: center;">
+			<output id="svgKernelIsoSize">3x3</output>
+		</td>
+		<td style="text-align: center;">
+			<button class="roundButton" onclick="svgKernelIsoRange.value = 1; svgKernelIsoSize.textContent = '3x3';svgKernelIsoRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>sigma</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>sigma</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="0.01" min="0.01" max="10" value="1" id="sigmaIso" oninput="sigmaIsoOut.value = this.value">
+		</td>
+		<td style="text-align: center;">
+			<output id="sigmaIsoOut">100</output>
+		</td>
+		<td style="text-align: center;">
+			<button class="roundButton" onclick="sigmaIso.value = 1; sigmaIsoOut.value = 1; sigmaIso.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+		</td>
+	</tr>
+</table>
+
+<script type="module">
+	import { setupSVGIso } from "./js/kernelPreviewIsometric.js";
+	setupSVGIso();
+</script>
+
 
 ## Setup
 
