@@ -43,8 +43,8 @@ Living in Japan, I got the chance to interview an idol of me: Graphics Programme
 	}
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script> -->
 
 <svg id="kernelSimple"></svg>
 
@@ -126,8 +126,8 @@ We can express sigma as it is usually done. Insert Sigma joke.
 	<tr class="noborder">
 		<td colspan=5>
 			<span style="display: flex; gap: 8px; white-space: nowrap; justify-content: center">
-				<label style="display: flex; gap: 8px; margin-bottom: unset">
-        	    	<input style="margin-bottom: unset;" type="checkbox" id="sigmaAbsoluteExplain" name="Absolute / Relative" checked />
+				<label style="display: flex; gap: 8px; margin-bottom: 0px">
+        	    	<input style="margin-bottom: 0px;" type="checkbox" id="sigmaAbsoluteExplain" name="Absolute / Relative" checked />
         	    	Absolute Sigma
         		</label>
 			</span>

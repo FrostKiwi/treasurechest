@@ -29,9 +29,18 @@ export function setupSVG() {
 	g.style.transition = "transform 0.3s ease";
 	svg.appendChild(g);
 
-	kernelRange.addEventListener("input", () => draw(kernelRange.value, g, sampleMultRange.value));
-	sampleMultRange.addEventListener("input", () => draw(kernelRange.value, g, sampleMultRange.value));
-	draw(kernelRange.value, g, sampleMultRange.value);
+	let timeout;
+	const redraw = () => {
+		clearTimeout(timeout);
+		timeout = setTimeout(() => {
+			draw(kernelRange.value, g, sampleMultRange.value);
+		}, 10);
+	};
+
+	kernelRange.addEventListener("input", redraw);
+	sampleMultRange.addEventListener("input", redraw);
+
+	redraw();
 }
 
 function draw(k, g, mult) {
@@ -41,17 +50,13 @@ function draw(k, g, mult) {
 
 	const pixelSize = 0.9;
 
-	/* Clear group */
-	g.innerHTML = "";
+	let content = "";
 
+	/* A bit ugly due to it's literal text nature, but doing the nice setAttributes
+	and createElementNS angers Safari Apple Devices, so we don't modify the DOM
+	too fast by doing it in text form here */
 	/* Center Pixel */
-	const centerPixel = document.createElementNS(NS, "rect");
-	centerPixel.setAttribute("x", -0.5 + (0.5 - pixelSize / 2));
-	centerPixel.setAttribute("y", -0.5 + (0.5 - pixelSize / 2));
-	centerPixel.setAttribute("width", pixelSize);
-	centerPixel.setAttribute("height", pixelSize);
-	centerPixel.setAttribute("style", STYLES.centerPixel);
-	g.appendChild(centerPixel);
+	content += `<rect x="${-0.5 + (0.5 - pixelSize / 2)}" y="${-0.5 + (0.5 - pixelSize / 2)}" width="${pixelSize}" height="${pixelSize}" style="${STYLES.centerPixel}"/>`;
 
 	/* Side Pixels */
 	const extraRows = 3;
@@ -59,31 +64,20 @@ function draw(k, g, mult) {
 	for (let y = -half - extraRows; y <= half + extraRows; ++y) {
 		for (let x = -half - extraRows; x <= half + extraRows; ++x) {
 			if (x === 0 && y === 0) continue;
-			const r = document.createElementNS(NS, "rect");
-			r.setAttribute("x", x - 0.5 + (0.5 - pixelSize / 2));
-			r.setAttribute("y", y - 0.5 + (0.5 - pixelSize / 2));
-			r.setAttribute("width", pixelSize);
-			r.setAttribute("height", pixelSize);
-			r.setAttribute("style", STYLES.sidePixel);
-
 			const dx = Math.max(Math.abs(x) - half, 0);
 			const dy = Math.max(Math.abs(y) - half, 0);
 			const radial = Math.sqrt(dx * dx + dy * dy);
 			const opacity = radial > 0 ? Math.pow(0.25, radial) : 1;
-			r.setAttribute("opacity", opacity);
-			g.appendChild(r);
+			content += `<rect x="${x - 0.5 + (0.5 - pixelSize / 2)}" y="${y - 0.5 + (0.5 - pixelSize / 2)}" width="${pixelSize}" height="${pixelSize}" style="${STYLES.sidePixel}" opacity="${opacity}"/>`;
 		}
 	}
 
 	/* Sample Positions */
 	for (let y = -half; y <= half; ++y) {
 		for (let x = -half; x <= half; ++x) {
-			const c = document.createElementNS(NS, "circle");
-			c.setAttribute("cx", x * mult);
-			c.setAttribute("cy", y * mult);
-			c.setAttribute("r", 0.12);
-			c.setAttribute("style", STYLES.samplePosition);
-			g.appendChild(c);
+			content += `<circle cx="${x * mult}" cy="${y * mult}" r="0.12" style="${STYLES.samplePosition}"/>`;
 		}
 	}
+
+	g.innerHTML = content;
 }
