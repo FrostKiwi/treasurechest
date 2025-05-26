@@ -98,6 +98,16 @@ We can express sigma as it is usually done. Insert Sigma joke.
 
 <svg id="kernelIso"></svg>
 
+<div class="toggleRes">
+	<div>
+	  <input type="radio" id="sigmaAbsolute" name="modeSigma" value="absolute" checked />
+	  <label for="sigmaAbsolute">Absolute Sigma</label>
+	</div>
+	<div>
+	  <input type="radio" id="sigmaRelative" name="modeSigma" value="relative" />
+	  <label for="sigmaRelative">Relative Sigma</label>
+	</div>
+</div>
 <table class="settingsTable" style="width: 100%; max-width: 100%;">
 	<tr class="variable-name-row noborder">
 		<td colspan=5>
@@ -124,24 +134,21 @@ We can express sigma as it is usually done. Insert Sigma joke.
 		</td>
 	</tr>
 	<tr class="noborder">
-		<td colspan=5>
-			<span style="display: flex; gap: 8px; white-space: nowrap; justify-content: center">
-				<label style="display: flex; gap: 8px; margin-bottom: 0px">
-        	    	<input style="margin-bottom: 0px;" type="checkbox" id="sigmaAbsoluteExplain" name="Absolute / Relative" checked />
-        	    	Absolute Sigma
-        		</label>
-			</span>
-		</td>
-	</tr>
-	<tr class="noborder">
 		<td class="variable-name-cell">
 			<code>sigma</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="0.01" min="0.01" max="10" value="1" id="sigmaIso" oninput="sigmaIsoOut.value = this.value">
+			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="1" id="sigmaIso" oninput="sigmaIsoOut.value = this.value">
 		</td>
 		<td style="text-align: center;">
-			<output id="sigmaIsoOut">1</output>
+			<span style="display: flex; flex-direction: column">
+				<span style="white-space: nowrap">
+					<output id="sigmaIsoRelativeOut">1</output> σ
+				</span>
+				<span style="white-space: nowrap">
+					<output id="sigmaIsoOut">1</output> px
+				</span>
+			</span>
 		</td>
 		<td style="text-align: center;">
 			<button class="roundButton" onclick="
