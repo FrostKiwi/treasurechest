@@ -140,7 +140,7 @@ We can express sigma as it is usually done. Insert Sigma joke.
 			<code>sigma</code>
 		</td>
 		<td style="width:100%;">
-			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="1" id="sigmaIsoRelative">
+			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="3" id="sigmaIsoRelative">
 			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="1" id="sigmaIso">
 		</td>
 		<td style="text-align: center;">
@@ -149,13 +149,13 @@ We can express sigma as it is usually done. Insert Sigma joke.
 					± <output id="sigmaIsoRelativeOut">3.00</output> σ
 				</span>
 				<span style="white-space: nowrap">
-					<output id="sigmaIsoOut">1.0</output> px
+					<output id="sigmaIsoOut">1.00</output> px
 				</span>
 			</span>
 		</td>
 		<td style="text-align: center;">
 			<button class="roundButton" onclick="
-				if(sigmaAbsolute.checked){ sigmaIso.value = 1; sigmaIsoOut.value = 1; } else { sigmaIso.value = 3; sigmaIsoOut.value = 3; }; sigmaIso.dispatchEvent(new Event('input'));
+				if(sigmaAbsolute.checked){ sigmaIso.value = 1; sigmaIso.dispatchEvent(new Event('input')); } else { sigmaIsoRelative.value = 3; sigmaIsoRelative.dispatchEvent(new Event('input')); };
 			">{% include "style/icons/rotate-right.svg" %}</button>
 		</td>
 	</tr>
