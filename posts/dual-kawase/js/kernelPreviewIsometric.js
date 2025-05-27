@@ -9,13 +9,15 @@ const TILE_W = 30;
 const TILE_H = 15;
 const H_MAX = 100;
 const MARGIN = 25;
+const viewBoxX = 4;
+const viewBoxY = 3;
 
 export function setupSVGIso() {
 	const svg = document.getElementById("kernelIso");
 	const kernelRange = document.getElementById("svgKernelIsoRange");
 	const sigmaRange = document.getElementById("sigmaIso");
 
-	svg.setAttribute("viewBox", "-1 -1 2 2");
+	svg.setAttribute("viewBox", `${-viewBoxX / 2} ${-viewBoxY / 2} ${viewBoxX} ${viewBoxY}`);
 
 	const g = document.createElementNS(NS, "g");
 	g.style.transformOrigin = "0 0";
@@ -68,13 +70,13 @@ function drawIso(kernelSize, sigma, g) {
 
 	const sceneW = maxX - minX + 2 * MARGIN;
 	const sceneH = maxY - minY + 2 * MARGIN;
-	const scale = 2 / Math.max(sceneW, sceneH);
+	const scale = Math.min(viewBoxX / sceneW, viewBoxY / sceneH);
 
-	const slackX = Math.max(0, 2 - sceneW * scale);
-	const slackY = Math.max(0, 2 - sceneH * scale);
+	const slackX = Math.max(0, viewBoxX - sceneW * scale);
+	const slackY = Math.max(0, viewBoxY - sceneH * scale);
 
-	const offsetX = (-minX + MARGIN) * scale - 1 + slackX / 2;
-	const offsetY = (-minY + MARGIN) * scale - 1 + slackY / 2;
+	const offsetX = (-minX + MARGIN) * scale - (viewBoxX / 2) + slackX / 2;
+	const offsetY = (-minY + MARGIN) * scale - (viewBoxY / 2) + slackY / 2;
 
 	g.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
 

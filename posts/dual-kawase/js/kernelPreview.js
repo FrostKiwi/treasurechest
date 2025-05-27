@@ -1,4 +1,6 @@
 const NS = "http://www.w3.org/2000/svg";
+const viewBoxX = 4;
+const viewBoxY = 3;
 
 /* Styles */
 const STYLES = {
@@ -12,14 +14,14 @@ export function setupSVG() {
 	const svg = document.getElementById("kernelSimple");
 	const kernelRange = document.getElementById("svgKernelRange");
 	const sampleMultRange = document.getElementById("svgSamplePosMult");
-	svg.setAttribute("viewBox", "-1 -1 2 2");
+	svg.setAttribute("viewBox", `${-viewBoxX / 2} ${-viewBoxY / 2} ${viewBoxX} ${viewBoxY}`);
 
 	/* BG */
 	const bg = document.createElementNS(NS, "rect");
-	bg.setAttribute("x", -1);
-	bg.setAttribute("y", -1);
-	bg.setAttribute("width", 2);
-	bg.setAttribute("height", 2);
+	bg.setAttribute("x", -viewBoxX / 2);
+	bg.setAttribute("y", -viewBoxY / 2);
+	bg.setAttribute("width", viewBoxX);
+	bg.setAttribute("height", viewBoxY);
 	bg.setAttribute("style", STYLES.bg);
 	svg.appendChild(bg);
 
@@ -45,7 +47,7 @@ export function setupSVG() {
 
 function draw(k, g, mult) {
 	const kernelSize = 2 * k + 1;
-	const scale = 1 / (kernelSize * mult * 0.5 + 1.5);
+	const scale = viewBoxY / 2 / (kernelSize * mult * 0.5 + 1.5);
 	g.style.transform = `scale(${scale})`;
 
 	const pixelSize = 0.9;
