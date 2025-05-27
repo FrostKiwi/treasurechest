@@ -13,33 +13,68 @@ const viewBoxX = 4;
 const viewBoxY = 3;
 
 export function setupSVGIso() {
-	const svg = document.getElementById("kernelIso");
-	const kernelRange = document.getElementById("svgKernelIsoRange");
-	const sigmaRange = document.getElementById("sigmaIso");
+	const ui = {
+		svg: document.getElementById("kernelIso"),
+		kernelRange: document.getElementById("svgKernelIsoRange"),
+		sigmaRange: document.getElementById("sigmaIso"),
+		sigmaRangeRelative: document.getElementById("sigmaIsoRelative"),
+		sigmaIsoRelativeOut: document.getElementById("sigmaIsoRelativeOut"),
+		sigmaIsoOut: document.getElementById("sigmaIsoOut"),
+		sigmaAbsoluteRadio: document.getElementById("sigmaAbsolute")
+	};
 
-	svg.setAttribute("viewBox", `${-viewBoxX / 2} ${-viewBoxY / 2} ${viewBoxX} ${viewBoxY}`);
+	ui.svg.setAttribute("viewBox", `${-viewBoxX / 2} ${-viewBoxY / 2} ${viewBoxX} ${viewBoxY}`);
 
 	const g = document.createElementNS(NS, "g");
 	g.style.transformOrigin = "0 0";
 	g.style.transition = "transform 0.5s ease";
-	svg.appendChild(g);
-
+	ui.svg.appendChild(g);
 
 	let timeout;
-	const redraw = () => {
-		clearTimeout(timeout);
-		timeout = setTimeout(() => {
-			drawIso(kernelRange.value, sigmaRange.value, g);
-		}, 10);
-	};
 
-	kernelRange.addEventListener("input", redraw);
-	sigmaRange.addEventListener("input", redraw);
+	function redraw() {
+		if (ui.sigmaAbsoluteRadio.checked) {
+			const sigmaAbsolute = parseFloat(ui.sigmaRange.value);
+			const sigmaRelative = parseFloat(ui.kernelRange.value) / sigmaAbsolute;
+			ui.sigmaRangeRelative.value = sigmaRelative;
+			ui.sigmaIsoRelativeOut.value = sigmaRelative.toFixed(2);
+		} else {
+			const sigmaRelative = parseFloat(ui.sigmaRangeRelative.value);
+			const sigmaAbsolute = parseFloat(ui.kernelRange.value) / sigmaRelative;
+			ui.sigmaRange.value = sigmaAbsolute;
+			ui.sigmaIsoOut.value = sigmaAbsolute.toFixed(2);
+		}
+
+		/* Debounce */
+		clearTimeout(timeout);
+		timeout = setTimeout(() => drawIso(ui.kernelRange.value, ui.sigmaRange.value, g), 10);
+	}
+	ui.kernelRange.addEventListener("input", redraw);
+	ui.sigmaRange.addEventListener("input", () => {
+		const sigmaAbsolute = parseFloat(ui.sigmaRange.value);
+		const sigmaRelative = parseFloat(ui.kernelRange.value) / sigmaAbsolute;
+
+		ui.sigmaRangeRelative.value = sigmaRelative;
+		ui.sigmaIsoOut.value = sigmaAbsolute.toFixed(2);
+		ui.sigmaIsoRelativeOut.value = sigmaRelative.toFixed(2);
+		redraw();
+	});
+	ui.sigmaRangeRelative.addEventListener("input", () => {
+		const sigmaRelative = parseFloat(ui.sigmaRangeRelative.value);
+		const sigmaAbsolute = parseFloat(ui.kernelRange.value) / sigmaRelative;
+
+		ui.sigmaRange.value = sigmaAbsolute;
+		ui.sigmaIsoOut.value = sigmaAbsolute.toFixed(2);
+		ui.sigmaIsoRelativeOut.value = sigmaRelative.toFixed(2);
+		redraw();
+	});
 	redraw();
 }
 
 function drawIso(kernelSize, sigma, g) {
 	const radius = parseInt(kernelSize);
+	/* Always force the 1x1 kernel case to display something by clamping sigma */
+	if (!radius) sigma = 1;
 
 	/* Gaussian kernel */
 	const bars = [];

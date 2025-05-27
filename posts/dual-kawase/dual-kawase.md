@@ -12,7 +12,9 @@ publicTags:
 image:
 ---
 
-Blurs are the basic building block of many post processing effects and essential for sleek and modern UIs.
+Blurs are the basic building block of many video game post processing effects and essential for sleek and modern [GUIs](https://en.wikipedia.org/wiki/Graphical_user_interface). Video game [Depth of Field](https://dev.epicgames.com/documentation/en-us/unreal-engine/depth-of-field-in-unreal-engine) and [Bloom](https://en.wikipedia.org/wiki/Bloom_(shader_effect)) or [frosted panels](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#microsoft-windows-acrylic) in modern user interfaces - used subtly or obviously - they're everywhere. <span style="transition: filter 0.2s; filter: none" onmouseover="this.style.filter='blur(4px)'" onmouseout="this.style.filter='none'">Even your browser can do it.</span>
+
+<blockquote class="reaction"><div class="reaction_text">This is my submission to this year's <a target="_blank" href="https://some.3b1b.co/">Summer of Math Exposition</a></div><img class="kiwi" src="img/SOMELogo.svg"></blockquote>
 
 Living in Japan, I got the chance to interview an idol of me: Graphics Programmer Masaki Kawase.
 
@@ -98,7 +100,7 @@ We can express sigma as it is usually done. Insert Sigma joke.
 
 <svg id="kernelIso"></svg>
 
-<div class="toggleRes">
+<div style="margin-bottom: 0.5rem" class="toggleRes">
 	<div>
 	  <input type="radio" id="sigmaAbsolute" name="modeSigma" value="absolute" checked />
 	  <label for="sigmaAbsolute">Absolute Sigma</label>
@@ -119,13 +121,13 @@ We can express sigma as it is usually done. Insert Sigma joke.
 			<code>kernelSizeIso</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="1" min="0" max="16" value="1" id="svgKernelIsoRange" oninput="svgKernelIsoSize.textContent = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
+			<input class="slider" type="range" step="1" min="0" max="16" value="3" id="svgKernelIsoRange" oninput="svgKernelIsoSize.textContent = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
 		</td>
 		<td style="text-align: center;">
-			<output id="svgKernelIsoSize">3×3</output>
+			<output id="svgKernelIsoSize">7×7</output>
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" onclick="svgKernelIsoRange.value = 1; svgKernelIsoSize.textContent = '3×3';svgKernelIsoRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+			<button class="roundButton" onclick="svgKernelIsoRange.value = 3; svgKernelIsoSize.textContent = '7×7';svgKernelIsoRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
@@ -137,22 +139,23 @@ We can express sigma as it is usually done. Insert Sigma joke.
 		<td class="variable-name-cell">
 			<code>sigma</code>
 		</td>
-		<td style="width:100%">
-			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="1" id="sigmaIso" oninput="sigmaIsoOut.value = this.value">
+		<td style="width:100%;">
+			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="1" id="sigmaIsoRelative">
+			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="1" id="sigmaIso">
 		</td>
 		<td style="text-align: center;">
 			<span style="display: flex; flex-direction: column">
 				<span style="white-space: nowrap">
-					<output id="sigmaIsoRelativeOut">1</output> σ
+					± <output id="sigmaIsoRelativeOut">?</output> σ
 				</span>
 				<span style="white-space: nowrap">
-					<output id="sigmaIsoOut">1</output> px
+					<output id="sigmaIsoOut">?</output> px
 				</span>
 			</span>
 		</td>
 		<td style="text-align: center;">
 			<button class="roundButton" onclick="
-				sigmaIso.value = 1; sigmaIsoOut.value = 1; sigmaIso.dispatchEvent(new Event('input'));
+				if(sigmaAbsolute.checked){ sigmaIso.value = 1; sigmaIsoOut.value = 1; } else { sigmaIso.value = 3; sigmaIsoOut.value = 3; }; sigmaIso.dispatchEvent(new Event('input'));
 			">{% include "style/icons/rotate-right.svg" %}</button>
 		</td>
 	</tr>
