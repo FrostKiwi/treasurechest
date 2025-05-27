@@ -29,27 +29,22 @@ export function setupSVGIso() {
 	g.style.transformOrigin = "0 0";
 	g.style.transition = "transform 0.5s ease";
 	ui.svg.appendChild(g);
-
-	let timeout;
-
-	function redraw() {
+	
+	ui.kernelRange.addEventListener("input", () => {
 		if (ui.sigmaAbsoluteRadio.checked) {
 			const sigmaAbsolute = parseFloat(ui.sigmaRange.value);
 			const sigmaRelative = parseFloat(ui.kernelRange.value) / sigmaAbsolute;
 			ui.sigmaRangeRelative.value = sigmaRelative;
 			ui.sigmaIsoRelativeOut.value = sigmaRelative.toFixed(2);
+			redraw(ui.kernelRange.value, sigmaAbsolute, g);
 		} else {
 			const sigmaRelative = parseFloat(ui.sigmaRangeRelative.value);
 			const sigmaAbsolute = parseFloat(ui.kernelRange.value) / sigmaRelative;
 			ui.sigmaRange.value = sigmaAbsolute;
 			ui.sigmaIsoOut.value = sigmaAbsolute.toFixed(2);
+			redraw(ui.kernelRange.value, sigmaAbsolute, g);
 		}
-
-		/* Debounce */
-		clearTimeout(timeout);
-		timeout = setTimeout(() => drawIso(ui.kernelRange.value, ui.sigmaRange.value, g), 10);
-	}
-	ui.kernelRange.addEventListener("input", redraw);
+	});
 	ui.sigmaRange.addEventListener("input", () => {
 		const sigmaAbsolute = parseFloat(ui.sigmaRange.value);
 		const sigmaRelative = parseFloat(ui.kernelRange.value) / sigmaAbsolute;
@@ -57,7 +52,7 @@ export function setupSVGIso() {
 		ui.sigmaRangeRelative.value = sigmaRelative;
 		ui.sigmaIsoOut.value = sigmaAbsolute.toFixed(2);
 		ui.sigmaIsoRelativeOut.value = sigmaRelative.toFixed(2);
-		redraw();
+		redraw(ui.kernelRange.value, sigmaAbsolute, g);
 	});
 	ui.sigmaRangeRelative.addEventListener("input", () => {
 		const sigmaRelative = parseFloat(ui.sigmaRangeRelative.value);
@@ -66,9 +61,16 @@ export function setupSVGIso() {
 		ui.sigmaRange.value = sigmaAbsolute;
 		ui.sigmaIsoOut.value = sigmaAbsolute.toFixed(2);
 		ui.sigmaIsoRelativeOut.value = sigmaRelative.toFixed(2);
-		redraw();
+		redraw(ui.kernelRange.value, sigmaAbsolute, g);
 	});
-	redraw();
+	redraw(ui.kernelRange.value, ui.sigmaRange.value, g);
+}
+
+let timeout;
+function redraw(kernelSize, sigma, g) {
+	/* Debounce */
+	clearTimeout(timeout);
+	timeout = setTimeout(() => drawIso(kernelSize, sigma, g), 10);
 }
 
 function drawIso(kernelSize, sigma, g) {

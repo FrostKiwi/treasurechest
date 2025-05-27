@@ -146,10 +146,10 @@ We can express sigma as it is usually done. Insert Sigma joke.
 		<td style="text-align: center;">
 			<span style="display: flex; flex-direction: column">
 				<span style="white-space: nowrap">
-					± <output id="sigmaIsoRelativeOut">?</output> σ
+					± <output id="sigmaIsoRelativeOut">3.00</output> σ
 				</span>
 				<span style="white-space: nowrap">
-					<output id="sigmaIsoOut">?</output> px
+					<output id="sigmaIsoOut">1.0</output> px
 				</span>
 			</span>
 		</td>
