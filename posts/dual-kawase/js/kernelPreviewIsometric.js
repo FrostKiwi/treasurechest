@@ -13,9 +13,6 @@ const MARGIN = 25;
 const viewBoxX = 4;
 const viewBoxY = 3;
 
-let isDrawing = false;
-let queuedArgs = null;
-
 export function setupSVGIso() {
 	const ui = {
 		svg: document.getElementById("kernelIso"),
@@ -71,24 +68,17 @@ export function setupSVGIso() {
 }
 
 /* Basic queue  */
+let frameId = null;
 function redraw(kernelSize, sigma, g) {
-	if (isDrawing) {
-		queuedArgs = [kernelSize, sigma];
-		console.log("Snubbed")
-		return;
-	}
+	if (frameId !== null) cancelAnimationFrame(frameId);
 
-	isDrawing = true;
-	drawIso(kernelSize, sigma, g);
-	isDrawing = false;
-
-	if (queuedArgs) {
-		const [kernelQueued, sigmaQueued] = queuedArgs;
-		console.log("DeQueued")
-		queuedArgs = null;
-		redraw(kernelQueued, sigmaQueued, g);
-	}
+	frameId = requestAnimationFrame(() => {
+		frameId = null;
+		drawIso(kernelSize, sigma, g);
+	});
 }
+
+
 
 function drawIso(kernelSize, sigma, g) {
 	const radius = parseInt(kernelSize);
@@ -165,8 +155,6 @@ function drawIso(kernelSize, sigma, g) {
 			content += poly([TT, RR, BB, LL], colT);
 		});
 	g.innerHTML = content;
-
-	util.reportMemory();
 }
 
 /* A bit ugly due to it's literal text nature, but doing the nice setAttributes

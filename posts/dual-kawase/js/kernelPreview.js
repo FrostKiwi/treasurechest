@@ -1,11 +1,6 @@
-import * as util from './utility.js'
-
 const NS = "http://www.w3.org/2000/svg";
 const viewBoxX = 4;
 const viewBoxY = 3;
-
-let isDrawing = false;
-let queuedArgs = null;
 
 /* Styles */
 const STYLES = {
@@ -36,30 +31,20 @@ export function setupSVG() {
 	g.style.transition = "transform 0.3s ease";
 	svg.appendChild(g);
 
-	kernelRange.addEventListener("input", () => redraw(kernelRange.value, sampleMultRange.value, g));
-	sampleMultRange.addEventListener("input", () => redraw(kernelRange.value, sampleMultRange.value, g));
+	let frameId = null;
+	const redraw = () => {
+		if (frameId !== null) cancelAnimationFrame(frameId);
 
-	redraw(kernelRange.value, sampleMultRange.value, g);
-}
+		frameId = requestAnimationFrame(() => {
+			frameId = null;
+			draw(kernelRange.value, g, sampleMultRange.value);
+		});
+	};
 
-/* Basic queue  */
-function redraw(kernelSize, mult, g) {
-	if (isDrawing) {
-		queuedArgs = [kernelSize, mult];
-		console.log("Snubbed")
-		return;
-	}
+	kernelRange.addEventListener("input", redraw);
+	sampleMultRange.addEventListener("input", redraw);
 
-	isDrawing = true;
-	draw(kernelSize, g, mult);
-	isDrawing = false;
-
-	if (queuedArgs) {
-		const [kernelQueued, multQueued] = queuedArgs;
-		console.log("DeQueued")
-		queuedArgs = null;
-		redraw(kernelQueued, multQueued, g);
-	}
+	redraw();
 }
 
 function draw(k, g, mult) {
@@ -99,6 +84,4 @@ function draw(k, g, mult) {
 	}
 
 	g.innerHTML = content;
-
-	util.reportMemory();
 }
