@@ -2,6 +2,9 @@ const NS = "http://www.w3.org/2000/svg";
 const viewBoxX = 4;
 const viewBoxY = 3;
 
+let isDrawing = false;
+let queuedArgs = null;
+
 /* Styles */
 const STYLES = {
 	bg: "fill:#eb99a1; fill-opacity:0.5;",
@@ -31,18 +34,30 @@ export function setupSVG() {
 	g.style.transition = "transform 0.3s ease";
 	svg.appendChild(g);
 
-	let timeout;
-	const redraw = () => {
-		clearTimeout(timeout);
-		timeout = setTimeout(() => {
-			draw(kernelRange.value, g, sampleMultRange.value);
-		}, 10);
-	};
+	kernelRange.addEventListener("input", () => redraw(kernelRange.value, sampleMultRange.value, g));
+	sampleMultRange.addEventListener("input", () => redraw(kernelRange.value, sampleMultRange.value, g));
 
-	kernelRange.addEventListener("input", redraw);
-	sampleMultRange.addEventListener("input", redraw);
+	redraw(kernelRange.value, sampleMultRange.value, g);
+}
 
-	redraw();
+/* Basic queue  */
+function redraw(kernelSize, mult, g) {
+	if (isDrawing) {
+		queuedArgs = [kernelSize, mult];
+		console.log("Snubbed")
+		return;
+	}
+
+	isDrawing = true;
+	draw(kernelSize, g, mult);
+	isDrawing = false;
+
+	if (queuedArgs) {
+		const [kernelQueued, multQueued] = queuedArgs;
+		console.log("DeQueued")
+		queuedArgs = null;
+		redraw(kernelQueued, multQueued, g);
+	}
 }
 
 function draw(k, g, mult) {

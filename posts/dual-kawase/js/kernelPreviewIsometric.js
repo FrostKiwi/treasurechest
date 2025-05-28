@@ -12,6 +12,9 @@ const MARGIN = 25;
 const viewBoxX = 4;
 const viewBoxY = 3;
 
+let isDrawing = false;
+let queuedArgs = null;
+
 export function setupSVGIso() {
 	const ui = {
 		svg: document.getElementById("kernelIso"),
@@ -29,7 +32,7 @@ export function setupSVGIso() {
 	g.style.transformOrigin = "0 0";
 	g.style.transition = "transform 0.5s ease";
 	ui.svg.appendChild(g);
-	
+
 	ui.kernelRange.addEventListener("input", () => {
 		if (ui.sigmaAbsoluteRadio.checked) {
 			const sigmaAbsolute = parseFloat(ui.sigmaRange.value);
@@ -66,11 +69,24 @@ export function setupSVGIso() {
 	redraw(ui.kernelRange.value, ui.sigmaRange.value, g);
 }
 
-let timeout;
+/* Basic queue  */
 function redraw(kernelSize, sigma, g) {
-	/* Debounce */
-	clearTimeout(timeout);
-	timeout = setTimeout(() => drawIso(kernelSize, sigma, g), 10);
+	if (isDrawing) {
+		queuedArgs = [kernelSize, sigma];
+		console.log("Snubbed")
+		return;
+	}
+
+	isDrawing = true;
+	drawIso(kernelSize, sigma, g);
+	isDrawing = false;
+
+	if (queuedArgs) {
+		const [kernelQueued, sigmaQueued] = queuedArgs;
+		console.log("DeQueued")
+		queuedArgs = null;
+		redraw(kernelQueued, sigmaQueued, g);
+	}
 }
 
 function drawIso(kernelSize, sigma, g) {

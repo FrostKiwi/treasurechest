@@ -45,8 +45,8 @@ Living in Japan, I got the chance to interview an idol of me: Graphics Programme
 	}
 </style>
 
-<!-- <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script> -->
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
 
 <svg id="kernelSimple"></svg>
 
