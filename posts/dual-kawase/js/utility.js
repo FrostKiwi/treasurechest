@@ -63,7 +63,7 @@ export function setupFramebuffer(gl, w, h, filter = gl.LINEAR) {
 	const fb = gl.createFramebuffer();
 	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
 	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-	return [ fb, tex ];
+	return [fb, tex];
 }
 
 /* Upload and bind UnitQuad */
@@ -89,4 +89,25 @@ export function getNativeSize(canvas) {
 	const width = Math.round(devicePixelRatio * dipRect.right) - Math.round(devicePixelRatio * dipRect.left);
 	const height = Math.round(devicePixelRatio * dipRect.bottom) - Math.round(devicePixelRatio * dipRect.top);
 	return [width, height]
+}
+
+function formatBytes(bytes) {
+	const units = ["B", "KB", "MB", "GB", "TB"];
+	let i = 0;
+	while (bytes >= 1024 && i < units.length - 1) {
+		bytes /= 1024;
+		i++;
+	}
+	return `${bytes.toFixed(2)} ${units[i]}`;
+}
+
+export function reportMemory() {
+	if (window.performance && window.performance.memory) {
+		const memory = window.performance.memory;
+		console.log("Total JS heap size (limit):", formatBytes(memory.jsHeapSizeLimit));
+		console.log("Currently allocated JS heap size:", formatBytes(memory.totalJSHeapSize));
+		console.log("JS heap size being used:", formatBytes(memory.usedJSHeapSize));
+	} else {
+		console.log("performance.memory is not supported in this browser.");
+	}
 }

@@ -1,3 +1,4 @@
+import * as util from './utility.js'
 const NS = "http://www.w3.org/2000/svg";
 
 /* Styles */
@@ -164,6 +165,8 @@ function drawIso(kernelSize, sigma, g) {
 			content += poly([TT, RR, BB, LL], colT);
 		});
 	g.innerHTML = content;
+
+	util.reportMemory();
 }
 
 /* A bit ugly due to it's literal text nature, but doing the nice setAttributes

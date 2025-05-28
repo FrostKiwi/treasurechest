@@ -1,3 +1,5 @@
+import * as util from './utility.js'
+
 const NS = "http://www.w3.org/2000/svg";
 const viewBoxX = 4;
 const viewBoxY = 3;
@@ -97,4 +99,6 @@ function draw(k, g, mult) {
 	}
 
 	g.innerHTML = content;
+
+	util.reportMemory();
 }
