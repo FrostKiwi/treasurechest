@@ -97,6 +97,7 @@ Living in Japan, I got the chance to interview an idol of me: Graphics Programme
 </script>
 
 We can express sigma as it is usually done. Insert Sigma joke.
+Here in [~~Isometric~~](https://en.wikipedia.org/wiki/Isometric_projection) [Dimetric](https://en.wikipedia.org/wiki/Axonometric_projection#Three_types) projection.
 
 <svg id="kernelIso"></svg>
 
@@ -273,6 +274,25 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 	</tr>
 	<tr class="variable-name-row noborder">
 		<td colspan=4>
+			<code>downSample</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>downSample</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="1" min="1" max="8" value="1" id="downSampleRange" oninput="downSampleOut.textContent = this.value">
+		</td>
+		<td style="text-align: center;">
+			<output id="downSampleOut">1</output>
+		</td>
+		<td style="text-align: center;">
+			<button class="roundButton" onclick="downSampleRange.value = 1; downSampleRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
 			<code>samplePosMultiplier</code>
 		</td>
 	</tr>
@@ -341,7 +361,6 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 					<div>
 						GPU info: <code id="rendererBox"></code>
 					</div>
-					<div id="floatTest"></div>
 				</div>
 				<div class="multiButton">
 					<button type="button" class="main" id="benchmarkBoxBlur">

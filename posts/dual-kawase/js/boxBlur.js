@@ -1,46 +1,5 @@
 import * as util from './utility.js'
 
-function gaussianKernel(radius, sigma = radius * 0.5) {
-	const kernelSide = radius * 2 + 1;
-	const area = kernelSide * kernelSide;
-	const kernel = new Float32Array(area);
-
-	const twoSig2 = 2.0 * sigma * sigma;
-	let sum = 0.0;
-
-	let i = 0;
-	for (let y = -radius; y <= radius; ++y) {
-		for (let x = -radius; x <= radius; ++x, ++i) {
-			const w = Math.exp(-(x * x + y * y) / twoSig2);
-			kernel[i] = w;
-			sum += w;
-		}
-	}
-
-	/* Normalize */
-	for (let k = 0; k < area; ++k) kernel[k] /= sum;
-	return kernel;
-}
-
-function gaussianUnrolled(radius) {
-	const weights = gaussianKernel(radius);
-	const side = radius * 2 + 1;
-	const area = side * side;
-
-	let accumulateSrc = "";
-	let i = 0;
-	for (let y = -radius; y <= radius; ++y) {
-		for (let x = -radius; x <= radius; ++x, ++i) {
-			accumulateSrc +=
-				`sum += texture2D(texture, uv + vec2(${x}.0, ${y}.0) * samplePosMult * frameSizeRCP) * ${weights[i]};\\\n`;
-		}
-	}
-
-	return (
-		`#define KERNEL_ACCUMULATE \\\n${accumulateSrc}\n`
-	);
-}
-
 export async function setupBoxBlur() {
 	/* Init */
 	const canvas = document.getElementById('canvasBoxBlur');
@@ -55,11 +14,6 @@ export async function setupBoxBlur() {
 		alpha: false,
 	});
 
-	/* To be removed */
-	const floatTest = document.getElementById('floatTest');
-	const ext = gl.getExtension('OES_texture_float');
-	floatTest.textContent = ext;
-
 	/* State and Objects */
 	const ctx = {
 		/* State for of the Rendering */
@@ -72,6 +26,7 @@ export async function setupBoxBlur() {
 		/* Shaders and their respective Resource Locations */
 		shd: {
 			scene: { handle: null, uniforms: { offset: null, radius: null } },
+			passthrough: { handle: null },
 			blur: { handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null, bloomStrength: null } },
 			bloom: { handle: null, uniforms: { offset: null, radius: null, texture: null, textureAdd: null } }
 		}
@@ -92,6 +47,7 @@ export async function setupBoxBlur() {
 		height: document.getElementById('heightBoxBlur'),
 		tapsCount: document.getElementById('tapsBoxBlur'),
 		tapsCountBench: document.getElementById('tapsCountBenchBox'),
+		downSampleRange: document.getElementById('downSampleRange'),
 		iterOut: document.getElementById('iterOutBoxBlur'),
 		spinner: canvas.parentElement.querySelector('svg'),
 		contextLoss: document.getElementById('contextLoss'),
@@ -111,10 +67,12 @@ export async function setupBoxBlur() {
 	const gaussianBlurFrag = await util.fetchShader("shader/gaussianBlur.fs");
 
 	/* Elements that cause a redraw in the non-animation mode */
-	ui.kernelSizeRange.addEventListener('input', () => { if (!ui.animate.checked) redraw(); });
-	ui.sigmaRange.addEventListener('input', () => { if (!ui.animate.checked) redraw(); });
-	ui.samplePosRange.addEventListener('input', () => { if (!ui.animate.checked) redraw(); });
-	ui.bloomBrightnessRange.addEventListener('input', () => { if (!ui.animate.checked) redraw(); });
+	ui.kernelSizeRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
+	ui.sigmaRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
+	ui.samplePosRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
+	ui.bloomBrightnessRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
+	ui.bloomBrightnessRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
+	ui.downSampleRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
 
 	/* Events */
 	ui.animate.addEventListener("change", () => {
@@ -192,6 +150,9 @@ export async function setupBoxBlur() {
 
 	/* Draw bloom Shader */
 	ctx.shd.bloom = util.compileAndLinkShader(gl, bloomVert, bloomFrag, ["texture", "textureAdd", "offset", "radius"]);
+
+	/* Simple Passthrough */
+	ctx.shd.passthrough = util.compileAndLinkShader(gl, simpleQuad, simpleTexture);
 
 	/* Helper for recompilation */
 	function reCompileBlurShader(blurSize) {

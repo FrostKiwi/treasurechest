@@ -1,10 +1,4 @@
-import * as util from './utility.js'
 const NS = "http://www.w3.org/2000/svg";
-
-/* Styles */
-const STYLES = {
-	sidePixel: "stroke:#1F1A17; stroke-width:0.5;",
-};
 
 const TILE_W = 30;
 const TILE_H = 15;
@@ -13,16 +7,17 @@ const MARGIN = 25;
 const viewBoxX = 4;
 const viewBoxY = 3;
 
+const ui = {
+	svg: document.getElementById("kernelIso"),
+	kernelSizeRange: document.getElementById("svgKernelIsoRange"),
+	sigmaAbsoluteRange: document.getElementById("sigmaIso"),
+	sigmaRelativeRange: document.getElementById("sigmaIsoRelative"),
+	sigmaAbsoluteLabel: document.getElementById("sigmaIsoOut"),
+	sigmaRelativeLabel: document.getElementById("sigmaIsoRelativeOut"),
+	sigmaAbsoluteMode: document.getElementById("sigmaAbsolute")
+};
+
 export function setupSVGIso() {
-	const ui = {
-		svg: document.getElementById("kernelIso"),
-		kernelRange: document.getElementById("svgKernelIsoRange"),
-		sigmaRange: document.getElementById("sigmaIso"),
-		sigmaRangeRelative: document.getElementById("sigmaIsoRelative"),
-		sigmaIsoRelativeOut: document.getElementById("sigmaIsoRelativeOut"),
-		sigmaIsoOut: document.getElementById("sigmaIsoOut"),
-		sigmaAbsoluteRadio: document.getElementById("sigmaAbsolute")
-	};
 
 	ui.svg.setAttribute("viewBox", `${-viewBoxX / 2} ${-viewBoxY / 2} ${viewBoxX} ${viewBoxY}`);
 
@@ -31,58 +26,39 @@ export function setupSVGIso() {
 	g.style.transition = "transform 0.5s ease";
 	ui.svg.appendChild(g);
 
-	ui.kernelRange.addEventListener("input", () => {
-		if (ui.sigmaAbsoluteRadio.checked) {
-			const sigmaAbsolute = parseFloat(ui.sigmaRange.value);
-			const sigmaRelative = parseFloat(ui.kernelRange.value) / sigmaAbsolute;
-			ui.sigmaRangeRelative.value = sigmaRelative;
-			ui.sigmaIsoRelativeOut.value = sigmaRelative.toFixed(2);
-			redraw(ui.kernelRange.value, sigmaAbsolute, g);
-		} else {
-			const sigmaRelative = parseFloat(ui.sigmaRangeRelative.value);
-			const sigmaAbsolute = parseFloat(ui.kernelRange.value) / sigmaRelative;
-			ui.sigmaRange.value = sigmaAbsolute;
-			ui.sigmaIsoOut.value = sigmaAbsolute.toFixed(2);
-			redraw(ui.kernelRange.value, sigmaAbsolute, g);
-		}
-	});
-	ui.sigmaRange.addEventListener("input", () => {
-		const sigmaAbsolute = parseFloat(ui.sigmaRange.value);
-		const sigmaRelative = parseFloat(ui.kernelRange.value) / sigmaAbsolute;
+	let frameId = null;
+	function redraw(sigma) {
+		if (frameId !== null) cancelAnimationFrame(frameId);
 
-		ui.sigmaRangeRelative.value = sigmaRelative;
-		ui.sigmaIsoOut.value = sigmaAbsolute.toFixed(2);
-		ui.sigmaIsoRelativeOut.value = sigmaRelative.toFixed(2);
-		redraw(ui.kernelRange.value, sigmaAbsolute, g);
-	});
-	ui.sigmaRangeRelative.addEventListener("input", () => {
-		const sigmaRelative = parseFloat(ui.sigmaRangeRelative.value);
-		const sigmaAbsolute = parseFloat(ui.kernelRange.value) / sigmaRelative;
+		frameId = requestAnimationFrame(() => {
+			frameId = null;
+			drawIsometricSVG(ui.kernelSizeRange.value, sigma, g);
+		});
+	}
 
-		ui.sigmaRange.value = sigmaAbsolute;
-		ui.sigmaIsoOut.value = sigmaAbsolute.toFixed(2);
-		ui.sigmaIsoRelativeOut.value = sigmaRelative.toFixed(2);
-		redraw(ui.kernelRange.value, sigmaAbsolute, g);
-	});
-	redraw(ui.kernelRange.value, ui.sigmaRange.value, g);
+	function updateSigma(absoluteMode) {
+		const sigmaAbsolute = absoluteMode ? Number(ui.sigmaAbsoluteRange.value) : ui.kernelSizeRange.value / Number(ui.sigmaRelativeRange.value);
+		const sigmaRelative = ui.kernelSizeRange.value / sigmaAbsolute;
+
+		ui.sigmaAbsoluteRange.value = sigmaAbsolute;
+		ui.sigmaRelativeRange.value = sigmaRelative;
+		ui.sigmaAbsoluteLabel.value = sigmaAbsolute.toFixed(2);
+		ui.sigmaRelativeLabel.value = sigmaRelative.toFixed(2);
+
+		redraw(sigmaAbsolute);
+	}
+
+	ui.kernelSizeRange.addEventListener('input', () => updateSigma(ui.sigmaAbsoluteMode.checked));
+	ui.sigmaAbsoluteRange.addEventListener('input', () => updateSigma(true));
+	ui.sigmaRelativeRange.addEventListener('input', () => updateSigma(false));
+
+	const sigmaAbsolute = parseFloat(ui.sigmaAbsoluteRange.value);
+	redraw(sigmaAbsolute);
 }
 
-/* Basic queue  */
-let frameId = null;
-function redraw(kernelSize, sigma, g) {
-	if (frameId !== null) cancelAnimationFrame(frameId);
-
-	frameId = requestAnimationFrame(() => {
-		frameId = null;
-		drawIso(kernelSize, sigma, g);
-	});
-}
-
-
-
-function drawIso(kernelSize, sigma, g) {
+function drawIsometricSVG(kernelSize, sigma, g) {
 	const radius = parseInt(kernelSize);
-	/* Always force the 1x1 kernel case to display something by clamping sigma */
+	/* Always force the 1x1 kernel case to display something */
 	if (!radius) sigma = 1;
 
 	/* Gaussian kernel */
@@ -161,5 +137,5 @@ function drawIso(kernelSize, sigma, g) {
    and createElementNS angers Safari Apple Devices, so we don't modify the DOM
    too fast by doing it in text form here */
 function poly(ptsArr, fill) {
-	return `<polygon points="${ptsArr.map(pt => pt.join(",")).join(" ")}" fill="${fill}" style="${STYLES.sidePixel}"/>`;
+	return `<polygon points="${ptsArr.map(pt => pt.join(",")).join(" ")}" fill="${fill}" style="stroke:#1F1A17; stroke-width:0.5;"/>`;
 }
