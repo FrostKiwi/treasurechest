@@ -36,6 +36,7 @@
 				font-size: smaller;
 				filter: contrast(50%);
 			}
+
 			background-color: color.adjust(sakura.$color-bg-alt, $lightness: -5%);
 
 			&:hover {
@@ -48,5 +49,12 @@
 			background-color: sakura.$color-blossom;
 			color: sakura.$color-bg;
 		}
+	}
+}
+
+@media (hover: none) {
+	.toggleRes.toggleCheckbox>div input:not(:checked)+label:hover {
+		background-color: color.adjust(sakura.$color-bg-alt, $lightness: -5%);
+		color: inherit;
 	}
 }

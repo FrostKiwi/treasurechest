@@ -219,7 +219,7 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 		  <label for="bloomBox">Bloom</label>
 		</div>
 	</div>
-	<div class="toggleRes" style="flex:0 0 auto; white-space:nowrap;">
+	<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
 		<div>
 		  <input type="checkbox" id="animateCheck_Boxblur" checked />
 		  <label for="animateCheck_Boxblur">Animate</label>
