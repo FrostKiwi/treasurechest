@@ -36,7 +36,15 @@ export async function setupBoxBlur() {
 	const ui = {
 		samplePosRange: document.getElementById('samplePosRange'),
 		sigmaRange: document.getElementById('sigmaRange'),
-		kernelSizeRange: document.getElementById('boxKernelSizeRange'),
+		sigmaAbsolute: {
+			slider: document.getElementById("sigmaIso"),
+			label: document.getElementById("sigmaIsoOut")
+		},
+		sigmaRelative: {
+			slider: document.getElementById("sigmaIsoRelative"),
+			label: document.getElementById("sigmaIsoRelativeOut")
+		},
+		kernelSizeSlider: document.getElementById('boxKernelSizeRange'),
 		animate: document.getElementById('animateCheck_Boxblur'),
 		benchmark: document.getElementById('benchmarkBoxBlur'),
 		benchmarkLabel: document.getElementById('benchmarkBoxBlurLabel'),
@@ -67,7 +75,7 @@ export async function setupBoxBlur() {
 	const gaussianBlurFrag = await util.fetchShader("shader/gaussianBlur.fs");
 
 	/* Elements that cause a redraw in the non-animation mode */
-	ui.kernelSizeRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
+	ui.kernelSizeSlider.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
 	ui.sigmaRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
 	ui.samplePosRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
 	ui.bloomBrightnessRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
@@ -90,8 +98,8 @@ export async function setupBoxBlur() {
 		ui.contextLoss.style.display = "block";
 	});
 
-	ui.kernelSizeRange.addEventListener('input', () => {
-		reCompileBlurShader(ui.kernelSizeRange.value);
+	ui.kernelSizeSlider.addEventListener('input', () => {
+		reCompileBlurShader(ui.kernelSizeSlider.value);
 	});
 
 	/* Render Mode */
@@ -118,7 +126,7 @@ export async function setupBoxBlur() {
 		worker.postMessage({
 			iterations: ui.iterOut.value,
 			blurShaderSrc: boxBlurFrag,
-			kernelSize: ui.kernelSizeRange.value,
+			kernelSize: ui.kernelSizeSlider.value,
 			samplePos: ui.samplePosRange.value,
 			sigma: ui.sigmaRange.value
 		});
@@ -160,7 +168,7 @@ export async function setupBoxBlur() {
 	}
 
 	/* Blur Shader */
-	reCompileBlurShader(ui.kernelSizeRange.value)
+	reCompileBlurShader(ui.kernelSizeSlider.value)
 
 	/* Send Unit code verts to the GPU */
 	util.bindUnitQuad(gl);
@@ -220,7 +228,7 @@ export async function setupBoxBlur() {
 		ctx.flags.redrawActive = true;
 
 		/* UI Stats */
-		const KernelSizeSide = ui.kernelSizeRange.value * 2 + 1;
+		const KernelSizeSide = ui.kernelSizeSlider.value * 2 + 1;
 		const tapsNewText = (canvas.width * canvas.height * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1) + " Million";
 		if (ui.tapsCount.value != tapsNewText)
 			ui.tapsCount.value = tapsNewText;
@@ -367,6 +375,8 @@ export async function setupBoxBlur() {
 		gl.deleteFramebuffer(ctx.fb.final);
 		ctx.flags.buffersInitialized = false;
 		ctx.flags.initComplete = false;
+		ui.fps.value = "-";
+		ui.ms.value = "-";
 	}
 
 	function handleIntersection(entries) {

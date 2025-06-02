@@ -62,7 +62,7 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 	</div>
 	<div>
 	  <input type="radio" id="showQuadlabel" name="showQuad" value="true" />
-	  <label for="showQuadlabel">Show Quad</label>
+	  <label for="showQuadlabel">Show base Quad</label>
 	</div>
 </div>
 <script>setupSimple("canvasSimple", "vertex_0", "fragment_0", "fragment_SimpleColor", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resSimple", "showQuad");</script>
@@ -1229,7 +1229,7 @@ Everything we talked about extends to the 3D case as well. We won't dig [into 3D
 	</div>
 	<div>
 	  <input type="radio" id="showQuadlabel3D" name="showQuad3D" value="true" />
-	  <label for="showQuadlabel3D">Show Quad</label>
+	  <label for="showQuadlabel3D">Show base Quad</label>
 	</div>
 </div>
 <blockquote>

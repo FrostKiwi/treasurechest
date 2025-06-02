@@ -9,12 +9,16 @@ const viewBoxY = 3;
 
 const ui = {
 	svg: document.getElementById("kernelIso"),
-	kernelSizeRange: document.getElementById("svgKernelIsoRange"),
-	sigmaAbsoluteRange: document.getElementById("sigmaIso"),
-	sigmaRelativeRange: document.getElementById("sigmaIsoRelative"),
-	sigmaAbsoluteLabel: document.getElementById("sigmaIsoOut"),
-	sigmaRelativeLabel: document.getElementById("sigmaIsoRelativeOut"),
-	sigmaAbsoluteMode: document.getElementById("sigmaAbsolute")
+	kernelSizeSlider: document.getElementById("svgKernelIsoRange"),
+	sigmaAbsoluteMode: document.getElementById("sigmaAbsolute"),
+	sigmaAbsolute: {
+		slider: document.getElementById("sigmaIso"),
+		label: document.getElementById("sigmaIsoOut")
+	},
+	sigmaRelative: {
+		slider: document.getElementById("sigmaIsoRelative"),
+		label: document.getElementById("sigmaIsoRelativeOut")
+	}
 };
 
 export function setupSVGIso() {
@@ -32,34 +36,43 @@ export function setupSVGIso() {
 
 		frameId = requestAnimationFrame(() => {
 			frameId = null;
-			drawIsometricSVG(ui.kernelSizeRange.value, sigma, g);
+			drawIsometricSVG(ui.kernelSizeSlider.value, sigma, g);
 		});
 	}
 
 	function updateSigma(absoluteMode) {
-		const sigmaAbsolute = absoluteMode ? Number(ui.sigmaAbsoluteRange.value) : ui.kernelSizeRange.value / Number(ui.sigmaRelativeRange.value);
-		const sigmaRelative = ui.kernelSizeRange.value / sigmaAbsolute;
+		if (ui.kernelSizeSlider.value > 0) {
+			const sigmaAbsolute = absoluteMode ? Number(ui.sigmaAbsolute.slider.value) : ui.kernelSizeSlider.value / Number(ui.sigmaRelative.slider.value);
+			const sigmaRelative = ui.kernelSizeSlider.value / sigmaAbsolute;
 
-		ui.sigmaAbsoluteRange.value = sigmaAbsolute;
-		ui.sigmaRelativeRange.value = sigmaRelative;
-		ui.sigmaAbsoluteLabel.value = sigmaAbsolute.toFixed(2);
-		ui.sigmaRelativeLabel.value = sigmaRelative.toFixed(2);
+			ui.sigmaAbsolute.slider.value = sigmaAbsolute;
+			ui.sigmaRelative.slider.value = sigmaRelative;
+			ui.sigmaAbsolute.label.value = sigmaAbsolute.toFixed(2);
+			ui.sigmaRelative.label.value = sigmaRelative.toFixed(2);
+			ui.sigmaAbsolute.slider.disabled = false;
+			ui.sigmaRelative.slider.disabled = false;
 
-		redraw(sigmaAbsolute);
+			redraw(sigmaAbsolute);
+		} else {
+			/* Always force the 1x1 kernel case to display something and don't
+			   modify the sliders, as it's undefined territory */
+			ui.sigmaRelative.label.value = "?.??";
+			ui.sigmaAbsolute.slider.disabled = true;
+			ui.sigmaRelative.slider.disabled = true;
+			redraw(1);
+		}
 	}
 
-	ui.kernelSizeRange.addEventListener('input', () => updateSigma(ui.sigmaAbsoluteMode.checked));
-	ui.sigmaAbsoluteRange.addEventListener('input', () => updateSigma(true));
-	ui.sigmaRelativeRange.addEventListener('input', () => updateSigma(false));
+	ui.kernelSizeSlider.addEventListener('input', () => updateSigma(ui.sigmaAbsoluteMode.checked, ui));
+	ui.sigmaAbsolute.slider.addEventListener('input', () => updateSigma(true, ui));
+	ui.sigmaRelative.slider.addEventListener('input', () => updateSigma(false, ui));
 
-	const sigmaAbsolute = parseFloat(ui.sigmaAbsoluteRange.value);
+	const sigmaAbsolute = parseFloat(ui.sigmaAbsolute.slider.value);
 	redraw(sigmaAbsolute);
 }
 
 function drawIsometricSVG(kernelSize, sigma, g) {
 	const radius = parseInt(kernelSize);
-	/* Always force the 1x1 kernel case to display something */
-	if (!radius) sigma = 1;
 
 	/* Gaussian kernel */
 	const bars = [];

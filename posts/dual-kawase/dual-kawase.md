@@ -162,6 +162,9 @@ Here in [~~Isometric~~](https://en.wikipedia.org/wiki/Isometric_projection) [Dim
 	</tr>
 </table>
 
+<table id="weightsTable">
+</table>
+
 <script type="module">
 	import { setupSVGIso } from "./js/kernelPreviewIsometric.js";
 	setupSVGIso();
@@ -172,7 +175,7 @@ Here in [~~Isometric~~](https://en.wikipedia.org/wiki/Isometric_projection) [Dim
 
 From here on out, everything you see will be done by your device's GPU. You will see how many variables can be tuned and we will need to build quite a bunch of intuition.
 
-We are in the realm of realtime graphics.
+We are in the realm of realtime graphics. Photoshop may only need to do one such iteration, but in real time graphics, we need this to work every frame.
 
 When writing shaders, we don't care about execution order or.
 These are convolutions, but we aren't actually bound by rules of the classical convolution implies.
@@ -201,19 +204,26 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 <!-- <script>setupSimple("canvasSimple", "simpleVert", "simpleFrag", "blitVert", "blitFrag", "pauseCheckSimple");</script> -->
 
 ## Box Blur
-
-<div class="toggleRes">
-	<div>
-	  <input type="radio" id="sceneBox" name="modeBox" value="scene" checked />
-	  <label for="sceneBox">Scene</label>
+<div style="display: flex; gap: 8px">
+	<div class="toggleRes" style="width: 100%">
+		<div>
+		  <input type="radio" id="sceneBox" name="modeBox" value="scene" checked />
+		  <label for="sceneBox">Scene</label>
+		</div>
+		<div>
+		  <input type="radio" id="selfIllumBox" name="modeBox" value="selfIllum" />
+		  <label for="selfIllumBox">Self Illumination</label>
+		</div>
+		<div>
+		  <input type="radio" id="bloomBox" name="modeBox" value="bloom" />
+		  <label for="bloomBox">Bloom</label>
+		</div>
 	</div>
-	<div>
-	  <input type="radio" id="selfIllumBox" name="modeBox" value="selfIllum" />
-	  <label for="selfIllumBox">Self Illumination</label>
-	</div>
-	<div>
-	  <input type="radio" id="bloomBox" name="modeBox" value="bloom" />
-	  <label for="bloomBox">Bloom</label>
+	<div class="toggleRes" style="flex:0 0 auto; white-space:nowrap;">
+		<div>
+		  <input type="checkbox" id="animateCheck_Boxblur" checked />
+		  <label for="animateCheck_Boxblur">Animate</label>
+		</div>
 	</div>
 </div>
 <div style="margin-top: 13px" class="canvasParent">
@@ -222,20 +232,6 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 	{% include "style/icons/clock.svg" %}
 </div>
 <table class="settingsTable" style="width: 100%; max-width: 100%;">
-	<tr>
-		<td colspan=4 style="width:100%">
-			<div style="display: flex; gap: 0px 12px; align-items: center;">
-			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-around;">
-			        <span style="display: flex; gap: 8px; white-space: nowrap;">
-        				<label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
-            				<input style="margin-bottom: unset;" type="checkbox" id="animateCheck_Boxblur" name="Play / Pause" checked />
-            				Animate
-        				</label>
-					</span>
-				</div>
-			</div>
-		</td>
-	</tr>
 	<tr>
 		<td colspan=4 style="width:100%">
 			<div style="display: flex; gap: 0px 12px; align-items: center;">
