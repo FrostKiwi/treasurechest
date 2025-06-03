@@ -10,7 +10,9 @@ publicTags:
   - GameDev
 image: threshold.png
 ---
-I **love** to use soft gradients as backdrops when doing graphics programming, a love started by a [Corona Renderer](https://corona-renderer.com/) product shot [sample scene](https://forum.corona-renderer.com/index.php?topic=11345) shared by user [romullus](https://forum.corona-renderer.com/index.php?action=profile;u=9510) and its use of radial gradients to highlight the product. But they are quite horrible from a design standpoint, since they produce awful [color banding](https://en.wikipedia.org/wiki/Colour_banding), also referred to as [posterization](https://en.wikipedia.org/wiki/Posterization). Depending on things like screen type, gradient colors, viewing environment, etc., the effect can be sometimes not present at all, yet sometimes painfully obvious. Let's take a look at what I mean. The following is a WebGL Canvas drawing a black & white, dark and soft half-circle gradient.
+I **love** to use soft gradients as backdrops when doing graphics programming, a love started by a [Corona Renderer](https://corona-renderer.com/) product shot [sample scene](https://forum.corona-renderer.com/index.php?topic=11345) shared by user [romullus](https://forum.corona-renderer.com/index.php?action=profile;u=9510) and its use of radial gradients to highlight the product. But they are quite horrible from a design standpoint, since they produce [color banding](https://en.wikipedia.org/wiki/Colour_banding), also called [posterization](https://en.wikipedia.org/wiki/Posterization).
+
+Depending on things like screen type, gradient colors, viewing environment, etc., the effect can be sometimes not present at all, yet sometimes painfully obvious. Let's take a look at what I mean. The following is a WebGL Canvas drawing a black & white, dark and soft half-circle gradient.
 
 <script src="fullscreen-tri.js"></script>
 <script  id="vertex_2" type="x-shader/x-vertex">{% include "posts/GLSL-noise-and-radial-gradient/fullscreen-tri.vs" %}</script>
@@ -50,7 +52,9 @@ I **love** to use soft gradients as backdrops when doing graphics programming, a
 </details>
 </blockquote>
 
-This produces a 24-bit (8-bits per channel) image with clearly visible banding steps. If you don't see the banding due to being in a bright environment or having the screen brightness set to very low, reference the pictures below. Here is what it should look like on an 8-bit panel, specifically the [HP Z24n G2](https://jp.ext.hp.com/monitors/business/z_z24n_g2/) monitor that is connected to my laptop. It should also look the same on a high-end 10-bit or 12-bit panel, since WebGL doesn't allow high bit-depth output. The image is brightness and contrast boosted, to make the steps obvious.
+This produces a 24-bit (8-bits per channel) image with clearly visible banding steps. If you don't see the banding due to being in a bright environment or having the screen brightness set to very low, reference the pictures below. Here is what it should look like on an 8-bit panel, specifically the [HP Z24n G2](https://jp.ext.hp.com/monitors/business/z_z24n_g2/) monitor.
+
+It should also look the same on a high-end 10-bit or 12-bit panel, since WebGL doesn't allow high bit-depth output. The image is brightness and contrast boosted, to make the steps obvious.
 
 <figure>
 	<img src="Banding.jpg" alt="Photo: WebGL color banding, on an 8-bit panel, contrast and brightness boosted" />
@@ -67,7 +71,9 @@ Many Laptop screens are in fact 6-bit panels performing dithering to fake an 8-b
 
 <blockquote class="reaction"><div class="reaction_text">It's not obvious from the photo, but the dither pattern is distinctly visible when looking closely with the naked eye.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
- What you can see are *some* banding steps being a clean uniform color and *some* of them being dithered via the panel's integrated look-up table to achieve a perceived 8-bit output via [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering). Though note, how the dithering does **not** result in the banding steps being broken up, it just dithers the color step itself. Capturing this via a photo is a bit difficult, since there is also the pattern of individual pixels messing with the capture and introducing [moiré ](https://en.wikipedia.org/wiki/Moir%C3%A9_pattern) and interference patterns.
+ What you can see are *some* banding steps being a clean uniform color and *some* of them being dithered via the panel's integrated look-up table to achieve a perceived 8-bit output via [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering). Though note, how the dithering does **not** result in the banding steps being broken up, it just dithers the color step itself.
+ 
+ Capturing this via a photo is a bit difficult, since there is also the pattern of individual pixels messing with the capture and introducing [moiré ](https://en.wikipedia.org/wiki/Moir%C3%A9_pattern) and interference patterns.
 ## Magic GLSL One-liner
 
 Let's fix this. The main point of this article is to share how I get banding free gradients in one GLSL fragment shader, rendering in a single pass and without sampling or texture taps to achieve banding free-ness. It involves the best noise one-liner I have ever seen. That genius one-liner is not from me, but from [Jorge Jimenez](https://www.iryoku.com/) in his [**presentation**](http://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare) on how Gradient noise was implemented in [Call of Duty: Advanced Warfare](https://en.wikipedia.org/wiki/Call_of_Duty:_Advanced_Warfare). You can read it on the presentation's slide 123 onwards. It's described as:
@@ -158,7 +164,11 @@ You ***have*** to view this at 1:1 pixel scale, otherwise your browser's will co
 
 Same monitor and photo setup as the color-banded mess from the beginning of the article. No trickery with different zoom levels or filters. The noise is essentially invisible. It's my own article and still I'm surprised myself at the effectiveness of that simple one-liner.
 
-Technically, the proper way to achieve banding free-ness is to perform [error diffusion dithering](https://en.wikipedia.org/wiki/Error_diffusion), since that would breakup just the quantized steps of the gradient, without touching the color between the steps. But other than [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering), there is no GPU friendly way to do this and even very faint [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering) is detectable by human vision, since it applies a fixed pattern. When talking about gradients, adding noise works just fine though, even though it's not proper error diffusion. Simply applying noise with the strength of one 8-bit grayscale value `(1.0 / 255.0) * gradientNoise(gl_FragCoord.xy)` side-steps a bunch of issues and the code footprint is tiny to boot. Additionally we subtract the average added brightness of `(0.5 / 255.0)` to keep the brightness the same, since we are introducing the noise via addition, though the difference is barely noticeable. Here is a part of the gradient with a threshold applied and zoomed in, to see how both gradient and noise interact.
+The proper way to achieve banding free-ness is [error diffusion dithering](https://en.wikipedia.org/wiki/Error_diffusion). It breaks up just the quantized steps of the gradient, without touching the color in-between. But other than [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering), there is no GPU friendly way to do this and even very faint [ordered dithering](https://en.wikipedia.org/wiki/Ordered_dithering) with its fixed pattern is easily detected by human vision.
+
+When talking about gradients, adding noise works just fine though, even though it's not proper error diffusion. Simply applying noise with the strength of one 8-bit grayscale value `(1.0 / 255.0) * gradientNoise(gl_FragCoord.xy)` side-steps a bunch of issues and the code footprint is tiny to boot. 
+
+Additionally we subtract the average added brightness of `(0.5 / 255.0)` to keep the brightness the same, since we are introducing the noise via addition, though the difference is barely noticeable. Here is a part of the gradient with a threshold applied and zoomed in, to see how both gradient and noise interact.
 
 <figure>
 	<img src="threshold.png" alt="Above WebGL gradient thresholded and zoomed in" />
@@ -215,7 +225,9 @@ But what about that 6-bit laptop screen? Let's take a look, by photographing the
 
 <blockquote class="reaction"><div class="reaction_text">...ohh you gotta be kidding me</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
-Both the 6-bit screen's dithering pattern and our Interleaved Gradient Noise interfere with each other. Exactly the color bands where the panel performs the dithering, we can see the interference appearing in the form of saw-tooth ridges. Maybe by increasing the noise strength to correspond to 6-bit values? `(1.0 / 63.0) * gradientNoise(gl_FragCoord.xy) - (0.5 / 63.0)` By dividing by 63 (2⁶-1) instead of 255, we get 6-bit noise. Let's see...
+Both the 6-bit screen's dithering pattern and our Interleaved Gradient Noise interfere with each other. Exactly the color bands where the panel performs the dithering, we can see the interference appearing in the form of saw-tooth ridges.
+
+Maybe by increasing the noise strength to correspond to 6-bit values? `(1.0 / 63.0) * gradientNoise(gl_FragCoord.xy) - (0.5 / 63.0)` By dividing by 63 (2⁶-1) instead of 255, we get 6-bit noise. Let's see...
 
 <figure>
 	<img src="6-bit_banding_6-bit_noise.jpg" alt="Interference patterns from both forms of dither interfering" />
@@ -226,7 +238,9 @@ Both the 6-bit screen's dithering pattern and our Interleaved Gradient Noise int
 
 <blockquote class="reaction"><div class="reaction_text">...it's worse!</div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
 
-Clearly obvious diagonal stripes throughout the whole gradient. Yeah, 6-bit panels are a travesty. Especially on a product of this caliber. I mean the old [Thinkpad T500 & X200 I hardware modded](https://www.youtube.com/watch?v=Fs4GjDiOie8) have 6-bit panels, but those are multiple tech generations old. We could tweak the noise algorithm, but dropping to such a low common denominator is just not worth it. It's 2024 in a couple days and every human being deserves at least 256 different shades in each color channel.
+Clearly obvious diagonal stripes throughout the whole gradient. Yeah, 6-bit panels are a travesty. Especially on a product of this caliber. I mean the old [Thinkpad T500 & X200 I hardware modded](https://www.youtube.com/watch?v=Fs4GjDiOie8) have 6-bit panels, but those are multiple tech generations old. We could tweak the noise algorithm, but dropping to such a low common denominator is just not worth it.
+
+<blockquote class="reaction"><div class="reaction_text">It's 2024 in a couple days and every human being deserves at least 256 different shades in each color channel.</div><img class="kiwi" src="/assets/kiwis/laugh.svg"></blockquote>
 
 ### Bufferless Version
 Here is what the shaders look like if you use OpenGL 3.3+, OpenGL 2.1 with the [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) extension (`#version` would have to change) or WebGL2 and want to skip the Vertex Buffer setup by putting the fullscreen triangle into the vertex shader. If you get an error around `gl_VertexID` missing, you don't have [`GL_EXT_gpu_shader4`](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_gpu_shader4.txt) enabled.
@@ -310,7 +324,9 @@ float3 ScreenSpaceDither( float2 vScreenPos )
 <blockquote class="reaction"><div class="reaction_text">The code from the talk is <a target="_blank" href="https://en.wikipedia.org/wiki/High-Level_Shader_Language">HLSL</a> as used in <a target="_blank" href="https://en.wikipedia.org/wiki/Direct3D">DirectX</a>, not <a target="_blank" href="https://en.wikipedia.org/wiki/OpenGL_Shading_Language">GLSL</a> as used with <a target="_blank" href="https://en.wikipedia.org/wiki/OpenGL">OpenGL</a> or <a target="_blank" href="https://en.wikipedia.org/wiki/WebGL">WebGL</a>.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 ### Alien: Isolation
-I consider [Alien: Isolation](https://en.wikipedia.org/wiki/Alien:_Isolation) to be a technical master piece in terms of lighting, especially considering the time it was released. They faked realtime global illumination in a really interesting fashion, with the flashlight lighting up the area when shining directly at a wall fairly close and casting a redish ambiance when shining at a deep red door. It's mostly a hardcoded fake effect working with specific surfaces, but I digress...
+I consider [Alien: Isolation](https://en.wikipedia.org/wiki/Alien:_Isolation) to be a technical master piece in terms of lighting, especially considering the time it was released.
+
+They faked realtime global illumination in a really interesting fashion, with the flashlight lighting up the area when shining directly at a wall fairly close and casting a redish ambiance when shining at a deep red door. It's mostly a hardcoded fake effect working with specific surfaces, but I digress...
 
 Horror games like Alien: Isolation have a lot of dark scenes with lights creating gradient like falloffs. These are very prone to color banding. The programmers over at [creative assembly](https://www.creative-assembly.com/) show multiple ways of tackling this. Let's take a look at how by dissecting this scene.
 
@@ -452,4 +468,6 @@ If the stripes are not even or you are seeing more or less than the numbers abov
   <figcaption>Photo: 16-bit Test image on an 8-bit monitor, 3 distinct stripes. Skewed result due to improper decoding. Image shadow brightness boosted.</figcaption>
 </figure>
 
- On Windows, Microsoft Edge skews the gradient to one side, whilst Firefox does not. It has either to do with Microsoft Edge applying extra color management or the brightness response curve being approximated [as Gamma 2.2, instead of the piece-wise curve](https://www.colour-science.org/posts/srgb-eotf-pure-gamma-22-or-piece-wise-function/) that it is, leading to a slight shift in how the 16-bit gradient is being displayed on the 8-bit output. Your monitor's color gamut and gamma settings should have zero effect on the number and distribution of stripes. Just the way of decoding the image should influences the result.
+ On Windows, Microsoft Edge skews the gradient to one side, whilst Firefox does not. It has either to do with Microsoft Edge applying extra color management or the brightness response curve being approximated [as Gamma 2.2, instead of the piece-wise curve](https://www.colour-science.org/posts/srgb-eotf-pure-gamma-22-or-piece-wise-function/) that it is, leading to a slight shift in how the 16-bit gradient is being displayed on the 8-bit output.
+ 
+ Your monitor's color gamut and gamma settings should have zero effect on the number and distribution of stripes. Just the way of decoding the image should influences the result.

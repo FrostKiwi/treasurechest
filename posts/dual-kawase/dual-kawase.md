@@ -162,9 +162,6 @@ Here in [~~Isometric~~](https://en.wikipedia.org/wiki/Isometric_projection) [Dim
 	</tr>
 </table>
 
-<table id="weightsTable">
-</table>
-
 <script type="module">
 	import { setupSVGIso } from "./js/kernelPreviewIsometric.js";
 	setupSVGIso();
@@ -192,17 +189,6 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 
 <blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/dead.svg"></blockquote>
 
-<div style="display: flex; flex-wrap: wrap; gap: 0px 12px; justify-content: space-around;">
-    <span style="display: flex; gap: 8px; white-space: nowrap">
-        <label style="font-weight: unset; display: flex; gap: 8px; align-items: center;">
-            <input style="margin-bottom: unset;" type="checkbox" id="pauseCheckSimple" name="Play / Pause" checked />
-            Animate
-        </label>
-    </span>
-</div>
-<canvas width="100%" height="400px" style="aspect-ratio: 4/3" id="canvasSimple"></canvas>
-<!-- <script>setupSimple("canvasSimple", "simpleVert", "simpleFrag", "blitVert", "blitFrag", "pauseCheckSimple");</script> -->
-
 ## Box Blur
 <div style="display: flex; gap: 8px">
 	<div class="toggleRes" style="width: 100%">
@@ -226,11 +212,13 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 		</div>
 	</div>
 </div>
+
 <div style="margin-top: 13px" class="canvasParent">
-	<canvas width="100%" height="400px" style="aspect-ratio: 4/3;" id="canvasBoxBlur"></canvas>
+	<canvas style="aspect-ratio: 1.3359375;" id="canvasBoxBlur"></canvas>
 	<div class="contextLoss" id="contextLoss">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms you may have to restart the browser completely.</div>
 	{% include "style/icons/clock.svg" %}
 </div>
+
 <table class="settingsTable" style="width: 100%; max-width: 100%;">
 	<tr>
 		<td colspan=4 style="width:100%">
@@ -335,13 +323,13 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 			<code>sigma</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="1" min="0" max="32" value="1" id="sigmaRange" oninput="sigma.textContent = this.value">
+			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="2" id="sigmaRangeGauss" oninput="sigmaGaussRelativeOut.value = Number(this.value).toFixed(2)">
+		</td>
+		<td style="text-align: center; white-space: nowrap">
+			± <output id="sigmaGaussRelativeOut">2.00</output> σ
 		</td>
 		<td style="text-align: center;">
-			<output id="sigma">1</output> px
-		</td>
-		<td style="text-align: center;">
-			<button class="roundButton" onclick="sigmaRange.value = 3; sigma.textContent = '7x7';sigmaRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+			<button class="roundButton" onclick="sigmaRangeGauss.value = 2; sigmaRangeGauss.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
 		</td>
 	</tr>
 	<tr>

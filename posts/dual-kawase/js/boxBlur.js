@@ -18,7 +18,7 @@ export async function setupBoxBlur() {
 	const ctx = {
 		/* State for of the Rendering */
 		mode: "scene",
-		flags: { isRendering: false, buffersInitialized: false, initComplete: false, benchMode: false, redrawActive: false },
+		flags: { isRendering: false, buffersInitialized: false, initComplete: false, benchMode: false },
 		/* Textures */
 		tex: { sdr: null, selfIllum: null, frame: null, frameFinal: null },
 		/* Framebuffers */
@@ -35,34 +35,30 @@ export async function setupBoxBlur() {
 	/* UI Elements */
 	const ui = {
 		samplePosRange: document.getElementById('samplePosRange'),
-		sigmaRange: document.getElementById('sigmaRange'),
-		sigmaAbsolute: {
-			slider: document.getElementById("sigmaIso"),
-			label: document.getElementById("sigmaIsoOut")
-		},
-		sigmaRelative: {
-			slider: document.getElementById("sigmaIsoRelative"),
-			label: document.getElementById("sigmaIsoRelativeOut")
+		sigmaRange: document.getElementById('sigmaRangeGauss'),
+		stats: {
+			fps: document.getElementById('fpsBoxBlur'),
+			ms: document.getElementById('msBoxBlur'),
+			width: document.getElementById('widthBoxBlur'),
+			height: document.getElementById('heightBoxBlur'),
+			tapsCount: document.getElementById('tapsBoxBlur'),
 		},
 		kernelSizeSlider: document.getElementById('boxKernelSizeRange'),
 		animate: document.getElementById('animateCheck_Boxblur'),
-		benchmark: document.getElementById('benchmarkBoxBlur'),
-		benchmarkLabel: document.getElementById('benchmarkBoxBlurLabel'),
-		renderer: document.getElementById('rendererBox'),
-		fps: document.getElementById('fpsBoxBlur'),
-		ms: document.getElementById('msBoxBlur'),
-		width: document.getElementById('widthBoxBlur'),
-		height: document.getElementById('heightBoxBlur'),
-		tapsCount: document.getElementById('tapsBoxBlur'),
-		tapsCountBench: document.getElementById('tapsCountBenchBox'),
 		downSampleRange: document.getElementById('downSampleRange'),
-		iterOut: document.getElementById('iterOutBoxBlur'),
 		spinner: canvas.parentElement.querySelector('svg'),
 		contextLoss: document.getElementById('contextLoss'),
 		bloomBrightnessRange: document.getElementById('bloomBrightnessRange'),
-		iterTime: document.getElementById('iterTimeBox'),
 		radios: document.querySelectorAll('input[name="modeBox"]'),
-		debugIMG: document.getElementById('debugIMG'),
+		benchmark: {
+			label: document.getElementById('benchmarkBoxBlurLabel'),
+			iterOut: document.getElementById('iterOutBoxBlur'),
+			button: document.getElementById('benchmarkBoxBlur'),
+			renderer: document.getElementById('rendererBox'),
+			iterTime: document.getElementById('iterTimeBox'),
+			debugIMG: document.getElementById('debugIMG'),
+			tapsCount: document.getElementById('tapsCountBenchBox')
+		}
 	};
 
 	/* Shaders */
@@ -79,7 +75,6 @@ export async function setupBoxBlur() {
 	ui.sigmaRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
 	ui.samplePosRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
 	ui.bloomBrightnessRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
-	ui.bloomBrightnessRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
 	ui.downSampleRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
 
 	/* Events */
@@ -87,14 +82,14 @@ export async function setupBoxBlur() {
 		if (ui.animate.checked)
 			startRendering();
 		else {
-			ui.fps.value = "-";
-			ui.ms.value = "-";
+			ui.stats.fps.value = "-";
+			ui.stats.ms.value = "-";
 			ctx.flags.isRendering = false;
 			redraw()
 		}
 	});
 
-	canvas.addEventListener("webglcontextlost", (e) => {
+	canvas.addEventListener("webglcontextlost", () => {
 		ui.contextLoss.style.display = "block";
 	});
 
@@ -113,38 +108,38 @@ export async function setupBoxBlur() {
 		});
 	});
 
-	ui.benchmark.addEventListener("click", () => {
+	ui.benchmark.button.addEventListener("click", () => {
 		ctx.flags.benchMode = true;
 		stopRendering();
 		ui.spinner.style.display = "block";
-		ui.benchmark.disabled = true;
+		ui.benchmark.button.disabled = true;
 
 		/* spin up the Worker (ES-module) */
 		const worker = new Worker("./js/benchmark.js", { type: "module" });
 
 		/* pass all data the worker needs */
 		worker.postMessage({
-			iterations: ui.iterOut.value,
-			blurShaderSrc: boxBlurFrag,
+			iterations: ui.benchmark.iterOut.value,
+			blurShaderSrc: gaussianBlurFrag,
 			kernelSize: ui.kernelSizeSlider.value,
 			samplePos: ui.samplePosRange.value,
-			sigma: ui.sigmaRange.value
+			sigma: ui.kernelSizeSlider.value / ui.sigmaRange.value
 		});
 
 		/* Benchmark */
-		worker.addEventListener("message", (ev) => {
-			if (ev.data.type !== "done") return;
+		worker.addEventListener("message", (event) => {
+			if (event.data.type !== "done") return;
 
-			ui.benchmarkLabel.textContent = ev.data.benchText;
-			ui.tapsCountBench.textContent = ev.data.tapsCount;
-			ui.iterTime.textContent = ev.data.iterationText;
-			ui.renderer.textContent = ev.data.renderer;
-			if (ev.data.blob) {
-				ui.debugIMG.src = URL.createObjectURL(ev.data.blob);
+			ui.benchmark.label.textContent = event.data.benchText;
+			ui.benchmark.tapsCount.textContent = event.data.tapsCount;
+			ui.benchmark.iterTime.textContent = event.data.iterationText;
+			ui.benchmark.renderer.textContent = event.data.renderer;
+			if (event.data.blob) {
+				ui.benchmark.debugIMG.src = URL.createObjectURL(event.data.blob);
 			}
 
 			worker.terminate();
-			ui.benchmark.disabled = false;
+			ui.benchmark.button.disabled = false;
 			ctx.flags.benchMode = false;
 			if (ui.animate.checked)
 				startRendering();
@@ -193,9 +188,9 @@ export async function setupBoxBlur() {
 			base.blob(),
 			selfIllum.blob()
 		]);
-		/* We the browser pre-filter the textures what correspond to 1:1 pixel
+		/* We the browser pre-filter the textures what corresponds to 1:1 pixel
 		   mapping. This to side-step MipMaps, as we need just a simple demo.
-		   Otherwise, aliasing messes with what the article tries to explain */
+		   Otherwise, aliasing messes with what the article tries to explain. */
 		let [baseBitmap, selfIllumBitmap] = await Promise.all([
 			createImageBitmap(baseBlob, { colorSpaceConversion: 'none', resizeWidth: canvas.width * (1.0 + radius), resizeHeight: canvas.height * (1.0 + radius), resizeQuality: "high" }),
 			createImageBitmap(selfIllumBlob, { colorSpaceConversion: 'none', resizeWidth: canvas.width * (1.0 + radius), resizeHeight: canvas.height * (1.0 + radius), resizeQuality: "high" })
@@ -214,28 +209,20 @@ export async function setupBoxBlur() {
 	let msEMA = 16;
 
 	async function redraw() {
-		if (!ctx.flags.buffersInitialized) {
+		if (!ctx.flags.buffersInitialized)
 			await setupTextureBuffers();
-		}
-		if (!ctx.flags.initComplete) {
+		if (!ctx.flags.initComplete)
 			return;
-		}
-		/* Just in case debug */
-		if (ctx.flags.redrawActive) {
-			console.warn("double redraw");
-			return;
-		}
-		ctx.flags.redrawActive = true;
 
 		/* UI Stats */
 		const KernelSizeSide = ui.kernelSizeSlider.value * 2 + 1;
 		const tapsNewText = (canvas.width * canvas.height * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1) + " Million";
-		if (ui.tapsCount.value != tapsNewText)
-			ui.tapsCount.value = tapsNewText;
+		if (ui.stats.tapsCount.value != tapsNewText)
+			ui.stats.tapsCount.value = tapsNewText;
 
 		/* Circle Motion */
-		var radiusSwitch = ui.animate.checked ? radius : 0.0;
-		var speed = (performance.now() / 10000) % Math.PI * 2;
+		let radiusSwitch = ui.animate.checked ? radius : 0.0;
+		let speed = (performance.now() / 10000) % Math.PI * 2;
 		const offset = [radiusSwitch * Math.cos(speed), radiusSwitch * Math.sin(speed)];
 		gl.useProgram(ctx.shd.scene.handle);
 		const texture = ctx.mode == "scene" ? ctx.tex.sdr : ctx.tex.selfIllum;
@@ -265,7 +252,7 @@ export async function setupBoxBlur() {
 
 		gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / canvas.width, 1.0 / canvas.height);
 		gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.samplePosRange.value);
-		gl.uniform1f(ctx.shd.blur.uniforms.sigma, ui.sigmaRange.value);
+		gl.uniform1f(ctx.shd.blur.uniforms.sigma, ui.kernelSizeSlider.value / ui.sigmaRange.value);
 
 		/* Drawcall */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
@@ -306,11 +293,10 @@ export async function setupBoxBlur() {
 		prevNow = now;
 
 		if (ui.animate.checked && now - lastStatsUpdate >= 1000) {
-			ui.fps.value = fpsEMA.toFixed(0);
-			ui.ms.value = msEMA.toFixed(2);
+			ui.stats.fps.value = fpsEMA.toFixed(0);
+			ui.stats.ms.value = msEMA.toFixed(2);
 			lastStatsUpdate = now;
 		}
-		ctx.flags.redrawActive = false;
 	}
 
 	let animationFrameId;
@@ -324,8 +310,8 @@ export async function setupBoxBlur() {
 			canvas.height = height;
 
 			/* Report in UI */
-			ui.width.value = width;
-			ui.height.value = height;
+			ui.stats.width.value = width;
+			ui.stats.height.value = height;
 
 			if (!ctx.flags.benchMode) {
 				stopRendering();
@@ -345,6 +331,17 @@ export async function setupBoxBlur() {
 
 	window.addEventListener('resize', onResize, true);
 	nativeResize();
+
+	let resizePending = false;
+	window.addEventListener('resize', () => {
+		if (!resizePending) {
+			resizePending = true;
+			requestAnimationFrame(() => {
+				resizePending = false;
+				nativeResize();
+			});
+		}
+	});
 
 	function renderLoop() {
 		if (ctx.flags.isRendering && ui.animate.checked) {
@@ -367,16 +364,16 @@ export async function setupBoxBlur() {
 		gl.finish();
 
 		/* Delete the buffers to free up memory */
-		gl.deleteTexture(ctx.tex.sdr);
-		gl.deleteTexture(ctx.tex.selfIllum);
-		gl.deleteTexture(ctx.tex.frame);
-		gl.deleteTexture(ctx.tex.frameFinal);
-		gl.deleteFramebuffer(ctx.fb.scene);
-		gl.deleteFramebuffer(ctx.fb.final);
+		gl.deleteTexture(ctx.tex.sdr); ctx.tex.sdr = null;
+		gl.deleteTexture(ctx.tex.selfIllum); ctx.tex.selfIllum = null;
+		gl.deleteTexture(ctx.tex.frame); ctx.tex.frame = null;
+		gl.deleteTexture(ctx.tex.frameFinal); ctx.tex.frameFinal = null;
+		gl.deleteFramebuffer(ctx.fb.scene); ctx.fb.scene = null;
+		gl.deleteFramebuffer(ctx.fb.final); ctx.fb.final = null;
 		ctx.flags.buffersInitialized = false;
 		ctx.flags.initComplete = false;
-		ui.fps.value = "-";
-		ui.ms.value = "-";
+		ui.stats.fps.value = "-";
+		ui.stats.ms.value = "-";
 	}
 
 	function handleIntersection(entries) {
