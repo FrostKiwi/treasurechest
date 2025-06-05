@@ -10,7 +10,7 @@ publicTags:
   - Japanese
 image: tekisetsu.png
 ---
-It's quite the tradition among Japanese learners to publish parts of their [Anki](https://apps.ankiweb.net/) [Mining](https://animecards.site/learningjapanese/) decks, so others may get inspired by them or straight up use them. This ~1000 note deck is an excerpt of my Mining deck, which was/is being created in-part from the video game [Genshin Impact](https://genshin.hoyoverse.com/en/home).
+It's quite the tradition among Japanese learners to publish parts of their [Anki](https://apps.ankiweb.net/) [Mining](https://animecards.site/learningjapanese/) decks, so others may get inspired by them or straight up use them. This ~1000 card deck is an excerpt of my Mining deck, which was/is being created in-part from the video game [Genshin Impact](https://genshin.hoyoverse.com/en/home).
 
 > **Mining as defined by [animecards](https://animecards.site/learningjapanese/):** *A mining deck is a custom Anki deck that you create using the Japanese you encounter daily. Transitioning from pre-made decks to custom decks is vital. Don't get stuck on pre-made decks. At this point, you're learning directly from material relevant to you and targeting gaps in your knowledge.*
 
