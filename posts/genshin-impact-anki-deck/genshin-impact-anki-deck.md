@@ -14,7 +14,7 @@ It's quite the tradition among Japanese learners to publish parts of their [Anki
 
 > **Mining as defined by [animecards](https://animecards.site/learningjapanese/):** *A mining deck is a custom Anki deck that you create using the Japanese you encounter daily. Transitioning from pre-made decks to custom decks is vital. Don't get stuck on pre-made decks. At this point, you're learning directly from material relevant to you and targeting gaps in your knowledge.*
 
-[**Link to the deck on Ankiweb**](https://ankiweb.net/shared/info/870567459) (If AnkiWeb ends up pulling the deck due to copyright concerns, a copy is in the release section [here](https://github.com/FrostKiwi/treasurechest/releases/download/genshindeckv1/Genshin.Impact.Japanese.with.media.apkg)) All cards have in-game sound + screenshot and almost all have additionally a dictionary sound file + pitch accent.
+[**Link to the deck on Ankiweb**](https://ankiweb.net/shared/info/870567459). All cards have in-game sound + screenshot and almost all have additionally a dictionary sound file + pitch accent. This post will go into the thought process behind the deck, how it was created and has sound clips below every screenshot for reference.
 
 ![image](tekisetsu.png)
 <div class="audio-container">
@@ -31,8 +31,7 @@ It's quite the tradition among Japanese learners to publish parts of their [Anki
         </audio>
     </div>
 </div>
-
-This post will go into the thought process behind the deck, how it was created and has sound clips below every screenshot for reference. Of course, using someone else's Mining deck doesn't carry nearly the same benefit as making one yourself, so this article is mainly to just document my workflow and to provide a jumping-off point for people setting up their own.
+<blockquote class="reaction"><div class="reaction_text">Of course, using someone else's Mining deck defeats the point of a mining deck, so this article is mainly to just document my workflow and to provide a jumping-off point for others setting up their own.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 ## Why Genshin Impact?
 
