@@ -11,7 +11,6 @@ float roundedBoxSDF(vec2 uv, float Size, float Radius)
 void main(void)
 {
 	/* Pixel Size, but missing Perspective correction */
-	//float pixelsize = length(vec2(dFdx(uv.x), dFdy(uv.y)));
 	float dist = roundedBoxSDF(uv, 1.0, 0.4);
 
 	/* Fade out near the edge of the circle */
