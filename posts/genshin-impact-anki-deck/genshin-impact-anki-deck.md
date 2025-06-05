@@ -2,7 +2,7 @@
 title: Genshin Impact Anki deck
 permalink: "/{{ page.fileSlug }}/"
 date: 2022-05-03
-last_modified: 2023-03-13
+last_modified: 2025-06-05
 description: 1000 Note Japanese vocab Anki deck and the workflow on how I made it playing video games
 publicTags:
   - Language
