@@ -14,9 +14,8 @@ It's quite the tradition among Japanese learners to publish parts of their [Anki
 
 > **Mining as defined by [animecards](https://animecards.site/learningjapanese/):** *A mining deck is a custom Anki deck that you create using the Japanese you encounter daily. Transitioning from pre-made decks to custom decks is vital. Don't get stuck on pre-made decks. At this point, you're learning directly from material relevant to you and targeting gaps in your knowledge.*
 
-This post will go into the thought process behind the deck, how it was created and has sound clips below every screenshot for reference. Of course, using someone else's Mining deck doesn't carry nearly the same benefit as making one yourself, so this article is mainly to just document my workflow and to provide a jumping-off point for people setting up their own.
-
 [**Link to the deck on Ankiweb**](https://ankiweb.net/shared/info/870567459) (If AnkiWeb ends up pulling the deck due to copyright concerns, a copy is in the release section [here](https://github.com/FrostKiwi/treasurechest/releases/download/genshindeckv1/Genshin.Impact.Japanese.with.media.apkg)) All cards have in-game sound + screenshot and almost all have additionally a dictionary sound file + pitch accent.
+
 ![image](tekisetsu.png)
 <div class="audio-container">
     <div>
@@ -33,16 +32,18 @@ This post will go into the thought process behind the deck, how it was created a
     </div>
 </div>
 
+This post will go into the thought process behind the deck, how it was created and has sound clips below every screenshot for reference. Of course, using someone else's Mining deck doesn't carry nearly the same benefit as making one yourself, so this article is mainly to just document my workflow and to provide a jumping-off point for people setting up their own.
+
 ## Why Genshin Impact?
 
 A couple of things come together to make Genshin quite the enjoyable learning experience. The obvious first: Except minor side quests, all dialogs are voiced and progress sentence by sentence, click by click, as is common in JRPGs and visual novels. This gives enough time to grasp the dialog's content. 
 
 <blockquote class="reaction"><div class="reaction_text">In-game time does not stop during dialogs except in some quests, so sometimes multiple in-game days would pass by, as I grasped the contents of a dialog.</div><img class="kiwi" src="/assets/kiwis/laugh.svg"></blockquote>
 
-Another point is the writing style. A hotly debated topic in the player-base, is whether or not the addition of Paimon hurts the delivery of the story. The character constantly summarizes events happening and repeats commands or requests, that were given by another character just moments ago during dialog.
+Another point is the writing style. A hotly debated topic in the player-base, is whether or not the addition of [Paimon](https://genshin-impact.fandom.com/wiki/Paimon) hurts the delivery of the story. The character constantly summarizes events happening and repeats commands or requests, that were given by another character just moments ago during dialog.
 
-The main criticism often brought up is that this makes the story-flow very child-like, which is a rather obvious design goal of the game - catering to a younger audience. What may be a sore in the eyes of many a player though, is a godsend in the eyes of a language learner.
-Paimon often describes a situation, which was witnessed by the player mere moments ago, making the actual statement of a sentence trivial to understand.
+The main criticism often brought up is that this makes the story-flow very child-like, which is a rather obvious design goal of the game - catering to a younger audience. What may be a sore in the eyes of many a player though, is a godsend in the eyes of a language learner. Paimon often describes a situation, which was witnessed by the player mere moments ago, making the actual statement of a sentence trivial to understand.
+
 ![image](tsurusu.png)
 <div class="audio-container">
     <div>
@@ -60,6 +61,7 @@ Paimon often describes a situation, which was witnessed by the player mere momen
 </div>
 
 And sometimes Paimon straight up becomes a dictionary herself and defines a word like a glossary text would.
+
 ![image](oru.png)
 <div class="audio-container">
     <div>
@@ -90,7 +92,8 @@ I found myself using and recalling vocabulary acquired via Genshin faster than f
 
 ### The dangerous outcome
 
-It's common knowledge that media uses artistic delivery in speech, has speech patterns rarely used in everyday life and uses a stylized way of writing. Basically all of it is [役割語](https://ja.wikipedia.org/wiki/%E5%BD%B9%E5%89%B2%E8%AA%9E). And yet, knowing that I still managed to trip up in minor ways. Case in point:
+It's common knowledge that media uses artistic delivery in speech, has speech patterns rarely used in everyday life and uses a stylized way of writing. Basically all of it is [役割語](https://ja.wikipedia.org/wiki/%E5%BD%B9%E5%89%B2%E8%AA%9E). Knowing that full well I *still* managed to trip up. Case in point:
+
 ![image](homare.png)
 <div class="audio-container">
     <div>
@@ -115,10 +118,13 @@ Coming from outside the language it's unavoidable to misinterpret an expression'
 
 - Since this is a mining vocabulary deck, it carries words \*I\* did not know during in-game dialog. I already finished the [Improved Core3k](https://ankiweb.net/shared/info/1060896809) deck, so there are zero duplicates between this deck and Core3k. Besides that, I started the deck shortly before my N4 exam and am now ~~N3~~ N2. Words in the deck are essentially N3 and up, with some easy ones sprinkled in. No in-universe words are saved, like モラ or 目狩り令.
 - The deck captures the main story-line and a few side-quests / story-quests from the beginning up to Inzuma's second chapter.
-- I always learn both Japanese -> English, as well as English -> Japanese. This point is hotly debated, whether or not it's useful or a massive waste of time. For me switching to learning both directions has been nothing but great, but it is not the default on Anki Web and not a popular opinion it seems. (If I can name a synonym in the English -> Japanese direction, I still let it pass as HARD and as AGAIN if I can only name a synonym, once the card returns) To fit with the default, I have disabled the English -> Japanese Card type.
+- I always learn both Japanese -> English, as well as English -> Japanese. This point is hotly debated, whether or not it's useful or a massive waste of time. For me switching to learning both directions has been nothing but great, but it is not the default on Anki Web and not a popular opinion it seems. To fit with the default, I have disabled the English -> Japanese Card type.
+
+<blockquote class="reaction"><div class="reaction_text">Personally, if I can name a synonym in the English -> Japanese direction, I still let it pass as HARD and as AGAIN if I can only name a synonym, once the card returns</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
+
 - For the in-game subtitles OCR sometimes failed. I corrected small mistakes, but when it output complete garbage, I added a cropped version of just the text in the screenshot for the sentence section. I did not always double check the OCR output, so mistakes will come up in the in-game dialog's transcript occasionally. If something looks weird with the example sentences, check the in-game screenshot for the correct transcript.
 - To fit inside the AnkiWeb limit of 256 MB, all images were resized from the 1080p originals to fit a 1366x768 rectangle with aggressive 81% JPEG Quality and in-game dialog are mono MP3 files.
-- When I write "here: ..." I am referring to a word being used in a more specialized sense in the in-game dialog, like 人目 vs 人目を忍ぶ. In those cases two definitions are provided. This is to make the learning process a bit more compact and to prevent not being able to translate a sentence, whilst having just half of the definition.
+- When I write "***here: ...***", I am referring to a word being used in a more specialized sense in the in-game dialog, like 人目 vs 人目を忍ぶ. In those cases two definitions are provided. This is to make the learning process a bit more compact and to prevent not being able to translate a sentence, whilst having just half of the definition.
 
 ![hitome](hitome.png)
 <div class="audio-container">
@@ -212,11 +218,13 @@ The main workhorse of everything is [Game2Text](https://game2text.com/), though 
 
 Capture a window's content via FireFox's and Chrome's native window capture feature, run a region of the window through OCR, like the offline and opensource [tesseract](https://github.com/tesseract-ocr/tesseract) or the more powerful online service [ocr.Space](https://ocr.space/) and finally allow you to translate the text with help of popular plug-ins like [YomiChan](https://github.com/FooSoft/yomichan) or the new active community fork [YomiTan](https://github.com/themoeway/yomitan).
 
-Game2Text has native Anki Connect integration, which builds Anki cards from the captured screenshot, the currently selected word and a dictionary definiton. However, this native Anki integration sometimes fails to recognize phrases, that more complex dictionary suites in YomiChan detect. Luckily Game2Text can essentially give you the best of both worlds, since you can just use directly YomiChan to create a card. Though in that case, you have to handle screenshots yourself.
+Game2Text has native Anki Connect integration, which builds Anki cards from the captured screenshot, the currently selected word and a dictionary definiton. However, this native Anki integration sometimes fails to recognize phrases, that more complex dictionary suites in YomiChan detect. Luckily Game2Text can essentially give you the best of both worlds, since you can just use directly YomiChan to create a card.
+
+<blockquote class="reaction"><div class="reaction_text">Though in that case, you have to handle screenshots yourself.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 Genshin fails to get captured by the browser, unless it is in window mode. There is no proper borderless window mode in Genshin unfortunately, unless you use a [patcher to get a borderless window](https://github.com/Codeusa/Borderless-Gaming). Another option is to run [OBS](https://github.com/obsproject/obs-studio) in administrator mode, capture the game, open up a full-screen "source monitor"-window of Genshin's source signal and let the browser capture that.
 
-<blockquote class="reaction"><div class="reaction_text">This is the option I went with on my Desktop PC. </div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">This is the option I went with on my Desktop PC.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
 On my Laptop with a dedicated Nvidia GPU this leads to massive performance loss however, presumably because of saturating memory bandwidth due to some weird interaction between the iGPU and the main GPU causing a memory bottleneck somehow. In that case I used the borderless gaming patcher.
 
