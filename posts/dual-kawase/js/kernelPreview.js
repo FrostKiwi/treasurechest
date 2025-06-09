@@ -5,8 +5,8 @@ const viewBoxY = 3;
 /* Styles */
 const STYLES = {
 	bg: "fill:#eb99a1; fill-opacity:0.5;",
-	centerPixel: "fill:#ffecee; stroke:#1F1A17; stroke-width:0.025;",
-	sidePixel: "fill:#ffecee; fill-opacity:0.5; stroke:#1F1A17; stroke-width:0.025;",
+	centerPixel: "fill:#ffecee; stroke:#1F1A17; stroke-width:0.03;",
+	sidePixel: "fill:#ffecee; fill-opacity:0.5; stroke:#1F1A17; stroke-width:0.03;",
 	samplePosition: "fill:#292929;",
 };
 
@@ -22,7 +22,7 @@ export function setupSVG() {
 	bg.setAttribute("y", -viewBoxY / 2);
 	bg.setAttribute("width", viewBoxX);
 	bg.setAttribute("height", viewBoxY);
-	bg.setAttribute("style", STYLES.bg);
+	bg.setAttribute("style", "fill:#eb99a1; fill-opacity:0.5;");
 	svg.appendChild(bg);
 
 	/* Animated and transformed group */
@@ -59,27 +59,36 @@ function draw(k, g, mult) {
 	/* A bit ugly due to it's literal text nature, but doing the nice setAttributes
 	and createElementNS angers Safari Apple Devices, so we don't modify the DOM
 	too fast by doing it in text form here */
-	/* Center Pixel */
-	content += `<rect x="${-0.5 + (0.5 - pixelSize / 2)}" y="${-0.5 + (0.5 - pixelSize / 2)}" width="${pixelSize}" height="${pixelSize}" style="${STYLES.centerPixel}"/>`;
 
-	/* Side Pixels */
-	const extraRows = 4;
+	/* Pixels */
+	const extraRows = 8;
 	const half = (kernelSize - 1) / 2;
+	const offset = pixelSize * 0.5;
+
 	for (let y = -half - extraRows; y <= half + extraRows; ++y) {
 		for (let x = -half - extraRows; x <= half + extraRows; ++x) {
-			if (x === 0 && y === 0) continue;
+
 			const dx = Math.max(Math.abs(x) - half, 0);
 			const dy = Math.max(Math.abs(y) - half, 0);
 			const radial = Math.sqrt(dx * dx + dy * dy);
-			const opacity = radial > 0 ? Math.pow(0.35, radial) : 1;
-			content += `<rect x="${x - 0.5 + (0.5 - pixelSize / 2)}" y="${y - 0.5 + (0.5 - pixelSize / 2)}" width="${pixelSize}" height="${pixelSize}" style="${STYLES.sidePixel}" opacity="${opacity}"/>`;
+			const opacity = Math.pow(0.35, radial);
+
+			if (x === 0 && y === 0)
+				/* Center Pixel */
+				content += `<rect x="${x - offset}" y="${y - offset}" width="${pixelSize}" height="${pixelSize}" style="${STYLES.centerPixel}"/>`;
+			else if (Math.abs(x) <= half && Math.abs(y) <= half)
+				/* Native Sample Pixel */
+				content += `<rect x="${x - offset}" y="${y - offset}" width="${pixelSize}" height="${pixelSize}" style="${STYLES.sidePixel}"/>`;
+			else
+				/* Other Pixels */
+				content += `<rect x="${x - offset}" y="${y - offset}" width="${pixelSize}" height="${pixelSize}" style="${STYLES.sidePixel}" opacity="${opacity}"/>`;
 		}
 	}
 
 	/* Sample Positions */
 	for (let y = -half; y <= half; ++y) {
 		for (let x = -half; x <= half; ++x) {
-			content += `<circle cx="${x * mult}" cy="${y * mult}" r="0.12" style="${STYLES.samplePosition}"/>`;
+			content += `<circle cx="${x * mult}" cy="${y * mult}" r="0.15" style="${STYLES.samplePosition}"/>`;
 		}
 	}
 
