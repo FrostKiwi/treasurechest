@@ -1,8 +1,8 @@
 ---
-title: Tunneling corporate firewalls for developers
+title: Tunneling SSH over HTTPS
 permalink: "/{{ page.fileSlug }}/"
 date: 2025-03-27
-last_modified: 2025-03-27
+last_modified: 2025-06-25
 description: Establish SSH connections and ensure your dev tools work via HTTPS tunneling, even if proxies and firewalls won't let you
 publicTags:
   - cyber security
@@ -16,7 +16,7 @@ When you have a project, online service or WebApp that you manage and deploy, yo
 
 Being able to setup a connection you trust and where your dev tools work is important. How you connect to the server where you deploy your projects isn't always straight forward though, when there are proxies, packet sniffing firewalls and network monitoring in-between you, the internet and the target server.
 
-<blockquote class="reaction"><div class="reaction_text">The "correct" answer is: <a target="_blank" href="https://tailscale.com/blog/hamachi">setup a VPN</a>! But that's sometimes not possible. <a target="_blank" href="https://www.microsoft.com/en-us/microsoft-365/business-insights-ideas/resources/what-is-endpoint-management">Endpoint management</a> may forbid it client-side. Server-side infrastructure may be managed by a third party, kicking off costly service requests.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">The <strong>correct</strong> answer is: <a target="_blank" href="https://tailscale.com/blog/hamachi">setup a VPN</a>! But that's sometimes not possible.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
 Ultimately, this is what the article is about - how to SSH into machines, when there is stuff in the way preventing that and make sure that your tools like [git](https://en.wikipedia.org/wiki/Git), [scp](https://man.openbsd.org/scp.1), [rsync](https://en.wikipedia.org/wiki/Rsync) or editing files directly on the server via [VSCode's SSH integration](https://code.visualstudio.com/docs/remote/ssh) work, with no new software installed and the ***absolute minimum*** of modifications to your server.
 
@@ -490,8 +490,6 @@ Same deal here. We observe the initial TCP connection being established, but wit
 
 <blockquote class="reaction"><div class="reaction_text">You may see server-side <a target="_blank" href="https://github.com/openssh/openssh-portable/blob/6c49e5f7dcaf886b4a702a6c003cae9dca04d3ea/sshd.c#L596"><code>Not allowed at this time</code></a> packets instead, as OpenSSH is <a target="_blank" href="https://github.com/openssh/openssh-portable/blob/6c49e5f7dcaf886b4a702a6c003cae9dca04d3ea/sshd.c#L596">rate-limiting by default via the <code>MaxStartups</code> and penalty system</a>. Either way, these packets are never heard.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-Before we get out our hammer drill to circumvent this, let's introduce another character of today's journey...
-
 ## The corporate proxy
 
 {% clickableImage "img/proxyBasic.svg", "Corporate Proxy used as egress point to the internet. Any other outbound connection not going through the proxy (eg. SSH) is blocked by a firewall" %}
@@ -504,13 +502,9 @@ These proxies are usually part of an overarching IT and endpoint security packag
 
 Among these corporate proxies, it's standard to have packet sniffing capabilities, preventing connections that don't pass the sniff-test of "looks like normal internet access". Going forward, we will circumvent this and do so in a way that makes dev tools happy. Before that, let's clear the elephants in the room...
 
-<blockquote class="reaction"><div class="reaction_text">Probably the time to mention, that as much as any other post, my blog's <a target="_blank" href="/about/#disclaimer">disclaimer</a> applies.</div><img class="kiwi" src="/assets/kiwis/drillHappy.svg"></blockquote>
+Why not just a VPN? Projects like [tailscale](https://tailscale.com) ***are*** the right tool for the job here after all. But in certain environments, their use may simply be not possible. Whether due to policy or architecture, VPNs may not be an option. Having another way to interface with a target, with a matching level of security to a VPN is what I want to explore.
 
-...why would you need to? Can't you simply open a ticket at your IT department? Certain situations may make a deeper architectural solution impossible on the timescale that a project needs delivering, happenings need to happen and things need to thing.
-
-There may be intermediary companies which are responsible for digital infrastructure, kicking-off complicated inter-contract reviews; engineer access gateways may be on unreliable subnets; or simply, the present digital infrastructure may be such a mess, that trust just can't be established in the first place.
-
-***Deep*** consideration ***is needed*** on whether such a setup is **actually** required and whether or not this may violate existing security policies. And the previous passage was of course hyperbolic. Infrastructure decisions are made as a team. Let's find out what's possible, with seemingly simple, standard tooling:
+***Deep*** consideration ***is needed*** on whether such a setup is **actually** required and whether or not this may violate existing security policies. Infrastructure decisions are made as a team. Let's find out what's possible, with seemingly simple, standard tooling:
 
 ### Honoring the proxy
 Proxies are such a vital piece of infrastructure, that we expect the operating system's proxy settings to be honored by default, built proxy settings into most network connected software and have additional defacto standards to specify them like the environment variables `http_proxy`, `HTTPS_PROXY`, `NO_PROXY` and friends.
@@ -1280,12 +1274,10 @@ $ rsync -avz --progress exampleCorporate:/path/to/source/folder /path/to/target/
 <a></a>
 
 ## Finishing up:
-<blockquote class="reaction"><div class="reaction_text">I should clarify what level of power and potential for misuse we are dealing with</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">I should clarify that just like a VPN, this is a powerful tool that can dodge traffic blocking...</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 Everything we talked about applies to circumventing internet content filtering as well, as SSH [supports Dynamic port forwarding](https://man.openbsd.org/ssh#D), allowing you to browse the web, if you connect via `ssh -D 8888 exampleCorporate` and point your browser to `localhost:8888` as a `SOCKS5` proxy [in the network settings](https://support.mozilla.org/en-US/kb/connection-settings-firefox).
 
-Your server turns into a quasi VPN, with you browsing the web from the perspective of the server, no corporate content filters. It's standard practice to [block changes to proxy settings company wide](https://support.google.com/chrome/a/answer/187202). But it's up to the browser to enforce such policies, making it one of the more easily circumvented and useless security measures.
-
-And there we go. We configured, drilled and circumvented, creating power to build digital infrastructure in situations where normally we wouldn't be able to.
+Your server turns into a quasi VPN, with you browsing the web from the perspective of the server, no corporate content filters. It's standard practice to [block changes to proxy settings company wide](https://support.google.com/chrome/a/answer/187202). But it's **up to the browser** to enforce such policies, making it a useless security measure.
 
 <blockquote class="reaction"><div class="reaction_text"><a target="_blank" href="https://youtu.be/b23wrRfy7SM?t=12">With great power comes great responsibility</a>. Hope this article gave insight into what's possible, besides the classic ways of server access.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
