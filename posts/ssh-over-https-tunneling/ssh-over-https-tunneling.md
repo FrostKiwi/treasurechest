@@ -1,6 +1,7 @@
 ---
 title: Tunneling SSH over HTTPS
 permalink: "/{{ page.fileSlug }}/"
+redirect_from: /tunneling-corporate-firewalls
 date: 2025-03-27
 last_modified: 2025-06-25
 description: Establish SSH connections and ensure your dev tools work via HTTPS tunneling, even if proxies and firewalls won't let you
