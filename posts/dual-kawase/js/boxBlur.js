@@ -20,9 +20,9 @@ export async function setupBoxBlur() {
 		mode: "scene",
 		flags: { isRendering: false, buffersInitialized: false, initComplete: false, benchMode: false },
 		/* Textures */
-		tex: { sdr: null, selfIllum: null, frame: null, frameFinal: null },
+		tex: { sdr: null, selfIllum: null, frame: null, frameFinal: null, down: [] },
 		/* Framebuffers */
-		fb: { scene: null, final: null },
+		fb: { scene: null, final: null, down: [] },
 		/* Shaders and their respective Resource Locations */
 		shd: {
 			scene: { handle: null, uniforms: { offset: null, radius: null } },
@@ -173,32 +173,44 @@ export async function setupBoxBlur() {
 		ctx.flags.buffersInitialized = true;
 		ctx.flags.initComplete = false;
 
-		/* Setup Buffers */
 		gl.deleteFramebuffer(ctx.fb.scene);
 		gl.deleteFramebuffer(ctx.fb.final);
 		[ctx.fb.scene, ctx.tex.frame] = util.setupFramebuffer(gl, canvas.width, canvas.height);
 		[ctx.fb.final, ctx.tex.frameFinal] = util.setupFramebuffer(gl, canvas.width, canvas.height);
 
-		/* Setup textures */
+		const maxDown = ui.downSampleRange.max;
+		for (let i = 0; i < ui.downSampleRange.max; ++i) {
+			gl.deleteFramebuffer(ctx.fb.down[i]);
+			gl.deleteTexture(ctx.tex.down[i]);
+		}
+		ctx.fb.down = [];
+		ctx.tex.down = [];
+
+		let w = canvas.width, h = canvas.height;
+		for (let i = 0; i < maxDown; ++i) {
+			w = Math.max(1, w >> 1);
+			h = Math.max(1, h >> 1);
+			const [fb, tex] = util.setupFramebuffer(gl, w, h);
+			ctx.fb.down.push(fb);
+			ctx.tex.down.push(tex);
+		}
+
 		let [base, selfIllum] = await Promise.all([
 			fetch("/dual-kawase/img/SDR_No_Sprite.png"),
 			fetch("/dual-kawase/img/Selfillumination.png")
 		]);
-		let [baseBlob, selfIllumBlob] = await Promise.all([
-			base.blob(),
-			selfIllum.blob()
-		]);
-		/* We the browser pre-filter the textures what corresponds to 1:1 pixel
-		   mapping. This to side-step MipMaps, as we need just a simple demo.
-		   Otherwise, aliasing messes with what the article tries to explain. */
+		let [baseBlob, selfIllumBlob] = await Promise.all([base.blob(), selfIllum.blob()]);
 		let [baseBitmap, selfIllumBitmap] = await Promise.all([
-			createImageBitmap(baseBlob, { colorSpaceConversion: 'none', resizeWidth: canvas.width * (1.0 + radius), resizeHeight: canvas.height * (1.0 + radius), resizeQuality: "high" }),
-			createImageBitmap(selfIllumBlob, { colorSpaceConversion: 'none', resizeWidth: canvas.width * (1.0 + radius), resizeHeight: canvas.height * (1.0 + radius), resizeQuality: "high" })
+			createImageBitmap(baseBlob, { colorSpaceConversion: 'none', resizeWidth: canvas.width * 1.12, resizeHeight: canvas.height * 1.12, resizeQuality: "high" }),
+			createImageBitmap(selfIllumBlob, { colorSpaceConversion: 'none', resizeWidth: canvas.width * 1.12, resizeHeight: canvas.height * 1.12, resizeQuality: "high" })
 		]);
+
 		ctx.tex.sdr = util.setupTexture(gl, null, null, ctx.tex.sdr, gl.LINEAR, baseBitmap);
 		ctx.tex.selfIllum = util.setupTexture(gl, null, null, ctx.tex.selfIllum, gl.LINEAR, selfIllumBitmap);
+
 		baseBitmap.close();
 		selfIllumBitmap.close();
+
 		ctx.flags.initComplete = true;
 		ui.spinner.style.display = "none";
 	}
@@ -219,6 +231,9 @@ export async function setupBoxBlur() {
 		const tapsNewText = (canvas.width * canvas.height * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1) + " Million";
 		if (ui.stats.tapsCount.value != tapsNewText)
 			ui.stats.tapsCount.value = tapsNewText;
+		/* Report resolution in UI */
+		ui.stats.width.value = Math.max(1, canvas.width >> +ui.downSampleRange.value);
+		ui.stats.height.value = Math.max(1, canvas.height >> +ui.downSampleRange.value);
 
 		/* Circle Motion */
 		let radiusSwitch = ui.animate.checked ? radius : 0.0;
@@ -238,28 +253,50 @@ export async function setupBoxBlur() {
 		/* Draw Call */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
-		/* Setup Blur to Buffer */
-		gl.useProgram(ctx.shd.blur.handle);
-		if (ctx.mode == "bloom")
-			gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.final);
-		else
-			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		if (ctx.mode == "scene")
-			gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, 1.0);
-		else
-			gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ui.bloomBrightnessRange.value);
-		gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
+		/* down-sample chain */
+		const levels = ui.downSampleRange.value;
+		let srcTex = ctx.tex.frame;
+		let w = canvas.width, h = canvas.height;
 
-		gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / canvas.width, 1.0 / canvas.height);
+		gl.useProgram(ctx.shd.passthrough.handle);
+		for (let i = 0; i < levels; ++i) {
+			const fb = ctx.fb.down[i];
+			w = Math.max(1, w >> 1);
+			h = Math.max(1, h >> 1);
+
+			gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+			gl.viewport(0, 0, w, h);
+
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D, srcTex);
+			gl.uniform1i(gl.getUniformLocation(ctx.shd.passthrough.handle, "texture"), 0);
+
+			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+			srcTex = ctx.tex.down[i];
+		}
+
+		/* blur pass (runs on the last level) */
+		gl.useProgram(ctx.shd.blur.handle);
+
+		if (ctx.mode == "bloom") {
+			gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.final);
+			gl.viewport(0, 0, canvas.width, canvas.height);
+		} else {
+			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+			gl.viewport(0, 0, canvas.width, canvas.height);
+		}
+
+		gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.bloomBrightnessRange.value);
+		gl.bindTexture(gl.TEXTURE_2D, srcTex);
+		gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / w, 1.0 / h);
 		gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.samplePosRange.value);
 		gl.uniform1f(ctx.shd.blur.uniforms.sigma, ui.kernelSizeSlider.value / ui.sigmaRange.value);
-
-		/* Drawcall */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
-		/* Output to the Screen */
 		if (ctx.mode == "bloom") {
 			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+			gl.viewport(0, 0, canvas.width, canvas.height);
 			gl.useProgram(ctx.shd.bloom.handle);
 
 			gl.uniform2fv(ctx.shd.bloom.uniforms.offset, offset);
@@ -308,10 +345,6 @@ export async function setupBoxBlur() {
 		if (width && canvas.width !== width || height && canvas.height !== height) {
 			canvas.width = width;
 			canvas.height = height;
-
-			/* Report in UI */
-			ui.stats.width.value = width;
-			ui.stats.height.value = height;
 
 			if (!ctx.flags.benchMode) {
 				stopRendering();
@@ -370,6 +403,12 @@ export async function setupBoxBlur() {
 		gl.deleteTexture(ctx.tex.frameFinal); ctx.tex.frameFinal = null;
 		gl.deleteFramebuffer(ctx.fb.scene); ctx.fb.scene = null;
 		gl.deleteFramebuffer(ctx.fb.final); ctx.fb.final = null;
+		for (let i = 0; i < ui.downSampleRange.max; ++i) {
+			gl.deleteTexture(ctx.tex.down[i]);
+			gl.deleteFramebuffer(ctx.fb.down[i]);
+		}
+		ctx.tex.down = [];
+		ctx.fb.down = [];
 		ctx.flags.buffersInitialized = false;
 		ctx.flags.initComplete = false;
 		ui.stats.fps.value = "-";

@@ -214,7 +214,8 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 </div>
 
 <div style="margin-top: 13px" class="canvasParent">
-	<canvas style="aspect-ratio: 1.3359375;" id="canvasBoxBlur"></canvas>
+	<!-- NOT ACTUALLY DIVISIBLE by 8 due to CSS pixels ignoring DPI, needs to go into JS -->
+	<canvas style="width: round(down, 100%, 8px); aspect-ratio: 4 / 3;" id="canvasBoxBlur"></canvas>
 	<div class="contextLoss" id="contextLoss">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms you may have to restart the browser completely.</div>
 	{% include "style/icons/clock.svg" %}
 </div>
@@ -266,7 +267,7 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 			<code>downSample</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="1" min="1" max="8" value="1" id="downSampleRange" oninput="downSampleOut.textContent = this.value">
+			<input class="slider" type="range" step="1" min="0" max="8" value="0" id="downSampleRange" oninput="downSampleOut.textContent = this.value">
 		</td>
 		<td style="text-align: center;">
 			<output id="downSampleOut">1</output>
@@ -424,3 +425,5 @@ Masaki Kawase 川瀬正樹 history goes back some time, including modding and a 
 To be able to innovate in blurs today you need to be very deep in mathematics and signal theory **_and_** computer graphics. Just looking at the level of genius needed to get fast bokeh blur is kinda insane. Functions cancelling each-other out, complex number theory
 
 https://www.youtube.com/watch?v=vNG3ZAd8wCc
+
+CS2 has not handled highlights like Call of Duty's graphics team has, see ancient lights
