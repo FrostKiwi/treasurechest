@@ -214,7 +214,6 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 </div>
 
 <div style="margin-top: 13px" class="canvasParent">
-	<!-- NOT ACTUALLY DIVISIBLE by 8 due to CSS pixels ignoring DPI, needs to go into JS -->
 	<canvas style="width: round(down, 100%, 8px); aspect-ratio: 4 / 3;" id="canvasBoxBlur"></canvas>
 	<div class="contextLoss" id="contextLoss">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms you may have to restart the browser completely.</div>
 	{% include "style/icons/clock.svg" %}

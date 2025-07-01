@@ -228,12 +228,11 @@ export async function setupBoxBlur() {
 
 		/* UI Stats */
 		const KernelSizeSide = ui.kernelSizeSlider.value * 2 + 1;
-		const tapsNewText = (canvas.width * canvas.height * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1) + " Million";
-		if (ui.stats.tapsCount.value != tapsNewText)
-			ui.stats.tapsCount.value = tapsNewText;
-		/* Report resolution in UI */
-		ui.stats.width.value = Math.max(1, canvas.width >> +ui.downSampleRange.value);
-		ui.stats.height.value = Math.max(1, canvas.height >> +ui.downSampleRange.value);
+		const effectiveRes = [Math.max(1, canvas.width >> +ui.downSampleRange.value), Math.max(1, canvas.height >> +ui.downSampleRange.value)];
+		const tapsNewText = (effectiveRes[0] * effectiveRes[1] * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1) + " Million";
+		ui.stats.tapsCount.value = tapsNewText;
+		ui.stats.width.value = effectiveRes[0];
+		ui.stats.height.value = effectiveRes[1];
 
 		/* Circle Motion */
 		let radiusSwitch = ui.animate.checked ? radius : 0.0;
@@ -291,7 +290,7 @@ export async function setupBoxBlur() {
 		gl.bindTexture(gl.TEXTURE_2D, srcTex);
 		gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / w, 1.0 / h);
 		gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.samplePosRange.value);
-		gl.uniform1f(ctx.shd.blur.uniforms.sigma, ui.kernelSizeSlider.value / ui.sigmaRange.value);
+		gl.uniform1f(ctx.shd.blur.uniforms.sigma, Math.max(ui.kernelSizeSlider.value / ui.sigmaRange.value, 0.001));
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		if (ctx.mode == "bloom") {
