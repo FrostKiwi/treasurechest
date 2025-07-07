@@ -257,45 +257,72 @@ export async function setupBoxBlur() {
 		let srcTex = ctx.tex.frame;
 		let w = canvas.width, h = canvas.height;
 
-		gl.useProgram(ctx.shd.passthrough.handle);
-		for (let i = 0; i < levels; ++i) {
-			const fb = ctx.fb.down[i];
+		if (levels > 0) {
+			/* Downsample up to the second to last level */
+			gl.useProgram(ctx.shd.passthrough.handle);
+			for (let i = 0; i < levels - 1; ++i) {
+				const fb = ctx.fb.down[i];
+				w = Math.max(1, w >> 1);
+				h = Math.max(1, h >> 1);
+
+				gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+				gl.viewport(0, 0, w, h);
+
+				gl.activeTexture(gl.TEXTURE0);
+				gl.bindTexture(gl.TEXTURE_2D, srcTex);
+				gl.uniform1i(gl.getUniformLocation(ctx.shd.passthrough.handle, "texture"), 0);
+				gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+				srcTex = ctx.tex.down[i];
+			}
+
+			/* Blur into the last downsample buffer */
+			gl.useProgram(ctx.shd.blur.handle);
+			const lastDownsampleFB = ctx.fb.down[levels - 1];
 			w = Math.max(1, w >> 1);
 			h = Math.max(1, h >> 1);
-
-			gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+			gl.bindFramebuffer(gl.FRAMEBUFFER, lastDownsampleFB);
 			gl.viewport(0, 0, w, h);
-
+			gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.bloomBrightnessRange.value);
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D, srcTex);
-			gl.uniform1i(gl.getUniformLocation(ctx.shd.passthrough.handle, "texture"), 0);
-
+			gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / w, 1.0 / h);
+			gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.samplePosRange.value);
+			gl.uniform1f(ctx.shd.blur.uniforms.sigma, Math.max(ui.kernelSizeSlider.value / ui.sigmaRange.value, 0.001));
 			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-
-			srcTex = ctx.tex.down[i];
+			srcTex = ctx.tex.down[levels - 1];
 		}
 
-		/* blur pass (runs on the last level) */
-		gl.useProgram(ctx.shd.blur.handle);
-
-		if (ctx.mode == "bloom") {
-			gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.final);
-			gl.viewport(0, 0, canvas.width, canvas.height);
-		} else {
-			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-			gl.viewport(0, 0, canvas.width, canvas.height);
+		/* Upsample chain */
+		if (levels > 0) {
+			gl.useProgram(ctx.shd.passthrough.handle);
+			/* Upsample through the mip levels */
+			for (let i = levels - 2; i >= 0; i--) {
+				const fb = ctx.fb.down[i];
+				let upsampleW = Math.max(1, canvas.width >> (i + 1));
+				let upsampleH = Math.max(1, canvas.height >> (i + 1));
+				gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+				gl.viewport(0, 0, upsampleW, upsampleH);
+				gl.activeTexture(gl.TEXTURE0);
+				gl.bindTexture(gl.TEXTURE_2D, srcTex);
+				gl.uniform1i(gl.getUniformLocation(ctx.shd.passthrough.handle, "texture"), 0);
+				gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+				srcTex = ctx.tex.down[i];
+			}
 		}
 
-		gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.bloomBrightnessRange.value);
+		/* Final pass to present to screen (with upscaling if needed) */
+		const finalFB = ctx.mode == "bloom" ? ctx.fb.final : null;
+		gl.bindFramebuffer(gl.FRAMEBUFFER, finalFB);
+		gl.viewport(0, 0, canvas.width, canvas.height);
+		gl.useProgram(ctx.shd.passthrough.handle);
+		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, srcTex);
-		gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / w, 1.0 / h);
-		gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.samplePosRange.value);
-		gl.uniform1f(ctx.shd.blur.uniforms.sigma, Math.max(ui.kernelSizeSlider.value / ui.sigmaRange.value, 0.001));
+		gl.uniform1i(gl.getUniformLocation(ctx.shd.passthrough.handle, "texture"), 0);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		if (ctx.mode == "bloom") {
+			/* Now do the bloom composition to the screen */
 			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-			gl.viewport(0, 0, canvas.width, canvas.height);
 			gl.useProgram(ctx.shd.bloom.handle);
 
 			gl.uniform2fv(ctx.shd.bloom.uniforms.offset, offset);

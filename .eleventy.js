@@ -30,6 +30,9 @@ const mdAnchorOpts = {
 };
 
 export default function (eleventyConfig) {
+	eleventyConfig.setServerOptions({
+		domDiff: false,
+	});
 	/* Assets */
 	eleventyConfig.addPassthroughCopy("assets");
 	eleventyConfig.addPassthroughCopy({ "posts": "." });
