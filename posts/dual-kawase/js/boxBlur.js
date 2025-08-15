@@ -290,6 +290,19 @@ export async function setupBoxBlur() {
 			gl.uniform1f(ctx.shd.blur.uniforms.sigma, Math.max(ui.kernelSizeSlider.value / ui.sigmaRange.value, 0.001));
 			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 			srcTex = ctx.tex.down[levels - 1];
+		} else {
+			/* Run Gaussian blur at native resolution when no downsample */
+			gl.useProgram(ctx.shd.blur.handle);
+			gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.final);
+			gl.viewport(0, 0, canvas.width, canvas.height);
+			gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.bloomBrightnessRange.value);
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D, srcTex);
+			gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / canvas.width, 1.0 / canvas.height);
+			gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.samplePosRange.value);
+			gl.uniform1f(ctx.shd.blur.uniforms.sigma, Math.max(ui.kernelSizeSlider.value / ui.sigmaRange.value, 0.001));
+			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+			srcTex = ctx.tex.frameFinal;
 		}
 
 		/* Upsample chain */
