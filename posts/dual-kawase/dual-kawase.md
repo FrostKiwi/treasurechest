@@ -11,21 +11,36 @@ publicTags:
   - GameDev
 image:
 ---
-
-Blurs are the basic building block for many video game post processing effects and essential for sleek and modern [GUIs](https://en.wikipedia.org/wiki/Graphical_user_interface). Video game [Depth of Field](https://dev.epicgames.com/documentation/en-us/unreal-engine/depth-of-field-in-unreal-engine) and [Bloom](https://en.wikipedia.org/wiki/Bloom_(shader_effect)) or [frosted panels](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#microsoft-windows-acrylic) in modern user interfaces - used subtly or obviously - they're everywhere. <span style="transition: filter 0.2s; filter: none" onmouseover="this.style.filter='blur(4px)'" onmouseout="this.style.filter='none'">Even your browser can do it, just tap this sentence!</span>
+Blurs are the basic building block for many [video game post processing effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering) and essential for sleek and modern [GUIs](https://en.wikipedia.org/wiki/Graphical_user_interface). Video game [Depth of Field](https://dev.epicgames.com/documentation/en-us/unreal-engine/depth-of-field-in-unreal-engine) and [Bloom](https://en.wikipedia.org/wiki/Bloom_(shader_effect)) or [frosted panels](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#microsoft-windows-acrylic) in modern user interfaces - used subtly or obviously - they're everywhere. <span style="transition: filter 0.2s; filter: none" onmouseover="this.style.filter='blur(4px)'" onmouseout="this.style.filter='none'">Even your browser can do it, just tap this sentence!</span>
 
 Conceptually, *"Make thing go blurry"* is easy, boiling down to some form of *"average colors in radius"*. Doing so in realtime however, took many a graphics programmer through decades upon decades of research and experimentation, across computer science and maths. In this article, we'll follow their footsteps.
 
 <blockquote class="reaction"><div class="reaction_text">A graphics programming time travel, if you will.</div><img class="kiwi" src="/assets/kiwis/cyber.svg"></blockquote>
 
-Using the [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) in the device you are reading this article on, and the [WebGL](https://en.wikipedia.org/wiki/WebGL) capability of your browser, we'll implement realtime blurring techniques and retrace the trade-offs graphics programmers had make do in order to marry two, sometimes opposing, worlds: **Ideal mathematical theory** and **harsh technological reality**. Let's dig in!
+Using the [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) in the device you are reading this article on, and the [WebGL](https://en.wikipedia.org/wiki/WebGL) capability of your browser, we'll implement realtime blurring techniques and retrace the trade-offs graphics programmers had to make in order to marry two, sometimes opposing, worlds: **Mathematical theory** and **Technological reality**. Let's dig in!
 
 <blockquote class="reaction"><div class="reaction_text">This is my submission to this year's <a target="_blank" href="https://some.3b1b.co/">Summer of Math Exposition</a></div><img class="kiwi" src="img/SOMELogo.svg"></blockquote>
 
+[https://gangles.ca/2008/07/18/bloom-disasters/](https://gangles.ca/2008/07/18/bloom-disasters/)
+
 ## Setup
-You don't need to a graphics programmer to follow along. Compared to other disciplines, graphics programming is [uniquely challenging](https://www.youtube.com/watch?v=xJQ0qXh1-m0) because of how many rules and limitations the hardware, [graphics APIs](https://en.wikipedia.org/wiki/Graphics_library) and the [rendering pipeline](https://fgiesen.wordpress.com/2011/07/09/a-trip-through-the-graphics-pipeline-2011-index/) impose. Still, let's setup some context for better understanding:
+In the context of video game post processing, a 3D scene is drawn (a step called rendering) and saved to an intermediary image - a [framebuffer](https://learnopengl.com/Advanced-OpenGL/Framebuffers). In turn this framebuffer's content can be processed to achieve [various effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering). Since this *processing* happens *after* a 3D scene is rendered, it's called *post-processing*.
+
+<blockquote class="reaction"><div class="reaction_text"><strong>Depending on technique</strong>, framebuffers <a target="_blank" href="https://en.wikipedia.org/wiki/Deferred_shading">can hold non-image data</a> and post-processing effects like <a target="_blank" href="https://en.wikipedia.org/wiki/Color_correction">Color-correction</a> or <a target="_blank" href="https://en.wikipedia.org/wiki/Tone_mapping">Tone-mapping</a> don't even require intermediate framebuffers. <a target="_blank" href="https://takahirox.github.io/three.js/examples/webgl_tonemapping.html">More</a> than <a target="_blank" href="https://developer.arm.com/documentation/100587/0101/Pixel-Local-Storage/About-Pixel-Local-Storage">one way</a> to skin a cat.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+This is where we jump in, with a framebuffer in hand, after the 3D scene was drawn. We will use a scene from the mod [NeoTokyo°](https://store.steampowered.com/app/244630/NEOTOKYO/). Each time we implement something, there will be a WebGL box, rendering at [native resolution](https://en.wikipedia.org/wiki/1:1_pixel_mapping) of your device.
+
+<blockquote class="reaction"><div class="reaction_text">According to WebGL, your GPU is a <output></output></div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+Compared to other disciplines, graphics programming is [uniquely challenging](https://www.youtube.com/watch?v=xJQ0qXh1-m0) in the beginning, because of how many rules and limitations the hardware, [graphics APIs](https://en.wikipedia.org/wiki/Graphics_library) and the [rendering pipeline](https://fgiesen.wordpress.com/2011/07/09/a-trip-through-the-graphics-pipeline-2011-index/) impose.
+
+<blockquote class="reaction"><div class="reaction_text">No graphics programming knowledge required to follow along.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 We'll implement our blurs as a [WebGL 1.0](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API) fragment shader written in [GLSL](https://en.wikipedia.org/wiki/OpenGL_Shading_Language). Shaders work in [NDC Coordinates](https://learnopengl.com/Getting-started/Coordinate-Systems). Fragment shaders run in per-pixel, with no concept of things like resolution, aspect ratio or which pixel is being processed. This is information we must provide or ask the graphics pipeline to do so.
+
+## Convolution
+A Convolution
+
 
 [In hardware, division is slower than multiplication. That is the reason resolution is passed in as ]
 
@@ -202,7 +217,42 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 
 <blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/dead.svg"></blockquote>
 
+## Alternative ways FFT
+There is actually an alternative way to perform blurring, by performing an [image Fast Fourier Transform](https://usage.imagemagick.org/fourier/#introduction), [masking high frequency areas to perform the blur](https://usage.imagemagick.org/fourier/#blurring) and finally performing the inverse transformation.
+
+If we ignore the frequency domain transformation steps, then this makes the blurring step itself constant in time, regardless of blur radius! Small Radius Blur, Large Radius blur, all the same speed. But of course, we ***can't*** ignore the Frequency domain transformations.
+Unfortunately, this cannot be used in practice, as the FFT and inverse FFT steps don't translate well into a graphics pipeline context at all. 
+
+3Blue1Brown covered what a Fourier Transform is in [great detail in a video series already](https://www.youtube.com/watch?v=spUNpyF58BY).
+
 ## Box Blur
+Let's start with the simplest of algorithms. From a programmer's perspective, the most straight forward way is to average the neighbors of a pixel. What the fragment shader is expressing is 
+
+<blockquote>
+<details><summary><a target="_blank" href="screenshots/fxaainteractive.png">Screenshot</a>, in case WebGL doesn't work</summary>
+
+![image](screenshots/fxaainteractive.png)
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a target="_blank" href="shader/FXAA-interactive.fs">FXAA-interactive.fs</a></summary>
+
+```glsl
+{% include "posts/dual-kawase/shader/boxBlur.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a target="_blank" href="js/boxBlur.js">boxBlur.js</a></summary>
+
+```javascript
+{% include "posts/dual-kawase/js/boxBlur.js" %}
+```
+
+</details>
+</blockquote>
+
+
 <div style="display: flex; gap: 8px">
 	<div class="toggleRes" style="width: 100%">
 		<div>
@@ -211,7 +261,7 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 		</div>
 		<div>
 		  <input type="radio" id="selfIllumBox" name="modeBox" value="selfIllum" />
-		  <label for="selfIllumBox">Self Illumination</label>
+		  <label for="selfIllumBox">Lights</label>
 		</div>
 		<div>
 		  <input type="radio" id="bloomBox" name="modeBox" value="bloom" />
