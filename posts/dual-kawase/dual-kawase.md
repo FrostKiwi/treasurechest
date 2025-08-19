@@ -28,7 +28,67 @@ In the context of video game post processing, a 3D scene is drawn (a step called
 
 <blockquote class="reaction"><div class="reaction_text"><strong>Depending on technique</strong>, framebuffers <a target="_blank" href="https://en.wikipedia.org/wiki/Deferred_shading">can hold non-image data</a> and post-processing effects like <a target="_blank" href="https://en.wikipedia.org/wiki/Color_correction">Color-correction</a> or <a target="_blank" href="https://en.wikipedia.org/wiki/Tone_mapping">Tone-mapping</a> don't even require intermediate framebuffers. <a target="_blank" href="https://takahirox.github.io/three.js/examples/webgl_tonemapping.html">More</a> than <a target="_blank" href="https://developer.arm.com/documentation/100587/0101/Pixel-Local-Storage/About-Pixel-Local-Storage">one way</a> to skin a cat.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-This is where we jump in, with a framebuffer in hand, after the 3D scene was drawn. We will use a scene from the mod [NeoTokyo°](https://store.steampowered.com/app/244630/NEOTOKYO/). Each time we implement something, there will be a WebGL box, rendering at [native resolution](https://en.wikipedia.org/wiki/1:1_pixel_mapping) of your device.
+This is where we jump in, with a framebuffer in hand, after the 3D scene was drawn. We will use a scene from the mod [NeoTokyo°](https://store.steampowered.com/app/244630/NEOTOKYO/). Each time we implement something new, there will be a WebGL box, rendering at [native resolution](https://en.wikipedia.org/wiki/1:1_pixel_mapping) of your device. Each box has 4 Buttons at the top and relevant parts of the its code below it.
+
+<div style="display: flex; gap: 8px">
+	<div class="toggleRes" style="width: 100%">
+		<label>
+		  <input type="radio" name="modeSimple" value="scene" checked />
+		  Scene
+		</label>
+		<label>
+		  <input type="radio" name="modeSimple" value="lights" />
+		  Lights
+		</label>
+		<label>
+		  <input type="radio" name="modeSimple" value="bloom" />
+		  Bloom
+		</label>
+	</div>
+	<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
+		<label>
+		  <input type="checkbox" />
+		  Animate
+		</label>
+	</div>
+</div>
+
+<div style="margin-top: 13px" class="canvasParent">
+	<canvas style="width: round(down, 100%, 8px); aspect-ratio: 4 / 3;" id="canvasSimple"></canvas>
+	<div class="contextLoss" id="contextLossSimple">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms you may have to restart the browser completely.</div>
+	{% include "style/icons/clock.svg" %}
+</div>
+
+<script type="module">
+	import { setupSimple } from "./js/simple.js";
+	setupSimple();
+</script>
+
+<blockquote>
+<details><summary><a target="_blank" href="screenshots/simple.png">Screenshot</a>, in case WebGL doesn't work</summary>
+
+![image](screenshots/simple.png)
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a target="_blank" href="shader/FXAA-interactive.fs">FXAA-interactive.fs</a></summary>
+
+```glsl
+{% include "posts/dual-kawase/shader/boxBlur.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a target="_blank" href="js/boxBlur.js">boxBlur.js</a></summary>
+
+```javascript
+{% include "posts/dual-kawase/js/boxBlur.js" %}
+```
+
+</details>
+</blockquote>
+
+Bla Bla
 
 <blockquote class="reaction"><div class="reaction_text">According to WebGL, your GPU is a <output></output></div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
@@ -252,27 +312,27 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 </details>
 </blockquote>
 
-
+<div id="WebGL-Box-BoxBlur">
 <div style="display: flex; gap: 8px">
 	<div class="toggleRes" style="width: 100%">
-		<div>
-		  <input type="radio" id="sceneBox" name="modeBox" value="scene" checked />
-		  <label for="sceneBox">Scene</label>
-		</div>
-		<div>
-		  <input type="radio" id="selfIllumBox" name="modeBox" value="selfIllum" />
-		  <label for="selfIllumBox">Lights</label>
-		</div>
-		<div>
-		  <input type="radio" id="bloomBox" name="modeBox" value="bloom" />
-		  <label for="bloomBox">Bloom</label>
-		</div>
+		<label>
+			<input type="radio" name="modeBox" value="scene" checked />
+			Scene
+		</label>
+		<label>
+			<input type="radio" name="modeBox" value="selfIllum" />
+			Lights
+		</label>
+		<label>
+			<input type="radio" name="modeBox" value="bloom" />
+			Bloom
+		</label>
 	</div>
 	<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
-		<div>
+		  <label for="animateCheck_Boxblur">
 		  <input type="checkbox" id="animateCheck_Boxblur" checked />
-		  <label for="animateCheck_Boxblur">Animate</label>
-		</div>
+		  <span>Animate</span>
+		  </label>
 	</div>
 </div>
 
@@ -437,6 +497,8 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 </table>
 
 <img id="debugIMG"></img>
+
+</div>
 
 <script type="module">
 	import { setupBoxBlur } from "./js/boxBlur.js";

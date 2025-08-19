@@ -8,44 +8,37 @@
 	overflow: hidden;
 	gap: 4px;
 
-	>div {
+	>label {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		line-height: 1.2em;
+		padding: 10px 10px;
+		cursor: pointer;
+		transition: background-color 0.3s, color 0.3s;
+		margin-bottom: unset;
+		user-select: none;
+		text-align: center;
+		background-color: color.adjust(sakura.$color-bg-alt, $lightness: -5%);
 
 		input {
 			/* Hide the native radio buttons */
 			display: none;
 		}
 
-		label {
-			flex: 1;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			line-height: 1.2em;
-			padding: 10px 10px;
-			cursor: pointer;
-			transition: background-color 0.3s, color 0.3s;
-			margin-bottom: unset;
-			user-select: none;
-			text-align: center;
-
-			>div {
-				font-size: smaller;
-				filter: contrast(50%);
-			}
-
-			background-color: color.adjust(sakura.$color-bg-alt, $lightness: -5%);
-
-			&:hover {
-				background-color: sakura.$color-force;
-				color: sakura.$color-bg;
-			}
+		>div {
+			font-size: smaller;
+			filter: contrast(50%);
 		}
 
-		input:checked+label {
+		&:hover {
+			background-color: sakura.$color-force;
+			color: sakura.$color-bg;
+		}
+
+		&:has(input:checked) {
 			background-color: sakura.$color-blossom;
 			color: sakura.$color-bg;
 		}
@@ -53,7 +46,7 @@
 }
 
 @media (hover: none) {
-	.toggleRes.toggleCheckbox>div input:not(:checked)+label:hover {
+	.toggleRes.toggleCheckbox>label:has(input:not(:checked)):hover {
 		background-color: color.adjust(sakura.$color-bg-alt, $lightness: -5%);
 		color: inherit;
 	}

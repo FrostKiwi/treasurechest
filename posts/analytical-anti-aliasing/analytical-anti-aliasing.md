@@ -37,33 +37,33 @@ To understand the Anti-Aliasing algorithms, we will implement them along the way
 <script id="fragment_0" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/circle.fs" %}</script>
 <script id="fragment_SimpleColor" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/simpleColor.fs" %}</script>
 <div class="toggleRes">
-	<div>
-	  <input type="radio" id="native" name="resSimple" value="1" checked />
-	  <label for="native">Native<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="half" name="resSimple" value="2" />
-	  <label for="half">½<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="quarter" name="resSimple" value="4" />
-	  <label for="quarter">¼<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="eight" name="resSimple" value="8" />
-	  <label for="eight">⅛<div>Resolution</div></label>
-	</div>
+	  <label>
+	  	<input type="radio" name="resSimple" value="1" checked />
+	  	Native<div>Resolution</div>
+	  </label>
+	  <label>
+	  	<input type="radio" name="resSimple" value="2" />
+	  	½<div>Resolution</div>
+	  </label>
+	  <label>
+	  	<input type="radio" name="resSimple" value="4" />
+	  	¼<div>Resolution</div>
+	  </label>
+	  <label>
+	  	<input type="radio" name="resSimple" value="8" />
+	  	⅛<div>Resolution</div>
+	  </label>
 </div>
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasSimple"></canvas>
 <div class="toggleRes" style="border-radius: 50px">
-	<div>
-	  <input type="radio" id="showCirclelabel" name="showQuad" value="false" checked />
-	  <label for="showCirclelabel">Draw Circle</label>
-	</div>
-	<div>
-	  <input type="radio" id="showQuadlabel" name="showQuad" value="true" />
-	  <label for="showQuadlabel">Show base Quad</label>
-	</div>
+	<label>
+	  <input type="radio" name="showQuad" value="false" checked />
+	  Draw Circle
+	</label>
+	<label>
+	  <input type="radio" name="showQuad" value="true" />
+	  Show base Quad
+	</label>
 </div>
 <script>setupSimple("canvasSimple", "vertex_0", "fragment_0", "fragment_SimpleColor", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resSimple", "showQuad");</script>
 
@@ -138,22 +138,22 @@ SSAA stands for [Super Sampling Anti-Aliasing](https://en.wikipedia.org/wiki/Sup
 <blockquote class="reaction"><div class="reaction_text">1986 did it, so can we. Implemented in mere seconds. <b>Easy</b>, right?</div><img class="kiwi" src="/assets/kiwis/ice.svg"></blockquote>
 
 <div class="toggleRes">
-	<div>
-	  <input type="radio" id="nativeSSAA" name="resSSAA" value="1" checked />
-	  <label for="nativeSSAA">Native<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="halfSSAA" name="resSSAA" value="2" />
-	  <label for="halfSSAA">½<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="quarterSSAA" name="resSSAA" value="4" />
-	  <label for="quarterSSAA">¼<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="eightSSAA" name="resSSAA" value="8" />
-	  <label for="eightSSAA">⅛<div>Resolution</div></label>
-	</div>
+	<label>
+	  <input type="radio" name="resSSAA" value="1" checked />
+	  Native<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="resSSAA" value="2" />
+	  ½<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="resSSAA" value="4" />
+	  ¼<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="resSSAA" value="8" />
+	  ⅛<div>Resolution</div>
+	</label>
 </div>
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasSSAA"></canvas>
 <script src="circleSSAA.js"></script>
@@ -234,33 +234,33 @@ In fact, some of the best implementations were [discovered by vendors on acciden
 <script id="fragmentAnalytical" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/circle-analytical.fs" %}</script>
 <script id="fragmentAnalyticalCompare" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/circle-analyticalCompare.fs" %}</script>
 <div class="toggleRes">
-	<div>
-	  <input type="radio" id="nativeMSAA" name="resMSAA" value="1" checked />
-	  <label for="nativeMSAA">Native<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="halfMSAA" name="resMSAA" value="2" />
-	  <label for="halfMSAA">½<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="quarterMSAA" name="resMSAA" value="4" />
-	  <label for="quarterMSAA">¼<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="eightMSAA" name="resMSAA" value="8" />
-	  <label for="eightMSAA">⅛<div>Resolution</div></label>
-	</div>
+	<label>
+	  <input type="radio" name="resMSAA" value="1" checked />
+	  Native<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="resMSAA" value="2" />
+	  ½<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="resMSAA" value="4" />
+	  ¼<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="resMSAA" value="8" />
+	  ⅛<div>Resolution</div>
+	</label>
 </div>
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasMSAA"></canvas>
 <div class="toggleRes">
-	<div>
-	  <input type="radio" id="1pxMSAA" name="pxSizeMSAA" value="1" checked />
-	  <label for="1pxMSAA"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="3.9ex" height="2.3ex" aria-hidden="true" viewBox="0 -750 1728 1000"><defs><path id="x" d="M94 612q78 4 117 20t73 46h23V73h123V0H88v73h125v244l-1 243q-2-2-15-6t-42-8-59-6l-13-1v73h11Z"/><path id="y" d="M166 404q28 20 75 35t96 16h4q69 0 110-85 32-63 32-148 0-94-50-163T306-10q-24 0-46 5T222 7t-28 14-18 12-8 5v-232H75v638h90v-20l1-20Zm224-182q0 65-36 109t-88 45-89-36l-9-8V118q32-52 89-52 56 0 94 46t39 110Z"/><path id="z" d="M187 229 6 444h101l120-150 117 150h49l49-1q-3-6-143-175l-32-39L460 0H359l-65 88-32 43-26 35-9 11L100 0H0l47 58 93 113q47 56 47 58Z"/></defs><g fill="currentColor" stroke="currentColor" stroke-width="0" data-mml-node="math"><g data-mml-node="mstyle"><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><g data-mml-node="mtable"><g data-mml-node="mtr"><g data-mml-node="mtd"><use xlink:href="#x" data-c="1D7E3" data-mml-node="mn" transform="scale(1 -1)"/><g data-mml-node="mtext" transform="matrix(1 0 0 -1 500 0)"><use xlink:href="#y" data-c="1D5C9" transform="translate(250)"/><use xlink:href="#z" data-c="1D5D1" transform="translate(767)"/></g></g></g></g></g></g></g></svg><div>edge smoothing</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="sqrt2pxMSAA" name="pxSizeMSAA" value="1.4142135623730950488016887242097" />
-	  <label for="sqrt2pxMSAA"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18.2ex" height="3.1ex" aria-hidden="true" viewBox="0 -934 8030 1368"><defs><path id="d" d="m263 249 52-119 102-238q51-119 53-120l255 530 257 537q7 11 19 11 7 0 12-6t7-12v-6L741 243 540-176l-71-148q-10-21-16-24-4-2-17-2l-12 1L315-96 205 156l-34-26-34-26-26 26 152 119Z"/><path id="a" d="M94 612q78 4 117 20t73 46h23V73h123V0H88v73h125v244l-1 243q-2-2-15-6t-42-8-59-6l-13-1v73h11Z"/><path id="b" d="M222 599q-32 0-56-14t-38-35-20-41-11-35-4-15l-26 33-25 34 5 13q25 69 73 103t105 35q79 0 130-33 94-65 94-190 0-81-88-164l-46-40q-36-30-116-106l-62-59 156 1h156V0H50v79l166 163q68 60 101 107t34 107q0 61-36 102t-93 41Z"/><path id="c" d="M56 237v13l14 20h299v150l1 150q10 13 19 13 13 0 20-15V270h298q15-8 15-20t-15-20H409V-68q-8-14-18-14h-4q-12 0-18 14v298H70q-14 7-14 20Z"/><path id="e" d="M56 350q0 13 14 20h637q15-8 15-20 0-11-14-19l-318-1H72q-16 5-16 20Zm0-200q0 15 16 20h636q14-10 14-20 0-12-15-20H70q-14 7-14 20Z"/><path id="f" d="M95 178q-6 0-14 8t-9 14 31 30 66 50 38 29q2 2 5 2h1q6 0 14-17t54-117l31-69 85-185 104 213 206 429q103 216 107 221 6 14 20 14 7 0 12-6t7-12v-6L620 293 385-193q-4-7-19-7-9 0-12 3L256 15l-96 210-16-11-31-24q-16-12-18-12Z"/><path id="h" d="M166 404q28 20 75 35t96 16h4q69 0 110-85 32-63 32-148 0-94-50-163T306-10q-24 0-46 5T222 7t-28 14-18 12-8 5v-232H75v638h90v-20l1-20Zm224-182q0 65-36 109t-88 45-89-36l-9-8V118q32-52 89-52 56 0 94 46t39 110Z"/><path id="i" d="M187 229 6 444h101l120-150 117 150h49l49-1q-3-6-143-175l-32-39L460 0H359l-65 88-32 43-26 35-9 11L100 0H0l47 58 93 113q47 56 47 58Z"/></defs><g fill="currentColor" stroke="currentColor" stroke-width="0" data-mml-node="math"><g data-mml-node="mstyle"><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><g data-mml-node="mtable"><g data-mml-node="mtr"><g data-mml-node="mtd"><g data-mml-node="msqrt"><g data-mml-node="msup"><use xlink:href="#a" data-c="1D7E3" data-mml-node="mn" transform="matrix(1 0 0 -1 1020 184)"/><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><use xlink:href="#b" data-c="1D7E4" data-mml-node="mn" transform="matrix(.707 0 0 -.707 1553 -105)"/></g></g><use xlink:href="#c" data-c="2B" data-mml-node="mo" transform="matrix(1 0 0 -1 2179 184)"/><g data-mml-node="msup"><use xlink:href="#a" data-c="1D7E3" data-mml-node="mn" transform="matrix(1 0 0 -1 3179 184)"/><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><use xlink:href="#b" data-c="1D7E4" data-mml-node="mn" transform="matrix(.707 0 0 -.707 3712 -105)"/></g></g><use xlink:href="#d" data-c="221A" data-mml-node="mo" transform="matrix(1 0 0 -1 0 -24)"/><path stroke="none" d="M1020-814h3096v-60H1020z"/></g><use xlink:href="#e" data-c="3D" data-mml-node="mo" transform="matrix(1 0 0 -1 4393 184)"/><g data-mml-node="msqrt"><use xlink:href="#b" data-c="1D7E4" data-mml-node="mn" transform="matrix(1 0 0 -1 6302 184)"/><use xlink:href="#f" data-c="221A" data-mml-node="mo" transform="matrix(1 0 0 -1 5449 30)"/><path stroke="none" d="M6302-710h500v-60h-500z"/></g><g data-mml-node="mtext" transform="matrix(1 0 0 -1 6802 184)"><use xlink:href="#g" data-c="A0"/><use xlink:href="#h" data-c="1D5C9" transform="translate(250)"/><use xlink:href="#i" data-c="1D5D1" transform="translate(767)"/></g></g></g></g></g></g></g></svg><div>edge smoothing</div></label>
-	</div>
+	<label>
+	  <input type="radio" name="pxSizeMSAA" value="1" checked />
+	  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="3.9ex" height="2.3ex" aria-hidden="true" viewBox="0 -750 1728 1000"><defs><path id="x" d="M94 612q78 4 117 20t73 46h23V73h123V0H88v73h125v244l-1 243q-2-2-15-6t-42-8-59-6l-13-1v73h11Z"/><path id="y" d="M166 404q28 20 75 35t96 16h4q69 0 110-85 32-63 32-148 0-94-50-163T306-10q-24 0-46 5T222 7t-28 14-18 12-8 5v-232H75v638h90v-20l1-20Zm224-182q0 65-36 109t-88 45-89-36l-9-8V118q32-52 89-52 56 0 94 46t39 110Z"/><path id="z" d="M187 229 6 444h101l120-150 117 150h49l49-1q-3-6-143-175l-32-39L460 0H359l-65 88-32 43-26 35-9 11L100 0H0l47 58 93 113q47 56 47 58Z"/></defs><g fill="currentColor" stroke="currentColor" stroke-width="0" data-mml-node="math"><g data-mml-node="mstyle"><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><g data-mml-node="mtable"><g data-mml-node="mtr"><g data-mml-node="mtd"><use xlink:href="#x" data-c="1D7E3" data-mml-node="mn" transform="scale(1 -1)"/><g data-mml-node="mtext" transform="matrix(1 0 0 -1 500 0)"><use xlink:href="#y" data-c="1D5C9" transform="translate(250)"/><use xlink:href="#z" data-c="1D5D1" transform="translate(767)"/></g></g></g></g></g></g></g></svg><div>edge smoothing</div>
+	</label>
+	<label>
+	  <input type="radio" name="pxSizeMSAA" value="1.4142135623730950488016887242097" />
+	  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18.2ex" height="3.1ex" aria-hidden="true" viewBox="0 -934 8030 1368"><defs><path id="d" d="m263 249 52-119 102-238q51-119 53-120l255 530 257 537q7 11 19 11 7 0 12-6t7-12v-6L741 243 540-176l-71-148q-10-21-16-24-4-2-17-2l-12 1L315-96 205 156l-34-26-34-26-26 26 152 119Z"/><path id="a" d="M94 612q78 4 117 20t73 46h23V73h123V0H88v73h125v244l-1 243q-2-2-15-6t-42-8-59-6l-13-1v73h11Z"/><path id="b" d="M222 599q-32 0-56-14t-38-35-20-41-11-35-4-15l-26 33-25 34 5 13q25 69 73 103t105 35q79 0 130-33 94-65 94-190 0-81-88-164l-46-40q-36-30-116-106l-62-59 156 1h156V0H50v79l166 163q68 60 101 107t34 107q0 61-36 102t-93 41Z"/><path id="c" d="M56 237v13l14 20h299v150l1 150q10 13 19 13 13 0 20-15V270h298q15-8 15-20t-15-20H409V-68q-8-14-18-14h-4q-12 0-18 14v298H70q-14 7-14 20Z"/><path id="e" d="M56 350q0 13 14 20h637q15-8 15-20 0-11-14-19l-318-1H72q-16 5-16 20Zm0-200q0 15 16 20h636q14-10 14-20 0-12-15-20H70q-14 7-14 20Z"/><path id="f" d="M95 178q-6 0-14 8t-9 14 31 30 66 50 38 29q2 2 5 2h1q6 0 14-17t54-117l31-69 85-185 104 213 206 429q103 216 107 221 6 14 20 14 7 0 12-6t7-12v-6L620 293 385-193q-4-7-19-7-9 0-12 3L256 15l-96 210-16-11-31-24q-16-12-18-12Z"/><path id="h" d="M166 404q28 20 75 35t96 16h4q69 0 110-85 32-63 32-148 0-94-50-163T306-10q-24 0-46 5T222 7t-28 14-18 12-8 5v-232H75v638h90v-20l1-20Zm224-182q0 65-36 109t-88 45-89-36l-9-8V118q32-52 89-52 56 0 94 46t39 110Z"/><path id="i" d="M187 229 6 444h101l120-150 117 150h49l49-1q-3-6-143-175l-32-39L460 0H359l-65 88-32 43-26 35-9 11L100 0H0l47 58 93 113q47 56 47 58Z"/></defs><g fill="currentColor" stroke="currentColor" stroke-width="0" data-mml-node="math"><g data-mml-node="mstyle"><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><g data-mml-node="mtable"><g data-mml-node="mtr"><g data-mml-node="mtd"><g data-mml-node="msqrt"><g data-mml-node="msup"><use xlink:href="#a" data-c="1D7E3" data-mml-node="mn" transform="matrix(1 0 0 -1 1020 184)"/><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><use xlink:href="#b" data-c="1D7E4" data-mml-node="mn" transform="matrix(.707 0 0 -.707 1553 -105)"/></g></g><use xlink:href="#c" data-c="2B" data-mml-node="mo" transform="matrix(1 0 0 -1 2179 184)"/><g data-mml-node="msup"><use xlink:href="#a" data-c="1D7E3" data-mml-node="mn" transform="matrix(1 0 0 -1 3179 184)"/><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><use xlink:href="#b" data-c="1D7E4" data-mml-node="mn" transform="matrix(.707 0 0 -.707 3712 -105)"/></g></g><use xlink:href="#d" data-c="221A" data-mml-node="mo" transform="matrix(1 0 0 -1 0 -24)"/><path stroke="none" d="M1020-814h3096v-60H1020z"/></g><use xlink:href="#e" data-c="3D" data-mml-node="mo" transform="matrix(1 0 0 -1 4393 184)"/><g data-mml-node="msqrt"><use xlink:href="#b" data-c="1D7E4" data-mml-node="mn" transform="matrix(1 0 0 -1 6302 184)"/><use xlink:href="#f" data-c="221A" data-mml-node="mo" transform="matrix(1 0 0 -1 5449 30)"/><path stroke="none" d="M6302-710h500v-60h-500z"/></g><g data-mml-node="mtext" transform="matrix(1 0 0 -1 6802 184)"><use xlink:href="#g" data-c="A0"/><use xlink:href="#h" data-c="1D5C9" transform="translate(250)"/><use xlink:href="#i" data-c="1D5D1" transform="translate(767)"/></g></g></g></g></g></g></g></svg><div>edge smoothing</div>
+	</label>
 </div>
 <script src="circleMSAA.js"></script>
 <script>setupMSAA("canvasMSAA", "vertexAnalytical", "fragmentAnalytical", "fragment_0", "vertexPost", "fragmentPost", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resMSAA", "pxSizeMSAA");</script>
@@ -352,22 +352,22 @@ We'll take a close look at an algorithm that was inspired by MLAA, developed by 
 Let's see what the hype was about. The final version publicly released was FXAA 3.11 on [August 12th 2011](https://web.archive.org/web/20120121124756/http://timothylottes.blogspot.com/2011/08/fxaa-311-bug-fixes-for-360.html) and the following demos are based on this. First, let's take a look at our circle with FXAA doing the Anti-Aliasing at default settings.
 
 <div class="toggleRes">
-	<div>
-	  <input type="radio" id="nativeFXAA" name="resFXAA" value="1" checked />
-	  <label for="nativeFXAA">Native<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="halfFXAA" name="resFXAA" value="2" />
-	  <label for="halfFXAA">½<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="quarterFXAA" name="resFXAA" value="4" />
-	  <label for="quarterFXAA">¼<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="eightFXAA" name="resFXAA" value="8" />
-	  <label for="eightFXAA">⅛<div>Resolution</div></label>
-	</div>
+	<label>
+	  <input type="radio" name="resFXAA" value="1" checked />
+	  Native<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="resFXAA" value="2" />
+	  ½<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="resFXAA" value="4" />
+	  ¼<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="resFXAA" value="8" />
+	  ⅛<div>Resolution</div>
+	</label>
 </div>
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasFXAA"></canvas>
 <script src="circleFXAA.js"></script>
@@ -735,22 +735,22 @@ In this article we won't jump into modern [temporal anti-aliasing](https://sugul
 Now we get to the good stuff. Analytical Anti-Aliasing approaches the problem backwards - it knows the shape you need and draws the pixel already Anti-Aliased to the screen. Whilst drawing the 2D or 3D shape you need, it fades the shape's border by exactly one pixel.
 
 <div class="toggleRes">
-	<div>
-	  <input type="radio" id="nativeAnalytical" name="resAnalytical" value="1" checked />
-	  <label for="nativeAnalytical">Native<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="halfAnalytical" name="resAnalytical" value="2" />
-	  <label for="halfAnalytical">½<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="quarterAnalytical" name="resAnalytical" value="4" />
-	  <label for="quarterAnalytical">¼<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="eightAnalytical" name="resAnalytical" value="8" />
-	  <label for="eightAnalytical">⅛<div>Resolution</div></label>
-	</div>
+	<label>
+	  <input type="radio" name="resAnalytical" value="1" checked />
+	  Native<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="resAnalytical" value="2" />
+	  ½<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="resAnalytical" value="4" />
+	  ¼<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="resAnalytical" value="8" />
+	  ⅛<div>Resolution</div>
+	</label>
 </div>
 
 <script id="fragment3D" type="x-shader/x-fragment">{% include "posts/analytical-anti-aliasing/shader/3DAnalytical.fs" %}</script>
@@ -762,14 +762,14 @@ Now we get to the good stuff. Analytical Anti-Aliasing approaches the problem ba
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvasAnalytical"></canvas>
 
 <div class="toggleRes">
-	<div>
-	  <input type="radio" id="1pxAAA" name="pxSizeAAA" value="1" checked />
-	  <label for="1pxAAA"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="3.9ex" height="2.3ex" aria-hidden="true" viewBox="0 -750 1728 1000"><defs><path id="x" d="M94 612q78 4 117 20t73 46h23V73h123V0H88v73h125v244l-1 243q-2-2-15-6t-42-8-59-6l-13-1v73h11Z"/><path id="y" d="M166 404q28 20 75 35t96 16h4q69 0 110-85 32-63 32-148 0-94-50-163T306-10q-24 0-46 5T222 7t-28 14-18 12-8 5v-232H75v638h90v-20l1-20Zm224-182q0 65-36 109t-88 45-89-36l-9-8V118q32-52 89-52 56 0 94 46t39 110Z"/><path id="z" d="M187 229 6 444h101l120-150 117 150h49l49-1q-3-6-143-175l-32-39L460 0H359l-65 88-32 43-26 35-9 11L100 0H0l47 58 93 113q47 56 47 58Z"/></defs><g fill="currentColor" stroke="currentColor" stroke-width="0" data-mml-node="math"><g data-mml-node="mstyle"><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><g data-mml-node="mtable"><g data-mml-node="mtr"><g data-mml-node="mtd"><use xlink:href="#x" data-c="1D7E3" data-mml-node="mn" transform="scale(1 -1)"/><g data-mml-node="mtext" transform="matrix(1 0 0 -1 500 0)"><use xlink:href="#y" data-c="1D5C9" transform="translate(250)"/><use xlink:href="#z" data-c="1D5D1" transform="translate(767)"/></g></g></g></g></g></g></g></svg><div>edge smoothing</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="sqrt2pxAAA" name="pxSizeAAA" value="1.4142135623730950488016887242097" />
-	  <label for="sqrt2pxAAA"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18.2ex" height="3.1ex" aria-hidden="true" viewBox="0 -934 8030 1368"><defs><path id="d" d="m263 249 52-119 102-238q51-119 53-120l255 530 257 537q7 11 19 11 7 0 12-6t7-12v-6L741 243 540-176l-71-148q-10-21-16-24-4-2-17-2l-12 1L315-96 205 156l-34-26-34-26-26 26 152 119Z"/><path id="a" d="M94 612q78 4 117 20t73 46h23V73h123V0H88v73h125v244l-1 243q-2-2-15-6t-42-8-59-6l-13-1v73h11Z"/><path id="b" d="M222 599q-32 0-56-14t-38-35-20-41-11-35-4-15l-26 33-25 34 5 13q25 69 73 103t105 35q79 0 130-33 94-65 94-190 0-81-88-164l-46-40q-36-30-116-106l-62-59 156 1h156V0H50v79l166 163q68 60 101 107t34 107q0 61-36 102t-93 41Z"/><path id="c" d="M56 237v13l14 20h299v150l1 150q10 13 19 13 13 0 20-15V270h298q15-8 15-20t-15-20H409V-68q-8-14-18-14h-4q-12 0-18 14v298H70q-14 7-14 20Z"/><path id="e" d="M56 350q0 13 14 20h637q15-8 15-20 0-11-14-19l-318-1H72q-16 5-16 20Zm0-200q0 15 16 20h636q14-10 14-20 0-12-15-20H70q-14 7-14 20Z"/><path id="f" d="M95 178q-6 0-14 8t-9 14 31 30 66 50 38 29q2 2 5 2h1q6 0 14-17t54-117l31-69 85-185 104 213 206 429q103 216 107 221 6 14 20 14 7 0 12-6t7-12v-6L620 293 385-193q-4-7-19-7-9 0-12 3L256 15l-96 210-16-11-31-24q-16-12-18-12Z"/><path id="h" d="M166 404q28 20 75 35t96 16h4q69 0 110-85 32-63 32-148 0-94-50-163T306-10q-24 0-46 5T222 7t-28 14-18 12-8 5v-232H75v638h90v-20l1-20Zm224-182q0 65-36 109t-88 45-89-36l-9-8V118q32-52 89-52 56 0 94 46t39 110Z"/><path id="i" d="M187 229 6 444h101l120-150 117 150h49l49-1q-3-6-143-175l-32-39L460 0H359l-65 88-32 43-26 35-9 11L100 0H0l47 58 93 113q47 56 47 58Z"/></defs><g fill="currentColor" stroke="currentColor" stroke-width="0" data-mml-node="math"><g data-mml-node="mstyle"><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><g data-mml-node="mtable"><g data-mml-node="mtr"><g data-mml-node="mtd"><g data-mml-node="msqrt"><g data-mml-node="msup"><use xlink:href="#a" data-c="1D7E3" data-mml-node="mn" transform="matrix(1 0 0 -1 1020 184)"/><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><use xlink:href="#b" data-c="1D7E4" data-mml-node="mn" transform="matrix(.707 0 0 -.707 1553 -105)"/></g></g><use xlink:href="#c" data-c="2B" data-mml-node="mo" transform="matrix(1 0 0 -1 2179 184)"/><g data-mml-node="msup"><use xlink:href="#a" data-c="1D7E3" data-mml-node="mn" transform="matrix(1 0 0 -1 3179 184)"/><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><use xlink:href="#b" data-c="1D7E4" data-mml-node="mn" transform="matrix(.707 0 0 -.707 3712 -105)"/></g></g><use xlink:href="#d" data-c="221A" data-mml-node="mo" transform="matrix(1 0 0 -1 0 -24)"/><path stroke="none" d="M1020-814h3096v-60H1020z"/></g><use xlink:href="#e" data-c="3D" data-mml-node="mo" transform="matrix(1 0 0 -1 4393 184)"/><g data-mml-node="msqrt"><use xlink:href="#b" data-c="1D7E4" data-mml-node="mn" transform="matrix(1 0 0 -1 6302 184)"/><use xlink:href="#f" data-c="221A" data-mml-node="mo" transform="matrix(1 0 0 -1 5449 30)"/><path stroke="none" d="M6302-710h500v-60h-500z"/></g><g data-mml-node="mtext" transform="matrix(1 0 0 -1 6802 184)"><use xlink:href="#g" data-c="A0"/><use xlink:href="#h" data-c="1D5C9" transform="translate(250)"/><use xlink:href="#i" data-c="1D5D1" transform="translate(767)"/></g></g></g></g></g></g></g></svg><div>edge smoothing</div></label>
-	</div>
+	<label>
+	  <input type="radio" name="pxSizeAAA" value="1" checked />
+	  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="3.9ex" height="2.3ex" aria-hidden="true" viewBox="0 -750 1728 1000"><defs><path id="x" d="M94 612q78 4 117 20t73 46h23V73h123V0H88v73h125v244l-1 243q-2-2-15-6t-42-8-59-6l-13-1v73h11Z"/><path id="y" d="M166 404q28 20 75 35t96 16h4q69 0 110-85 32-63 32-148 0-94-50-163T306-10q-24 0-46 5T222 7t-28 14-18 12-8 5v-232H75v638h90v-20l1-20Zm224-182q0 65-36 109t-88 45-89-36l-9-8V118q32-52 89-52 56 0 94 46t39 110Z"/><path id="z" d="M187 229 6 444h101l120-150 117 150h49l49-1q-3-6-143-175l-32-39L460 0H359l-65 88-32 43-26 35-9 11L100 0H0l47 58 93 113q47 56 47 58Z"/></defs><g fill="currentColor" stroke="currentColor" stroke-width="0" data-mml-node="math"><g data-mml-node="mstyle"><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><g data-mml-node="mtable"><g data-mml-node="mtr"><g data-mml-node="mtd"><use xlink:href="#x" data-c="1D7E3" data-mml-node="mn" transform="scale(1 -1)"/><g data-mml-node="mtext" transform="matrix(1 0 0 -1 500 0)"><use xlink:href="#y" data-c="1D5C9" transform="translate(250)"/><use xlink:href="#z" data-c="1D5D1" transform="translate(767)"/></g></g></g></g></g></g></g></svg><div>edge smoothing</div>
+	</label>
+	<label>
+	  <input type="radio" name="pxSizeAAA" value="1.4142135623730950488016887242097" />
+	  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18.2ex" height="3.1ex" aria-hidden="true" viewBox="0 -934 8030 1368"><defs><path id="d" d="m263 249 52-119 102-238q51-119 53-120l255 530 257 537q7 11 19 11 7 0 12-6t7-12v-6L741 243 540-176l-71-148q-10-21-16-24-4-2-17-2l-12 1L315-96 205 156l-34-26-34-26-26 26 152 119Z"/><path id="a" d="M94 612q78 4 117 20t73 46h23V73h123V0H88v73h125v244l-1 243q-2-2-15-6t-42-8-59-6l-13-1v73h11Z"/><path id="b" d="M222 599q-32 0-56-14t-38-35-20-41-11-35-4-15l-26 33-25 34 5 13q25 69 73 103t105 35q79 0 130-33 94-65 94-190 0-81-88-164l-46-40q-36-30-116-106l-62-59 156 1h156V0H50v79l166 163q68 60 101 107t34 107q0 61-36 102t-93 41Z"/><path id="c" d="M56 237v13l14 20h299v150l1 150q10 13 19 13 13 0 20-15V270h298q15-8 15-20t-15-20H409V-68q-8-14-18-14h-4q-12 0-18 14v298H70q-14 7-14 20Z"/><path id="e" d="M56 350q0 13 14 20h637q15-8 15-20 0-11-14-19l-318-1H72q-16 5-16 20Zm0-200q0 15 16 20h636q14-10 14-20 0-12-15-20H70q-14 7-14 20Z"/><path id="f" d="M95 178q-6 0-14 8t-9 14 31 30 66 50 38 29q2 2 5 2h1q6 0 14-17t54-117l31-69 85-185 104 213 206 429q103 216 107 221 6 14 20 14 7 0 12-6t7-12v-6L620 293 385-193q-4-7-19-7-9 0-12 3L256 15l-96 210-16-11-31-24q-16-12-18-12Z"/><path id="h" d="M166 404q28 20 75 35t96 16h4q69 0 110-85 32-63 32-148 0-94-50-163T306-10q-24 0-46 5T222 7t-28 14-18 12-8 5v-232H75v638h90v-20l1-20Zm224-182q0 65-36 109t-88 45-89-36l-9-8V118q32-52 89-52 56 0 94 46t39 110Z"/><path id="i" d="M187 229 6 444h101l120-150 117 150h49l49-1q-3-6-143-175l-32-39L460 0H359l-65 88-32 43-26 35-9 11L100 0H0l47 58 93 113q47 56 47 58Z"/></defs><g fill="currentColor" stroke="currentColor" stroke-width="0" data-mml-node="math"><g data-mml-node="mstyle"><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><g data-mml-node="mtable"><g data-mml-node="mtr"><g data-mml-node="mtd"><g data-mml-node="msqrt"><g data-mml-node="msup"><use xlink:href="#a" data-c="1D7E3" data-mml-node="mn" transform="matrix(1 0 0 -1 1020 184)"/><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><use xlink:href="#b" data-c="1D7E4" data-mml-node="mn" transform="matrix(.707 0 0 -.707 1553 -105)"/></g></g><use xlink:href="#c" data-c="2B" data-mml-node="mo" transform="matrix(1 0 0 -1 2179 184)"/><g data-mml-node="msup"><use xlink:href="#a" data-c="1D7E3" data-mml-node="mn" transform="matrix(1 0 0 -1 3179 184)"/><g data-mjx-texclass="ORD" data-mml-node="TeXAtom"><use xlink:href="#b" data-c="1D7E4" data-mml-node="mn" transform="matrix(.707 0 0 -.707 3712 -105)"/></g></g><use xlink:href="#d" data-c="221A" data-mml-node="mo" transform="matrix(1 0 0 -1 0 -24)"/><path stroke="none" d="M1020-814h3096v-60H1020z"/></g><use xlink:href="#e" data-c="3D" data-mml-node="mo" transform="matrix(1 0 0 -1 4393 184)"/><g data-mml-node="msqrt"><use xlink:href="#b" data-c="1D7E4" data-mml-node="mn" transform="matrix(1 0 0 -1 6302 184)"/><use xlink:href="#f" data-c="221A" data-mml-node="mo" transform="matrix(1 0 0 -1 5449 30)"/><path stroke="none" d="M6302-710h500v-60h-500z"/></g><g data-mml-node="mtext" transform="matrix(1 0 0 -1 6802 184)"><use xlink:href="#g" data-c="A0"/><use xlink:href="#h" data-c="1D5C9" transform="translate(250)"/><use xlink:href="#i" data-c="1D5D1" transform="translate(767)"/></g></g></g></g></g></g></g></svg><div>edge smoothing</div>
+	</label>
 </div>
 <script>setupAnalytical("canvasAnalytical", "vertexAnalytical", "fragmentAnalytical", "vertexBlit", "fragmentBlit", "vertexRedBox", "fragmentRedBox", "resAnalytical", "pxSizeAAA");</script>
 
@@ -868,22 +868,22 @@ Based on that distance we fade out the border of the shape. If we fade by the si
 
 <blockquote class="reaction"><div class="reaction_text">This approach gives motion-stable pixel-perfection, but doesn't work with traditional rasterization. The <b>full</b> shape requires a signed distance field.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 <div class="toggleRes">
-	<div>
-	  <input type="radio" id="nativeCompare" name="resCompare" value="1" checked />
-	  <label for="nativeCompare">Native<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="halfCompare" name="resCompare" value="2" />
-	  <label for="halfCompare">½<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="quarterCompare" name="resCompare" value="4" />
-	  <label for="quarterCompare">¼<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="eightCompare" name="resCompare" value="8" />
-	  <label for="eightCompare">⅛<div>Resolution</div></label>
-	</div>
+	<label>
+	  <input type="radio" name="resCompare" value="1" checked />
+	  Native<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="resCompare" value="2" />
+	  ½<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="resCompare" value="4" />
+	  ¼<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="resCompare" value="8" />
+	  ⅛<div>Resolution</div>
+	</label>
 </div>
 
 <script src="circleAnalyticalComparison.js"></script>
@@ -1201,36 +1201,36 @@ All this additional stuff ... why not draw color overlays in an additional pass?
 Everything we talked about extends to the 3D case as well. We won't dig [into 3D shapes themselves](https://iquilezles.org/articles/distfunctions/) and will stick to a 2D rounded square in 3D perspective with a moving camera. I use this a lot when graphics programming to create a scene with a "ground floor" where my objects live on.
 
 <div class="toggleRes">
-	<div>
-	  <input type="radio" id="native3D" name="res3D" value="1" checked />
-	  <label for="native3D">Native<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="half3D" name="res3D" value="2" />
-	  <label for="half3D">½<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="quarter3D" name="res3D" value="4" />
-	  <label for="quarter3D">¼<div>Resolution</div></label>
-	</div>
-	<div>
-	  <input type="radio" id="eight3D" name="res3D" value="8" />
-	  <label for="eight3D">⅛<div>Resolution</div></label>
-	</div>
+	<label>
+	  <input type="radio" name="res3D" value="1" checked />
+	  Native<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="res3D" value="2" />
+	  ½<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="res3D" value="4" />
+	  ¼<div>Resolution</div>
+	</label>
+	<label>
+	  <input type="radio" name="res3D" value="8" />
+	  ⅛<div>Resolution</div>
+	</label>
 </div>
 <script src="3DAnalytical.js"></script>
 
 <canvas width="100%" height="400px" style="max-height: 400px; aspect-ratio: 1.71" id="canvas3D"></canvas>
 
 <div class="toggleRes" style="border-radius: 50px">
-	<div>
-	  <input type="radio" id="showCirclelabel3D" name="showQuad3D" value="false" checked />
-	  <label for="showCirclelabel3D">Draw Rounded Square</label>
-	</div>
-	<div>
-	  <input type="radio" id="showQuadlabel3D" name="showQuad3D" value="true" />
-	  <label for="showQuadlabel3D">Show base Quad</label>
-	</div>
+	<label>
+	  <input type="radio" name="showQuad3D" value="false" checked />
+	  Draw Rounded Square
+	</label>
+	<label>
+	  <input type="radio" name="showQuad3D" value="true" />
+	  Show base Quad
+	</label>
 </div>
 <blockquote>
 <details><summary><a target="_blank" href="screenshots/3d.png">Screenshot</a>, in case WebGL doesn't work</summary>

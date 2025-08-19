@@ -2,7 +2,8 @@ import * as util from './utility.js'
 
 export async function setupBoxBlur() {
 	/* Init */
-	const canvas = document.getElementById('canvasBoxBlur');
+	const WebGLBox = document.getElementById('WebGL-Box-BoxBlur');
+	const canvas = WebGLBox.querySelector('canvas');
 
 	/* Circle Rotation size */
 	const radius = 0.12;
@@ -47,9 +48,9 @@ export async function setupBoxBlur() {
 		animate: document.getElementById('animateCheck_Boxblur'),
 		downSampleRange: document.getElementById('downSampleRange'),
 		spinner: canvas.parentElement.querySelector('svg'),
-		contextLoss: document.getElementById('contextLoss'),
+		contextLoss: canvas.parentElement.querySelector('div'),
 		bloomBrightnessRange: document.getElementById('bloomBrightnessRange'),
-		radios: document.querySelectorAll('input[name="modeBox"]'),
+		radios: WebGLBox.querySelectorAll('input[type="radio"]'),
 		benchmark: {
 			label: document.getElementById('benchmarkBoxBlurLabel'),
 			iterOut: document.getElementById('iterOutBoxBlur'),
