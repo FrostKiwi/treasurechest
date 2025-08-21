@@ -61,13 +61,13 @@ This is where we jump in, with a framebuffer in hand, after the 3D scene was dra
 
 <script type="module">
 	import { setupSimple } from "./js/simple.js";
-	setupSimple();
+	/* setupSimple(); */
 </script>
 
 <blockquote>
 <details><summary><a target="_blank" href="screenshots/simple.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
-![image](screenshots/simple.png)
+<!-- ![image](screenshots/simple.png) -->
 
 </details>
 <details>	
@@ -107,34 +107,66 @@ A Convolution
 Living in Japan, I got the chance to interview an idol of me: Graphics Programmer Masaki Kawase.
 
 <style>
-    .settingsTable .noborder td {
-        border-bottom: unset;
-    }
-    .variable-name-row {
-        display: none;
-    }
-    @media screen and (max-width: 500px) {
-        .variable-name-row {
-            display: table-row;
+	.settingsTable .noborder td {
+		border-bottom: unset;
+	}
+	.settingsTable td {
+		white-space: nowrap;
+	}
+	.variable-name-row {
+		display: none;
+	}
+	@media screen and (max-width: 500px) {
+		.variable-name-row {
+			display: table-row;
 			text-align: center;
-        }
-        .variable-name-cell {
-            display: none;
-        }
-    }
+		}
+		.variable-name-cell {
+			display: none;
+		}
+	}
 	.settingsTable pre {
-    	overflow-x: auto;
-    	max-width: 100%;
-    	white-space: pre-wrap;
+		overflow-x: auto;
+		max-width: 100%;
+		white-space: pre-wrap;
 		overflow-wrap: anywhere;
 	}
 	.precolumn {
 		padding: 0px;
 	}
+
+	.stats > div {
+	    display: flex;
+	    gap: 0px 12px;
+	    flex-wrap: wrap;
+	    flex: 1;
+	    justify-content: space-around;
+	    font-size: smaller;
+	}
+
+	.stats span {
+	    display: flex;
+	    gap: 8px;
+	    white-space: nowrap;
+	}
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+<script>
+	function resetSlider(button) {
+	const row = button.closest('tr');
+	const input = row.querySelector('input');
+	const output = row.querySelector('output');
+	const defaultValue = button.dataset.defaultValue;
+	const outputFormat = button.dataset.outputFormat || defaultValue;
+	
+	input.value = defaultValue;
+	output.value = outputFormat;
+	input.dispatchEvent(new Event('input'));
+}
+</script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script> -->
 
 <svg id="kernelSimple"></svg>
 
@@ -291,7 +323,7 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 <blockquote>
 <details><summary><a target="_blank" href="screenshots/fxaainteractive.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
-![image](screenshots/fxaainteractive.png)
+<!-- ![image](screenshots/fxaainteractive.png) -->
 
 </details>
 <details>	
@@ -320,7 +352,7 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 			Scene
 		</label>
 		<label>
-			<input type="radio" name="modeBox" value="selfIllum" />
+			<input type="radio" name="modeBox" value="lights" />
 			Lights
 		</label>
 		<label>
@@ -329,36 +361,32 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 		</label>
 	</div>
 	<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
-		  <label for="animateCheck_Boxblur">
-		  <input type="checkbox" id="animateCheck_Boxblur" checked />
-		  <span>Animate</span>
+		  <label>
+		  	<input type="checkbox" id="animateCheck" checked />
+		  		Animate
 		  </label>
 	</div>
 </div>
-
 <div style="margin-top: 13px" class="canvasParent">
 	<canvas style="width: round(down, 100%, 8px); aspect-ratio: 4 / 3;" id="canvasBoxBlur"></canvas>
 	<div class="contextLoss" id="contextLoss">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms you may have to restart the browser completely.</div>
 	{% include "style/icons/clock.svg" %}
 </div>
-
 <table class="settingsTable" style="width: 100%; max-width: 100%;">
 	<tr>
-		<td colspan=4 style="width:100%">
-			<div style="display: flex; gap: 0px 12px; align-items: center;">
-			    <div style="display: flex; flex-wrap: wrap; gap: 0px 12px; flex: 1; justify-content: space-around;  font-size: smaller">
-			        <span style="display: flex; gap: 8px; white-space: nowrap;">
-						<strong>FPS:</strong> <output id="fpsBoxBlur">?</output> / <output id="msBoxBlur">?</output> ms
-					</span>
-			        <span style="display: flex; gap: 8px; white-space: nowrap;">
-						<strong>Resolution:</strong> <output id="widthBoxBlur">?</output>x<output id="heightBoxBlur">?</output>
-					</span>
-			        <span style="display: flex; gap: 8px; white-space: nowrap;">
-						<strong>Texture Taps:</strong> <output id="tapsBoxBlur">?</output>
-					</span>
-				</div>
-			</div>
-		</td>
+	    <td colspan=4 class="stats">
+	        <div>
+	            <span>
+	                <strong>FPS:</strong> <output id="fps">?</output> / <output id="ms">?</output> ms
+	            </span>
+	            <span>
+	                <strong>Resolution:</strong> <output id="width">?</output>x<output id="height">?</output>
+	            </span>
+	            <span>
+	                <strong>Texture Taps:</strong> <output id="taps">?</output>
+	            </span>
+	        </div>
+	    </td>
 	</tr>
 	<tr class="variable-name-row noborder">
 		<td colspan=4>
@@ -370,13 +398,16 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 			<code>kernelSize</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="1" min="0" max="32" value="3" id="boxKernelSizeRange" oninput="boxKernelSize.textContent = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
+			<input class="slider" type="range" step="1" min="0" max="32" value="3" id="sizeRange"
+			oninput="this.closest('tr').querySelector('output').value = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
 		</td>
 		<td style="text-align: center;">
-			<output id="boxKernelSize">7x7</output> px
+			<output>7x7</output> px
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" onclick="boxKernelSizeRange.value = 3; boxKernelSize.textContent = '7x7';boxKernelSizeRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+			<button class="roundButton" data-default-value="3" data-output-format="7x7" onclick="resetSlider(this)">
+				{% include "style/icons/rotate-right.svg" %}
+			</button>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
@@ -389,13 +420,16 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 			<code>downSample</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="1" min="0" max="8" value="0" id="downSampleRange" oninput="downSampleOut.textContent = this.value">
+			<input class="slider" type="range" step="1" min="0" max="8" value="0" id="downSampleRange"
+			oninput="this.closest('tr').querySelector('output').value = this.value">
 		</td>
 		<td style="text-align: center;">
-			<output id="downSampleOut">1</output>
+			<output>0</output>
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" onclick="downSampleRange.value = 1; downSampleRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+			<button class="roundButton" data-default-value="0" onclick="resetSlider(this)">
+				{% include "style/icons/rotate-right.svg" %}
+			</button>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
@@ -408,32 +442,38 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 			<code>samplePosMultiplier</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="0.01" min="0" max="20" value="1" id="samplePosRange" oninput="samplePos.textContent = parseInt(this.value * 100)">
+			<input class="slider" type="range" step="0.01" min="0" max="20" value="1" id="samplePosRange"
+			oninput="this.closest('tr').querySelector('output').value = parseInt(this.value * 100)">
 		</td>
 		<td style="text-align: center;">
-			<output id="samplePos">100</output> %
+			<output>100</output> %
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" onclick="samplePosRange.value = 1;samplePos.textContent = 100;samplePosRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+			<button class="roundButton" data-default-value="1" data-output-format="100" onclick="resetSlider(this)">
+					{% include "style/icons/rotate-right.svg" %}
+				</button>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
 		<td colspan=4>
-			<code>bloomBrightness</code>
+			<code>lightBrightness</code>
 		</td>
 	</tr>
 	<tr>
 		<td class="variable-name-cell">
-			<code>bloomBrightness</code>
+			<code>lightBrightness</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="0.01" min="0" max="20" value="1" id="bloomBrightnessRange" oninput="bloomBrightness.textContent = parseInt(this.value * 100)">
+			<input disabled class="slider" type="range" step="0.01" min="0" max="20" value="1" id="lightBrightness" oninput="
+			this.closest('tr').querySelector('output').value = parseInt(this.value * 100) ">
 		</td>
 		<td style="text-align: center;">
-			<output id="bloomBrightness">100</output> %
+			<output>100</output> %
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" onclick="bloomBrightnessRange.value = 1; bloomBrightness.textContent = 100;bloomBrightnessRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+			<button disabled id="lightBrightnessReset" class="roundButton" data-default-value="1" data-output-format="100" onclick="resetSlider(this)">
+				{% include "style/icons/rotate-right.svg" %}
+			</button>
 		</td>
 	</tr>
 	<tr class="variable-name-row noborder">
@@ -446,13 +486,16 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 			<code>sigma</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="2" id="sigmaRangeGauss" oninput="sigmaGaussRelativeOut.value = Number(this.value).toFixed(2)">
+			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="2" id="sigmaRange" oninput="
+			this.closest('tr').querySelector('output').value = Number(this.value).toFixed(2)">
 		</td>
-		<td style="text-align: center; white-space: nowrap">
-			± <output id="sigmaGaussRelativeOut">2.00</output> σ
+		<td style="text-align: center">
+			± <output>2.00</output> σ
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" onclick="sigmaRangeGauss.value = 2; sigmaRangeGauss.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+			<button class="roundButton" data-default-value="2" onclick="resetSlider(this)">
+				{% include "style/icons/rotate-right.svg" %}
+			</button>
 		</td>
 	</tr>
 	<tr>
@@ -460,31 +503,33 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 			<div style="display: flex; flex-wrap: nowrap; gap: 0px 12px; width: 100%; justify-content: space-between;">
 				<div style="white-space: normal; word-break: break-word; font-size: smaller;">
 					<div>
-						~<output id="iterTimeBox">?</output> / iteration
+						~<output id="iterTime">?</output> / iteration
 					</div>
 					<div>
-						<output id="tapsCountBenchBox">?</output> Million texture reads / iteration
+						<output id="tapsCountBench">?</output> Million texture reads / iteration
 					</div>
 					<div>
-						GPU info: <code id="rendererBox"></code>
+						GPU info: <code id="renderer"></code>
 					</div>
 				</div>
 				<div class="multiButton">
-					<button type="button" class="main" id="benchmarkBoxBlur">
-						<span id="benchmarkBoxBlurLabel">Benchmark</span>
+					<button type="button" class="main" id="benchmark">
+						<span id="benchmarkLabel">Benchmark</span>
 						<span>
-							<output id="iterOutBoxBlur">100</output> Iterations
+							<output id="iterOut">100</output> Iterations
 						</span>
 					</button>
 					<div class="arrowWrap">
-						<select id="iterations" onchange="iterOutBoxBlur.textContent=this.value; benchmarkBoxBlurLabel.textContent='Benchmark'">
+						<select id="iterations" onchange="
+						this.closest('.multiButton').querySelector('output').value=this.value;
+						this.closest('.multiButton').querySelector('#benchmarkLabel').textContent='Benchmark'">
 							<optgroup label="Iterations at 1600x1200">
 								<option value="10">10</option>
 								<option value="100" selected>100</option>
 								<option value="1000">1000</option>
 								<option value="10000">10000</option>
 								<option value="100000">100000</option>
-		    				</optgroup>
+							</optgroup>
 						</select>
 						<span class="arrow">
 							{% include "style/icons/arrow-down.svg" %}
@@ -495,9 +540,7 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 		</td>
 	</tr>
 </table>
-
 <img id="debugIMG"></img>
-
 </div>
 
 <script type="module">
@@ -508,6 +551,8 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 So what did we achieve? A bad looking blur, that wrecks even my RTX 4090.
 
 Apple devices are very strict with 3D in the browser usage, so if you overdo the next part, the browser will disable WebGL for this site refuse
+
+<blockquote class="reaction"><div class="reaction_text">What you may have noticed, is that changing the sample Range a little bit, between 100% and 200% does not introduce artifacts. Something deeper is happening. Put at a pin in that...</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 When talking about blurs and especially bloom, motion stability is incredibly important. Our image will rotate slowly to tease out artifacts when bright highlights move across the frame. You can toggle this above each WebGL Canvas.
 

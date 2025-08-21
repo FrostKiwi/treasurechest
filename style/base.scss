@@ -193,6 +193,12 @@ canvas {
 	margin-bottom: 0px;
 }
 
+button:disabled {
+	&:hover {
+		background-color: sakura.$color-blossom;
+	}
+}
+
 blockquote {
 	border-image: linear-gradient(0deg, color.scale(sakura.$color-blossom, $lightness: -10%) 0%, sakura.$color-blossom 100%);
 	border-image-slice: 1;

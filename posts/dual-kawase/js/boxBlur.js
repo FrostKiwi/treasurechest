@@ -35,30 +35,35 @@ export async function setupBoxBlur() {
 
 	/* UI Elements */
 	const ui = {
-		samplePosRange: document.getElementById('samplePosRange'),
-		sigmaRange: document.getElementById('sigmaRangeGauss'),
-		stats: {
-			fps: document.getElementById('fpsBoxBlur'),
-			ms: document.getElementById('msBoxBlur'),
-			width: document.getElementById('widthBoxBlur'),
-			height: document.getElementById('heightBoxBlur'),
-			tapsCount: document.getElementById('tapsBoxBlur'),
+		display: {
+			spinner: canvas.parentElement.querySelector('svg', canvas.parentElement),
+			contextLoss: canvas.parentElement.querySelector('div', canvas.parentElement),
+			fps: WebGLBox.querySelector('#fps'),
+			ms: WebGLBox.querySelector('#ms'),
+			width: WebGLBox.querySelector('#width'),
+			height: WebGLBox.querySelector('#height'),
+			tapsCount: WebGLBox.querySelector('#taps'),
 		},
-		kernelSizeSlider: document.getElementById('boxKernelSizeRange'),
-		animate: document.getElementById('animateCheck_Boxblur'),
-		downSampleRange: document.getElementById('downSampleRange'),
-		spinner: canvas.parentElement.querySelector('svg'),
-		contextLoss: canvas.parentElement.querySelector('div'),
-		bloomBrightnessRange: document.getElementById('bloomBrightnessRange'),
-		radios: WebGLBox.querySelectorAll('input[type="radio"]'),
+		blur: {
+			kernelSize: WebGLBox.querySelector('#sizeRange'),
+			sigma: WebGLBox.querySelector('#sigmaRange'),
+			samplePos: WebGLBox.querySelector('#samplePosRange'),
+			downSample: WebGLBox.querySelector('#downSampleRange'),
+		},
+		rendering: {
+			animate: WebGLBox.querySelector('#animateCheck'),
+			modes: WebGLBox.querySelectorAll('input[type="radio"]'),
+			lightBrightness: WebGLBox.querySelector('#lightBrightness'),
+			lightBrightnessReset: WebGLBox.querySelector('#lightBrightnessReset'),
+		},
 		benchmark: {
-			label: document.getElementById('benchmarkBoxBlurLabel'),
-			iterOut: document.getElementById('iterOutBoxBlur'),
-			button: document.getElementById('benchmarkBoxBlur'),
-			renderer: document.getElementById('rendererBox'),
-			iterTime: document.getElementById('iterTimeBox'),
-			debugIMG: document.getElementById('debugIMG'),
-			tapsCount: document.getElementById('tapsCountBenchBox')
+			button: WebGLBox.querySelector('#benchmark'),
+			label: WebGLBox.querySelector('#benchmarkLabel'),
+			iterOut: WebGLBox.querySelector('#iterOut'),
+			renderer: WebGLBox.querySelector('#renderer'),
+			iterTime: WebGLBox.querySelector('#iterTime'),
+			debugIMG: WebGLBox.querySelector('#debugIMG'),
+			tapsCount: WebGLBox.querySelector('#tapsCountBench')
 		}
 	};
 
@@ -72,47 +77,49 @@ export async function setupBoxBlur() {
 	const gaussianBlurFrag = await util.fetchShader("shader/gaussianBlur.fs");
 
 	/* Elements that cause a redraw in the non-animation mode */
-	ui.kernelSizeSlider.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
-	ui.sigmaRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
-	ui.samplePosRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
-	ui.bloomBrightnessRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
-	ui.downSampleRange.addEventListener('input', () => { if (!ui.animate.checked) redraw() });
+	ui.blur.kernelSize.addEventListener('input', () => { if (!ui.rendering.animate.checked) redraw() });
+	ui.blur.sigma.addEventListener('input', () => { if (!ui.rendering.animate.checked) redraw() });
+	ui.blur.samplePos.addEventListener('input', () => { if (!ui.rendering.animate.checked) redraw() });
+	ui.rendering.lightBrightness.addEventListener('input', () => { if (!ui.rendering.animate.checked) redraw() });
+	ui.blur.downSample.addEventListener('input', () => { if (!ui.rendering.animate.checked) redraw() });
 
 	/* Events */
-	ui.animate.addEventListener("change", () => {
-		if (ui.animate.checked)
+	ui.rendering.animate.addEventListener("change", () => {
+		if (ui.rendering.animate.checked)
 			startRendering();
 		else {
-			ui.stats.fps.value = "-";
-			ui.stats.ms.value = "-";
+			ui.display.fps.value = "-";
+			ui.display.ms.value = "-";
 			ctx.flags.isRendering = false;
 			redraw()
 		}
 	});
 
 	canvas.addEventListener("webglcontextlost", () => {
-		ui.contextLoss.style.display = "block";
+		ui.display.contextLoss.style.display = "block";
 	});
 
-	ui.kernelSizeSlider.addEventListener('input', () => {
-		reCompileBlurShader(ui.kernelSizeSlider.value);
+	ui.blur.kernelSize.addEventListener('input', () => {
+		reCompileBlurShader(ui.blur.kernelSize.value);
 	});
 
 	/* Render Mode */
-	ui.radios.forEach(radio => {
+	ui.rendering.modes.forEach(radio => {
 		/* Force set to scene to fix a reload bug in Firefox Android */
 		if (radio.value === "scene")
 			radio.checked = true;
 		radio.addEventListener('change', (event) => {
 			ctx.mode = event.target.value;
-			if (!ui.animate.checked) redraw();
+			ui.rendering.lightBrightness.disabled = ctx.mode === "scene";
+			ui.rendering.lightBrightnessReset.disabled = ctx.mode === "scene";
+			if (!ui.rendering.animate.checked) redraw();
 		});
 	});
 
 	ui.benchmark.button.addEventListener("click", () => {
 		ctx.flags.benchMode = true;
 		stopRendering();
-		ui.spinner.style.display = "block";
+		ui.display.spinner.style.display = "block";
 		ui.benchmark.button.disabled = true;
 
 		/* spin up the Worker (ES-module) */
@@ -122,9 +129,9 @@ export async function setupBoxBlur() {
 		worker.postMessage({
 			iterations: ui.benchmark.iterOut.value,
 			blurShaderSrc: gaussianBlurFrag,
-			kernelSize: ui.kernelSizeSlider.value,
-			samplePos: ui.samplePosRange.value,
-			sigma: ui.kernelSizeSlider.value / ui.sigmaRange.value
+			kernelSize: ui.blur.kernelSize.value,
+			samplePos: ui.blur.samplePos.value,
+			sigma: ui.blur.kernelSize.value / ui.blur.sigma.value
 		});
 
 		/* Benchmark */
@@ -142,7 +149,7 @@ export async function setupBoxBlur() {
 			worker.terminate();
 			ui.benchmark.button.disabled = false;
 			ctx.flags.benchMode = false;
-			if (ui.animate.checked)
+			if (ui.rendering.animate.checked)
 				startRendering();
 			else
 				redraw();
@@ -164,13 +171,13 @@ export async function setupBoxBlur() {
 	}
 
 	/* Blur Shader */
-	reCompileBlurShader(ui.kernelSizeSlider.value)
+	reCompileBlurShader(ui.blur.kernelSize.value)
 
 	/* Send Unit code verts to the GPU */
 	util.bindUnitQuad(gl);
 
 	async function setupTextureBuffers() {
-		ui.spinner.style.display = "block";
+		ui.display.spinner.style.display = "block";
 		ctx.flags.buffersInitialized = true;
 		ctx.flags.initComplete = false;
 
@@ -179,8 +186,8 @@ export async function setupBoxBlur() {
 		[ctx.fb.scene, ctx.tex.frame] = util.setupFramebuffer(gl, canvas.width, canvas.height);
 		[ctx.fb.final, ctx.tex.frameFinal] = util.setupFramebuffer(gl, canvas.width, canvas.height);
 
-		const maxDown = ui.downSampleRange.max;
-		for (let i = 0; i < ui.downSampleRange.max; ++i) {
+		const maxDown = ui.blur.downSample.max;
+		for (let i = 0; i < ui.blur.downSample.max; ++i) {
 			gl.deleteFramebuffer(ctx.fb.down[i]);
 			gl.deleteTexture(ctx.tex.down[i]);
 		}
@@ -213,7 +220,7 @@ export async function setupBoxBlur() {
 		selfIllumBitmap.close();
 
 		ctx.flags.initComplete = true;
-		ui.spinner.style.display = "none";
+		ui.display.spinner.style.display = "none";
 	}
 
 	let prevNow = performance.now();
@@ -228,15 +235,15 @@ export async function setupBoxBlur() {
 			return;
 
 		/* UI Stats */
-		const KernelSizeSide = ui.kernelSizeSlider.value * 2 + 1;
-		const effectiveRes = [Math.max(1, canvas.width >> +ui.downSampleRange.value), Math.max(1, canvas.height >> +ui.downSampleRange.value)];
+		const KernelSizeSide = ui.blur.kernelSize.value * 2 + 1;
+		const effectiveRes = [Math.max(1, canvas.width >> +ui.blur.downSample.value), Math.max(1, canvas.height >> +ui.blur.downSample.value)];
 		const tapsNewText = (effectiveRes[0] * effectiveRes[1] * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1) + " Million";
-		ui.stats.tapsCount.value = tapsNewText;
-		ui.stats.width.value = effectiveRes[0];
-		ui.stats.height.value = effectiveRes[1];
+		ui.display.tapsCount.value = tapsNewText;
+		ui.display.width.value = effectiveRes[0];
+		ui.display.height.value = effectiveRes[1];
 
 		/* Circle Motion */
-		let radiusSwitch = ui.animate.checked ? radius : 0.0;
+		let radiusSwitch = ui.rendering.animate.checked ? radius : 0.0;
 		let speed = (performance.now() / 10000) % Math.PI * 2;
 		const offset = [radiusSwitch * Math.cos(speed), radiusSwitch * Math.sin(speed)];
 		gl.useProgram(ctx.shd.scene.handle);
@@ -254,7 +261,7 @@ export async function setupBoxBlur() {
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		/* down-sample chain */
-		const levels = ui.downSampleRange.value;
+		const levels = ui.blur.downSample.value;
 		let srcTex = ctx.tex.frame;
 		let w = canvas.width, h = canvas.height;
 
@@ -283,12 +290,12 @@ export async function setupBoxBlur() {
 			h = Math.max(1, h >> 1);
 			gl.bindFramebuffer(gl.FRAMEBUFFER, lastDownsampleFB);
 			gl.viewport(0, 0, w, h);
-			gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.bloomBrightnessRange.value);
+			gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.rendering.lightBrightness.value);
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D, srcTex);
 			gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / w, 1.0 / h);
-			gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.samplePosRange.value);
-			gl.uniform1f(ctx.shd.blur.uniforms.sigma, Math.max(ui.kernelSizeSlider.value / ui.sigmaRange.value, 0.001));
+			gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.blur.samplePos.value);
+			gl.uniform1f(ctx.shd.blur.uniforms.sigma, Math.max(ui.blur.kernelSize.value / ui.blur.sigma.value, 0.001));
 			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 			srcTex = ctx.tex.down[levels - 1];
 		} else {
@@ -296,12 +303,12 @@ export async function setupBoxBlur() {
 			gl.useProgram(ctx.shd.blur.handle);
 			gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.final);
 			gl.viewport(0, 0, canvas.width, canvas.height);
-			gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.bloomBrightnessRange.value);
+			gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.rendering.lightBrightness.value);
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D, srcTex);
 			gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / canvas.width, 1.0 / canvas.height);
-			gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.samplePosRange.value);
-			gl.uniform1f(ctx.shd.blur.uniforms.sigma, Math.max(ui.kernelSizeSlider.value / ui.sigmaRange.value, 0.001));
+			gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.blur.samplePos.value);
+			gl.uniform1f(ctx.shd.blur.uniforms.sigma, Math.max(ui.blur.kernelSize.value / ui.blur.sigma.value, 0.001));
 			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 			srcTex = ctx.tex.frameFinal;
 		}
@@ -325,14 +332,17 @@ export async function setupBoxBlur() {
 		}
 
 		/* Final pass to present to screen (with upscaling if needed) */
-		const finalFB = ctx.mode == "bloom" ? ctx.fb.final : null;
-		gl.bindFramebuffer(gl.FRAMEBUFFER, finalFB);
-		gl.viewport(0, 0, canvas.width, canvas.height);
-		gl.useProgram(ctx.shd.passthrough.handle);
-		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, srcTex);
-		gl.uniform1i(gl.getUniformLocation(ctx.shd.passthrough.handle, "texture"), 0);
-		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+		/* Skip final pass in bloom mode with no downsampling to avoid feedback loop */
+		if (!(ctx.mode == "bloom" && levels == 0)) {
+			const finalFB = ctx.mode == "bloom" ? ctx.fb.final : null;
+			gl.bindFramebuffer(gl.FRAMEBUFFER, finalFB);
+			gl.viewport(0, 0, canvas.width, canvas.height);
+			gl.useProgram(ctx.shd.passthrough.handle);
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D, srcTex);
+			gl.uniform1i(gl.getUniformLocation(ctx.shd.passthrough.handle, "texture"), 0);
+			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+		}
 
 		if (ctx.mode == "bloom") {
 			/* Now do the bloom composition to the screen */
@@ -369,9 +379,9 @@ export async function setupBoxBlur() {
 		}
 		prevNow = now;
 
-		if (ui.animate.checked && now - lastStatsUpdate >= 1000) {
-			ui.stats.fps.value = fpsEMA.toFixed(0);
-			ui.stats.ms.value = msEMA.toFixed(2);
+		if (ui.rendering.animate.checked && now - lastStatsUpdate >= 1000) {
+			ui.display.fps.value = fpsEMA.toFixed(0);
+			ui.display.ms.value = msEMA.toFixed(2);
 			lastStatsUpdate = now;
 		}
 	}
@@ -390,7 +400,7 @@ export async function setupBoxBlur() {
 				stopRendering();
 				startRendering();
 			}
-			if (!ui.animate.checked)
+			if (!ui.rendering.animate.checked)
 				redraw();
 		}
 	}
@@ -417,7 +427,7 @@ export async function setupBoxBlur() {
 	});
 
 	function renderLoop() {
-		if (ctx.flags.isRendering && ui.animate.checked) {
+		if (ctx.flags.isRendering && ui.rendering.animate.checked) {
 			redraw();
 			animationFrameId = requestAnimationFrame(renderLoop);
 		}
@@ -443,7 +453,7 @@ export async function setupBoxBlur() {
 		gl.deleteTexture(ctx.tex.frameFinal); ctx.tex.frameFinal = null;
 		gl.deleteFramebuffer(ctx.fb.scene); ctx.fb.scene = null;
 		gl.deleteFramebuffer(ctx.fb.final); ctx.fb.final = null;
-		for (let i = 0; i < ui.downSampleRange.max; ++i) {
+		for (let i = 0; i < ui.blur.downSample.max; ++i) {
 			gl.deleteTexture(ctx.tex.down[i]);
 			gl.deleteFramebuffer(ctx.fb.down[i]);
 		}
@@ -451,8 +461,8 @@ export async function setupBoxBlur() {
 		ctx.fb.down = [];
 		ctx.flags.buffersInitialized = false;
 		ctx.flags.initComplete = false;
-		ui.stats.fps.value = "-";
-		ui.stats.ms.value = "-";
+		ui.display.fps.value = "-";
+		ui.display.ms.value = "-";
 	}
 
 	function handleIntersection(entries) {
