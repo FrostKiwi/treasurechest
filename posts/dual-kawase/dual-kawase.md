@@ -71,6 +71,91 @@ image:
 }
 </script>
 
+Blurs are the basic building block for many [video game post processing effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering) and essential for sleek and modern [GUIs](https://en.wikipedia.org/wiki/Graphical_user_interface). Video game [Depth of Field](https://dev.epicgames.com/documentation/en-us/unreal-engine/depth-of-field-in-unreal-engine) and [Bloom](https://en.wikipedia.org/wiki/Bloom_(shader_effect)) or [frosted panels](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#microsoft-windows-acrylic) in modern user interfaces - used subtly or obviously - they're everywhere. <span style="transition: filter 0.2s; filter: none" onmouseover="this.style.filter='blur(4px)'" onmouseout="this.style.filter='none'">Even your browser can do it, just tap this sentence!</span>
+
+Conceptually, *"Make thing go blurry"* is easy, boiling down to some form of *"average colors in radius"*. Doing so in realtime however, took many a graphics programmer through decades upon decades of research and experimentation, across computer science and maths. In this article, we'll follow their footsteps.
+
+<blockquote class="reaction"><div class="reaction_text">A graphics programming time travel, if you will.</div><img class="kiwi" src="/assets/kiwis/cyber.svg"></blockquote>
+
+Using the [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) in the device you are reading this article on, and the [WebGL](https://en.wikipedia.org/wiki/WebGL) capability of your browser, we'll implement realtime blurring techniques and retrace the trade-offs graphics programmers had to make in order to marry two, sometimes opposing, worlds: **Mathematical theory** and **Technological reality**. Let's dig in!
+
+<blockquote class="reaction"><div class="reaction_text">This is my submission to this year's <a target="_blank" href="https://some.3b1b.co/">Summer of Math Exposition</a></div><img class="kiwi" src="img/SOMELogo.svg"></blockquote>
+
+[https://gangles.ca/2008/07/18/bloom-disasters/](https://gangles.ca/2008/07/18/bloom-disasters/)
+
+## Setup
+In the context of video game post processing, a 3D scene is drawn (a step called rendering) and saved to an intermediary image - a [framebuffer](https://learnopengl.com/Advanced-OpenGL/Framebuffers). In turn this framebuffer's content can be processed to achieve [various effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering). Since this *processing* happens *after* a 3D scene is rendered, it's called *post-processing*.
+
+<blockquote class="reaction"><div class="reaction_text"><strong>Depending on technique</strong>, framebuffers <a target="_blank" href="https://en.wikipedia.org/wiki/Deferred_shading">can hold non-image data</a> and post-processing effects like <a target="_blank" href="https://en.wikipedia.org/wiki/Color_correction">Color-correction</a> or <a target="_blank" href="https://en.wikipedia.org/wiki/Tone_mapping">Tone-mapping</a> don't even require intermediate framebuffers. <a target="_blank" href="https://takahirox.github.io/three.js/examples/webgl_tonemapping.html">More</a> than <a target="_blank" href="https://developer.arm.com/documentation/100587/0101/Pixel-Local-Storage/About-Pixel-Local-Storage">one way</a> to skin a cat.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+This is where we jump in, with a framebuffer in hand, after the 3D scene was drawn. We will use a scene from the mod [NeoTokyo°](https://store.steampowered.com/app/244630/NEOTOKYO/). Each time we implement something new, there will be a WebGL box, rendering at [native resolution](https://en.wikipedia.org/wiki/1:1_pixel_mapping) of your device. Each box has 4 Buttons at the top and relevant parts of the its code below it.
+
+<div style="display: flex; gap: 8px">
+	<div class="toggleRes" style="width: 100%">
+		<label>
+		  <input type="radio" name="modeSimple" value="scene" checked />
+		  Scene
+		</label>
+		<label>
+		  <input type="radio" name="modeSimple" value="lights" />
+		  Lights
+		</label>
+		<label>
+		  <input type="radio" name="modeSimple" value="bloom" />
+		  Bloom
+		</label>
+	</div>
+	<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
+		<label>
+		  <input type="checkbox" />
+		  Animate
+		</label>
+	</div>
+</div>
+
+<div style="margin-top: 13px" class="canvasParent">
+	<canvas style="width: round(down, 100%, 8px); aspect-ratio: 4 / 3;" id="canvasSimple"></canvas>
+	<div class="contextLoss" id="contextLossSimple">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms (iOS / iPad) you may have to restart the browser App completely, as the browser will temporarily refuse to allow this site to run WebGL again.</div>
+	{% include "style/icons/clock.svg" %}
+</div>
+
+<script type="module">
+	import { setupSimple } from "./js/simple.js";
+	/* setupSimple(); */
+</script>
+
+<blockquote>
+<details><summary><a target="_blank" href="screenshots/simple.png">Screenshot</a>, in case WebGL doesn't work</summary>
+
+<!-- ![image](screenshots/simple.png) -->
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a target="_blank" href="shader/FXAA-interactive.fs">FXAA-interactive.fs</a></summary>
+
+```glsl
+{% include "posts/dual-kawase/shader/boxBlur.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a target="_blank" href="js/boxBlur.js">boxBlur.js</a></summary>
+
+```javascript
+{% include "posts/dual-kawase/js/boxBlur.js" %}
+```
+
+</details>
+</blockquote>
+
+<blockquote class="reaction"><div class="reaction_text">According to WebGL, your GPU is a <output></output></div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+Compared to other disciplines, graphics programming is [uniquely challenging](https://www.youtube.com/watch?v=xJQ0qXh1-m0) in the beginning, because of how many rules and limitations the hardware, [graphics APIs](https://en.wikipedia.org/wiki/Graphics_library) and the [rendering pipeline](https://fgiesen.wordpress.com/2011/07/09/a-trip-through-the-graphics-pipeline-2011-index/) impose.
+
+<blockquote class="reaction"><div class="reaction_text">No graphics programming knowledge required to follow along.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+We'll implement our blurs as a [WebGL 1.0](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API) fragment shader written in [GLSL](https://en.wikipedia.org/wiki/OpenGL_Shading_Language). Shaders work in [NDC Coordinates](https://learnopengl.com/Getting-started/Coordinate-Systems). Fragment shaders run in per-pixel, with no concept of things like resolution, aspect ratio or which pixel is being processed. This is information we must provide or ask the graphics pipeline to do so.
+
 ## Free Bilinear
 <div id="WebGLBox-Bilinear">
 	<div style="display: flex; gap: 8px">
@@ -158,91 +243,33 @@ image:
 </details>
 </blockquote>
 
-
-Blurs are the basic building block for many [video game post processing effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering) and essential for sleek and modern [GUIs](https://en.wikipedia.org/wiki/Graphical_user_interface). Video game [Depth of Field](https://dev.epicgames.com/documentation/en-us/unreal-engine/depth-of-field-in-unreal-engine) and [Bloom](https://en.wikipedia.org/wiki/Bloom_(shader_effect)) or [frosted panels](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#microsoft-windows-acrylic) in modern user interfaces - used subtly or obviously - they're everywhere. <span style="transition: filter 0.2s; filter: none" onmouseover="this.style.filter='blur(4px)'" onmouseout="this.style.filter='none'">Even your browser can do it, just tap this sentence!</span>
-
-Conceptually, *"Make thing go blurry"* is easy, boiling down to some form of *"average colors in radius"*. Doing so in realtime however, took many a graphics programmer through decades upon decades of research and experimentation, across computer science and maths. In this article, we'll follow their footsteps.
-
-<blockquote class="reaction"><div class="reaction_text">A graphics programming time travel, if you will.</div><img class="kiwi" src="/assets/kiwis/cyber.svg"></blockquote>
-
-Using the [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) in the device you are reading this article on, and the [WebGL](https://en.wikipedia.org/wiki/WebGL) capability of your browser, we'll implement realtime blurring techniques and retrace the trade-offs graphics programmers had to make in order to marry two, sometimes opposing, worlds: **Mathematical theory** and **Technological reality**. Let's dig in!
-
-<blockquote class="reaction"><div class="reaction_text">This is my submission to this year's <a target="_blank" href="https://some.3b1b.co/">Summer of Math Exposition</a></div><img class="kiwi" src="img/SOMELogo.svg"></blockquote>
-
-[https://gangles.ca/2008/07/18/bloom-disasters/](https://gangles.ca/2008/07/18/bloom-disasters/)
-
-## Setup
-In the context of video game post processing, a 3D scene is drawn (a step called rendering) and saved to an intermediary image - a [framebuffer](https://learnopengl.com/Advanced-OpenGL/Framebuffers). In turn this framebuffer's content can be processed to achieve [various effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering). Since this *processing* happens *after* a 3D scene is rendered, it's called *post-processing*.
-
-<blockquote class="reaction"><div class="reaction_text"><strong>Depending on technique</strong>, framebuffers <a target="_blank" href="https://en.wikipedia.org/wiki/Deferred_shading">can hold non-image data</a> and post-processing effects like <a target="_blank" href="https://en.wikipedia.org/wiki/Color_correction">Color-correction</a> or <a target="_blank" href="https://en.wikipedia.org/wiki/Tone_mapping">Tone-mapping</a> don't even require intermediate framebuffers. <a target="_blank" href="https://takahirox.github.io/three.js/examples/webgl_tonemapping.html">More</a> than <a target="_blank" href="https://developer.arm.com/documentation/100587/0101/Pixel-Local-Storage/About-Pixel-Local-Storage">one way</a> to skin a cat.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
-
-This is where we jump in, with a framebuffer in hand, after the 3D scene was drawn. We will use a scene from the mod [NeoTokyo°](https://store.steampowered.com/app/244630/NEOTOKYO/). Each time we implement something new, there will be a WebGL box, rendering at [native resolution](https://en.wikipedia.org/wiki/1:1_pixel_mapping) of your device. Each box has 4 Buttons at the top and relevant parts of the its code below it.
-
-<div style="display: flex; gap: 8px">
-	<div class="toggleRes" style="width: 100%">
-		<label>
-		  <input type="radio" name="modeSimple" value="scene" checked />
-		  Scene
-		</label>
-		<label>
-		  <input type="radio" name="modeSimple" value="lights" />
-		  Lights
-		</label>
-		<label>
-		  <input type="radio" name="modeSimple" value="bloom" />
-		  Bloom
-		</label>
+<div id="SVGBox-bilinearPreview">
+	<div style="display: flex; gap: 8px; margin-bottom: 13px">
+		<div class="toggleRes" style="width: 100%">
+			<label>
+				<input type="radio" name="modeBilinear" value="nearest" checked />
+				Nearest Neighbor
+			</label>
+			<label>
+				<input type="radio" name="modeBilinear" value="bilinear" />
+				Bilinear
+			</label>
+		</div>
+		<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
+			  <label>
+			  	<input type="checkbox" id="animateCheck"/>
+			  		Animate
+			  </label>
+		</div>
 	</div>
-	<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
-		<label>
-		  <input type="checkbox" />
-		  Animate
-		</label>
-	</div>
+	<svg></svg>
+	<script type="module">
+		import { setupBilinearPreview } from "./js/bilinearPreview.js";
+		setupBilinearPreview();
+	</script>
 </div>
 
-<div style="margin-top: 13px" class="canvasParent">
-	<canvas style="width: round(down, 100%, 8px); aspect-ratio: 4 / 3;" id="canvasSimple"></canvas>
-	<div class="contextLoss" id="contextLossSimple">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms (iOS / iPad) you may have to restart the browser App completely, as the browser will temporarily refuse to allow this site to run WebGL again.</div>
-	{% include "style/icons/clock.svg" %}
-</div>
 
-<script type="module">
-	import { setupSimple } from "./js/simple.js";
-	/* setupSimple(); */
-</script>
-
-<blockquote>
-<details><summary><a target="_blank" href="screenshots/simple.png">Screenshot</a>, in case WebGL doesn't work</summary>
-
-<!-- ![image](screenshots/simple.png) -->
-
-</details>
-<details>	
-<summary>WebGL Fragment Shader <a target="_blank" href="shader/FXAA-interactive.fs">FXAA-interactive.fs</a></summary>
-
-```glsl
-{% include "posts/dual-kawase/shader/boxBlur.fs" %}
-```
-
-</details>
-<details>	
-<summary>WebGL Javascript <a target="_blank" href="js/boxBlur.js">boxBlur.js</a></summary>
-
-```javascript
-{% include "posts/dual-kawase/js/boxBlur.js" %}
-```
-
-</details>
-</blockquote>
-
-<blockquote class="reaction"><div class="reaction_text">According to WebGL, your GPU is a <output></output></div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
-
-Compared to other disciplines, graphics programming is [uniquely challenging](https://www.youtube.com/watch?v=xJQ0qXh1-m0) in the beginning, because of how many rules and limitations the hardware, [graphics APIs](https://en.wikipedia.org/wiki/Graphics_library) and the [rendering pipeline](https://fgiesen.wordpress.com/2011/07/09/a-trip-through-the-graphics-pipeline-2011-index/) impose.
-
-<blockquote class="reaction"><div class="reaction_text">No graphics programming knowledge required to follow along.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
-
-We'll implement our blurs as a [WebGL 1.0](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API) fragment shader written in [GLSL](https://en.wikipedia.org/wiki/OpenGL_Shading_Language). Shaders work in [NDC Coordinates](https://learnopengl.com/Getting-started/Coordinate-Systems). Fragment shaders run in per-pixel, with no concept of things like resolution, aspect ratio or which pixel is being processed. This is information we must provide or ask the graphics pipeline to do so.
 
 ## Convolution
 A Convolution
@@ -254,6 +281,7 @@ Living in Japan, I got the chance to interview an idol of me: Graphics Programme
 
 <!-- <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
 <script>eruda.init();</script> -->
+
 
 <div id="SVGBox-kernelPreview">
 	<svg></svg>
