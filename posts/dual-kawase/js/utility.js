@@ -39,7 +39,7 @@ export function compileAndLinkShader(gl, vtxSrc, fragSrc, uniforms = [], fragPre
 }
 
 /* Standard Texture loading */
-export function setupTexture(gl, width, height, target, filter, source) {
+export function setupTexture(gl, width, height, target, filter, source, channel=3) {
 	gl.deleteTexture(target);
 	target = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, target);
@@ -50,7 +50,10 @@ export function setupTexture(gl, width, height, target, filter, source) {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
 	if (source)
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, source);
+		if(channel == 3)
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, source);
+		else
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
 	else
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
 

@@ -11,100 +11,6 @@ publicTags:
   - GameDev
 image:
 ---
-Blurs are the basic building block for many [video game post processing effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering) and essential for sleek and modern [GUIs](https://en.wikipedia.org/wiki/Graphical_user_interface). Video game [Depth of Field](https://dev.epicgames.com/documentation/en-us/unreal-engine/depth-of-field-in-unreal-engine) and [Bloom](https://en.wikipedia.org/wiki/Bloom_(shader_effect)) or [frosted panels](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#microsoft-windows-acrylic) in modern user interfaces - used subtly or obviously - they're everywhere. <span style="transition: filter 0.2s; filter: none" onmouseover="this.style.filter='blur(4px)'" onmouseout="this.style.filter='none'">Even your browser can do it, just tap this sentence!</span>
-
-Conceptually, *"Make thing go blurry"* is easy, boiling down to some form of *"average colors in radius"*. Doing so in realtime however, took many a graphics programmer through decades upon decades of research and experimentation, across computer science and maths. In this article, we'll follow their footsteps.
-
-<blockquote class="reaction"><div class="reaction_text">A graphics programming time travel, if you will.</div><img class="kiwi" src="/assets/kiwis/cyber.svg"></blockquote>
-
-Using the [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) in the device you are reading this article on, and the [WebGL](https://en.wikipedia.org/wiki/WebGL) capability of your browser, we'll implement realtime blurring techniques and retrace the trade-offs graphics programmers had to make in order to marry two, sometimes opposing, worlds: **Mathematical theory** and **Technological reality**. Let's dig in!
-
-<blockquote class="reaction"><div class="reaction_text">This is my submission to this year's <a target="_blank" href="https://some.3b1b.co/">Summer of Math Exposition</a></div><img class="kiwi" src="img/SOMELogo.svg"></blockquote>
-
-[https://gangles.ca/2008/07/18/bloom-disasters/](https://gangles.ca/2008/07/18/bloom-disasters/)
-
-## Setup
-In the context of video game post processing, a 3D scene is drawn (a step called rendering) and saved to an intermediary image - a [framebuffer](https://learnopengl.com/Advanced-OpenGL/Framebuffers). In turn this framebuffer's content can be processed to achieve [various effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering). Since this *processing* happens *after* a 3D scene is rendered, it's called *post-processing*.
-
-<blockquote class="reaction"><div class="reaction_text"><strong>Depending on technique</strong>, framebuffers <a target="_blank" href="https://en.wikipedia.org/wiki/Deferred_shading">can hold non-image data</a> and post-processing effects like <a target="_blank" href="https://en.wikipedia.org/wiki/Color_correction">Color-correction</a> or <a target="_blank" href="https://en.wikipedia.org/wiki/Tone_mapping">Tone-mapping</a> don't even require intermediate framebuffers. <a target="_blank" href="https://takahirox.github.io/three.js/examples/webgl_tonemapping.html">More</a> than <a target="_blank" href="https://developer.arm.com/documentation/100587/0101/Pixel-Local-Storage/About-Pixel-Local-Storage">one way</a> to skin a cat.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
-
-This is where we jump in, with a framebuffer in hand, after the 3D scene was drawn. We will use a scene from the mod [NeoTokyo°](https://store.steampowered.com/app/244630/NEOTOKYO/). Each time we implement something new, there will be a WebGL box, rendering at [native resolution](https://en.wikipedia.org/wiki/1:1_pixel_mapping) of your device. Each box has 4 Buttons at the top and relevant parts of the its code below it.
-
-<div style="display: flex; gap: 8px">
-	<div class="toggleRes" style="width: 100%">
-		<label>
-		  <input type="radio" name="modeSimple" value="scene" checked />
-		  Scene
-		</label>
-		<label>
-		  <input type="radio" name="modeSimple" value="lights" />
-		  Lights
-		</label>
-		<label>
-		  <input type="radio" name="modeSimple" value="bloom" />
-		  Bloom
-		</label>
-	</div>
-	<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
-		<label>
-		  <input type="checkbox" />
-		  Animate
-		</label>
-	</div>
-</div>
-
-<div style="margin-top: 13px" class="canvasParent">
-	<canvas style="width: round(down, 100%, 8px); aspect-ratio: 4 / 3;" id="canvasSimple"></canvas>
-	<div class="contextLoss" id="contextLossSimple">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms you may have to restart the browser completely.</div>
-	{% include "style/icons/clock.svg" %}
-</div>
-
-<script type="module">
-	import { setupSimple } from "./js/simple.js";
-	/* setupSimple(); */
-</script>
-
-<blockquote>
-<details><summary><a target="_blank" href="screenshots/simple.png">Screenshot</a>, in case WebGL doesn't work</summary>
-
-<!-- ![image](screenshots/simple.png) -->
-
-</details>
-<details>	
-<summary>WebGL Fragment Shader <a target="_blank" href="shader/FXAA-interactive.fs">FXAA-interactive.fs</a></summary>
-
-```glsl
-{% include "posts/dual-kawase/shader/boxBlur.fs" %}
-```
-
-</details>
-<details>	
-<summary>WebGL Javascript <a target="_blank" href="js/boxBlur.js">boxBlur.js</a></summary>
-
-```javascript
-{% include "posts/dual-kawase/js/boxBlur.js" %}
-```
-
-</details>
-</blockquote>
-
-Bla Bla
-
-<blockquote class="reaction"><div class="reaction_text">According to WebGL, your GPU is a <output></output></div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
-
-Compared to other disciplines, graphics programming is [uniquely challenging](https://www.youtube.com/watch?v=xJQ0qXh1-m0) in the beginning, because of how many rules and limitations the hardware, [graphics APIs](https://en.wikipedia.org/wiki/Graphics_library) and the [rendering pipeline](https://fgiesen.wordpress.com/2011/07/09/a-trip-through-the-graphics-pipeline-2011-index/) impose.
-
-<blockquote class="reaction"><div class="reaction_text">No graphics programming knowledge required to follow along.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
-
-We'll implement our blurs as a [WebGL 1.0](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API) fragment shader written in [GLSL](https://en.wikipedia.org/wiki/OpenGL_Shading_Language). Shaders work in [NDC Coordinates](https://learnopengl.com/Getting-started/Coordinate-Systems). Fragment shaders run in per-pixel, with no concept of things like resolution, aspect ratio or which pixel is being processed. This is information we must provide or ask the graphics pipeline to do so.
-
-## Convolution
-A Convolution
-
-
-[In hardware, division is slower than multiplication. That is the reason resolution is passed in as ]
-
-Living in Japan, I got the chance to interview an idol of me: Graphics Programmer Masaki Kawase.
 
 <style>
 	.settingsTable .noborder td {
@@ -165,56 +71,241 @@ Living in Japan, I got the chance to interview an idol of me: Graphics Programme
 }
 </script>
 
+## Free Bilinear
+<div id="WebGLBox-Bilinear">
+	<div style="display: flex; gap: 8px">
+		<div class="toggleRes" style="width: 100%">
+			<label>
+				<input type="radio" name="modeBilinear" value="nearest" checked />
+				Nearest Neighbor
+			</label>
+			<label>
+				<input type="radio" name="modeBilinear" value="bilinear" />
+				Bilinear
+			</label>
+		</div>
+		<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
+			  <label>
+			  	<input type="checkbox" id="animateCheck" checked />
+			  		Animate
+			  </label>
+		</div>
+	</div>
+	<div style="margin-top: 13px" class="canvasParent">
+		<canvas style="width: 100%; aspect-ratio: 4 / 3;"></canvas>
+		<div class="contextLoss" id="contextLoss">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms (iOS / iPad) you may have to restart the browser App completely, as the browser will temporarily refuse to allow this site to run WebGL again.</div>
+		{% include "style/icons/clock.svg" %}
+	</div>
+	<table class="settingsTable" style="width: 100%; max-width: 100%;">
+		<tr class="variable-name-row noborder">
+			<td colspan=4>
+				<code>kiwiSize</code>
+			</td>
+		</tr>
+		<tr class="noborder">
+			<td class="variable-name-cell">
+				<code>kiwiSize</code>
+			</td>
+			<td style="width:100%">
+				<input class="slider" type="range" step="0.01" min="0.01" max="1" value="1" id="kiwiSize"
+				oninput="this.closest('tr').querySelector('output').value = parseInt(this.value * 100)">
+			</td>
+			<td style="text-align: center;">
+				<output>100</output> %
+			</td>
+			<td style="text-align: center;">
+				<button class="roundButton" data-default-value="1" data-output-format="100" onclick="resetSlider(this)">
+					{% include "style/icons/rotate-right.svg" %}
+				</button>
+			</td>
+		</tr>
+	</table>
+	<script type="module">
+		import { setupBilinear } from "./js/bilinear.js";
+		setupBilinear();
+	</script>
+</div>
+
+<blockquote>
+<details><summary><a target="_blank" href="screenshots/simple.png">Screenshot</a>, in case WebGL doesn't work</summary>
+
+<!-- ![image](screenshots/simple.png) -->
+
+</details>
+<details>
+<summary>WebGL Vertex Shader <a target="_blank" href="shader/circleAnimationSize.vs">circleAnimationSize.vs</a></summary>
+
+```glsl
+{% include "posts/dual-kawase/shader/circleAnimationSize.vs" %}
+```
+
+</details>
+<details>
+<summary>WebGL Fragment Shader <a target="_blank" href="shader/simpleTexture.fs">simpleTexture.fs</a></summary>
+
+```glsl
+{% include "posts/dual-kawase/shader/simpleTexture.fs" %}
+```
+
+</details>
+<details>
+<summary>WebGL Javascript <a target="_blank" href="js/bilinear.js">bilinear.js</a></summary>
+
+```javascript
+{% include "posts/dual-kawase/js/bilinear.js" %}
+```
+
+</details>
+</blockquote>
+
+
+Blurs are the basic building block for many [video game post processing effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering) and essential for sleek and modern [GUIs](https://en.wikipedia.org/wiki/Graphical_user_interface). Video game [Depth of Field](https://dev.epicgames.com/documentation/en-us/unreal-engine/depth-of-field-in-unreal-engine) and [Bloom](https://en.wikipedia.org/wiki/Bloom_(shader_effect)) or [frosted panels](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#microsoft-windows-acrylic) in modern user interfaces - used subtly or obviously - they're everywhere. <span style="transition: filter 0.2s; filter: none" onmouseover="this.style.filter='blur(4px)'" onmouseout="this.style.filter='none'">Even your browser can do it, just tap this sentence!</span>
+
+Conceptually, *"Make thing go blurry"* is easy, boiling down to some form of *"average colors in radius"*. Doing so in realtime however, took many a graphics programmer through decades upon decades of research and experimentation, across computer science and maths. In this article, we'll follow their footsteps.
+
+<blockquote class="reaction"><div class="reaction_text">A graphics programming time travel, if you will.</div><img class="kiwi" src="/assets/kiwis/cyber.svg"></blockquote>
+
+Using the [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) in the device you are reading this article on, and the [WebGL](https://en.wikipedia.org/wiki/WebGL) capability of your browser, we'll implement realtime blurring techniques and retrace the trade-offs graphics programmers had to make in order to marry two, sometimes opposing, worlds: **Mathematical theory** and **Technological reality**. Let's dig in!
+
+<blockquote class="reaction"><div class="reaction_text">This is my submission to this year's <a target="_blank" href="https://some.3b1b.co/">Summer of Math Exposition</a></div><img class="kiwi" src="img/SOMELogo.svg"></blockquote>
+
+[https://gangles.ca/2008/07/18/bloom-disasters/](https://gangles.ca/2008/07/18/bloom-disasters/)
+
+## Setup
+In the context of video game post processing, a 3D scene is drawn (a step called rendering) and saved to an intermediary image - a [framebuffer](https://learnopengl.com/Advanced-OpenGL/Framebuffers). In turn this framebuffer's content can be processed to achieve [various effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering). Since this *processing* happens *after* a 3D scene is rendered, it's called *post-processing*.
+
+<blockquote class="reaction"><div class="reaction_text"><strong>Depending on technique</strong>, framebuffers <a target="_blank" href="https://en.wikipedia.org/wiki/Deferred_shading">can hold non-image data</a> and post-processing effects like <a target="_blank" href="https://en.wikipedia.org/wiki/Color_correction">Color-correction</a> or <a target="_blank" href="https://en.wikipedia.org/wiki/Tone_mapping">Tone-mapping</a> don't even require intermediate framebuffers. <a target="_blank" href="https://takahirox.github.io/three.js/examples/webgl_tonemapping.html">More</a> than <a target="_blank" href="https://developer.arm.com/documentation/100587/0101/Pixel-Local-Storage/About-Pixel-Local-Storage">one way</a> to skin a cat.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+This is where we jump in, with a framebuffer in hand, after the 3D scene was drawn. We will use a scene from the mod [NeoTokyo°](https://store.steampowered.com/app/244630/NEOTOKYO/). Each time we implement something new, there will be a WebGL box, rendering at [native resolution](https://en.wikipedia.org/wiki/1:1_pixel_mapping) of your device. Each box has 4 Buttons at the top and relevant parts of the its code below it.
+
+<div style="display: flex; gap: 8px">
+	<div class="toggleRes" style="width: 100%">
+		<label>
+		  <input type="radio" name="modeSimple" value="scene" checked />
+		  Scene
+		</label>
+		<label>
+		  <input type="radio" name="modeSimple" value="lights" />
+		  Lights
+		</label>
+		<label>
+		  <input type="radio" name="modeSimple" value="bloom" />
+		  Bloom
+		</label>
+	</div>
+	<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
+		<label>
+		  <input type="checkbox" />
+		  Animate
+		</label>
+	</div>
+</div>
+
+<div style="margin-top: 13px" class="canvasParent">
+	<canvas style="width: round(down, 100%, 8px); aspect-ratio: 4 / 3;" id="canvasSimple"></canvas>
+	<div class="contextLoss" id="contextLossSimple">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms (iOS / iPad) you may have to restart the browser App completely, as the browser will temporarily refuse to allow this site to run WebGL again.</div>
+	{% include "style/icons/clock.svg" %}
+</div>
+
+<script type="module">
+	import { setupSimple } from "./js/simple.js";
+	/* setupSimple(); */
+</script>
+
+<blockquote>
+<details><summary><a target="_blank" href="screenshots/simple.png">Screenshot</a>, in case WebGL doesn't work</summary>
+
+<!-- ![image](screenshots/simple.png) -->
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a target="_blank" href="shader/FXAA-interactive.fs">FXAA-interactive.fs</a></summary>
+
+```glsl
+{% include "posts/dual-kawase/shader/boxBlur.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a target="_blank" href="js/boxBlur.js">boxBlur.js</a></summary>
+
+```javascript
+{% include "posts/dual-kawase/js/boxBlur.js" %}
+```
+
+</details>
+</blockquote>
+
+<blockquote class="reaction"><div class="reaction_text">According to WebGL, your GPU is a <output></output></div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+Compared to other disciplines, graphics programming is [uniquely challenging](https://www.youtube.com/watch?v=xJQ0qXh1-m0) in the beginning, because of how many rules and limitations the hardware, [graphics APIs](https://en.wikipedia.org/wiki/Graphics_library) and the [rendering pipeline](https://fgiesen.wordpress.com/2011/07/09/a-trip-through-the-graphics-pipeline-2011-index/) impose.
+
+<blockquote class="reaction"><div class="reaction_text">No graphics programming knowledge required to follow along.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+We'll implement our blurs as a [WebGL 1.0](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API) fragment shader written in [GLSL](https://en.wikipedia.org/wiki/OpenGL_Shading_Language). Shaders work in [NDC Coordinates](https://learnopengl.com/Getting-started/Coordinate-Systems). Fragment shaders run in per-pixel, with no concept of things like resolution, aspect ratio or which pixel is being processed. This is information we must provide or ask the graphics pipeline to do so.
+
+## Convolution
+A Convolution
+
+
+[In hardware, division is slower than multiplication. That is the reason resolution is passed in as ]
+
+Living in Japan, I got the chance to interview an idol of me: Graphics Programmer Masaki Kawase.
+
 <!-- <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
 <script>eruda.init();</script> -->
 
-<svg id="kernelSimple"></svg>
-
-<table class="settingsTable" style="width: 100%; max-width: 100%;">
-	<tr class="variable-name-row noborder">
-		<td colspan=4>
-			<code>kernelSize</code>
-		</td>
-	</tr>
-	<tr class="noborder">
-		<td class="variable-name-cell">
-			<code>kernelSize</code>
-		</td>
-		<td style="width:100%">
-			<input class="slider" type="range" step="1" min="0" max="16" value="1" id="svgKernelRange" oninput="svgKernelSize.textContent = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
-		</td>
-		<td style="text-align: center;">
-			<output id="svgKernelSize">3×3</output>
-		</td>
-		<td style="text-align: center;">
-			<button class="roundButton" onclick="svgKernelRange.value = 1; svgKernelSize.textContent = '3×3';svgKernelRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
-		</td>
-	</tr>
-	<tr class="variable-name-row noborder">
-		<td colspan=4>
-			<code>samplePosMult</code>
-		</td>
-	</tr>
-	<tr class="noborder">
-		<td class="variable-name-cell">
-			<code>samplePosMult</code>
-		</td>
-		<td style="width:100%">
-			<input class="slider" type="range" step="any" min="0" max="10" value="1" id="svgSamplePosMult" oninput="svgSamplePosOut.textContent = parseInt(this.value * 100)">
-		</td>
-		<td style="text-align: center;">
-			<output id="svgSamplePosOut">100</output>%
-		</td>
-		<td style="text-align: center;">
-			<button class="roundButton" onclick="svgSamplePosMult.value = 1; svgSamplePosOut.textContent = 100; svgSamplePosMult.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
-		</td>
-	</tr>
-</table>
-
-<script type="module">
-	import { setupSVG } from "./js/kernelPreview.js";
-	setupSVG();
-</script>
+<div id="SVGBox-kernelPreview">
+	<svg></svg>
+	<table class="settingsTable" style="width: 100%; max-width: 100%;">
+		<tr class="variable-name-row noborder">
+			<td colspan=4>
+				<code>kernelSize</code>
+			</td>
+		</tr>
+		<tr class="noborder">
+			<td class="variable-name-cell">
+				<code>kernelSize</code>
+			</td>
+			<td style="width:100%">
+				<input class="slider" type="range" step="1" min="0" max="16" value="1" id="kernelRange" oninput="
+				this.closest('tr').querySelector('output').value = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
+			</td>
+			<td style="text-align: center;">
+				<output>3×3</output>
+			</td>
+			<td style="text-align: center;">
+				<button class="roundButton" data-default-value="1" data-output-format="3x3" onclick="resetSlider(this)">
+					{% include "style/icons/rotate-right.svg" %}
+				</button>
+			</td>
+		</tr>
+		<tr class="variable-name-row noborder">
+			<td colspan=4>
+				<code>samplePosMult</code>
+			</td>
+		</tr>
+		<tr class="noborder">
+			<td class="variable-name-cell">
+				<code>samplePosMult</code>
+			</td>
+			<td style="width:100%">
+				<input class="slider" type="range" step="any" min="0" max="10" value="1" id="samplePosMult" oninput="
+				this.closest('tr').querySelector('output') = parseInt(this.value * 100)">
+			</td>
+			<td style="text-align: center;">
+				<output>100</output>%
+			</td>
+			<td style="text-align: center;">
+				<button class="roundButton" data-default-value="1" data-output-format="100" onclick="resetSlider(this)">{% include "style/icons/rotate-right.svg" %}</button>
+			</td>
+		</tr>
+	</table>
+	<script type="module">
+		import { setupKernelPreview } from "./js/kernelPreview.js";
+		setupKernelPreview();
+	</script>
+</div>
 
 We can express sigma as it is usually done. Insert Sigma joke.
 Here in [~~Isometric~~](https://en.wikipedia.org/wiki/Isometric_projection) [Dimetric](https://en.wikipedia.org/wiki/Axonometric_projection#Three_types) projection.
@@ -222,14 +313,14 @@ Here in [~~Isometric~~](https://en.wikipedia.org/wiki/Isometric_projection) [Dim
 <svg id="kernelIso"></svg>
 
 <div style="margin-bottom: 0.5rem" class="toggleRes">
-	<div>
+	<label>
 	  <input type="radio" id="sigmaAbsolute" name="modeSigma" value="absolute" checked />
-	  <label for="sigmaAbsolute">Absolute Sigma</label>
-	</div>
-	<div>
+	  Absolute Sigma
+	</label>
+	<label>
 	  <input type="radio" id="sigmaRelative" name="modeSigma" value="relative" />
-	  <label for="sigmaRelative">Relative Sigma</label>
-	</div>
+	  Relative Sigma
+	</label>
 </div>
 <table class="settingsTable" style="width: 100%; max-width: 100%;">
 	<tr class="variable-name-row noborder">
@@ -260,7 +351,7 @@ Here in [~~Isometric~~](https://en.wikipedia.org/wiki/Isometric_projection) [Dim
 		<td class="variable-name-cell">
 			<code>sigma</code>
 		</td>
-		<td style="width:100%;">
+		<td style="width:100%; white-space: unset;">
 			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="3" id="sigmaIsoRelative">
 			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="1" id="sigmaIso">
 		</td>
@@ -344,7 +435,7 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 </details>
 </blockquote>
 
-<div id="WebGL-Box-BoxBlur">
+<div id="WebGLBox-BoxBlur">
 <div style="display: flex; gap: 8px">
 	<div class="toggleRes" style="width: 100%">
 		<label>
@@ -368,8 +459,8 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 	</div>
 </div>
 <div style="margin-top: 13px" class="canvasParent">
-	<canvas style="width: round(down, 100%, 8px); aspect-ratio: 4 / 3;" id="canvasBoxBlur"></canvas>
-	<div class="contextLoss" id="contextLoss">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms you may have to restart the browser completely.</div>
+	<canvas style="width: round(down, 100%, 8px); aspect-ratio: 4 / 3;"></canvas>
+	<div class="contextLoss" id="contextLoss">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms (iOS / iPad) you may have to restart the browser App completely, as the browser will temporarily refuse to allow this site to run WebGL again.</div>
 	{% include "style/icons/clock.svg" %}
 </div>
 <table class="settingsTable" style="width: 100%; max-width: 100%;">

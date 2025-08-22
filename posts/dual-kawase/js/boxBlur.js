@@ -2,7 +2,7 @@ import * as util from './utility.js'
 
 export async function setupBoxBlur() {
 	/* Init */
-	const WebGLBox = document.getElementById('WebGL-Box-BoxBlur');
+	const WebGLBox = document.getElementById('WebGLBox-BoxBlur');
 	const canvas = WebGLBox.querySelector('canvas');
 
 	/* Circle Rotation size */
@@ -406,13 +406,6 @@ export async function setupBoxBlur() {
 	}
 
 	/* Resize Event */
-	let resizeTimer = null;
-	function onResize() {
-		clearTimeout(resizeTimer);
-		resizeTimer = setTimeout(() => { nativeResize(); }, 100);
-	}
-
-	window.addEventListener('resize', onResize, true);
 	nativeResize();
 
 	let resizePending = false;

@@ -10,10 +10,14 @@ const STYLES = {
 	samplePosition: "fill:#292929;",
 };
 
-export function setupSVG() {
-	const svg = document.getElementById("kernelSimple");
-	const kernelRange = document.getElementById("svgKernelRange");
-	const sampleMultRange = document.getElementById("svgSamplePosMult");
+export function setupKernelPreview() {
+	const SVGBox = document.getElementById('SVGBox-kernelPreview');
+	const svg = SVGBox.querySelector('svg');
+
+	/* UI */
+	const kernelRange = SVGBox.querySelector("#kernelRange");
+	const sampleMultRange = SVGBox.querySelector("#samplePosMult");
+
 	svg.setAttribute("viewBox", `${-viewBoxX / 2} ${-viewBoxY / 2} ${viewBoxX} ${viewBoxY}`);
 
 	/* BG */
