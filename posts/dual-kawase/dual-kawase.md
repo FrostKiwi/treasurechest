@@ -58,12 +58,10 @@ image:
 </style>
 
 <script>
-	function resetSlider(button) {
+function resetSlider(button, defaultValue, outputFormat = defaultValue) {
 	const row = button.closest('tr');
 	const input = row.querySelector('input');
 	const output = row.querySelector('output');
-	const defaultValue = button.dataset.defaultValue;
-	const outputFormat = button.dataset.outputFormat || defaultValue;
 	
 	input.value = defaultValue;
 	output.value = outputFormat;
@@ -199,7 +197,7 @@ We'll implement our blurs as a [WebGL 1.0](https://developer.mozilla.org/en-US/d
 				<output>100</output> %
 			</td>
 			<td style="text-align: center;">
-				<button class="roundButton" data-default-value="1" data-output-format="100" onclick="resetSlider(this)">
+				<button class="roundButton" onclick="resetSlider(this, '1', '100')">
 					{% include "style/icons/rotate-right.svg" %}
 				</button>
 			</td>
@@ -247,11 +245,11 @@ We'll implement our blurs as a [WebGL 1.0](https://developer.mozilla.org/en-US/d
 	<div style="display: flex; gap: 8px; margin-bottom: 13px">
 		<div class="toggleRes" style="width: 100%">
 			<label>
-				<input type="radio" name="modeBilinear" value="nearest" checked />
+				<input type="radio" name="modeBilinearPrev" value="nearest" checked />
 				Nearest Neighbor
 			</label>
 			<label>
-				<input type="radio" name="modeBilinear" value="bilinear" />
+				<input type="radio" name="modeBilinearPrev" value="bilinear" />
 				Bilinear
 			</label>
 		</div>
@@ -303,7 +301,7 @@ Living in Japan, I got the chance to interview an idol of me: Graphics Programme
 				<output>3×3</output>
 			</td>
 			<td style="text-align: center;">
-				<button class="roundButton" data-default-value="1" data-output-format="3x3" onclick="resetSlider(this)">
+				<button class="roundButton" onclick="resetSlider(this, '1', '3×3')">
 					{% include "style/icons/rotate-right.svg" %}
 				</button>
 			</td>
@@ -325,7 +323,7 @@ Living in Japan, I got the chance to interview an idol of me: Graphics Programme
 				<output>100</output>%
 			</td>
 			<td style="text-align: center;">
-				<button class="roundButton" data-default-value="1" data-output-format="100" onclick="resetSlider(this)">{% include "style/icons/rotate-right.svg" %}</button>
+				<button class="roundButton" onclick="resetSlider(this, '1', '100')">{% include "style/icons/rotate-right.svg" %}</button>
 			</td>
 		</tr>
 	</table>
@@ -338,74 +336,73 @@ Living in Japan, I got the chance to interview an idol of me: Graphics Programme
 We can express sigma as it is usually done. Insert Sigma joke.
 Here in [~~Isometric~~](https://en.wikipedia.org/wiki/Isometric_projection) [Dimetric](https://en.wikipedia.org/wiki/Axonometric_projection#Three_types) projection.
 
-<svg id="kernelIso"></svg>
-
-<div style="margin-bottom: 0.5rem" class="toggleRes">
-	<label>
-	  <input type="radio" id="sigmaAbsolute" name="modeSigma" value="absolute" checked />
-	  Absolute Sigma
-	</label>
-	<label>
-	  <input type="radio" id="sigmaRelative" name="modeSigma" value="relative" />
-	  Relative Sigma
-	</label>
+<div id="SVGBox-kernelIsometric">
+	<svg id="kernelIso"></svg>
+	<div style="margin-bottom: 0.5rem" class="toggleRes">
+		<label>
+		  <input type="radio" id="sigmaAbsolute" name="modeSigma" value="absolute" checked />
+		  Absolute Sigma
+		</label>
+		<label>
+		  <input type="radio" id="sigmaRelative" name="modeSigma" value="relative" />
+		  Relative Sigma
+		</label>
+	</div>
+	<table class="settingsTable" style="width: 100%; max-width: 100%;">
+		<tr class="variable-name-row noborder">
+			<td colspan=5>
+				<code>kernelSizeIso</code>
+			</td>
+		</tr>
+		<tr class="noborder">
+			<td class="variable-name-cell">
+				<code>kernelSizeIso</code>
+			</td>
+			<td style="width:100%">
+				<input class="slider" type="range" step="1" min="0" max="16" value="3" id="svgKernelIsoRange" oninput="svgKernelIsoSize.textContent = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
+			</td>
+			<td style="text-align: center;">
+				<output id="svgKernelIsoSize">7×7</output>
+			</td>
+			<td style="text-align: center;">
+				<button class="roundButton" onclick="svgKernelIsoRange.value = 3; svgKernelIsoSize.textContent = '7×7';svgKernelIsoRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+			</td>
+		</tr>
+		<tr class="variable-name-row noborder">
+			<td colspan=5>
+				<code>sigma</code>
+			</td>
+		</tr>
+		<tr class="noborder">
+			<td class="variable-name-cell">
+				<code>sigma</code>
+			</td>
+			<td style="width:100%; white-space: unset;">
+				<input class="slider" type="range" step="0.1" min="0.1" max="10" value="3" id="sigmaIsoRelative">
+				<input class="slider" type="range" step="0.1" min="0.1" max="10" value="1" id="sigmaIso">
+			</td>
+			<td style="text-align: center;">
+				<span style="display: flex; flex-direction: column">
+					<span style="white-space: nowrap">
+						± <output id="sigmaIsoRelativeOut">3.00</output> σ
+					</span>
+					<span style="white-space: nowrap">
+						<output id="sigmaIsoOut">1.00</output> px
+					</span>
+				</span>
+			</td>
+			<td style="text-align: center;">
+				<button class="roundButton" onclick="
+					if(sigmaAbsolute.checked){ sigmaIso.value = 1; sigmaIso.dispatchEvent(new Event('input')); } else { sigmaIsoRelative.value = 3; sigmaIsoRelative.dispatchEvent(new Event('input')); };
+				">{% include "style/icons/rotate-right.svg" %}</button>
+			</td>
+		</tr>
+	</table>
+	<script type="module">
+		import { setupSVGIso } from "./js/kernelPreviewIsometric.js";
+		setupSVGIso();
+	</script>
 </div>
-<table class="settingsTable" style="width: 100%; max-width: 100%;">
-	<tr class="variable-name-row noborder">
-		<td colspan=5>
-			<code>kernelSizeIso</code>
-		</td>
-	</tr>
-	<tr class="noborder">
-		<td class="variable-name-cell">
-			<code>kernelSizeIso</code>
-		</td>
-		<td style="width:100%">
-			<input class="slider" type="range" step="1" min="0" max="16" value="3" id="svgKernelIsoRange" oninput="svgKernelIsoSize.textContent = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
-		</td>
-		<td style="text-align: center;">
-			<output id="svgKernelIsoSize">7×7</output>
-		</td>
-		<td style="text-align: center;">
-			<button class="roundButton" onclick="svgKernelIsoRange.value = 3; svgKernelIsoSize.textContent = '7×7';svgKernelIsoRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
-		</td>
-	</tr>
-	<tr class="variable-name-row noborder">
-		<td colspan=5>
-			<code>sigma</code>
-		</td>
-	</tr>
-	<tr class="noborder">
-		<td class="variable-name-cell">
-			<code>sigma</code>
-		</td>
-		<td style="width:100%; white-space: unset;">
-			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="3" id="sigmaIsoRelative">
-			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="1" id="sigmaIso">
-		</td>
-		<td style="text-align: center;">
-			<span style="display: flex; flex-direction: column">
-				<span style="white-space: nowrap">
-					± <output id="sigmaIsoRelativeOut">3.00</output> σ
-				</span>
-				<span style="white-space: nowrap">
-					<output id="sigmaIsoOut">1.00</output> px
-				</span>
-			</span>
-		</td>
-		<td style="text-align: center;">
-			<button class="roundButton" onclick="
-				if(sigmaAbsolute.checked){ sigmaIso.value = 1; sigmaIso.dispatchEvent(new Event('input')); } else { sigmaIsoRelative.value = 3; sigmaIsoRelative.dispatchEvent(new Event('input')); };
-			">{% include "style/icons/rotate-right.svg" %}</button>
-		</td>
-	</tr>
-</table>
-
-<script type="module">
-	import { setupSVGIso } from "./js/kernelPreviewIsometric.js";
-	setupSVGIso();
-</script>
-
 
 ## Setup
 
@@ -435,6 +432,134 @@ If we ignore the frequency domain transformation steps, then this makes the blur
 Unfortunately, this cannot be used in practice, as the FFT and inverse FFT steps don't translate well into a graphics pipeline context at all. 
 
 3Blue1Brown covered what a Fourier Transform is in [great detail in a video series already](https://www.youtube.com/watch?v=spUNpyF58BY).
+
+<div id="FFTBox">
+	<div style="display: flex; gap: 8px">
+		<div style="display: flex; gap: 8px">
+			<div>
+				<input type="file" id="upload" accept="image/*">
+				<label for="upload">Upload Image</label>
+			</div>
+		</div>
+		<div class="toggleRes" style="width: 100%">
+			<label>
+				<input type="radio" name="brushMode" value="white" checked />
+				White
+			</label>
+			<label>
+				<input type="radio" name="brushMode" value="black" />
+				Black
+			</label>
+		</div>
+		<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
+			<button class="roundButton" id="reset">
+				{% include "style/icons/rotate-right.svg" %}
+			</button>
+		</div>
+	</div>
+	<div style="margin-top: 13px">
+		<div>
+			<canvas style="width: unset" id="magnitude" width="256" height="256"></canvas>
+			<canvas style="width: unset" id="output" width="256" height="256"></canvas>
+		</div>
+	</div>
+	<table class="settingsTable" style="width: 100%; max-width: 100%;">
+		<tr class="variable-name-row noborder">
+			<td colspan=4>
+				<code>brushSize</code>
+			</td>
+		</tr>
+		<tr class="noborder">
+			<td class="variable-name-cell">
+				<code>brushSize</code>
+			</td>
+			<td style="width:100%">
+				<input class="slider" type="range" step="1" min="1" max="50" value="10" id="brushSize"
+				oninput="this.closest('tr').querySelector('output').value = this.value">
+			</td>
+			<td style="text-align: center;">
+				<output id="sizeVal">10</output>
+			</td>
+			<td style="text-align: center;">
+				<button class="roundButton" onclick="resetSlider(this, '10')">
+					{% include "style/icons/rotate-right.svg" %}
+				</button>
+			</td>
+		</tr>
+		<tr class="variable-name-row noborder">
+			<td colspan=4>
+				<code>intensity</code>
+			</td>
+		</tr>
+		<tr class="noborder">
+			<td class="variable-name-cell">
+				<code>intensity</code>
+			</td>
+			<td style="width:100%">
+				<input class="slider" type="range" step="1" min="0" max="100" value="50" id="intensity"
+				oninput="this.closest('tr').querySelector('output').value = this.value">
+			</td>
+			<td style="text-align: center;">
+				<output id="intVal">50</output>%
+			</td>
+			<td style="text-align: center;">
+				<button class="roundButton" onclick="resetSlider(this, '50')">
+					{% include "style/icons/rotate-right.svg" %}
+				</button>
+			</td>
+		</tr>
+		<tr class="variable-name-row noborder">
+			<td colspan=4>
+				<code>radius</code>
+			</td>
+		</tr>
+		<tr class="noborder">
+			<td class="variable-name-cell">
+				<code>radius</code>
+			</td>
+			<td style="width:100%">
+				<input class="slider" type="range" step="1" min="0" max="100" value="100" id="radius"
+				oninput="this.closest('tr').querySelector('output').value = this.value">
+			</td>
+			<td style="text-align: center;">
+				<output id="radVal">100</output>
+			</td>
+			<td style="text-align: center;">
+				<button class="roundButton" onclick="resetSlider(this, '100')">
+					{% include "style/icons/rotate-right.svg" %}
+				</button>
+			</td>
+		</tr>
+		<tr class="variable-name-row noborder">
+			<td colspan=4>
+				<code>feather</code>
+			</td>
+		</tr>
+		<tr>
+			<td class="variable-name-cell">
+				<code>feather</code>
+			</td>
+			<td style="width:100%">
+				<input class="slider" type="range" step="1" min="0" max="32" value="0" id="feather"
+				oninput="this.closest('tr').querySelector('output').value = this.value">
+			</td>
+			<td style="text-align: center;">
+				<output id="featherVal">0</output>
+			</td>
+			<td style="text-align: center;">
+				<button class="roundButton" onclick="resetSlider(this, '0')">
+					{% include "style/icons/rotate-right.svg" %}
+				</button>
+			</td>
+		</tr>
+	</table>
+</div>
+
+<script src="js/fourier.js"></script>
+<script type="module">
+	import { setupFFT } from "./js/fftImageViz.js";
+	setupFFT();
+</script>
 
 ## Box Blur
 Let's start with the simplest of algorithms. From a programmer's perspective, the most straight forward way is to average the neighbors of a pixel. What the fragment shader is expressing is 
@@ -524,7 +649,7 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 			<output>7x7</output> px
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" data-default-value="3" data-output-format="7x7" onclick="resetSlider(this)">
+			<button class="roundButton" onclick="resetSlider(this, '3', '7×7')">
 				{% include "style/icons/rotate-right.svg" %}
 			</button>
 		</td>
@@ -546,7 +671,7 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 			<output>0</output>
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" data-default-value="0" onclick="resetSlider(this)">
+			<button class="roundButton" onclick="resetSlider(this, '0')">
 				{% include "style/icons/rotate-right.svg" %}
 			</button>
 		</td>
@@ -568,7 +693,7 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 			<output>100</output> %
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" data-default-value="1" data-output-format="100" onclick="resetSlider(this)">
+			<button class="roundButton" onclick="resetSlider(this, '1', '100')">
 					{% include "style/icons/rotate-right.svg" %}
 				</button>
 		</td>
@@ -590,7 +715,7 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 			<output>100</output> %
 		</td>
 		<td style="text-align: center;">
-			<button disabled id="lightBrightnessReset" class="roundButton" data-default-value="1" data-output-format="100" onclick="resetSlider(this)">
+			<button disabled id="lightBrightnessReset" class="roundButton" onclick="resetSlider(this, '1', '100')">
 				{% include "style/icons/rotate-right.svg" %}
 			</button>
 		</td>
@@ -612,7 +737,7 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 			± <output>2.00</output> σ
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" data-default-value="2" onclick="resetSlider(this)">
+			<button class="roundButton" onclick="resetSlider(this, '2')">
 				{% include "style/icons/rotate-right.svg" %}
 			</button>
 		</td>
