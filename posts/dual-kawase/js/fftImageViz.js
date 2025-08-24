@@ -4,38 +4,23 @@ export async function setupFFT() {
 
 	/* State and Objects */
 	const ctx = {
-		mode: 'white',
+		mode: 'black',
 		flags: { isDrawing: false, initComplete: false },
 		data: {
 			complex: { r: null, g: null, b: null },
 			original: { r: null, g: null, b: null }
-		},
-		params: {
-			brushSize: 10,
-			intensity: 50,
-			radius: 100,
-			feather: 0
 		},
 		frame: null
 	};
 
 	/* UI Elements */
 	const ui = {
-		input: {
-			upload: FFTBox.querySelector('#upload'),
-			brushModes: FFTBox.querySelectorAll('input[name="brushMode"]'),
-			brushSize: FFTBox.querySelector('#brushSize'),
-			intensity: FFTBox.querySelector('#intensity'),
-			radius: FFTBox.querySelector('#radius'),
-			feather: FFTBox.querySelector('#feather'),
-			reset: FFTBox.querySelector('#reset')
-		},
-		output: {
-			sizeVal: FFTBox.querySelector('#sizeVal'),
-			intVal: FFTBox.querySelector('#intVal'),
-			radVal: FFTBox.querySelector('#radVal'),
-			featherVal: FFTBox.querySelector('#featherVal'),
-		},
+		upload: FFTBox.querySelector('#upload'),
+		brushModes: FFTBox.querySelectorAll('input[name="brushMode"]'),
+		radius: FFTBox.querySelector('#radius'),
+		feather: FFTBox.querySelector('#feather'),
+		reset: FFTBox.querySelector('#reset'),
+
 		canvas: {
 			magnitude: FFTBox.querySelector('#magnitude'),
 			output: FFTBox.querySelector('#output')
@@ -44,8 +29,6 @@ export async function setupFFT() {
 
 	const mCtx = ui.canvas.magnitude.getContext('2d');
 	const oCtx = ui.canvas.output.getContext('2d');
-
-
 
 	/* Image Processing */
 	async function processImage(file) {
@@ -100,7 +83,7 @@ export async function setupFFT() {
 
 	function update() {
 		if (!ctx.data.complex.r) return;
-		
+
 		/*  Render magnitude display and reconstruct output in one go */
 		const displayData = {};
 		const result = {};
@@ -108,17 +91,18 @@ export async function setupFFT() {
 		['r', 'g', 'b'].forEach(ch => {
 			/*  Apply filter once and use for both displays */
 			const filtered = [...ctx.data.complex[ch]];
-			Fourier.filter(filtered, [SIZE, SIZE], ctx.params.radius, NaN, ctx.params.feather);
+			Fourier.filter(filtered, [SIZE, SIZE], parseInt(ui.radius.value >= 128 ? 4096 : ui.radius.value), NaN, parseInt(ui.feather.value));
 
 			/*  Magnitude display calculation */
+			const LOG_SCALE = 10000;
 			let max = 0;
 			for (let i = 0; i < SIZE * SIZE; i++) {
 				max = Math.max(max, filtered[i].magnitude());
 			}
 			displayData[ch] = [];
 			for (let i = 0; i < SIZE * SIZE; i++) {
-				const n = filtered[i].magnitude() / (max + 1);
-				displayData[ch][i] = Math.pow(Math.log(1 + n * 50) / Math.log(51), 0.5) * 180;
+				const n = filtered[i].magnitude() / max;
+				displayData[ch][i] = Math.log(1 + n * LOG_SCALE) / Math.log(1 + LOG_SCALE) * 255;
 			}
 
 			/*  Reconstruction calculation */
@@ -153,82 +137,53 @@ export async function setupFFT() {
 		const rect = ui.canvas.magnitude.getBoundingClientRect();
 		const x = ex * SIZE / rect.width;
 		const y = ey * SIZE / rect.height;
-		const dcIndex = (SIZE >> 1) * SIZE + (SIZE >> 1);
-		const dc = ctx.data.complex.r?.[dcIndex]?.magnitude() || 10000;
-		const logVal = Math.pow(10, ctx.params.intensity / 100 * 3 - 3);
-		const val = ctx.mode === 'white' ? dc * logVal : 0;
+		
+		const dc = ctx.data.complex.r?.[(SIZE >> 1) * SIZE + (SIZE >> 1)]?.magnitude() || 10000;
+		const val = ctx.mode === 'white' ? dc * 0.01 : 0;
 
-
-		for (let dy = -ctx.params.brushSize; dy <= ctx.params.brushSize; dy++) {
-			for (let dx = -ctx.params.brushSize; dx <= ctx.params.brushSize; dx++) {
-				const px = Math.floor(x + dx);
-				const py = Math.floor(y + dy);
-				if (px >= 0 && px < SIZE && py >= 0 && py < SIZE) {
-					const dist = Math.sqrt(dx * dx + dy * dy);
-					if (dist <= ctx.params.brushSize) {
-						let a = 1 - dist / ctx.params.brushSize;
-						if (dist > ctx.params.brushSize * 0.5) {
-							const t = (dist - ctx.params.brushSize * 0.5) / (ctx.params.brushSize * 0.5);
-							a *= Math.cos(t * Math.PI / 2);
+		function drawAt(centerX, centerY) {
+			for (let dy = -8; dy <= 8; dy++) {
+				for (let dx = -8; dx <= 8; dx++) {
+					if (dx * dx + dy * dy <= 64) {
+						const px = Math.floor(centerX + dx);
+						const py = Math.floor(centerY + dy);
+						if (px >= 0 && px < SIZE && py >= 0 && py < SIZE) {
+							['r', 'g', 'b'].forEach(ch => {
+								const current = ctx.data.complex[ch][py * SIZE + px];
+								ctx.data.complex[ch][py * SIZE + px] = ctx.mode === 'white' 
+									? new Fourier.Complex(
+										(current.magnitude() + val) * Math.cos(Math.atan2(current.imag, current.real)),
+										(current.magnitude() + val) * Math.sin(Math.atan2(current.imag, current.real))
+									)
+									: new Fourier.Complex(0, 0);
+							});
 						}
-
-						['r', 'g', 'b'].forEach(ch => {
-							const idx = py * SIZE + px;
-							if (ctx.mode === 'white') {
-								/*  Add to magnitude of complex data */
-								const current = ctx.data.complex[ch][idx];
-								const newMag = current.magnitude() + val * a;
-								const phase = Math.atan2(current.imag, current.real);
-								ctx.data.complex[ch][idx] = new Fourier.Complex(
-									newMag * Math.cos(phase),
-									newMag * Math.sin(phase)
-								);
-							} else {
-								/*  Scale down magnitude */
-								ctx.data.complex[ch][idx] = ctx.data.complex[ch][idx].times(1 - a);
-							}
-						});
 					}
 				}
 			}
 		}
+
+		drawAt(x, y);
+		drawAt(SIZE - 1 - x, SIZE - 1 - y);
 	}
 
 	/* Event Handlers */
-	ui.input.upload.addEventListener('change', event => {
+	ui.upload.addEventListener('change', event => {
 		const file = event.target.files[0];
 		if (file) processImage(file);
 	});
 
-	ui.input.brushModes.forEach(radio => {
+	ui.brushModes.forEach(radio => {
 		radio.addEventListener('change', event => {
 			ctx.mode = event.target.value;
 		});
 	});
 
-	ui.input.brushSize.addEventListener('input', event => {
-		ctx.params.brushSize = parseInt(event.target.value);
-		ui.output.sizeVal.textContent = event.target.value;
-	});
+	ui.radius.addEventListener('input', () => redraw());
 
-	ui.input.intensity.addEventListener('input', event => {
-		ctx.params.intensity = parseInt(event.target.value);
-		ui.output.intVal.textContent = event.target.value;
-	});
+	ui.feather.addEventListener('input', () => redraw());
 
-	ui.input.radius.addEventListener('input', event => {
-		ctx.params.radius = parseInt(event.target.value);
-		ui.output.radVal.textContent = event.target.value;
-		redraw();
-	});
-
-	ui.input.feather.addEventListener('input', event => {
-		ctx.params.feather = parseInt(event.target.value);
-		ui.output.featherVal.textContent = event.target.value;
-		redraw();
-	});
-
-	ui.input.reset.addEventListener('click', () => {
+	ui.reset.addEventListener('click', () => {
 		if (!ctx.data.original.r) return;
 		/*  Restore original complex data */
 		['r', 'g', 'b'].forEach(ch => {
@@ -265,13 +220,7 @@ export async function setupFFT() {
 	});
 
 	/*  Load default image */
-	try {
-		const response = await fetch("/dual-kawase/img/SDR_No_Sprite.png");
-		if (response.ok) {
-			const blob = await response.blob();
-			await processImage(blob);
-		}
-	} catch (error) {
-		console.warn("Could not load default image:", error);
-	}
+	const response = await fetch("/dual-kawase/img/256ScreenOverlay.png");
+	const blob = await response.blob();
+	await processImage(blob);
 }

@@ -138,29 +138,45 @@ var Fourier = (function () {
 	}
 
 	function shiftFFT(transform, dims) {
-		return flipRightHalf(
-			halfShiftFFT(
-				halfShiftFFT(
-					transform,
-					dims
-				),
-				dims
-			),
-			dims
-		);
+		var ret = [];
+		var N = dims[1]; // height
+		var M = dims[0]; // width
+		var halfN = Math.floor(N / 2);
+		var halfM = Math.floor(M / 2);
+		
+		// Standard 2D fftshift: swap quadrants, accounting for transpose
+		for (var n = 0; n < N; n++) {
+			for (var m = 0; m < M; m++) {
+				var srcN = (n + halfN) % N;
+				var srcM = (m + halfM) % M;
+				// Swap n and m to account for transpose
+				var srcIdx = srcM * N + srcN;
+				ret.push(transform[srcIdx]);
+			}
+		}
+		
+		return ret;
 	}
 
 	function unshiftFFT(transform, dims) {
-		return halfShiftFFT(
-			halfShiftFFT(
-				flipRightHalf(
-					transform,
-					dims
-				),
-				dims
-			),
-			dims
-		);
+		var ret = [];
+		var N = dims[1]; // height
+		var M = dims[0]; // width
+		var halfN = Math.floor(N / 2);
+		var halfM = Math.floor(M / 2);
+		
+		// Inverse of fftshift: swap quadrants back, accounting for transpose
+		for (var n = 0; n < N; n++) {
+			for (var m = 0; m < M; m++) {
+				var srcN = (n + halfN) % N;
+				var srcM = (m + halfM) % M;
+				// Swap n and m to account for transpose
+				var srcIdx = srcM * N + srcN;
+				ret.push(transform[srcIdx]);
+			}
+		}
+		
+		return ret;
 	}
 
 	function halfShiftFFT(transform, dims) {

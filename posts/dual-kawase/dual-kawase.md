@@ -433,32 +433,41 @@ Unfortunately, this cannot be used in practice, as the FFT and inverse FFT steps
 
 3Blue1Brown covered what a Fourier Transform is in [great detail in a video series already](https://www.youtube.com/watch?v=spUNpyF58BY).
 
+Fourier code written by https://github.com/turbomaze/JS-Fourier-Image-Analysis
+
 <div id="FFTBox">
 	<div style="display: flex; gap: 8px">
-		<div style="display: flex; gap: 8px">
-			<div>
-				<input type="file" id="upload" accept="image/*">
-				<label for="upload">Upload Image</label>
-			</div>
+		<div class="toggleRes iconButton" style="flex:0 0 auto; white-space:nowrap;">
+			<label>
+				<div>
+					<input type="file" id="upload" accept="image/*">
+					Upload
+					<span>Image</span>
+				</div>
+				{% include "style/icons/upload.svg" %}
+			</label>
 		</div>
 		<div class="toggleRes" style="width: 100%">
 			<label>
-				<input type="radio" name="brushMode" value="white" checked />
-				White
+				<input type="radio" name="brushMode" value="black" checked />
+				Remove<span>Frequency Energy</span>
 			</label>
 			<label>
-				<input type="radio" name="brushMode" value="black" />
-				Black
+				<input type="radio" name="brushMode" value="white" />
+				Add<span>Frequency Energy</span>
 			</label>
 		</div>
-		<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
-			<button class="roundButton" id="reset">
-				{% include "style/icons/rotate-right.svg" %}
-			</button>
+		<div class="toggleRes" style="flex:0 0 auto; white-space:nowrap;">
+			<label>
+				<button id="reset" style="display: none" onclick="
+				document.getElementById('resetFFTRadius').dispatchEvent(new Event('click'))"
+				></button>
+				Reset<span>Magnitude</span>
+			</label>
 		</div>
 	</div>
 	<div style="margin-top: 13px">
-		<div>
+		<div style="display: flex; justify-content: space-around">
 			<canvas style="width: unset" id="magnitude" width="256" height="256"></canvas>
 			<canvas style="width: unset" id="output" width="256" height="256"></canvas>
 		</div>
@@ -466,66 +475,26 @@ Unfortunately, this cannot be used in practice, as the FFT and inverse FFT steps
 	<table class="settingsTable" style="width: 100%; max-width: 100%;">
 		<tr class="variable-name-row noborder">
 			<td colspan=4>
-				<code>brushSize</code>
+				<code>frequencyCutRadius</code>
 			</td>
 		</tr>
 		<tr class="noborder">
 			<td class="variable-name-cell">
-				<code>brushSize</code>
+				<code>frequencyCutRadius</code>
 			</td>
 			<td style="width:100%">
-				<input class="slider" type="range" step="1" min="1" max="50" value="10" id="brushSize"
-				oninput="this.closest('tr').querySelector('output').value = this.value">
+				<input class="slider" type="range" step="1" min="0" max="128" value="128" id="radius"
+				oninput="
+					this.closest('tr').querySelector('output').value = this.value + ' px';
+					if(this.value == 128)
+						this.closest('tr').querySelector('output').value = 'off';
+				">
 			</td>
 			<td style="text-align: center;">
-				<output id="sizeVal">10</output>
+				<output>off</output>
 			</td>
 			<td style="text-align: center;">
-				<button class="roundButton" onclick="resetSlider(this, '10')">
-					{% include "style/icons/rotate-right.svg" %}
-				</button>
-			</td>
-		</tr>
-		<tr class="variable-name-row noborder">
-			<td colspan=4>
-				<code>intensity</code>
-			</td>
-		</tr>
-		<tr class="noborder">
-			<td class="variable-name-cell">
-				<code>intensity</code>
-			</td>
-			<td style="width:100%">
-				<input class="slider" type="range" step="1" min="0" max="100" value="50" id="intensity"
-				oninput="this.closest('tr').querySelector('output').value = this.value">
-			</td>
-			<td style="text-align: center;">
-				<output id="intVal">50</output>%
-			</td>
-			<td style="text-align: center;">
-				<button class="roundButton" onclick="resetSlider(this, '50')">
-					{% include "style/icons/rotate-right.svg" %}
-				</button>
-			</td>
-		</tr>
-		<tr class="variable-name-row noborder">
-			<td colspan=4>
-				<code>radius</code>
-			</td>
-		</tr>
-		<tr class="noborder">
-			<td class="variable-name-cell">
-				<code>radius</code>
-			</td>
-			<td style="width:100%">
-				<input class="slider" type="range" step="1" min="0" max="100" value="100" id="radius"
-				oninput="this.closest('tr').querySelector('output').value = this.value">
-			</td>
-			<td style="text-align: center;">
-				<output id="radVal">100</output>
-			</td>
-			<td style="text-align: center;">
-				<button class="roundButton" onclick="resetSlider(this, '100')">
+				<button id="resetFFTRadius" class="roundButton" onclick="resetSlider(this, '128', 'off');">
 					{% include "style/icons/rotate-right.svg" %}
 				</button>
 			</td>
@@ -560,6 +529,20 @@ Unfortunately, this cannot be used in practice, as the FFT and inverse FFT steps
 	import { setupFFT } from "./js/fftImageViz.js";
 	setupFFT();
 </script>
+
+There *are* GPU implementations: https://github.com/rreusser/glsl-fft.
+
+<blockquote class="reaction"><div class="reaction_text">Manipulations in frequency space are magic <strong>and</strong> cheap performance wise!</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
+
+<blockquote class="reaction"><div class="reaction_text">But taking the train to and from frequency space costs simply too much.</div><img class="kiwi" src="/assets/kiwis/sad.svg"></blockquote>
+
+Make comparison to discrete cosine transform.
+
+Besides the full fledged FFT, there is another frequency domain representation of image data you may know. DCT.
+
+So in a way, our journey through frequency land was kinda useless in pursuit of good video game performance. But these techniques are established, highly useful techniques, which are irreplaceable pillars for many image processing techniques.
+
+<blockquote class="reaction"><div class="reaction_text">Understanding when image manipulation can be expressed as frequency space manipulation really helped me out.<output></output></div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 ## Box Blur
 Let's start with the simplest of algorithms. From a programmer's perspective, the most straight forward way is to average the neighbors of a pixel. What the fragment shader is expressing is 

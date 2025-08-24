@@ -28,7 +28,7 @@
 			display: none;
 		}
 
-		>div {
+		>span, >div>span {
 			font-size: smaller;
 			filter: contrast(50%);
 		}
@@ -41,6 +41,31 @@
 		&:has(input:checked) {
 			background-color: sakura.$color-blossom;
 			color: sakura.$color-bg;
+		}
+	}
+
+	/* Icon button variant */
+	&.iconButton {
+		>label {
+			flex-direction: row;
+			gap: 8px;
+			align-items: center;
+			padding: 10px 16px;
+			
+			>div {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				text-align: center;
+				line-height: 1.2em;
+			}
+			
+			svg {
+				height: 43px; /* Matches approximate height of text + subline */
+				width: auto;
+				flex-shrink: 0;
+			}
 		}
 	}
 }
