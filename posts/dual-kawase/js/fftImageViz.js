@@ -5,7 +5,7 @@ export async function setupFFT() {
 	/* State and Objects */
 	const ctx = {
 		mode: 'black',
-		flags: { isDrawing: false, initComplete: false },
+		flags: { isDrawing: false, initComplete: false, isInteracting: false },
 		data: {
 			complex: { r: null, g: null, b: null },
 			original: { r: null, g: null, b: null }
@@ -72,21 +72,20 @@ export async function setupFFT() {
 	}
 
 	let frameId = null;
-	function redraw() {
+	function redraw(fullUpdate = false) {
 		if (frameId !== null) cancelAnimationFrame(frameId);
 
 		frameId = requestAnimationFrame(() => {
 			frameId = null;
-			update();
+			update(fullUpdate || !ctx.flags.isInteracting);
 		});
 	}
 
-	function update() {
+	function update(doReconstruction = true) {
 		if (!ctx.data.complex.r) return;
 
-		/*  Render magnitude display and reconstruct output in one go */
 		const displayData = {};
-		const result = {};
+		const result = doReconstruction ? {} : null;
 
 		['r', 'g', 'b'].forEach(ch => {
 			/*  Apply filter once and use for both displays */
@@ -106,9 +105,11 @@ export async function setupFFT() {
 			}
 
 			/*  Reconstruction calculation */
-			const unshifted = Fourier.unshift(filtered, [SIZE, SIZE]);
-			result[ch] = [];
-			Fourier.invert(unshifted, result[ch]);
+			if (doReconstruction) {
+				const unshifted = Fourier.unshift(filtered, [SIZE, SIZE]);
+				result[ch] = [];
+				Fourier.invert(unshifted, result[ch]);
+			}
 		});
 
 		/*  Render magnitude display */
@@ -122,14 +123,16 @@ export async function setupFFT() {
 		mCtx.putImageData(magImg, 0, 0);
 
 		/*  Render reconstructed output */
-		const outImg = oCtx.createImageData(SIZE, SIZE);
-		for (let i = 0; i < SIZE * SIZE; i++) {
-			outImg.data[i * 4] = Math.max(0, Math.min(255, result.r[i]));
-			outImg.data[i * 4 + 1] = Math.max(0, Math.min(255, result.g[i]));
-			outImg.data[i * 4 + 2] = Math.max(0, Math.min(255, result.b[i]));
-			outImg.data[i * 4 + 3] = 255;
+		if (doReconstruction) {
+			const outImg = oCtx.createImageData(SIZE, SIZE);
+			for (let i = 0; i < SIZE * SIZE; i++) {
+				outImg.data[i * 4] = Math.max(0, Math.min(255, result.r[i]));
+				outImg.data[i * 4 + 1] = Math.max(0, Math.min(255, result.g[i]));
+				outImg.data[i * 4 + 2] = Math.max(0, Math.min(255, result.b[i]));
+				outImg.data[i * 4 + 3] = 255;
+			}
+			oCtx.putImageData(outImg, 0, 0);
 		}
-		oCtx.putImageData(outImg, 0, 0);
 	}
 
 
@@ -179,9 +182,25 @@ export async function setupFFT() {
 		});
 	});
 
-	ui.radius.addEventListener('input', () => redraw());
+	ui.radius.addEventListener('input', () => {
+		ctx.flags.isInteracting = true;
+		redraw();
+	});
 
-	ui.feather.addEventListener('input', () => redraw());
+	ui.radius.addEventListener('change', () => {
+		ctx.flags.isInteracting = false;
+		redraw(true);
+	});
+
+	ui.feather.addEventListener('input', () => {
+		ctx.flags.isInteracting = true;
+		redraw();
+	});
+
+	ui.feather.addEventListener('change', () => {
+		ctx.flags.isInteracting = false;
+		redraw(true);
+	});
 
 	ui.reset.addEventListener('click', () => {
 		if (!ctx.data.original.r) return;
@@ -189,12 +208,13 @@ export async function setupFFT() {
 		['r', 'g', 'b'].forEach(ch => {
 			ctx.data.complex[ch] = [...ctx.data.original[ch]];
 		});
-		redraw();
+		redraw(true);
 	});
 
 	ui.canvas.magnitude.addEventListener('mousedown', event => {
 		if (ctx.data.complex.r) {
 			ctx.flags.isDrawing = true;
+			ctx.flags.isInteracting = true;
 			draw(event.offsetX, event.offsetY);
 			redraw();
 		}
@@ -210,12 +230,16 @@ export async function setupFFT() {
 	ui.canvas.magnitude.addEventListener('mouseup', () => {
 		if (ctx.flags.isDrawing) {
 			ctx.flags.isDrawing = false;
+			ctx.flags.isInteracting = false;
+			redraw(true);
 		}
 	});
 
 	ui.canvas.magnitude.addEventListener('mouseleave', () => {
 		if (ctx.flags.isDrawing) {
 			ctx.flags.isDrawing = false;
+			ctx.flags.isInteracting = false;
+			redraw(true);
 		}
 	});
 

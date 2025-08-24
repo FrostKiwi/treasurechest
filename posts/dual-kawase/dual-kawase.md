@@ -467,7 +467,7 @@ Fourier code written by https://github.com/turbomaze/JS-Fourier-Image-Analysis
 		</div>
 	</div>
 	<div style="margin-top: 13px">
-		<div style="display: flex; justify-content: space-around">
+		<div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px">
 			<canvas style="width: unset" id="magnitude" width="256" height="256"></canvas>
 			<canvas style="width: unset" id="output" width="256" height="256"></canvas>
 		</div>
@@ -490,7 +490,7 @@ Fourier code written by https://github.com/turbomaze/JS-Fourier-Image-Analysis
 						this.closest('tr').querySelector('output').value = 'off';
 				">
 			</td>
-			<td style="text-align: center;">
+			<td style="text-align: center; min-width: 53px">
 				<output>off</output>
 			</td>
 			<td style="text-align: center;">
