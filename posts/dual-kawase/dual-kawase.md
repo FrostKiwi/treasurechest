@@ -15,6 +15,7 @@ image:
 <!-- 
 - Setup
 - Box Blur
+- Ok, what is a convolution?
 - Gaussian Blur
 	- Binomial
 - We have still a performance problem
@@ -104,48 +105,84 @@ In the context of video game post processing, a 3D scene is drawn (a step called
 
 This is where we jump in, with a framebuffer in hand, after the 3D scene was drawn. We will use a scene from the mod [NeoTokyo°](https://store.steampowered.com/app/244630/NEOTOKYO/). Each time we implement something new, there will be a WebGL box, rendering at [native resolution](https://en.wikipedia.org/wiki/1:1_pixel_mapping) of your device. Each box has 4 Buttons at the top and relevant parts of the its code below it.
 
+<div id="WebGLBox-Simple">
 <div style="display: flex; gap: 8px">
 	<div class="toggleRes" style="width: 100%">
 		<label>
-		  <input type="radio" name="modeSimple" value="scene" checked />
-		  Scene
+			<input type="radio" name="modeSimple" value="scene" checked />
+			Scene
 		</label>
 		<label>
-		  <input type="radio" name="modeSimple" value="lights" />
-		  Lights
+			<input type="radio" name="modeSimple" value="lights" />
+			Lights
 		</label>
 		<label>
-		  <input type="radio" name="modeSimple" value="bloom" />
-		  Bloom
+			<input type="radio" name="modeSimple" value="bloom" />
+			Bloom
 		</label>
 	</div>
 	<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
-		<label>
-		  <input type="checkbox" />
-		  Animate
-		</label>
+		  <label>
+		  	<input type="checkbox" id="animateCheck"/>
+		  		Animate
+		  </label>
 	</div>
 </div>
-
 <div style="margin-top: 13px" class="canvasParent">
-	<canvas style="width: round(down, 100%, 8px); aspect-ratio: 4 / 3;" id="canvasSimple"></canvas>
-	<div class="contextLoss" id="contextLossSimple">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms (iOS / iPad) you may have to restart the browser App completely, as the browser will temporarily refuse to allow this site to run WebGL again.</div>
+	<canvas style="width: round(down, 100%, 8px); aspect-ratio: 4 / 3;"></canvas>
+	<div class="contextLoss" id="contextLoss">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms (iOS / iPad) you may have to restart the browser App completely, as the browser will temporarily refuse to allow this site to run WebGL again.</div>
 	{% include "style/icons/clock.svg" %}
 </div>
-
+<table class="settingsTable" style="width: 100%; max-width: 100%;">
+	<tr>
+	    <td colspan=4 class="stats">
+	        <div>
+	            <span>
+	                <strong>FPS:</strong> <output id="fps">?</output> / <output id="ms">?</output> ms
+	            </span>
+	            <span>
+	                <strong>Resolution:</strong> <output id="width">?</output>x<output id="height">?</output>
+	            </span>
+	        </div>
+	    </td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>lightBrightness</code>
+		</td>
+	</tr>
+	<tr>
+		<td class="variable-name-cell">
+			<code>lightBrightness</code>
+		</td>
+		<td style="width:100%">
+			<input disabled class="slider" type="range" step="0.01" min="0" max="20" value="1" id="lightBrightness" oninput="
+			this.closest('tr').querySelector('output').value = parseInt(this.value * 100) ">
+		</td>
+		<td style="text-align: center;">
+			<output>100</output> %
+		</td>
+		<td style="text-align: center;">
+			<button disabled id="lightBrightnessReset" class="roundButton" onclick="resetSlider(this, '1', '100')">
+				{% include "style/icons/rotate-right.svg" %}
+			</button>
+		</td>
+	</tr>
+</table>
 <script type="module">
 	import { setupSimple } from "./js/simple.js";
-	/* setupSimple(); */
+	setupSimple();
 </script>
-
+</div>
+<!-- Benchmark in 1feb0231a940d3dd9989103795f199b4baedb535 -->
 <blockquote>
-<details><summary><a target="_blank" href="screenshots/simple.png">Screenshot</a>, in case WebGL doesn't work</summary>
+<details><summary><a target="_blank" href="screenshots/fxaainteractive.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
-<!-- ![image](screenshots/simple.png) -->
+<!-- ![image](screenshots/fxaainteractive.png) -->
 
 </details>
 <details>	
-<summary>WebGL Fragment Shader <a target="_blank" href="shader/FXAA-interactive.fs">FXAA-interactive.fs</a></summary>
+<summary>WebGL Fragment Shader <a target="_blank" href="shader/boxBlur.fs">boxBlur.fs</a></summary>
 
 ```glsl
 {% include "posts/dual-kawase/shader/boxBlur.fs" %}
@@ -153,10 +190,10 @@ This is where we jump in, with a framebuffer in hand, after the 3D scene was dra
 
 </details>
 <details>	
-<summary>WebGL Javascript <a target="_blank" href="js/gaussianBlur.js">gaussianBlur.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="js/boxBlur.js">boxBlur.js</a></summary>
 
 ```javascript
-{% include "posts/dual-kawase/js/gaussianBlur.js" %}
+{% include "posts/dual-kawase/js/boxBlur.js" %}
 ```
 
 </details>
@@ -578,31 +615,7 @@ So there *is* a fundamental difference between cutting high frequencies in frequ
 ## Box Blur
 Let's start with the simplest of algorithms. From a programmer's perspective, the most straight forward way is to average the neighbors of a pixel. What the fragment shader is expressing is 
 
-<blockquote>
-<details><summary><a target="_blank" href="screenshots/fxaainteractive.png">Screenshot</a>, in case WebGL doesn't work</summary>
-
-<!-- ![image](screenshots/fxaainteractive.png) -->
-
-</details>
-<details>	
-<summary>WebGL Fragment Shader <a target="_blank" href="shader/FXAA-interactive.fs">FXAA-interactive.fs</a></summary>
-
-```glsl
-{% include "posts/dual-kawase/shader/boxBlur.fs" %}
-```
-
-</details>
-<details>	
-<summary>WebGL Javascript <a target="_blank" href="js/gaussianBlur.js">gaussianBlur.js</a></summary>
-
-```javascript
-{% include "posts/dual-kawase/js/gaussianBlur.js" %}
-```
-
-</details>
-</blockquote>
-
-<div id="WebGLBox-GaussianBlur">
+<div id="WebGLBox-BoxBlur">
 <div style="display: flex; gap: 8px">
 	<div class="toggleRes" style="width: 100%">
 		<label>
@@ -670,22 +683,155 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 	</tr>
 	<tr class="variable-name-row noborder">
 		<td colspan=4>
-			<code>downSample</code>
+			<code>samplePosMultiplier</code>
+		</td>
+	</tr>
+	<tr>
+		<td class="variable-name-cell">
+			<code>samplePosMultiplier</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="0.01" min="0" max="20" value="1" id="samplePosRange"
+			oninput="this.closest('tr').querySelector('output').value = parseInt(this.value * 100)">
+		</td>
+		<td style="text-align: center;">
+			<output>100</output> %
+		</td>
+		<td style="text-align: center;">
+			<button class="roundButton" onclick="resetSlider(this, '1', '100')">
+					{% include "style/icons/rotate-right.svg" %}
+				</button>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>lightBrightness</code>
+		</td>
+	</tr>
+	<tr>
+		<td class="variable-name-cell">
+			<code>lightBrightness</code>
+		</td>
+		<td style="width:100%">
+			<input disabled class="slider" type="range" step="0.01" min="0" max="20" value="1" id="lightBrightness" oninput="
+			this.closest('tr').querySelector('output').value = parseInt(this.value * 100) ">
+		</td>
+		<td style="text-align: center;">
+			<output>100</output> %
+		</td>
+		<td style="text-align: center;">
+			<button disabled id="lightBrightnessReset" class="roundButton" onclick="resetSlider(this, '1', '100')">
+				{% include "style/icons/rotate-right.svg" %}
+			</button>
+		</td>
+	</tr>
+</table>
+<script type="module">
+	import { setupBoxBlur } from "./js/boxBlur.js";
+	setupBoxBlur();
+</script>
+</div>
+<!-- Benchmark in 1feb0231a940d3dd9989103795f199b4baedb535 -->
+<blockquote>
+<details><summary><a target="_blank" href="screenshots/fxaainteractive.png">Screenshot</a>, in case WebGL doesn't work</summary>
+
+<!-- ![image](screenshots/fxaainteractive.png) -->
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a target="_blank" href="shader/boxBlur.fs">boxBlur.fs</a></summary>
+
+```glsl
+{% include "posts/dual-kawase/shader/boxBlur.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a target="_blank" href="js/boxBlur.js">boxBlur.js</a></summary>
+
+```javascript
+{% include "posts/dual-kawase/js/boxBlur.js" %}
+```
+
+</details>
+</blockquote>
+
+<blockquote class="reaction"><div class="reaction_text">You may notice a black streak with stronger blur levels along the bottom. This is when a line aligns with the bottom of the frame, extending the black color to infinity.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+So what did we achieve? A bad looking blur, that wrecks even my RTX 4090.
+
+Apple devices are very strict with 3D in the browser usage, so if you overdo the next part, the browser will disable WebGL for this site refuse
+
+<blockquote class="reaction"><div class="reaction_text">What you may have noticed, is that changing the sample Range a little bit, between 100% and 200% does not introduce artifacts. Something deeper is happening. Put at a pin in that...</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+When talking about blurs and especially bloom, motion stability is incredibly important. Our image will rotate slowly to tease out artifacts when bright highlights move across the frame. You can toggle this above each WebGL Canvas.
+
+<blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
+
+## Gaussian Blur
+
+<div id="WebGLBox-GaussianBlur">
+<div style="display: flex; gap: 8px">
+	<div class="toggleRes" style="width: 100%">
+		<label>
+			<input type="radio" name="modeGauss" value="scene" checked />
+			Scene
+		</label>
+		<label>
+			<input type="radio" name="modeGauss" value="lights" />
+			Lights
+		</label>
+		<label>
+			<input type="radio" name="modeGauss" value="bloom" />
+			Bloom
+		</label>
+	</div>
+	<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
+		  <label>
+		  	<input type="checkbox" id="animateCheck" checked />
+		  		Animate
+		  </label>
+	</div>
+</div>
+<div style="margin-top: 13px" class="canvasParent">
+	<canvas style="width: round(down, 100%, 8px); aspect-ratio: 4 / 3;"></canvas>
+	<div class="contextLoss" id="contextLoss">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms (iOS / iPad) you may have to restart the browser App completely, as the browser will temporarily refuse to allow this site to run WebGL again.</div>
+	{% include "style/icons/clock.svg" %}
+</div>
+<table class="settingsTable" style="width: 100%; max-width: 100%;">
+	<tr>
+	    <td colspan=4 class="stats">
+	        <div>
+	            <span>
+	                <strong>FPS:</strong> <output id="fps">?</output> / <output id="ms">?</output> ms
+	            </span>
+	            <span>
+	                <strong>Resolution:</strong> <output id="width">?</output>x<output id="height">?</output>
+	            </span>
+	            <span>
+	                <strong>Texture Taps:</strong> <output id="taps">?</output>
+	            </span>
+	        </div>
+	    </td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>kernelSize</code>
 		</td>
 	</tr>
 	<tr class="noborder">
 		<td class="variable-name-cell">
-			<code>downSample</code>
+			<code>kernelSize</code>
 		</td>
 		<td style="width:100%">
-			<input class="slider" type="range" step="1" min="0" max="8" value="0" id="downSampleRange"
-			oninput="this.closest('tr').querySelector('output').value = this.value">
+			<input class="slider" type="range" step="1" min="0" max="32" value="3" id="sizeRange"
+			oninput="this.closest('tr').querySelector('output').value = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
 		</td>
 		<td style="text-align: center;">
-			<output>0</output>
+			<output>7x7</output> px
 		</td>
 		<td style="text-align: center;">
-			<button class="roundButton" onclick="resetSlider(this, '0')">
+			<button class="roundButton" onclick="resetSlider(this, '3', '7×7')">
 				{% include "style/icons/rotate-right.svg" %}
 			</button>
 		</td>
@@ -739,7 +885,7 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 			<code>sigma</code>
 		</td>
 	</tr>
-	<tr>
+	<tr class="noborder">
 		<td class="variable-name-cell">
 			<code>sigma</code>
 		</td>
@@ -756,65 +902,215 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 			</button>
 		</td>
 	</tr>
-	<tr>
-		<td colspan="4" style="width: 100%;">
-			<div style="display: flex; flex-wrap: nowrap; gap: 0px 12px; width: 100%; justify-content: space-between;">
-				<div style="white-space: normal; word-break: break-word; font-size: smaller;">
-					<div>
-						~<output id="iterTime">?</output> / iteration
-					</div>
-					<div>
-						<output id="tapsCountBench">?</output> Million texture reads / iteration
-					</div>
-					<div>
-						GPU info: <code id="renderer"></code>
-					</div>
-				</div>
-				<div class="multiButton">
-					<button type="button" class="main" id="benchmark">
-						<span id="benchmarkLabel">Benchmark</span>
-						<span>
-							<output id="iterOut">100</output> Iterations
-						</span>
-					</button>
-					<div class="arrowWrap">
-						<select id="iterations" onchange="
-						this.closest('.multiButton').querySelector('output').value=this.value;
-						this.closest('.multiButton').querySelector('#benchmarkLabel').textContent='Benchmark'">
-							<optgroup label="Iterations at 1600x1200">
-								<option value="10">10</option>
-								<option value="100" selected>100</option>
-								<option value="1000">1000</option>
-								<option value="10000">10000</option>
-								<option value="100000">100000</option>
-							</optgroup>
-						</select>
-						<span class="arrow">
-							{% include "style/icons/arrow-down.svg" %}
-						</span>
-					</div>
-				</div>
-			</div>
-		</td>
-	</tr>
 </table>
-<img id="debugIMG"></img>
-</div>
-
 <script type="module">
 	import { setupGaussianBlur } from "./js/gaussianBlur.js";
 	setupGaussianBlur();
 </script>
+</div>
+<!-- Benchmark in 1feb0231a940d3dd9989103795f199b4baedb535 -->
+<blockquote>
+<details><summary><a target="_blank" href="screenshots/fxaainteractive.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
-So what did we achieve? A bad looking blur, that wrecks even my RTX 4090.
+<!-- ![image](screenshots/fxaainteractive.png) -->
 
-Apple devices are very strict with 3D in the browser usage, so if you overdo the next part, the browser will disable WebGL for this site refuse
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a target="_blank" href="shader/gaussianBlur.fs">gaussianBlur.fs</a></summary>
 
-<blockquote class="reaction"><div class="reaction_text">What you may have noticed, is that changing the sample Range a little bit, between 100% and 200% does not introduce artifacts. Something deeper is happening. Put at a pin in that...</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+```glsl
+{% include "posts/dual-kawase/shader/boxBlur.fs" %}
+```
 
-When talking about blurs and especially bloom, motion stability is incredibly important. Our image will rotate slowly to tease out artifacts when bright highlights move across the frame. You can toggle this above each WebGL Canvas.
+</details>
+<details>	
+<summary>WebGL Javascript <a target="_blank" href="js/gaussianBlur.js">gaussianBlur.js</a></summary>
 
-<blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
+```javascript
+{% include "posts/dual-kawase/js/gaussianBlur.js" %}
+```
+
+</details>
+</blockquote>
+
+## Gaussian Blur Separable
+
+<div id="WebGLBox-GaussianSeparableBlur">
+<div style="display: flex; gap: 8px">
+	<div class="toggleRes" style="width: 100%">
+		<label>
+			<input type="radio" name="modeGaussSep" value="scene" checked />
+			Scene
+		</label>
+		<label>
+			<input type="radio" name="modeGaussSep" value="lights" />
+			Lights
+		</label>
+		<label>
+			<input type="radio" name="modeGaussSep" value="bloom" />
+			Bloom
+		</label>
+	</div>
+	<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
+		  <label>
+		  	<input type="checkbox" id="animateCheck" />
+		  		Animate
+		  </label>
+	</div>
+</div>
+<div style="margin-top: 13px; margin-bottom: 13px" class="canvasParent">
+	<canvas style="width: round(down, 100%, 8px); aspect-ratio: 4 / 3;"></canvas>
+	<div class="contextLoss" id="contextLoss">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms (iOS / iPad) you may have to restart the browser App completely, as the browser will temporarily refuse to allow this site to run WebGL again.</div>
+	{% include "style/icons/clock.svg" %}
+</div>
+<div class="toggleRes" style="width: 100%; border-radius: 50px">
+	<label>
+		<input type="radio" name="passMode" value="pass1" checked />
+		Pass 1
+	</label>
+	<label>
+		<input type="radio" name="passMode" value="pass2"/>
+		Pass 2
+	</label>
+	<label>
+		<input type="radio" name="passMode" value="combined"/>
+		Combined
+	</label>
+</div>
+<table class="settingsTable" style="width: 100%; max-width: 100%;">
+	<tr>
+	    <td colspan=4 class="stats">
+	        <div>
+	            <span>
+	                <strong>FPS:</strong> <output id="fps">?</output> / <output id="ms">?</output> ms
+	            </span>
+	            <span>
+	                <strong>Resolution:</strong> <output id="width">?</output>x<output id="height">?</output>
+	            </span>
+	            <span>
+	                <strong>Texture Taps:</strong> <output id="taps">?</output>
+	            </span>
+	        </div>
+	    </td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>kernelSize</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>kernelSize</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="1" min="0" max="32" value="3" id="sizeRange"
+			oninput="this.closest('tr').querySelector('output').value = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
+		</td>
+		<td style="text-align: center;">
+			<output>7x7</output> px
+		</td>
+		<td style="text-align: center;">
+			<button class="roundButton" onclick="resetSlider(this, '3', '7×7')">
+				{% include "style/icons/rotate-right.svg" %}
+			</button>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>samplePosMultiplier</code>
+		</td>
+	</tr>
+	<tr>
+		<td class="variable-name-cell">
+			<code>samplePosMultiplier</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="0.01" min="0" max="20" value="1" id="samplePosRange"
+			oninput="this.closest('tr').querySelector('output').value = parseInt(this.value * 100)">
+		</td>
+		<td style="text-align: center;">
+			<output>100</output> %
+		</td>
+		<td style="text-align: center;">
+			<button class="roundButton" onclick="resetSlider(this, '1', '100')">
+					{% include "style/icons/rotate-right.svg" %}
+				</button>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>lightBrightness</code>
+		</td>
+	</tr>
+	<tr>
+		<td class="variable-name-cell">
+			<code>lightBrightness</code>
+		</td>
+		<td style="width:100%">
+			<input disabled class="slider" type="range" step="0.01" min="0" max="20" value="1" id="lightBrightness" oninput="
+			this.closest('tr').querySelector('output').value = parseInt(this.value * 100) ">
+		</td>
+		<td style="text-align: center;">
+			<output>100</output> %
+		</td>
+		<td style="text-align: center;">
+			<button disabled id="lightBrightnessReset" class="roundButton" onclick="resetSlider(this, '1', '100')">
+				{% include "style/icons/rotate-right.svg" %}
+			</button>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>sigma</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>sigma</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="2" id="sigmaRange" oninput="
+			this.closest('tr').querySelector('output').value = Number(this.value).toFixed(2)">
+		</td>
+		<td style="text-align: center">
+			± <output>2.00</output> σ
+		</td>
+		<td style="text-align: center;">
+			<button class="roundButton" onclick="resetSlider(this, '2')">
+				{% include "style/icons/rotate-right.svg" %}
+			</button>
+		</td>
+	</tr>
+</table>
+<script type="module">
+	import { setupGaussianSeparableBlur } from "./js/gaussianSeparableBlur.js";
+	setupGaussianSeparableBlur();
+</script>
+</div>
+<!-- Benchmark in 1feb0231a940d3dd9989103795f199b4baedb535 -->
+<blockquote>
+<details><summary><a target="_blank" href="screenshots/fxaainteractive.png">Screenshot</a>, in case WebGL doesn't work</summary>
+
+<!-- ![image](screenshots/fxaainteractive.png) -->
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a target="_blank" href="shader/gaussianBlur.fs">gaussianBlur.fs</a></summary>
+
+```glsl
+{% include "posts/dual-kawase/shader/boxBlur.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a target="_blank" href="js/gaussianSeparableBlur.js">gaussianSeparableBlur.js</a></summary>
+
+```javascript
+{% include "posts/dual-kawase/js/gaussianSeparableBlur.js" %}
+```
+
+</details>
+</blockquote>
 
 ## Apple switches algorithms
 
