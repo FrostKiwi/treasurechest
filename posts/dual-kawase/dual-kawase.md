@@ -153,10 +153,10 @@ This is where we jump in, with a framebuffer in hand, after the 3D scene was dra
 
 </details>
 <details>	
-<summary>WebGL Javascript <a target="_blank" href="js/boxBlur.js">boxBlur.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="js/gaussianBlur.js">gaussianBlur.js</a></summary>
 
 ```javascript
-{% include "posts/dual-kawase/js/boxBlur.js" %}
+{% include "posts/dual-kawase/js/gaussianBlur.js" %}
 ```
 
 </details>
@@ -420,6 +420,10 @@ Here in [~~Isometric~~](https://en.wikipedia.org/wiki/Isometric_projection) [Dim
 	</script>
 </div>
 
+We have this issue of sigma too small? We get box blur like artifacts. Sigma too big? We waste blur strength, have to go with bigger kernels and sacrifice performance. This is an artistic trade-off, that every piece of software has to make. There are different ways of choosing these kernels.
+
+Where is the optimum? Eg. we can choose a kernel level, where the last rows are almost zero, thus "if we increased the kernel size in absolute Sigma mode, it would make no more *visual* difference". There are other ways of creating kernels, with other properties. One way is to deviate from the gaussian blur and follow Pascal's triangle to get predefined kernel sizes and values. These are called [Binomial Filters](https://bartwronski.com/2021/10/31/practical-gaussian-filter-binomial-filter-and-small-sigma-gaussians/). These lock us into specific "kernel presets", but have properties which are useful for image resampling. We won't expand on these further, just know that we can choose kernels by different mathematical criteria.
+
 ## Setup
 
 From here on out, everything you see will be done by your device's GPU. You will see how many variables can be tuned and we will need to build quite a bunch of intuition.
@@ -589,16 +593,16 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 
 </details>
 <details>	
-<summary>WebGL Javascript <a target="_blank" href="js/boxBlur.js">boxBlur.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="js/gaussianBlur.js">gaussianBlur.js</a></summary>
 
 ```javascript
-{% include "posts/dual-kawase/js/boxBlur.js" %}
+{% include "posts/dual-kawase/js/gaussianBlur.js" %}
 ```
 
 </details>
 </blockquote>
 
-<div id="WebGLBox-BoxBlur">
+<div id="WebGLBox-GaussianBlur">
 <div style="display: flex; gap: 8px">
 	<div class="toggleRes" style="width: 100%">
 		<label>
@@ -798,8 +802,8 @@ Let's start with the simplest of algorithms. From a programmer's perspective, th
 </div>
 
 <script type="module">
-	import { setupBoxBlur } from "./js/boxBlur.js";
-	setupBoxBlur();
+	import { setupGaussianBlur } from "./js/gaussianBlur.js";
+	setupGaussianBlur();
 </script>
 
 So what did we achieve? A bad looking blur, that wrecks even my RTX 4090.
@@ -848,3 +852,7 @@ To be able to innovate in blurs today you need to be very deep in mathematics an
 https://www.youtube.com/watch?v=vNG3ZAd8wCc
 
 CS2 has not handled highlights like Call of Duty's graphics team has, see ancient lights
+
+To conclude this part, my recommendation is to *always consider the integral if you want to use any sigmas below 0.7*.
+
+And for a further exercise for the reader, you can think of how this would change under some different reconstruction function (hint: it becomes a weighted integral, or an integral of convolution; for the box / nearest neighbor, the convolution is with a rectangular function).

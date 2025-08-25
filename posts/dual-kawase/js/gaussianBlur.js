@@ -1,8 +1,8 @@
 import * as util from './utility.js'
 
-export async function setupBoxBlur() {
+export async function setupGaussianBlur() {
 	/* Init */
-	const WebGLBox = document.getElementById('WebGLBox-BoxBlur');
+	const WebGLBox = document.getElementById('WebGLBox-GaussianBlur');
 	const canvas = WebGLBox.querySelector('canvas');
 
 	/* Circle Rotation size */
