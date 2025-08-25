@@ -243,6 +243,48 @@ export async function setupFFT() {
 		}
 	});
 
+	ui.canvas.magnitude.addEventListener('touchstart', event => {
+		if (ctx.data.complex.r) {
+			event.preventDefault();
+			ctx.flags.isDrawing = true;
+			ctx.flags.isInteracting = true;
+			const rect = ui.canvas.magnitude.getBoundingClientRect();
+			const touch = event.touches[0];
+			const offsetX = touch.clientX - rect.left;
+			const offsetY = touch.clientY - rect.top;
+			draw(offsetX, offsetY);
+			redraw();
+		}
+	});
+
+	ui.canvas.magnitude.addEventListener('touchmove', event => {
+		if (ctx.flags.isDrawing) {
+			event.preventDefault();
+			const rect = ui.canvas.magnitude.getBoundingClientRect();
+			const touch = event.touches[0];
+			const offsetX = touch.clientX - rect.left;
+			const offsetY = touch.clientY - rect.top;
+			draw(offsetX, offsetY);
+			redraw();
+		}
+	});
+
+	ui.canvas.magnitude.addEventListener('touchend', () => {
+		if (ctx.flags.isDrawing) {
+			ctx.flags.isDrawing = false;
+			ctx.flags.isInteracting = false;
+			redraw(true);
+		}
+	});
+
+	ui.canvas.magnitude.addEventListener('touchcancel', () => {
+		if (ctx.flags.isDrawing) {
+			ctx.flags.isDrawing = false;
+			ctx.flags.isInteracting = false;
+			redraw(true);
+		}
+	});
+
 	/*  Load default image */
 	const response = await fetch("/dual-kawase/img/256ScreenOverlay.png");
 	const blob = await response.blob();

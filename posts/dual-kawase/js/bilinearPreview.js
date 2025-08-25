@@ -159,8 +159,10 @@ export function setupBilinearPreview() {
 
 	const updatePointFromEvent = (event) => {
 		const rect = svg.getBoundingClientRect();
-		const clientX = event.clientX || (event.touches && event.touches[0].clientX);
-		const clientY = event.clientY || (event.touches && event.touches[0].clientY);
+		const clientX = event.clientX || (event.touches && event.touches.length > 0 && event.touches[0].clientX);
+		const clientY = event.clientY || (event.touches && event.touches.length > 0 && event.touches[0].clientY);
+		
+		if (clientX === undefined || clientY === undefined) return;
 		
 		/* Convert screen coordinates to SVG coordinates */
 		const svgX = ((clientX - rect.left) / rect.width) * viewBoxWidth - viewBoxWidth / 2;
@@ -212,6 +214,10 @@ export function setupBilinearPreview() {
 	});
 
 	svg.addEventListener("touchend", () => {
+		isDragging = false;
+	});
+
+	svg.addEventListener("touchcancel", () => {
 		isDragging = false;
 	});
 
