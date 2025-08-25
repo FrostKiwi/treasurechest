@@ -255,7 +255,7 @@ export async function setupFFT() {
 			draw(offsetX, offsetY);
 			redraw();
 		}
-	});
+	}, { passive: false });
 
 	ui.canvas.magnitude.addEventListener('touchmove', event => {
 		if (ctx.flags.isDrawing) {
@@ -267,7 +267,7 @@ export async function setupFFT() {
 			draw(offsetX, offsetY);
 			redraw();
 		}
-	});
+	}, { passive: false });
 
 	ui.canvas.magnitude.addEventListener('touchend', () => {
 		if (ctx.flags.isDrawing) {

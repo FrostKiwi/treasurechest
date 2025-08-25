@@ -12,6 +12,22 @@ publicTags:
 image:
 ---
 
+<!-- 
+- Setup
+- Box Blur
+- Gaussian Blur
+	- Binomial
+- We have still a performance problem
+- Slow down, what is even the difference between bokeh and gaussian like algorithms
+- The magic of frequency space
+- Separability
+- What is Bilinear? What is Performance "Free"?
+- Down sampling
+- Kawase Blur
+- Dual Kawase
+- Talks, state of the art, CoD flickering fix vs CS2 still having that problem
+ -->
+
 <style>
 	.settingsTable .noborder td {
 		border-bottom: unset;
@@ -425,13 +441,13 @@ On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `sam
 
 <blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/dead.svg"></blockquote>
 
-## Alternative ways FFT
+## The magic of frequency space
 There is actually an alternative way to perform blurring, by performing an [image Fast Fourier Transform](https://usage.imagemagick.org/fourier/#introduction), [masking high frequency areas to perform the blur](https://usage.imagemagick.org/fourier/#blurring) and finally performing the inverse transformation.
 
 If we ignore the frequency domain transformation steps, then this makes the blurring step itself constant in time, regardless of blur radius! Small Radius Blur, Large Radius blur, all the same speed. But of course, we ***can't*** ignore the Frequency domain transformations.
 Unfortunately, this cannot be used in practice, as the FFT and inverse FFT steps don't translate well into a graphics pipeline context at all. 
 
-3Blue1Brown covered what a Fourier Transform is in [great detail in a video series already](https://www.youtube.com/watch?v=spUNpyF58BY).
+3Blue1Brown covered what a Fourier Transform is, on its fundamental level was covered in [great detail in a video series already](https://www.youtube.com/watch?v=spUNpyF58BY).
 
 Fourier code written by https://github.com/turbomaze/JS-Fourier-Image-Analysis
 
@@ -530,6 +546,12 @@ Fourier code written by https://github.com/turbomaze/JS-Fourier-Image-Analysis
 	setupFFT();
 </script>
 
+As you see, the Magnitude representation holds mirrored information. This is because the Magnitude representation holds is in the complex plain, with X and Y.
+
+<blockquote class="reaction"><div class="reaction_text">There is no standard on how you are supposed to plot the magnitude information, so you will see other software produce different meanings of X and Y. I changed the implementation by @turbomaze to follow the convention used by ImageMagick.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+If you upload of grid paper, you will see strong points along the 
+
 There *are* GPU implementations: https://github.com/rreusser/glsl-fft.
 
 <blockquote class="reaction"><div class="reaction_text">Manipulations in frequency space are magic <strong>and</strong> cheap performance wise!</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
@@ -542,7 +564,12 @@ Besides the full fledged FFT, there is another frequency domain representation o
 
 So in a way, our journey through frequency land was kinda useless in pursuit of good video game performance. But these techniques are established, highly useful techniques, which are irreplaceable pillars for many image processing techniques.
 
-<blockquote class="reaction"><div class="reaction_text">Understanding when image manipulation can be expressed as frequency space manipulation really helped me out.<output></output></div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+So there *is* a fundamental difference between cutting high frequencies in frequency space and the gaussian blur "taking high frequency energy and combining it to become low frequency energy". The two techniques are fundamentally different.
+
+<blockquote class="reaction"><div class="reaction_text">This is a <strong>deep misunderstanding</strong> I held for years.<output></output></div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+
+<blockquote class="reaction"><div class="reaction_text">Blurs and Bloom based on FFT Low Pass filtering would extinguish small lights like candles present in the 3D scene, by extinguishing the high frequency energy that is used to describe that light.<output></output></div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
 ## Box Blur
 Let's start with the simplest of algorithms. From a programmer's perspective, the most straight forward way is to average the neighbors of a pixel. What the fragment shader is expressing is 
