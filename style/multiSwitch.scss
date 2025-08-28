@@ -28,14 +28,20 @@
 			display: none;
 		}
 
-		>span, >div>span {
+		>span,
+		>div>span {
 			font-size: smaller;
 			filter: contrast(50%);
 		}
 
-		&:hover {
+		&:hover:not(:has(input:disabled)) {
 			background-color: sakura.$color-force;
 			color: sakura.$color-bg;
+		}
+
+		&:has(input:disabled) {
+			cursor: default;
+			opacity: .5;
 		}
 
 		&:has(input:checked) {
@@ -51,7 +57,7 @@
 			gap: 8px;
 			align-items: center;
 			padding: 10px 16px;
-			
+
 			>div {
 				display: flex;
 				flex-direction: column;
@@ -60,9 +66,10 @@
 				text-align: center;
 				line-height: 1.2em;
 			}
-			
+
 			svg {
-				height: 43px; /* Matches approximate height of text + subline */
+				height: 43px;
+				/* Matches approximate height of text + subline */
 				width: auto;
 				flex-shrink: 0;
 			}
