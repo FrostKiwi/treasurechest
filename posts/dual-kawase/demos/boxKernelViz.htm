@@ -1,0 +1,53 @@
+<div id="SVGBox-kernelPreview">
+	<svg></svg>
+	<table class="settingsTable" style="width: 100%; max-width: 100%;">
+		<tr class="variable-name-row noborder">
+			<td colspan=4>
+				<code>kernelSize</code>
+			</td>
+		</tr>
+		<tr class="noborder">
+			<td class="variable-name-cell">
+				<code>kernelSize</code>
+			</td>
+			<td style="width:100%">
+				<input class="slider" type="range" step="1" min="0" max="16" value="1" id="kernelRange"
+					oninput="
+				this.closest('tr').querySelector('output').value = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
+			</td>
+			<td style="text-align: center;">
+				<output>3×3</output>
+			</td>
+			<td style="text-align: center;">
+				<button class="roundButton" onclick="resetSlider(this, '1', '3×3')">
+					{% include "style/icons/rotate-right.svg" %}
+				</button>
+			</td>
+		</tr>
+		<tr class="variable-name-row noborder">
+			<td colspan=4>
+				<code>samplePosMult</code>
+			</td>
+		</tr>
+		<tr class="noborder">
+			<td class="variable-name-cell">
+				<code>samplePosMult</code>
+			</td>
+			<td style="width:100%">
+				<input class="slider" type="range" step="any" min="0" max="10" value="1" id="samplePosMult" oninput="
+				this.closest('tr').querySelector('output').value = parseInt(this.value * 100)">
+			</td>
+			<td style="text-align: center;">
+				<output>100</output>%
+			</td>
+			<td style="text-align: center;">
+				<button id="samplePosMultReset" class="roundButton" onclick="resetSlider(this, '1', '100')">{% include
+					"style/icons/rotate-right.svg" %}</button>
+			</td>
+		</tr>
+	</table>
+	<script type="module">
+		import { setupKernelPreview } from "./js/kernelPreview.js";
+		setupKernelPreview();
+	</script>
+</div>

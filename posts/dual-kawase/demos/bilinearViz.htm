@@ -1,0 +1,25 @@
+<div id="SVGBox-bilinearPreview">
+	<div style="display: flex; gap: 8px; margin-bottom: 13px">
+		<div class="toggleRes" style="width: 100%">
+			<label>
+				<input type="radio" name="modeBilinearPrev" value="nearest" checked />
+				Nearest Neighbor
+			</label>
+			<label>
+				<input type="radio" name="modeBilinearPrev" value="bilinear" />
+				Bilinear
+			</label>
+		</div>
+		<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
+			  <label>
+			  	<input type="checkbox" id="animateCheck"/>
+			  		Animate
+			  </label>
+		</div>
+	</div>
+	<svg></svg>
+	<script type="module">
+		import { setupBilinearPreview } from "./js/bilinearPreview.js";
+		setupBilinearPreview();
+	</script>
+</div>

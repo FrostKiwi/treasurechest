@@ -1,0 +1,85 @@
+<div id="WebGLBox-Bilinear">
+	<div style="display: flex; gap: 8px">
+		<div class="toggleRes" style="width: 100%">
+			<label>
+				<input type="radio" name="modeBilinear" value="nearest" checked />
+				Nearest Neighbor
+			</label>
+			<label>
+				<input type="radio" name="modeBilinear" value="bilinear" />
+				Bilinear
+			</label>
+		</div>
+		<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
+			  <label>
+			  	<input type="checkbox" id="animateCheck" checked />
+			  		Animate
+			  </label>
+		</div>
+	</div>
+	<div style="margin-top: 13px" class="canvasParent">
+		<canvas style="width: 100%; aspect-ratio: 4 / 3;"></canvas>
+		<div class="contextLoss" id="contextLoss">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms (iOS / iPad) you may have to restart the browser App completely, as the browser will temporarily refuse to allow this site to run WebGL again.</div>
+		{% include "style/icons/clock.svg" %}
+	</div>
+	<table class="settingsTable" style="width: 100%; max-width: 100%;">
+		<tr class="variable-name-row noborder">
+			<td colspan=4>
+				<code>kiwiSize</code>
+			</td>
+		</tr>
+		<tr class="noborder">
+			<td class="variable-name-cell">
+				<code>kiwiSize</code>
+			</td>
+			<td style="width:100%">
+				<input class="slider" type="range" step="0.01" min="0.01" max="1" value="1" id="kiwiSize"
+				oninput="this.closest('tr').querySelector('output').value = parseInt(this.value * 100)">
+			</td>
+			<td style="text-align: center;">
+				<output>100</output> %
+			</td>
+			<td style="text-align: center;">
+				<button class="roundButton" onclick="resetSlider(this, '1', '100')">
+					{% include "style/icons/rotate-right.svg" %}
+				</button>
+			</td>
+		</tr>
+	</table>
+	<script type="module">
+		import { setupBilinear } from "./js/bilinear.js";
+		setupBilinear();
+	</script>
+</div>
+
+<blockquote>
+<details><summary><a target="_blank" href="screenshots/simple.png">Screenshot</a>, in case WebGL doesn't work</summary>
+
+<!-- ![image](screenshots/simple.png) -->
+
+</details>
+<details>
+<summary>WebGL Vertex Shader <a target="_blank" href="shader/circleAnimationSize.vs">circleAnimationSize.vs</a></summary>
+
+```glsl
+{% include "posts/dual-kawase/shader/circleAnimationSize.vs" %}
+```
+
+</details>
+<details>
+<summary>WebGL Fragment Shader <a target="_blank" href="shader/simpleTexture.fs">simpleTexture.fs</a></summary>
+
+```glsl
+{% include "posts/dual-kawase/shader/simpleTexture.fs" %}
+```
+
+</details>
+<details>
+<summary>WebGL Javascript <a target="_blank" href="js/bilinear.js">bilinear.js</a></summary>
+
+```javascript
+{% include "posts/dual-kawase/js/bilinear.js" %}
+```
+
+</details>
+</blockquote>

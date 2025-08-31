@@ -1,0 +1,94 @@
+<div id="FFTBox">
+	<div style="display: flex; gap: 8px">
+		<div class="toggleRes iconButton" style="flex:0 0 auto; white-space:nowrap;">
+			<label>
+				<div>
+					<input type="file" id="upload" accept="image/*">
+					Upload
+					<span>Image</span>
+				</div>
+				{% include "style/icons/upload.svg" %}
+			</label>
+		</div>
+		<div class="toggleRes" style="width: 100%">
+			<label>
+				<input type="radio" name="brushMode" value="black" checked />
+				Remove<span>Frequency Energy</span>
+			</label>
+			<label>
+				<input type="radio" name="brushMode" value="white" />
+				Add<span>Frequency Energy</span>
+			</label>
+		</div>
+		<div class="toggleRes" style="flex:0 0 auto; white-space:nowrap;">
+			<label>
+				<button id="reset" style="display: none" onclick="
+				document.getElementById('resetFFTRadius').dispatchEvent(new Event('click'))"
+				></button>
+				Reset<span>Magnitude</span>
+			</label>
+		</div>
+	</div>
+	<div style="margin-top: 13px">
+		<div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px">
+			<canvas style="width: unset" id="magnitude" width="256" height="256"></canvas>
+			<canvas style="width: unset" id="output" width="256" height="256"></canvas>
+		</div>
+	</div>
+	<table class="settingsTable" style="width: 100%; max-width: 100%;">
+		<tr class="variable-name-row noborder">
+			<td colspan=4>
+				<code>frequencyCutRadius</code>
+			</td>
+		</tr>
+		<tr class="noborder">
+			<td class="variable-name-cell">
+				<code>frequencyCutRadius</code>
+			</td>
+			<td style="width:100%">
+				<input class="slider" type="range" step="1" min="0" max="128" value="128" id="radius"
+				oninput="
+					this.closest('tr').querySelector('output').value = this.value + ' px';
+					if(this.value == 128)
+						this.closest('tr').querySelector('output').value = 'off';
+				">
+			</td>
+			<td style="text-align: center; min-width: 53px">
+				<output>off</output>
+			</td>
+			<td style="text-align: center;">
+				<button id="resetFFTRadius" class="roundButton" onclick="resetSlider(this, '128', 'off');">
+					{% include "style/icons/rotate-right.svg" %}
+				</button>
+			</td>
+		</tr>
+		<tr class="variable-name-row noborder">
+			<td colspan=4>
+				<code>feather</code>
+			</td>
+		</tr>
+		<tr>
+			<td class="variable-name-cell">
+				<code>feather</code>
+			</td>
+			<td style="width:100%">
+				<input class="slider" type="range" step="1" min="0" max="32" value="0" id="feather"
+				oninput="this.closest('tr').querySelector('output').value = this.value">
+			</td>
+			<td style="text-align: center;">
+				<output id="featherVal">0</output>
+			</td>
+			<td style="text-align: center;">
+				<button class="roundButton" onclick="resetSlider(this, '0')">
+					{% include "style/icons/rotate-right.svg" %}
+				</button>
+			</td>
+		</tr>
+	</table>
+</div>
+
+<script src="js/fourier.js"></script>
+<script type="module">
+	import { setupFFT } from "./js/fftImageViz.js";
+	setupFFT();
+</script>

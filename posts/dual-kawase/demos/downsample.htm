@@ -1,0 +1,198 @@
+<div id="WebGLBox-GaussianDownsampleBlur">
+<div style="display: flex; gap: 8px">
+	<div class="toggleRes" style="width: 100%">
+		<label>
+			<input type="radio" name="modeDownsample" value="scene" checked />
+			Scene
+		</label>
+		<label>
+			<input type="radio" name="modeDownsample" value="lights" />
+			Lights
+		</label>
+		<label>
+			<input type="radio" name="modeDownsample" value="bloom" />
+			Bloom
+		</label>
+	</div>
+	<div class="toggleRes toggleCheckbox" style="flex:0 0 auto; white-space:nowrap;">
+		  <label>
+		  	<input type="checkbox" id="animateCheck" checked />
+		  		Animate
+		  </label>
+	</div>
+</div>
+<div style="margin-top: 13px; margin-bottom: 13px" class="canvasParent">
+	<canvas style="width: round(down, 100%, 8px); aspect-ratio: 4 / 3;"></canvas>
+	<div class="contextLoss" id="contextLoss">❌ The browser killed this WebGL Context, please reload the page. If this happened as the result of a long benchmark, decrease the iteration count. On some platforms (iOS / iPad) you may have to restart the browser App completely, as the browser will temporarily refuse to allow this site to run WebGL again.</div>
+	{% include "style/icons/clock.svg" %}
+</div>
+<div class="toggleRes" style="width: 100%; border-radius: 50px">
+	<label>
+		<input type="radio" name="skipMode" value="Normal" checked />
+		Normal
+	</label>
+	<label>
+		<input type="radio" name="skipMode" value="skipDown"/>
+		Skip Downsample Steps
+	</label>
+	<label>
+		<input type="radio" name="skipMode" value="skipUp"/>
+		Skip Upsample Steps
+	</label>
+</div>
+<table class="settingsTable" style="width: 100%; max-width: 100%;">
+	<tr>
+	    <td colspan=4 class="stats">
+	        <div>
+	            <span>
+	                <strong>FPS:</strong> <output id="fps">?</output> / <output id="ms">?</output> ms
+	            </span>
+	            <span>
+	                <strong>Resolution:</strong> <output id="width">?</output>x<output id="height">?</output>
+	            </span>
+	            <span>
+	                <strong>Texture Taps:</strong> <output id="taps">?</output>
+	            </span>
+	        </div>
+	    </td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>kernelSize</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>kernelSize</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="1" min="0" max="32" value="3" id="sizeRange"
+			oninput="this.closest('tr').querySelector('output').value = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
+		</td>
+		<td style="text-align: center;">
+			<output>7x7</output> px
+		</td>
+		<td style="text-align: center;">
+			<button class="roundButton" onclick="resetSlider(this, '3', '7×7')">
+				{% include "style/icons/rotate-right.svg" %}
+			</button>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>samplePosMultiplier</code>
+		</td>
+	</tr>
+	<tr>
+		<td class="variable-name-cell">
+			<code>samplePosMultiplier</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="0.01" min="0" max="20" value="1" id="samplePosRange"
+			oninput="this.closest('tr').querySelector('output').value = parseInt(this.value * 100)">
+		</td>
+		<td style="text-align: center;">
+			<output>100</output> %
+		</td>
+		<td style="text-align: center;">
+			<button id="samplePosRangeReset" class="roundButton" onclick="resetSlider(this, '1', '100')">
+					{% include "style/icons/rotate-right.svg" %}
+				</button>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>downSample</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>downSample</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="1" min="0" max="8" value="0" id="downSampleRange"
+			oninput="this.closest('tr').querySelector('output').value = this.value">
+		</td>
+		<td style="text-align: center;">
+			<output>0</output>
+		</td>
+		<td style="text-align: center;">
+			<button class="roundButton" onclick="resetSlider(this, '0')">
+				{% include "style/icons/rotate-right.svg" %}
+			</button>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>lightBrightness</code>
+		</td>
+	</tr>
+	<tr>
+		<td class="variable-name-cell">
+			<code>lightBrightness</code>
+		</td>
+		<td style="width:100%">
+			<input disabled class="slider" type="range" step="0.01" min="0" max="20" value="1" id="lightBrightness" oninput="
+			this.closest('tr').querySelector('output').value = parseInt(this.value * 100) ">
+		</td>
+		<td style="text-align: center;">
+			<output>100</output> %
+		</td>
+		<td style="text-align: center;">
+			<button disabled id="lightBrightnessReset" class="roundButton" onclick="resetSlider(this, '1', '100')">
+				{% include "style/icons/rotate-right.svg" %}
+			</button>
+		</td>
+	</tr>
+	<tr class="variable-name-row noborder">
+		<td colspan=4>
+			<code>sigma</code>
+		</td>
+	</tr>
+	<tr class="noborder">
+		<td class="variable-name-cell">
+			<code>sigma</code>
+		</td>
+		<td style="width:100%">
+			<input class="slider" type="range" step="0.1" min="0.1" max="10" value="2" id="sigmaRange" oninput="
+			this.closest('tr').querySelector('output').value = Number(this.value).toFixed(2)">
+		</td>
+		<td style="text-align: center">
+			± <output>2.00</output> σ
+		</td>
+		<td style="text-align: center;">
+			<button class="roundButton" onclick="resetSlider(this, '2')">
+				{% include "style/icons/rotate-right.svg" %}
+			</button>
+		</td>
+	</tr>
+</table>
+<script type="module">
+	import { setupGaussianDownsampleBlur } from "./js/downsample.js";
+	setupGaussianDownsampleBlur();
+</script>
+</div>
+<!-- Benchmark in 1feb0231a940d3dd9989103795f199b4baedb535 -->
+<blockquote>
+<details><summary><a target="_blank" href="screenshots/fxaainteractive.png">Screenshot</a>, in case WebGL doesn't work</summary>
+
+<!-- ![image](screenshots/fxaainteractive.png) -->
+
+</details>
+<details>	
+<summary>WebGL Fragment Shader <a target="_blank" href="shader/gaussianBlur.fs">gaussianBlur.fs</a></summary>
+
+```glsl
+{% include "posts/dual-kawase/shader/boxBlur.fs" %}
+```
+
+</details>
+<details>	
+<summary>WebGL Javascript <a target="_blank" href="js/gaussianBlur.js">gaussianBlur.js</a></summary>
+
+```javascript
+{% include "posts/dual-kawase/js/gaussianBlur.js" %}
+```
+
+</details>
+</blockquote>

@@ -1,0 +1,67 @@
+<div id="SVGBox-kernelIsometric">
+	<svg id="kernelIso"></svg>
+	<div style="margin-bottom: 0.5rem" class="toggleRes">
+		<label>
+		  <input type="radio" id="sigmaAbsolute" name="modeSigma" value="absolute" checked />
+		  Absolute Sigma
+		</label>
+		<label>
+		  <input type="radio" id="sigmaRelative" name="modeSigma" value="relative" />
+		  Relative Sigma
+		</label>
+	</div>
+	<table class="settingsTable" style="width: 100%; max-width: 100%;">
+		<tr class="variable-name-row noborder">
+			<td colspan=5>
+				<code>kernelSizeIso</code>
+			</td>
+		</tr>
+		<tr class="noborder">
+			<td class="variable-name-cell">
+				<code>kernelSizeIso</code>
+			</td>
+			<td style="width:100%">
+				<input class="slider" type="range" step="1" min="0" max="16" value="3" id="svgKernelIsoRange" oninput="svgKernelIsoSize.textContent = `${parseInt(this.value) * 2 + 1}×${parseInt(this.value) * 2 + 1}`">
+			</td>
+			<td style="text-align: center;">
+				<output id="svgKernelIsoSize">7×7</output>
+			</td>
+			<td style="text-align: center;">
+				<button class="roundButton" onclick="svgKernelIsoRange.value = 3; svgKernelIsoSize.textContent = '7×7';svgKernelIsoRange.dispatchEvent(new Event('input'));">{% include "style/icons/rotate-right.svg" %}</button>
+			</td>
+		</tr>
+		<tr class="variable-name-row noborder">
+			<td colspan=5>
+				<code>sigma</code>
+			</td>
+		</tr>
+		<tr class="noborder">
+			<td class="variable-name-cell">
+				<code>sigma</code>
+			</td>
+			<td style="width:100%; white-space: unset;">
+				<input class="slider" type="range" step="0.1" min="0.1" max="10" value="3" id="sigmaIsoRelative">
+				<input class="slider" type="range" step="0.1" min="0.1" max="10" value="1" id="sigmaIso">
+			</td>
+			<td style="text-align: center;">
+				<span style="display: flex; flex-direction: column">
+					<span style="white-space: nowrap">
+						± <output id="sigmaIsoRelativeOut">3.00</output> σ
+					</span>
+					<span style="white-space: nowrap">
+						<output id="sigmaIsoOut">1.00</output> px
+					</span>
+				</span>
+			</td>
+			<td style="text-align: center;">
+				<button class="roundButton" onclick="
+					if(sigmaAbsolute.checked){ sigmaIso.value = 1; sigmaIso.dispatchEvent(new Event('input')); } else { sigmaIsoRelative.value = 3; sigmaIsoRelative.dispatchEvent(new Event('input')); };
+				">{% include "style/icons/rotate-right.svg" %}</button>
+			</td>
+		</tr>
+	</table>
+	<script type="module">
+		import { setupSVGIso } from "./js/kernelPreviewIsometric.js";
+		setupSVGIso();
+	</script>
+</div>
