@@ -17,6 +17,7 @@ export function setupKernelPreview() {
 	/* UI */
 	const kernelRange = SVGBox.querySelector("#kernelRange");
 	const sampleMultRange = SVGBox.querySelector("#samplePosMult");
+	const sampleMultRangeReset = SVGBox.querySelector("#samplePosMultReset");
 
 	svg.setAttribute("viewBox", `${-viewBoxX / 2} ${-viewBoxY / 2} ${viewBoxX} ${viewBoxY}`);
 
@@ -45,7 +46,11 @@ export function setupKernelPreview() {
 		});
 	};
 
-	kernelRange.addEventListener("input", redraw);
+	kernelRange.addEventListener("input", () => {
+		redraw();
+		sampleMultRange.disabled = kernelRange.value == 0;
+		sampleMultRangeReset.disabled = kernelRange.value == 0;
+	});
 	sampleMultRange.addEventListener("input", redraw);
 
 	redraw();
@@ -82,7 +87,7 @@ function draw(k, g, mult) {
 				content += `<rect x="${x - offset}" y="${y - offset}" width="${pixelSize}" height="${pixelSize}" style="${STYLES.centerPixel}"/>`;
 			else if (Math.abs(x) <= half && Math.abs(y) <= half)
 				/* Native Sample Pixel */
-				content += `<rect x="${x - offset}" y="${y - offset}" width="${pixelSize}" height="${pixelSize}" style="${STYLES.sidePixel}"/>`;
+				content += `<rect x="${x - offset}" y="${y - offset}" width="${pixelSize}" height="${pixelSize}" style="${STYLES.sidePixel}; fill: #fcfcfc"/>`;
 			else
 				/* Other Pixels */
 				content += `<rect x="${x - offset}" y="${y - offset}" width="${pixelSize}" height="${pixelSize}" style="${STYLES.sidePixel}" opacity="${opacity}"/>`;

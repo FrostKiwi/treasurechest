@@ -49,6 +49,7 @@ export async function setupGaussianDownsampleBlur() {
 			kernelSize: WebGLBox.querySelector('#sizeRange'),
 			sigma: WebGLBox.querySelector('#sigmaRange'),
 			samplePos: WebGLBox.querySelector('#samplePosRange'),
+			samplePosReset: WebGLBox.querySelector('#samplePosRangeReset'),
 			downSample: WebGLBox.querySelector('#downSampleRange'),
 		},
 		rendering: {
@@ -96,6 +97,8 @@ export async function setupGaussianDownsampleBlur() {
 
 	ui.blur.kernelSize.addEventListener('input', () => {
 		reCompileBlurShader(ui.blur.kernelSize.value);
+		ui.blur.samplePos.disabled = ui.blur.kernelSize.value == 0;
+		ui.blur.samplePosReset.disabled = ui.blur.kernelSize.value == 0;
 	});
 
 	/* Render Mode */

@@ -5,7 +5,12 @@ precision highp float;
 /* UV coordinates, passed in from the Vertex Shader */
 varying vec2 uv;
 
-uniform vec2 frameSizeRCP; /* Resolution Reciprocal */
+/* Resolution Reciprocal. Getting to the next pixel requires us to calculate
+   `UV Coordinate / frameSize`. On hardware, doing a division is slightly slower
+   than doing a multiplication. Since the shader is run per pixel, we avoid the
+   per-pixel division, by calculating the reciprocal 1 / frameSize and pass it
+   into the shader. A very popular micro-optimization across graphics programming */
+uniform vec2 frameSizeRCP;
 uniform float samplePosMult; /* Multiply to push blur strength past the kernel size */
 
 uniform float bloomStrength; /* bloom strength */

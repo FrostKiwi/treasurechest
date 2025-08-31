@@ -46,6 +46,7 @@ export async function setupBoxBlur() {
 		blur: {
 			kernelSize: WebGLBox.querySelector('#sizeRange'),
 			samplePos: WebGLBox.querySelector('#samplePosRange'),
+			samplePosReset: WebGLBox.querySelector('#samplePosRangeReset'),
 		},
 		rendering: {
 			animate: WebGLBox.querySelector('#animateCheck'),
@@ -86,6 +87,8 @@ export async function setupBoxBlur() {
 
 	ui.blur.kernelSize.addEventListener('input', () => {
 		reCompileBlurShader(ui.blur.kernelSize.value);
+		ui.blur.samplePos.disabled = ui.blur.kernelSize.value == 0;
+		ui.blur.samplePosReset.disabled = ui.blur.kernelSize.value == 0;
 	});
 
 	/* Render Mode */

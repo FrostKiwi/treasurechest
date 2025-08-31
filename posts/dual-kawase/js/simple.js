@@ -27,7 +27,7 @@ export async function setupSimple() {
 		/* Shaders and their respective Resource Locations */
 		shd: {
 			scene: { handle: null, uniforms: { offset: null, radius: null } },
-			blur: { handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, bloomStrength: null } },
+			blur: { handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, lightBrightness: null } },
 			bloom: { handle: null, uniforms: { offset: null, radius: null, texture: null, textureAdd: null } }
 		}
 	};
@@ -98,7 +98,7 @@ export async function setupSimple() {
 
 	/* Helper for recompilation */
 	function reCompileBlurShader() {
-		ctx.shd.blur = util.compileAndLinkShader(gl, simpleQuad, noBlurYetFrag, ["bloomStrength"]);
+		ctx.shd.blur = util.compileAndLinkShader(gl, simpleQuad, noBlurYetFrag, ["lightBrightness"]);
 	}
 
 	/* Blur Shader */
@@ -175,7 +175,7 @@ export async function setupSimple() {
 		const finalFB = ctx.mode == "bloom" ? ctx.fb.final : null;
 		gl.bindFramebuffer(gl.FRAMEBUFFER, finalFB);
 		gl.viewport(0, 0, canvas.width, canvas.height);
-		gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.rendering.lightBrightness.value);
+		gl.uniform1f(ctx.shd.blur.uniforms.lightBrightness, ctx.mode == "scene" ? 1.0 : ui.rendering.lightBrightness.value);
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
