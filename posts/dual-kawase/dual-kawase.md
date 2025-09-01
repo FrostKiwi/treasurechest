@@ -271,9 +271,21 @@ Think, in a way, the jump directly up is more accurate! But also uglier.
 
 The diagonal sampling avoids harsh edges that pure box filters would create, leading to smoother gradients. Because of its diagonal nature, it is not separable.
 
+https://gdcvault.com/play/1022664/Frame-Buffer-Postprocessing-Effects-in
+
 ## Dual Kawase Blur
 
 {% include "./demos/dual-kawase.htm" %}
+
+Invented by ARM's 
+
+Added to KDE in 2018
+https://web.archive.org/web/20220427124712/https://phabricator.kde.org/D9848
+
+Still in KDE
+https://invent.kde.org/plasma/kwin/-/tree/master/src/plugins/blur
+
+Marius Bjørge picked it up and [did a talk in 2015](https://dl.acm.org/doi/10.1145/2776880.2787664) direct [video link](https://dl.acm.org/doi/suppl/10.1145/2776880.2787664/suppl_file/a184.mp4)
 
 ## Apple switches algorithms
 
