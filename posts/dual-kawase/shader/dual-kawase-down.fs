@@ -5,7 +5,7 @@ precision highp float;
 /* UV coordinates, passed in from the Vertex Shader */
 varying vec2 uv;
 
-uniform vec2 halfpixel; /* Half pixel size for anti-aliasing */
+uniform vec2 frameSizeRCP; /* Resolution Reciprocal */
 uniform float offset; /* Offset multiplier for blur strength */
 uniform float bloomStrength; /* bloom strength */
 
@@ -13,6 +13,7 @@ uniform sampler2D texture;
 
 void main() {
 	/* Dual Kawase downsample: sample center + 4 diagonal corners */
+	vec2 halfpixel = frameSizeRCP * 0.5;
 	vec2 o = halfpixel * offset;
 	
 	/* Sample center with 4x weight */

@@ -111,7 +111,7 @@ export async function setupKawaseBlur() {
 	ctx.shd.bloom = util.compileAndLinkShader(gl, bloomVert, bloomFrag, ["texture", "textureAdd", "offset", "radius"]);
 
 	/* Kawase Blur Shader */
-	ctx.shd.kawase = util.compileAndLinkShader(gl, simpleQuad, kawaseFrag, ["frameSizeRCP", "samplePosMult", "bloomStrength", "pixelOffset"]);
+	ctx.shd.kawase = util.compileAndLinkShader(gl, simpleQuad, kawaseFrag, ["frameSizeRCP", "samplePosMult", "pixelOffset", "bloomStrength"]);
 
 	/* Send Unit code verts to the GPU */
 	util.bindUnitQuad(gl);
@@ -208,8 +208,8 @@ export async function setupKawaseBlur() {
 			gl.useProgram(ctx.shd.kawase.handle);
 			gl.uniform2f(ctx.shd.kawase.uniforms.frameSizeRCP, 1.0 / canvas.width, 1.0 / canvas.height);
 			gl.uniform1f(ctx.shd.kawase.uniforms.samplePosMult, 0.0); // No offset
-			gl.uniform1f(ctx.shd.kawase.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.rendering.lightBrightness.value);
 			gl.uniform1f(ctx.shd.kawase.uniforms.pixelOffset, 0.0); // No offset
+			gl.uniform1f(ctx.shd.kawase.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.rendering.lightBrightness.value);
 			gl.activeTexture(gl.TEXTURE0);
 			gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
 			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);

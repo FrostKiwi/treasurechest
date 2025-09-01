@@ -1,0 +1,56 @@
+<style>
+	.settingsTable .noborder td {
+		border-bottom: unset;
+	}
+	.settingsTable td {
+		white-space: nowrap;
+	}
+	.variable-name-row {
+		display: none;
+	}
+	@media screen and (max-width: 500px) {
+		.variable-name-row {
+			display: table-row;
+			text-align: center;
+		}
+		.variable-name-cell {
+			display: none;
+		}
+	}
+	.settingsTable pre {
+		overflow-x: auto;
+		max-width: 100%;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+	.precolumn {
+		padding: 0px;
+	}
+
+	.stats > div {
+	    display: flex;
+	    gap: 0px 12px;
+	    flex-wrap: wrap;
+	    flex: 1;
+	    justify-content: space-around;
+	    font-size: smaller;
+	}
+
+	.stats span {
+	    display: flex;
+	    gap: 8px;
+	    white-space: nowrap;
+	}
+</style>
+
+<script>
+function resetSlider(button, defaultValue, outputFormat = defaultValue) {
+	const row = button.closest('tr');
+	const input = row.querySelector('input');
+	const output = row.querySelector('output');
+	
+	input.value = defaultValue;
+	output.value = outputFormat;
+	input.dispatchEvent(new Event('input'));
+}
+</script>

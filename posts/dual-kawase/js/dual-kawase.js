@@ -28,8 +28,8 @@ export async function setupDualKawaseBlur() {
 		shd: {
 			scene: { handle: null, uniforms: { offset: null, radius: null } },
 			passthrough: { handle: null },
-			downsample: { handle: null, uniforms: { halfpixel: null, offset: null, bloomStrength: null } },
-			upsample: { handle: null, uniforms: { halfpixel: null, offset: null, bloomStrength: null } },
+			downsample: { handle: null, uniforms: { frameSizeRCP: null, offset: null, bloomStrength: null } },
+			upsample: { handle: null, uniforms: { frameSizeRCP: null, offset: null, bloomStrength: null } },
 			bloom: { handle: null, uniforms: { offset: null, radius: null, texture: null, textureAdd: null } }
 		}
 	};
@@ -116,8 +116,8 @@ export async function setupDualKawaseBlur() {
 	ctx.shd.passthrough = util.compileAndLinkShader(gl, simpleQuad, simpleTexture);
 
 	/* Dual Kawase Shaders */
-	ctx.shd.downsample = util.compileAndLinkShader(gl, simpleQuad, dualKawaseDown, ["halfpixel", "offset", "bloomStrength"]);
-	ctx.shd.upsample = util.compileAndLinkShader(gl, simpleQuad, dualKawaseUp, ["halfpixel", "offset", "bloomStrength"]);
+	ctx.shd.downsample = util.compileAndLinkShader(gl, simpleQuad, dualKawaseDown, ["frameSizeRCP", "offset", "bloomStrength"]);
+	ctx.shd.upsample = util.compileAndLinkShader(gl, simpleQuad, dualKawaseUp, ["frameSizeRCP", "offset", "bloomStrength"]);
 
 	/* Send Unit code verts to the GPU */
 	util.bindUnitQuad(gl);
@@ -237,8 +237,8 @@ export async function setupDualKawaseBlur() {
 				gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
 				gl.viewport(0, 0, w, h);
 
-				const halfpixel = [0.5 / w, 0.5 / h];
-				gl.uniform2fv(ctx.shd.downsample.uniforms.halfpixel, halfpixel);
+				const frameSizeRCP = [1.0 / w, 1.0 / h];
+				gl.uniform2fv(ctx.shd.downsample.uniforms.frameSizeRCP, frameSizeRCP);
 				gl.uniform1f(ctx.shd.downsample.uniforms.bloomStrength, distributedBrightness);
 
 				gl.activeTexture(gl.TEXTURE0);
@@ -261,8 +261,8 @@ export async function setupDualKawaseBlur() {
 
 				const srcW = Math.max(1, canvas.width >> (i + 2));
 				const srcH = Math.max(1, canvas.height >> (i + 2));
-				const halfpixel = [0.5 / srcW, 0.5 / srcH];
-				gl.uniform2fv(ctx.shd.upsample.uniforms.halfpixel, halfpixel);
+				const frameSizeRCP = [1.0 / srcW, 1.0 / srcH];
+				gl.uniform2fv(ctx.shd.upsample.uniforms.frameSizeRCP, frameSizeRCP);
 				gl.uniform1f(ctx.shd.upsample.uniforms.bloomStrength, distributedBrightness);
 
 				gl.activeTexture(gl.TEXTURE0);
@@ -278,8 +278,8 @@ export async function setupDualKawaseBlur() {
 
 			const srcW = Math.max(1, canvas.width >> 1);
 			const srcH = Math.max(1, canvas.height >> 1);
-			const halfpixel = [0.5 / srcW, 0.5 / srcH];
-			gl.uniform2fv(ctx.shd.upsample.uniforms.halfpixel, halfpixel);
+			const frameSizeRCP = [1.0 / srcW, 1.0 / srcH];
+			gl.uniform2fv(ctx.shd.upsample.uniforms.frameSizeRCP, frameSizeRCP);
 			gl.uniform1f(ctx.shd.upsample.uniforms.bloomStrength, distributedBrightness);
 
 			gl.activeTexture(gl.TEXTURE0);

@@ -30,62 +30,7 @@ image:
 - Talks, state of the art, CoD flickering fix vs CS2 still having that problem
  -->
 
-<style>
-	.settingsTable .noborder td {
-		border-bottom: unset;
-	}
-	.settingsTable td {
-		white-space: nowrap;
-	}
-	.variable-name-row {
-		display: none;
-	}
-	@media screen and (max-width: 500px) {
-		.variable-name-row {
-			display: table-row;
-			text-align: center;
-		}
-		.variable-name-cell {
-			display: none;
-		}
-	}
-	.settingsTable pre {
-		overflow-x: auto;
-		max-width: 100%;
-		white-space: pre-wrap;
-		overflow-wrap: anywhere;
-	}
-	.precolumn {
-		padding: 0px;
-	}
-
-	.stats > div {
-	    display: flex;
-	    gap: 0px 12px;
-	    flex-wrap: wrap;
-	    flex: 1;
-	    justify-content: space-around;
-	    font-size: smaller;
-	}
-
-	.stats span {
-	    display: flex;
-	    gap: 8px;
-	    white-space: nowrap;
-	}
-</style>
-
-<script>
-function resetSlider(button, defaultValue, outputFormat = defaultValue) {
-	const row = button.closest('tr');
-	const input = row.querySelector('input');
-	const output = row.querySelector('output');
-	
-	input.value = defaultValue;
-	output.value = outputFormat;
-	input.dispatchEvent(new Event('input'));
-}
-</script>
+{% include "./demos/init.htm" %}
 
 Blurs are the basic building block for many [video game post processing effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering) and essential for sleek and modern [GUIs](https://en.wikipedia.org/wiki/Graphical_user_interface). Video game [Depth of Field](https://dev.epicgames.com/documentation/en-us/unreal-engine/depth-of-field-in-unreal-engine) and [Bloom](https://en.wikipedia.org/wiki/Bloom_(shader_effect)) or [frosted panels](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#microsoft-windows-acrylic) in modern user interfaces - used subtly or obviously - they're everywhere. <span style="transition: filter 0.2s; filter: none" onmouseover="this.style.filter='blur(4px)'" onmouseout="this.style.filter='none'">Even your browser can do it, just tap this sentence!</span>
 
@@ -103,7 +48,7 @@ Using the [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) in the d
 <blockquote class="reaction"><div class="reaction_text">This is my submission to this year's <a target="_blank" href="https://some.3b1b.co/">Summer of Math Exposition</a></div><img class="kiwi" src="img/SOMELogo.svg"></blockquote>
 
 ## Setup - No blur yet
-In the context of video game post processing, a 3D scene is drawn, also called [rendering](https://en.wikipedia.org/wiki/Rendering_(computer_graphics)), and saved to an intermediary image - a [framebuffer](https://learnopengl.com/Advanced-OpenGL/Framebuffers). In turn, this framebuffer is processed to achieve [various effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering). Since this *processing* happens *after* a 3D scene is rendered, it's called *post-processing*. All that, _many_ times a second
+In the context of video game post processing, a 3D scene is drawn, also called [rendering](https://en.wikipedia.org/wiki/Rendering_(computer_graphics)), and saved to an intermediary image - a [framebuffer](https://learnopengl.com/Advanced-OpenGL/Framebuffers). In turn, this framebuffer is processed to achieve [various effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering). Since this *processing* happens *after* a 3D scene is rendered, it's called *post-processing*. All that, _many_ times a second.
 
 <blockquote class="reaction"><div class="reaction_text"><strong>Depending on technique</strong>, framebuffers <a target="_blank" href="https://learnopengl.com/Advanced-Lighting/Deferred-Shading">can hold non-image data</a> and post-processing effects like <a target="_blank" href="https://en.wikipedia.org/wiki/Color_correction">Color-correction</a> or <a target="_blank" href="https://en.wikipedia.org/wiki/Tone_mapping">Tone-mapping</a> don't even require intermediate framebuffers: There's <a target="_blank" href="https://takahirox.github.io/three.js/examples/webgl_tonemapping.html">more</a> than <a target="_blank" href="https://gdcvault.com/play/1020631/The-Revolution-in-Mobile-Game">one way (@35:20)</a></div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
@@ -122,7 +67,7 @@ We don't have a blur implemented yet, not much happening. Above the box you have
   - This also unlocks the `lightBrightness` slider, where you can boost the energy output of the lights
 - In `Bloom` mode, we use the original scene and add the blurred lights from the previous mode on top to create a moody scene. This implements the effect of [Bloom](https://en.wikipedia.org/wiki/Bloom_(shader_effect)), an important use-case for blurs in real-time 3D graphics
 
-<blockquote class="reaction"><div class="reaction_text">Adding the blurred emission <a target="_blank" href="https://chrismillervfx.wordpress.com/2013/04/15/understanding-render-passes/">pass</a> as we do in this article, or <a target="_blank" href="https://en.wikipedia.org/wiki/Thresholding_(image_processing)">thresholding</a> the scene and blurring that is <strong>not</strong> actually how modern video games do bloom. We'll get into that a bit later.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Adding the blurred emission <a target="_blank" href="https://chrismillervfx.wordpress.com/2013/04/15/understanding-render-passes/">pass</a> as we do in this article, or <a target="_blank" href="https://en.wikipedia.org/wiki/Thresholding_(image_processing)">thresholding</a> the scene and blurring that, is <strong>not</strong> actually how modern video games do bloom. We'll get into that a bit later.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 Finally, you see [Resolution](https://en.wikipedia.org/wiki/Image_resolution) of the canvas and [Frames per Second / time taken per frame, aka "frametime"](https://en.wikipedia.org/wiki/Frame_rate). A very important piece of the puzzle is ***performance***, which will become more and more important as the article continues and the [mother of invention](https://en.wikipedia.org/wiki/Necessity_is_the_mother_of_invention) behind our time travel story.
 
@@ -132,7 +77,7 @@ Finally, you see [Resolution](https://en.wikipedia.org/wiki/Image_resolution) of
 
 <blockquote class="reaction"><div class="reaction_text">Understanding the GPU code is not necessary to follow this article, but if you do choose to peek behind the curtain, here is what you need to know</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
-We'll implement our blurs as a [fragment shader](https://learnopengl.com/Getting-started/Hello-Triangle) written in [GLSL](https://en.wikipedia.org/wiki/OpenGL_Shading_Language). In a nut-shell, a fragment shader is code that runs on the GPU for every output-pixel, in-parallel. Image inputs in shaders are called [Textures](https://learnopengl.com/Getting-started/Textures). These textures have coordinates, often called [UV coordinates](https://en.wikipedia.org/wiki/UV_mapping) - _these_ are the numbers we care about
+We'll implement our blurs as a [fragment shader](https://learnopengl.com/Getting-started/Hello-Triangle) written in [GLSL](https://en.wikipedia.org/wiki/OpenGL_Shading_Language). In a nut-shell, a fragment shader is code that runs on the GPU for every output-pixel, in-parallel. Image inputs in shaders are called [Textures](https://learnopengl.com/Getting-started/Textures). These textures have coordinates, often called [UV coordinates](https://en.wikipedia.org/wiki/UV_mapping) - _these_ are the numbers we care about.
 
 <blockquote class="reaction"><div class="reaction_text">Technically, fragment shaders run per <a target="_blank" href="https://www.khronos.org/opengl/wiki/Fragment">fragment</a>, which aren't necessarily pixel sized and there are <a target="_blank" href="https://registry.khronos.org/OpenGL/extensions/EXT/EXT_shader_framebuffer_fetch.txt">other ways</a> to read framebuffers, but none of that matters in the context of this article.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
@@ -146,7 +91,7 @@ UV coordinates specify the position we read in the image, with bottom left being
 <blockquote class="reaction"><div class="reaction_text">Although <a target="_blank" href="https://michaldrobot.com/2014/04/01/gcn-execution-patterns-in-full-screen-passes/">there are ways to find out</a>, we don't know which order output
  pixels are processed in and although the <a target="_blank" href="https://docs.gl/sl4/gl_FragCoord">graphics pipeline can tell us</a>, the shader doesn't even know which output pixel it currently processes</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
 
-The framebuffer, is passed into the fragment shader in line `uniform sampler2D texture` as a texture. Using the blur framebuffer, we draw a "Full Screen Quad", a rectangle to cover the entire canvas, with matching `varying vec2 uv` UV coordinates `0, 0` in the bottom-left and `1, 1` in the top-right to read from the texture.
+The framebuffer is passed into the fragment shader in line `uniform sampler2D texture` as a texture. Using the blur shader, we draw a "Full Screen Quad", a rectangle covering the entire canvas, with matching `0,0` in the bottom-left and `1,1` in the top-right `varying vec2 uv` UV coordinates to read from the texture.
 
 The texture's aspect-ratio and resolution are the same as the output canvas's aspect-ratio and resolution, thus there is a 1:1 pixel mapping between the texture we will process and our output canvas. The [graphics pipeline steps](js/simple.js) and [vertex shader](shader/simpleQuad.vs) responsible for this are not important for this article.
 
@@ -163,7 +108,7 @@ The bigger the for-loop, the more texture reads we perform, **per output-pixel**
 
 {% include "./demos/boxBlur.htm" %}
 
-Visually, the result doesn't look very pleasant. The stronger the blur, the more "boxy" image features become. This is due to us reading and averaging the texture in a square shape. Especially, in bloom mode, with strong `lightBrightness` and big `kernelSize`, lights become literally square.
+Visually, the result doesn't look very pleasant. The stronger the blur, the more "boxy" image features become. This is due to us reading and averaging the texture in a square shape. Especially in bloom mode, with strong `lightBrightness` and big `kernelSize`, lights become literally square.
 
 Performance is also really bad. With bigger `kernelSizes`, our `Texture Taps` count skyrockets and performance drops. Mobile devices will come to a slog. Even the worlds fastest PC graphics cards will fall below screen refresh-rate by cranking `kernelSize` and zooming the article on PC, thus raising canvas resolution.
 
@@ -171,7 +116,7 @@ Performance is also really bad. With bigger `kernelSizes`, our `Texture Taps` co
 
 Then, there's this `samplePosMultiplier`. It seems to *also* seemingly increase blur strength, *without* increasing textureTaps or lowering performance (or lowering performance just a little on certain devices). But if we crank *that* too much, we get artifacts in the form of repeating patterns. Let's play with a schematic example:
 
-<blockquote class="reaction"><div class="reaction_text">What you may have noticed, is that increasing the sample Multiplier just a little bit, between 100% and 150% does not introduce artifacts. Something deeper is happening. Put at a pin in that...</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+<!-- <blockquote class="reaction"><div class="reaction_text">What you may have noticed, is that increasing the sample Multiplier just a little bit, between 100% and 150% does not introduce artifacts. Something deeper is happening. Put at a pin in that...</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote> -->
 
 - The white center square represents the output pixel
 - Grey squares are the pixels we would read, with the current `kernelSize`, with `samplePosMult` untouched
@@ -179,15 +124,35 @@ Then, there's this `samplePosMultiplier`. It seems to *also* seemingly increase 
 
 {% include "./demos/boxKernelViz.htm" %}
 
-On can say, that an image is a "continous 2D signal". When we texture tap at a specific coordinate, we are _sampling the "image signal" at that coordinate_. As previously mentioned, we use UV coordinates and are not bound concepts like "pixels". ***Where*** we place our samples is completely up to us.
+On can say, that an image is a "continous 2D signal". When we texture tap at a specific coordinate, we are _sampling the "image signal" at that coordinate_. As previously mentioned, we use UV coordinates and are not bound by concepts like "pixels". ***Where*** we place our samples is completely up to us.
 
 A fundamental blur algorithm option is increasing the sample distance away from the center, thus increasing the amount of image we cover with our samples - more bang for your sample buck. This works by multiplying the offset distance. That is what `samplePosMult` does and is something you will have access to going forward.
 
 Doing it too much, brings ugly repeating patterns. This of course leaves some fundamental questions, like where these artifacts come from and what it even means to read between two pixels. ***And*** on top of that we have to address performance and the boxyness of our blur! But first...
 
 ## What even _is_ a kernel?
+What we have created with our for-loop, is a [convolution](https://www.youtube.com/watch?v=KuXjwB4LzSA0) with a uniform kernel. Going forward, we'll have to 
+
+the kernel weights must sum up to 1.
+
+<figure>
+	<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/KuXjwB4LzSA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+	<figcaption>But what is a convolution?<br><a target="_blank" href="https://www.youtube.com/watch?v=KuXjwB4LzSA">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@3blue1brown">3Blue1Brown</a></figcaption>
+</figure>
+
+We still have 
 
 ## Gaussian Blur
+
+Dude
+
+<figure>
+	{% include "./img/gaussianForumla.svg" %}
+	<figcaption>Gaussian blur weights formula</figcaption>
+</figure>
+
+DUde
+
 {% include "./demos/gaussianBlur.htm" %}
 
 ## Convolution
@@ -263,6 +228,8 @@ So in a way, our journey through frequency land was kinda useless in pursuit of 
 
 So there *is* a fundamental difference between cutting high frequencies in frequency space and the gaussian blur "taking high frequency energy and combining it to become low frequency energy". The two techniques are fundamentally different.
 
+So Low Pass Filter ≠ Low Pass Filter
+
 <blockquote class="reaction"><div class="reaction_text">This is a <strong>deep misunderstanding</strong> I held for years.<output></output></div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 
@@ -283,6 +250,7 @@ Going forward, no reason to not be separable.
 {% include "./demos/bilinearViz.htm" %}
 
 Relate to https://www.youtube.com/watch?v=uRjf8ZP6rs8
+Talk about gaussian linear.
 
 ## Downsampling
 
@@ -300,6 +268,8 @@ Think, in a way, the jump directly up is more accurate! But also uglier.
 ## Kawase Blur
 
 {% include "./demos/kawase.htm" %}
+
+The diagonal sampling avoids harsh edges that pure box filters would create, leading to smoother gradients. Because of its diagonal nature, it is not separable.
 
 ## Dual Kawase Blur
 
