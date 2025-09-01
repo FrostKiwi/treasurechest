@@ -2,14 +2,14 @@
 wip: true
 title: Video Game Blurs (and how the best one works)
 permalink: "/{{ page.fileSlug }}/"
-date:
+date: 2025-09-01
 last_modified:
-description:
+description: How to build realtime blurs with good performance and how one of the best algorithms out there works - "Dual Kawase"
 publicTags:
   - Graphics
   - WebGL
   - GameDev
-image:
+image: img/thumbnail.png
 ---
 
 <!-- 
@@ -104,11 +104,24 @@ Graphics programming is [uniquely challenging](https://www.youtube.com/watch?v=x
 ## Box Blur
 From a programmer's perspective, the most straight forward way is to average the neighbors of a pixel using a [for-loop](https://en.wikipedia.org/wiki/For_loop). What the fragment shader is expressing is: "_look X pixels up, down, left, right and average the colors_". The more we want to blur, the more we have to increase `kernelSize`, the bounds of our for-loop.
 
+```glsl
+/* Read from the texture y amount of pixels above and below */
+for (int y = -kernel_size; y <= kernel_size; ++y) {
+/* Read from the texture x amount of pixels to the left and the right */
+	for (int x = -kernel_size; x <= kernel_size; ++x) {
+		/* Offset from current pixel, indicating which pixel to read */
+		vec2 offset = vec2(x, y) * samplePosMult * frameSizeRCP;
+		/* Read and sum up the color contribution of that pixel */
+		sum += texture2D(texture, uv + offset);
+	}
+}
+```
+
 The bigger the for-loop, the more texture reads we perform, **per output-pixel**. Each texture read is often called a "texture tap" and the total amount of those "taps" per-frame will now also be displayed. New controls, new `samplePosMultiplier`, new terms - Play around with them, get a feel for them, with a constant eye on FPS.
 
 {% include "./demos/boxBlur.htm" %}
 
-Visually, the result doesn't look very pleasant. The stronger the blur, the more "boxy" image features become. This is due to us reading and averaging the texture in a square shape. Especially in bloom mode, with strong `lightBrightness` and big `kernelSize`, lights become literally square.
+Visually, the result doesn't look very pleasant. The stronger the blur, the more "boxy" image features become. This is due to us reading and averaging the texture in a square shape. Especially in bloom mode, with strong `lightBrightness` and big `kernelSize`, lights become literally squares.
 
 Performance is also really bad. With bigger `kernelSizes`, our `Texture Taps` count skyrockets and performance drops. Mobile devices will come to a slog. Even the worlds fastest PC graphics cards will fall below screen refresh-rate by cranking `kernelSize` and zooming the article on PC, thus raising canvas resolution.
 
@@ -131,51 +144,90 @@ A fundamental blur algorithm option is increasing the sample distance away from 
 Doing it too much, brings ugly repeating patterns. This of course leaves some fundamental questions, like where these artifacts come from and what it even means to read between two pixels. ***And*** on top of that we have to address performance and the boxyness of our blur! But first...
 
 ## What even _is_ a kernel?
-What we have created with our for-loop, is a [convolution](https://www.youtube.com/watch?v=KuXjwB4LzSA0) with a uniform kernel. Going forward, we'll have to 
+What we have created with our for-loop, is a [convolution](https://www.youtube.com/watch?v=KuXjwB4LzSA0). Expressed simplified in the context of image processing, it's usually a square of numbers constructing an output pixel, by gathering and weighting pixels the square covers. The square is called a kernel and was the thing we visualized previously.
 
-the kernel weights must sum up to 1.
+For blurs, the kernel weights must sum up to 1. If that were not the case, we would either brighten or darken the image. Ensuring that is the normalization step. In the box blur above, this happens by dividing the summed pixel color by `totalSamples`, the total amount of samples taken. A basic "calculate the average" expression.
 
+The same can be expressed as weights of a kernel, a number multiplied with each sample at that position. Since the box blur weighs all sample the same regardless of position, all weights are the same. This is visualized next. The bigger the kernel size, the smaller the weights.
+
+{% include "./demos/boxKernelVizWidthWeights.htm" %}
+
+Kernels applied at the edges of our image will read from areas "outside" the image, with UV coordinates smaller than `0,0` and bigger than `1,1`. Luckily, the GPU handles this for us and we are free to decide what happens to those outside samples, by setting the [Texture Wrapping mode](https://learnopengl.com/Getting-started/Textures#:~:text=Texture%20Wrapping).
+
+<figure>
+	<img src="img/WrappingModes.png" alt="Texture Wrapping Modes and results on blurring" />
+	<figcaption>Texture Wrapping Modes and results on blurring<br>Top: Framebuffer, zoomed out. Bottom: Framebuffer normal, with strong blur applied</figcaption>
+</figure>
+
+Among others, we can define a solid color to be used or to "clamp" to the nearest edge's color. If we choose a solid color, then we will get color bleeding at the edges. Thus for almost all post-processing use-cases, edge color clamping is used, as it prevents weird things happening at the edges. [This article does too](https://github.com/FrostKiwi/treasurechest/blob/main/posts/dual-kawase/js/utility.js#L49).
+
+<blockquote class="reaction"><div class="reaction_text">You may have noticed a black "blob" streaking with stronger blur levels along the bottom. Specifically here, it happens because the lines between the floor tiles align with the bottom edge, extending black color to infinity</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+Convolution as a mathematical concept is surprisingly deep and [3blue1brown](https://www.youtube.com/@3blue1brown) has an excellent video on it, that even covers the image processing perspective. Theoretically, we won't depart from convolutions. We ***can*** dissect our code and express it as weights and kernels. With the for-loop box blur, that ***was*** quite easy!
 <figure>
 	<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/KuXjwB4LzSA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
 	<figcaption>But what is a convolution?<br><a target="_blank" href="https://www.youtube.com/watch?v=KuXjwB4LzSA">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@3blue1brown">3Blue1Brown</a></figcaption>
 </figure>
 
-We still have 
+On a practical level though, understanding where the convolution is, how many there are and what kernels are at play will become more and more difficult, except for the Gaussian blur in the next chapter. Speaking of which...
 
 ## Gaussian Blur
-
-Dude
+The most famous of blur algorithms is the Gaussian Blur. It uses the [normal distribution](https://en.wikipedia.org/wiki/Normal_distribution), also known as the [bell Curve](https://en.wikipedia.org/wiki/Normal_distribution) to weight the samples inside the kernel, with a new variable `sigma σ` to control the flatness of the curve. Other than generating the kernel weights, the algorithm is identical to the box blur algorithm.
 
 <figure>
 	{% include "./img/gaussianForumla.svg" %}
-	<figcaption>Gaussian blur weights formula</figcaption>
+	<figcaption>Gaussian blur weights formula for point <code>(x,y)</code>, <a target="_blank" href="https://en.wikipedia.org/wiki/Gaussian_blur#Mathematics">Source</a></figcaption>
 </figure>
 
-DUde
+To calculate the weights for point `(x,y)`, the [above formula is used](https://en.wikipedia.org/wiki/Gaussian_blur#Mathematics). The gaussian formula and has a weighting multiplier `1/√(2πσ²)`. In the code, there is no such thing though. The formula expresses the gaussian curve as a _continuous_ function going to _infinity_. But our code and its for-loop are different - ***discrete*** and ***finite***.
+
+```glsl
+float gaussianWeight(float x, float y, float sigma)
+{
+	/* (x² + y²) / 2 σ² */
+	return exp(-(x * x + y * y) / (2.0 * sigma * sigma));
+}
+```
+
+<blockquote class="reaction"><div class="reaction_text">For clarity, the kernel is generated in the fragment shader. Normally, that should be avoided. Code in the fragment shader runs on every pixel, but the kernel doesn't actually change, making this inefficient.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+Just like with the box blur, weights are summed up and divided at the end, instead of the precalculated weighting term `1/√(2πσ²)`. `sigma` controls the sharpness of the curve and thus the blur strength, but wasn't that the job of `kernelSize`? Play around with all the values below and get a feel for how the various values behave.
 
 {% include "./demos/gaussianBlur.htm" %}
 
-## Convolution
-A Convolution
+The blur looks way smoother than our previous box blur, with things generally taking on a "rounder" appearance, due to the bell curve's smooth signal response. That is, unless you move the `sigma` slider down. If you move `sigma` too low, you will get our previous box blur like artifacts again. 
 
-
-[In hardware, division is slower than multiplication. That is the reason resolution is passed in as ]
-
-Living in Japan, I got the chance to interview an idol of me: Graphics Programmer Masaki Kawase.
-
-<!-- <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script> -->
-
-We can express sigma as it is usually done. Insert Sigma joke.
-Here in [~~Isometric~~](https://en.wikipedia.org/wiki/Isometric_projection) [Dimetric](https://en.wikipedia.org/wiki/Axonometric_projection#Three_types) projection.
+Let's clear up what the values actually represent and how they interact. The following visualization shows the kernel with their weights expressed as height in an [~~Isometric~~](https://en.wikipedia.org/wiki/Isometric_projection) [Dimetric](https://en.wikipedia.org/wiki/Axonometric_projection#Three_types) projection. There are two different `sigma` - `kernelSize` interaction modes and two ways to describe `sigma`.
 
 {% include "./demos/gaussianKernelViz.htm" %}
 
-We have this issue of sigma too small? We get box blur like artifacts. Sigma too big? We waste blur strength, have to go with bigger kernels and sacrifice performance. This is an artistic trade-off, that every piece of software has to make. There are different ways of choosing these kernels.
+`sigma` describes the flatness of our mathematical curve, a curve going to infinity. But our algorithm has a limited `kernelSize`. Where the kernel stops, no more contributions pixel contributions occur, leading box-like artifacts. In the context of image processing, there are two to setup a gaussian blur...
 
-Where is the optimum? Eg. we can choose a kernel level, where the last rows are almost zero, thus "if we increased the kernel size in absolute Sigma mode, it would make no more *visual* difference". There are other ways of creating kernels, with other properties. One way is to deviate from the gaussian blur and follow Pascal's triangle to get predefined kernel sizes and values. These are called [Binomial Filters](https://bartwronski.com/2021/10/31/practical-gaussian-filter-binomial-filter-and-small-sigma-gaussians/). These lock us into specific "kernel presets", but have properties which are useful for image resampling. We won't expand on these further, just know that we can choose kernels by different mathematical criteria.
+<blockquote class="reaction"><div class="reaction_text">A small sigma, thus a flat bell curve, paired with a small kernel size effectively <strong>is</strong> a box blur, with the weights making the kernel box-shaped.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
-## Setup
+...with an [Absolute Sigma](https://www.youtube.com/watch?v=ueNY30Cs8Lk), an absolute value in pixels independent of `kernelSize`, with `kernelSize` acting as a "window into the curve" or as a value ***relative*** to the current `kernelSize`. For practical reasons of having to fiddle around in absolute sigma mode, the relative to `kernelSize` mode is used everywhere.
+
+Eitherway, the infinite gaussian curve ***will*** have a cut-off _somewhere_. `sigma` too small? - We get box blur like artifacts. `sigma` too big? - We waste blur efficiency, as the same perceived blur strength requires bigger kernels, thus bigger for-loops with lower performance. An artistic trade-off every piece of software has to make.
+
+<blockquote class="reaction"><div class="reaction_text">An optimal kernel would be one, where the outer weights are almost zero. Thus if we increased <code>kernelSize</code> in Absolute Sigma mode by one, it would make close to no more <strong>visual</strong> difference.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+There are other ways of creating kernels, with other properties. One way is to deviate from the gaussian blur and follow Pascal's triangle to get a set of predefined kernel sizes and values. These are called [Binomial Filters](https://bartwronski.com/2021/10/31/practical-gaussian-filter-binomial-filter-and-small-sigma-gaussians/) and lock us into specific "kernel presets", but have properties which are useful for image resampling.
+
+Binomial Kernels are also Gaussian-like in their frequency response. We won't expand on these further, just know that we ***can*** choose kernels by different mathematical criteria, chasing different signal response properties. But speaking of which, what even *is* Gaussian Like? Why do we care?
+
+### What is Gaussian-like?
+In Post-Processing Blur algorithms you generally find two categories. Bokeh Blurs and Gaussian Like Blurs.
+
+So for the sake of video game effects, Sleek UIs and frosted glass interfaces we don't particularly care if the underlying algorithm has signal response characteristics of a gaussian curve or not. We care about it looking smooth - Gaussian like.
+
+It's an artistic endeavour after all.
+
+https://www.youtube.com/watch?v=vNG3ZAd8wCc
+
+## The chase for performance
+
+Now we have established our stakes. This is what we chase going forward.
+
 
 From here on out, everything you see will be done by your device's GPU. You will see how many variables can be tuned and we will need to build quite a bunch of intuition.
 
@@ -331,4 +383,3 @@ And for a further exercise for the reader, you can think of how this would chang
 
 ## Bin
 
-<blockquote class="reaction"><div class="reaction_text">You may notice a black streak with stronger blur levels along the bottom. This is when a line aligns with the bottom of the frame, extending the black color to infinity.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
