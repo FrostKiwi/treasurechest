@@ -1,4 +1,4 @@
-import * as util from './utility.js'
+import * as util from '../utility.js'
 
 export async function setupDualKawaseBlur() {
 	/* Init */
@@ -55,6 +55,16 @@ export async function setupDualKawaseBlur() {
 			modes: WebGLBox.querySelectorAll('input[type="radio"]'),
 			lightBrightness: WebGLBox.querySelector('#lightBrightness'),
 			lightBrightnessReset: WebGLBox.querySelector('#lightBrightnessReset'),
+		},
+		benchmark: {
+			button: WebGLBox.querySelector('#benchmark'),
+			label: WebGLBox.querySelector('#benchmarkLabel'),
+			iterOut: WebGLBox.querySelector('#iterOut'),
+			renderer: document.getElementById('WebGLBox-DualKawaseBlurDetail').querySelector('#renderer'),
+			downsampleLevels: document.getElementById('WebGLBox-DualKawaseBlurDetail').querySelector('#downsampleLevels'),
+			iterTime: document.getElementById('WebGLBox-DualKawaseBlurDetail').querySelector('#iterTime'),
+			tapsCount: document.getElementById('WebGLBox-DualKawaseBlurDetail').querySelector('#tapsCountBench'),
+			iterations: WebGLBox.querySelector('#iterations')
 		}
 	};
 
@@ -104,6 +114,49 @@ export async function setupDualKawaseBlur() {
 			ui.rendering.lightBrightnessReset.disabled = ctx.mode === "scene";
 			if (!ui.rendering.animate.checked) redraw();
 		});
+	});
+
+	ui.benchmark.button.addEventListener("click", () => {
+		ctx.flags.benchMode = true;
+		stopRendering();
+		ui.display.spinner.style.display = "block";
+		ui.benchmark.button.disabled = true;
+
+		/* spin up the Worker (ES-module) */
+		const worker = new Worker("./js/benchmark/dualKawaseBenchmark.js", { type: "module" });
+
+		/* pass all data the worker needs */
+		worker.postMessage({
+			iterations: ui.benchmark.iterOut.value,
+			downShaderSrc: dualKawaseDown,
+			upShaderSrc: dualKawaseUp,
+			downsampleLevels: ui.blur.downsample.value,
+			samplePos: ui.blur.samplePos.value
+		});
+
+		/* Benchmark */
+		worker.addEventListener("message", (event) => {
+			if (event.data.type !== "done") return;
+
+			ui.benchmark.label.textContent = event.data.benchText;
+			ui.benchmark.tapsCount.textContent = event.data.tapsCount;
+			ui.benchmark.iterTime.textContent = event.data.iterationText;
+			ui.benchmark.renderer.textContent = event.data.renderer;
+			ui.benchmark.downsampleLevels.textContent = event.data.downsampleLevels;
+
+			worker.terminate();
+			ui.benchmark.button.disabled = false;
+			ctx.flags.benchMode = false;
+			if (ui.rendering.animate.checked)
+				startRendering();
+			else
+				redraw();
+		});
+	});
+
+	ui.benchmark.iterations.addEventListener("change", (event) => {
+		ui.benchmark.iterOut.value = event.target.value;
+		ui.benchmark.label.textContent = "Benchmark";
 	});
 
 	/* Draw Texture Shader */

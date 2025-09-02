@@ -1,8 +1,8 @@
 "use strict";
-import * as util from "./utility.js";
+import * as util from "../utility.js";
 
 self.addEventListener("message", async (ev) => {
-	const { iterations, blurShaderSrc, kernelSize, samplePos, sigma } = ev.data;
+	const { iterations, blurShaderSrc, kernelSize, samplePos } = ev.data;
 
 	const ctx = {
 		flags: { contextLoss: false },
@@ -10,7 +10,7 @@ self.addEventListener("message", async (ev) => {
 		fb: { scene: null },
 		shd: {
 			blur: {
-				handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null, bloomStrength: null }
+				handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, bloomStrength: null }
 			},
 			bg: {
 				handle: null
@@ -44,8 +44,8 @@ self.addEventListener("message", async (ev) => {
 
 	const testPixel = new Uint8Array(4);
 
-	const simpleQuad = await util.fetchShader("../shader/simpleQuad.vs");
-	const noiseFrag = await util.fetchShader("../shader/noise.fs");
+	const simpleQuad = await util.fetchShader("../../shader/simpleQuad.vs");
+	const noiseFrag = await util.fetchShader("../../shader/noise.fs");
 
 	const quadBuffer = util.bindUnitQuad(gl);
 
@@ -56,7 +56,7 @@ self.addEventListener("message", async (ev) => {
 	ctx.shd.bg = util.compileAndLinkShader(gl, simpleQuad, noiseFrag);
 
 	/* Blur Shader */
-	ctx.shd.blur = util.compileAndLinkShader(gl, simpleQuad, blurShaderSrc, ["samplePosMult", "bloomStrength", "frameSizeRCP", "sigma"], "#define KERNEL_SIZE " + kernelSize + '\n');
+	ctx.shd.blur = util.compileAndLinkShader(gl, simpleQuad, blurShaderSrc, ["frameSizeRCP", "samplePosMult", "bloomStrength"], "#define KERNEL_SIZE " + kernelSize + '\n');
 
 	gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.scene);
 	gl.viewport(0, 0, 1600, 1200);
@@ -71,7 +71,6 @@ self.addEventListener("message", async (ev) => {
 	gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / 1600, 1.0 / 1200);
 	gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, samplePos);
 	gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, 1.0);
-	gl.uniform1f(ctx.shd.blur.uniforms.sigma, sigma);
 
 	gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
@@ -125,8 +124,6 @@ self.addEventListener("message", async (ev) => {
 	gl.deleteProgram(ctx.shd.blur.handle);
 	gl.deleteProgram(ctx.shd.bg.handle);
 
-	/* debug */
-	const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.92 });
 	if (!ctx.flags.contextLoss)
-		self.postMessage({ type: "done", blob, benchText, iterationText, renderer, tapsCount });
+		self.postMessage({ type: "done", benchText, iterationText, renderer, tapsCount });
 });

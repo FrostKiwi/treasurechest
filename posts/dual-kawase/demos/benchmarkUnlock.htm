@@ -1,0 +1,17 @@
+<div style="text-align: center; padding: 20px;">
+	<button id="unlockBenchmarks" type="button" class="main" style="padding: 12px 24px; font-size: 16px;">
+		<span id="unlockText">Unlock Benchmarks</span>
+	</button>
+</div>
+<script>
+	document.getElementById('unlockBenchmarks').addEventListener('click', function() {
+		const button = this;
+		const unlockText = document.getElementById('unlockText');
+		const benchmarkRows = document.querySelectorAll('.benchmark-row');
+		benchmarkRows.forEach(row => {
+			row.style.display = '';
+		});
+		button.disabled = true;
+		unlockText.textContent = 'Benchmarks Unlocked';
+	});
+</script>

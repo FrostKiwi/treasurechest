@@ -1,8 +1,9 @@
-import * as util from './utility.js'
+import * as util from '../utility.js'
 
-export async function setupGaussianSeparableBlur() {
+export async function setupBoxBlur() {
 	/* Init */
-	const WebGLBox = document.getElementById('WebGLBox-GaussianSeparableBlur');
+	const WebGLBox = document.getElementById('WebGLBox-BoxBlur');
+	const WebGLBoxDetail = document.getElementById('WebGLBox-BoxBlurDetail');
 	const canvas = WebGLBox.querySelector('canvas');
 
 	/* Circle Rotation size */
@@ -19,16 +20,15 @@ export async function setupGaussianSeparableBlur() {
 	const ctx = {
 		/* State for of the Rendering */
 		mode: "scene",
-		passMode: "pass1",
 		flags: { isRendering: false, buffersInitialized: false, initComplete: false, benchMode: false },
 		/* Textures */
-		tex: { sdr: null, selfIllum: null, frame: null, frameIntermediate: null, frameFinal: null },
+		tex: { sdr: null, selfIllum: null, frame: null, frameFinal: null },
 		/* Framebuffers */
-		fb: { scene: null, intermediate: null, final: null },
+		fb: { scene: null, final: null },
 		/* Shaders and their respective Resource Locations */
 		shd: {
 			scene: { handle: null, uniforms: { offset: null, radius: null } },
-			blur: { handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null, bloomStrength: null, direction: null } },
+			blur: { handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, bloomStrength: null } },
 			bloom: { handle: null, uniforms: { offset: null, radius: null, texture: null, textureAdd: null } }
 		}
 	};
@@ -46,16 +46,23 @@ export async function setupGaussianSeparableBlur() {
 		},
 		blur: {
 			kernelSize: WebGLBox.querySelector('#sizeRange'),
-			sigma: WebGLBox.querySelector('#sigmaRange'),
 			samplePos: WebGLBox.querySelector('#samplePosRange'),
 			samplePosReset: WebGLBox.querySelector('#samplePosRangeReset'),
 		},
 		rendering: {
 			animate: WebGLBox.querySelector('#animateCheck'),
-			modes: WebGLBox.querySelectorAll('input[name="modeGaussSep"]'),
-			passModes: WebGLBox.querySelectorAll('input[name="passMode"]'),
+			modes: WebGLBox.querySelectorAll('input[type="radio"]'),
 			lightBrightness: WebGLBox.querySelector('#lightBrightness'),
 			lightBrightnessReset: WebGLBox.querySelector('#lightBrightnessReset'),
+		},
+		benchmark: {
+			button: WebGLBox.querySelector('#benchmark'),
+			label: WebGLBox.querySelector('#benchmarkLabel'),
+			iterOut: WebGLBox.querySelector('#iterOut'),
+			renderer: WebGLBoxDetail.querySelector('#renderer'),
+			iterTime: WebGLBoxDetail.querySelector('#iterTime'),
+			tapsCount: WebGLBoxDetail.querySelector('#tapsCountBench'),
+			iterations: WebGLBox.querySelector('#iterations')
 		}
 	};
 
@@ -65,11 +72,10 @@ export async function setupGaussianSeparableBlur() {
 	const bloomVert = await util.fetchShader("shader/bloom.vs");
 	const bloomFrag = await util.fetchShader("shader/bloom.fs");
 	const simpleQuad = await util.fetchShader("shader/simpleQuad.vs");
-	const gaussianBlurFrag = await util.fetchShader("shader/gaussianBlurSeparable.fs");
+	const boxBlurFrag = await util.fetchShader("shader/boxBlur.fs");
 
 	/* Elements that cause a redraw in the non-animation mode */
 	ui.blur.kernelSize.addEventListener('input', () => { if (!ui.rendering.animate.checked) redraw() });
-	ui.blur.sigma.addEventListener('input', () => { if (!ui.rendering.animate.checked) redraw() });
 	ui.blur.samplePos.addEventListener('input', () => { if (!ui.rendering.animate.checked) redraw() });
 	ui.rendering.lightBrightness.addEventListener('input', () => { if (!ui.rendering.animate.checked) redraw() });
 
@@ -107,16 +113,46 @@ export async function setupGaussianSeparableBlur() {
 			if (!ui.rendering.animate.checked) redraw();
 		});
 	});
-	
-	/* Pass Mode */
-	ui.rendering.passModes.forEach(radio => {
-		/* Force set to pass1 to fix a reload bug in Firefox Android */
-		if (radio.value === "pass1")
-			radio.checked = true;
-		radio.addEventListener('change', (event) => {
-			ctx.passMode = event.target.value;
-			if (!ui.rendering.animate.checked) redraw();
+
+	ui.benchmark.button.addEventListener("click", () => {
+		ctx.flags.benchMode = true;
+		stopRendering();
+		ui.display.spinner.style.display = "block";
+		ui.benchmark.button.disabled = true;
+
+		/* spin up the Worker (ES-module) */
+		const worker = new Worker("./js/benchmark/boxBlurBenchmark.js", { type: "module" });
+
+		/* pass all data the worker needs */
+		worker.postMessage({
+			iterations: ui.benchmark.iterOut.value,
+			blurShaderSrc: boxBlurFrag,
+			kernelSize: ui.blur.kernelSize.value,
+			samplePos: ui.blur.samplePos.value
 		});
+
+		/* Benchmark */
+		worker.addEventListener("message", (event) => {
+			if (event.data.type !== "done") return;
+
+			ui.benchmark.label.textContent = event.data.benchText;
+			ui.benchmark.tapsCount.textContent = event.data.tapsCount;
+			ui.benchmark.iterTime.textContent = event.data.iterationText;
+			ui.benchmark.renderer.textContent = event.data.renderer;
+
+			worker.terminate();
+			ui.benchmark.button.disabled = false;
+			ctx.flags.benchMode = false;
+			if (ui.rendering.animate.checked)
+				startRendering();
+			else
+				redraw();
+		});
+	});
+
+	ui.benchmark.iterations.addEventListener("change", (event) => {
+		ui.benchmark.iterOut.value = event.target.value;
+		ui.benchmark.label.textContent = "Benchmark";
 	});
 
 	/* Draw Texture Shader */
@@ -125,10 +161,9 @@ export async function setupGaussianSeparableBlur() {
 	/* Draw bloom Shader */
 	ctx.shd.bloom = util.compileAndLinkShader(gl, bloomVert, bloomFrag, ["texture", "textureAdd", "offset", "radius"]);
 
-
 	/* Helper for recompilation */
 	function reCompileBlurShader(blurSize) {
-		ctx.shd.blur = util.compileAndLinkShader(gl, simpleQuad, gaussianBlurFrag, ["frameSizeRCP", "samplePosMult", "bloomStrength", "sigma", "direction"], "#define KERNEL_SIZE " + blurSize + '\n');
+		ctx.shd.blur = util.compileAndLinkShader(gl, simpleQuad, boxBlurFrag, ["frameSizeRCP", "samplePosMult", "bloomStrength"], "#define KERNEL_SIZE " + blurSize + '\n');
 	}
 
 	/* Blur Shader */
@@ -143,17 +178,9 @@ export async function setupGaussianSeparableBlur() {
 		ctx.flags.initComplete = false;
 
 		gl.deleteFramebuffer(ctx.fb.scene);
-		gl.deleteFramebuffer(ctx.fb.intermediate);
 		gl.deleteFramebuffer(ctx.fb.final);
 		[ctx.fb.scene, ctx.tex.frame] = util.setupFramebuffer(gl, canvas.width, canvas.height);
-		[ctx.fb.intermediate, ctx.tex.frameIntermediate] = util.setupFramebuffer(gl, canvas.width, canvas.height);
 		[ctx.fb.final, ctx.tex.frameFinal] = util.setupFramebuffer(gl, canvas.width, canvas.height);
-
-		// Clear intermediate texture to prevent lazy initialization warnings
-		gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.intermediate);
-		gl.clearColor(0.0, 0.0, 0.0, 1.0);
-		gl.clear(gl.COLOR_BUFFER_BIT);
-
 
 		let [base, selfIllum] = await Promise.all([
 			fetch("/dual-kawase/img/SDR_No_Sprite.png"),
@@ -188,9 +215,7 @@ export async function setupGaussianSeparableBlur() {
 
 		/* UI Stats */
 		const KernelSizeSide = ui.blur.kernelSize.value * 2 + 1;
-		/* Separable blur: pass1/pass2 = 1 pass, combined = 2 passes */
-		const samplesPerPixel = ctx.passMode == "combined" ? KernelSizeSide * 2 : KernelSizeSide;
-		const tapsNewText = (canvas.width * canvas.height * samplesPerPixel / 1000000).toFixed(1) + " Million";
+		const tapsNewText = (canvas.width * canvas.height * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1) + " Million";
 		ui.display.tapsCount.value = tapsNewText;
 		ui.display.width.value = canvas.width;
 		ui.display.height.value = canvas.height;
@@ -213,62 +238,17 @@ export async function setupGaussianSeparableBlur() {
 		/* Draw Call */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
-		/* Separable Gaussian blur implementation */
+		/* Box blur at native resolution */
 		gl.useProgram(ctx.shd.blur.handle);
-		
-		if (ctx.passMode == "pass1") {
-			/* Pass 1 only: Horizontal blur directly to screen */
-			const finalFB = ctx.mode == "bloom" ? ctx.fb.final : null;
-			gl.bindFramebuffer(gl.FRAMEBUFFER, finalFB);
-			gl.viewport(0, 0, canvas.width, canvas.height);
-			gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.rendering.lightBrightness.value);
-			gl.uniform2f(ctx.shd.blur.uniforms.direction, 1.0, 0.0); // Horizontal direction
-			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
-			gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / canvas.width, 1.0 / canvas.height);
-			gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.blur.samplePos.value);
-			gl.uniform1f(ctx.shd.blur.uniforms.sigma, Math.max(ui.blur.kernelSize.value / ui.blur.sigma.value, 0.001));
-			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-		} else if (ctx.passMode == "pass2") {
-			/* Pass 2 only: Vertical blur directly to screen */
-			const finalFB = ctx.mode == "bloom" ? ctx.fb.final : null;
-			gl.bindFramebuffer(gl.FRAMEBUFFER, finalFB);
-			gl.viewport(0, 0, canvas.width, canvas.height);
-			gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.rendering.lightBrightness.value);
-			gl.uniform2f(ctx.shd.blur.uniforms.direction, 0.0, 1.0); // Vertical direction
-			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
-			gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / canvas.width, 1.0 / canvas.height);
-			gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.blur.samplePos.value);
-			gl.uniform1f(ctx.shd.blur.uniforms.sigma, Math.max(ui.blur.kernelSize.value / ui.blur.sigma.value, 0.001));
-			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-		} else {
-			/* Combined: Two-pass separable blur */
-			/* Pass 1: Horizontal blur to intermediate buffer */
-			gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.fb.intermediate);
-			gl.viewport(0, 0, canvas.width, canvas.height);
-			gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.rendering.lightBrightness.value);
-			gl.uniform2f(ctx.shd.blur.uniforms.direction, 1.0, 0.0); // Horizontal direction
-			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
-			gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / canvas.width, 1.0 / canvas.height);
-			gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.blur.samplePos.value);
-			gl.uniform1f(ctx.shd.blur.uniforms.sigma, Math.max(ui.blur.kernelSize.value / ui.blur.sigma.value, 0.001));
-			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-			
-			/* Pass 2: Vertical blur to final destination */
-			const finalFB = ctx.mode == "bloom" ? ctx.fb.final : null;
-			gl.bindFramebuffer(gl.FRAMEBUFFER, finalFB);
-			gl.viewport(0, 0, canvas.width, canvas.height);
-			gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.rendering.lightBrightness.value);
-			gl.uniform2f(ctx.shd.blur.uniforms.direction, 0.0, 1.0); // Vertical direction
-			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frameIntermediate);
-			gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / canvas.width, 1.0 / canvas.height);
-			gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.blur.samplePos.value);
-			gl.uniform1f(ctx.shd.blur.uniforms.sigma, Math.max(ui.blur.kernelSize.value / ui.blur.sigma.value, 0.001));
-			gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-		}
+		const finalFB = ctx.mode == "bloom" ? ctx.fb.final : null;
+		gl.bindFramebuffer(gl.FRAMEBUFFER, finalFB);
+		gl.viewport(0, 0, canvas.width, canvas.height);
+		gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.rendering.lightBrightness.value);
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
+		gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / canvas.width, 1.0 / canvas.height);
+		gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.blur.samplePos.value);
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		if (ctx.mode == "bloom") {
 			/* Now do the bloom composition to the screen */
@@ -369,10 +349,8 @@ export async function setupGaussianSeparableBlur() {
 		gl.deleteTexture(ctx.tex.sdr); ctx.tex.sdr = null;
 		gl.deleteTexture(ctx.tex.selfIllum); ctx.tex.selfIllum = null;
 		gl.deleteTexture(ctx.tex.frame); ctx.tex.frame = null;
-		gl.deleteTexture(ctx.tex.frameIntermediate); ctx.tex.frameIntermediate = null;
 		gl.deleteTexture(ctx.tex.frameFinal); ctx.tex.frameFinal = null;
 		gl.deleteFramebuffer(ctx.fb.scene); ctx.fb.scene = null;
-		gl.deleteFramebuffer(ctx.fb.intermediate); ctx.fb.intermediate = null;
 		gl.deleteFramebuffer(ctx.fb.final); ctx.fb.final = null;
 		ctx.flags.buffersInitialized = false;
 		ctx.flags.initComplete = false;

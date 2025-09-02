@@ -144,14 +144,63 @@
 			</button>
 		</td>
 	</tr>
+	<tr class="benchmark-row noborder" style="display: none;">
+		<td>
+			<code>benchmark</code>
+		</td>
+		<td colspan="3" style="width: 100%;" style="display: none;">
+			<div style="display: flex; width: 100%; justify-content: flex-end;">
+				<div class="multiButton">
+					<button type="button" class="main" id="benchmark">
+						<span id="benchmarkLabel">Benchmark</span>
+						<span>
+							<output id="iterOut">10</output> Iterations
+						</span>
+					</button>
+					<div class="arrowWrap">
+						<select id="iterations">
+							<optgroup label="Iterations at 1600x1200">
+								<option value="10" selected>10</option>
+								<option value="100">100</option>
+								<option value="1000">1000</option>
+								<option value="10000">10000</option>
+								<option value="100000">100000</option>
+							</optgroup>
+						</select>
+						<span class="arrow">
+							{% include "style/icons/arrow-down.svg" %}
+						</span>
+					</div>
+				</div>
+			</div>
+		</td>
+	</tr>
 </table>
 <script type="module">
-	import { setupGaussianSeparableBlur } from "./js/gaussianSeparableBlur.js";
+	import { setupGaussianSeparableBlur } from "./js/blur/gaussianSeparableBlur.js";
 	setupGaussianSeparableBlur();
 </script>
 </div>
-<!-- Benchmark in 1feb0231a940d3dd9989103795f199b4baedb535 -->
-<blockquote>
+<blockquote id="WebGLBox-GaussianSeparableBlurDetail">
+<details class="benchmark-row" style="display: none;"><summary>Detailed Benchmark Results</summary>
+	<div style="width: 100%; white-space: normal; word-break: break-word; font-size: smaller;">
+		<div>
+			・<strong>Resolution</strong>: <code>1600x1200</code>
+		</div>
+		<div>
+			・<strong>Pass Mode</strong>: <code id="passMode">?</code>
+		</div>
+		<div>
+			・<strong>Execution Time</strong>: ~<output id="iterTime">?</output> / iteration
+		</div>
+		<div>
+			・<strong>Texture taps</strong>: <output id="tapsCountBench">?</output> Million / iteration
+		</div>
+		<div>
+			・<strong>GPU info</strong>: <code id="renderer"></code>
+		</div>
+	</div>
+</details>
 <details><summary><a target="_blank" href="screenshots/fxaainteractive.png">Screenshot</a>, in case WebGL doesn't work</summary>
 
 <!-- ![image](screenshots/fxaainteractive.png) -->
@@ -166,10 +215,10 @@
 
 </details>
 <details>	
-<summary>WebGL Javascript <a target="_blank" href="js/gaussianSeparableBlur.js">gaussianSeparableBlur.js</a></summary>
+<summary>WebGL Javascript <a target="_blank" href="js/blur/gaussianSeparableBlur.js">gaussianSeparableBlur.js</a></summary>
 
 ```javascript
-{% include "posts/dual-kawase/js/gaussianSeparableBlur.js" %}
+{% include "posts/dual-kawase/js/blur/gaussianSeparableBlur.js" %}
 ```
 
 </details>

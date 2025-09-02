@@ -1,8 +1,9 @@
-import * as util from './utility.js'
+import * as util from '../utility.js'
 
-export async function setupSimple() {
+export async function setupGaussianBlur() {
 	/* Init */
-	const WebGLBox = document.getElementById('WebGLBox-Simple');
+	const WebGLBox = document.getElementById('WebGLBox-GaussianBlur');
+	const WebGLBoxDetail = document.getElementById('WebGLBox-GaussianBlurDetail');
 	const canvas = WebGLBox.querySelector('canvas');
 
 	/* Circle Rotation size */
@@ -27,7 +28,7 @@ export async function setupSimple() {
 		/* Shaders and their respective Resource Locations */
 		shd: {
 			scene: { handle: null, uniforms: { offset: null, radius: null } },
-			blur: { handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, lightBrightness: null } },
+			blur: { handle: null, uniforms: { frameSizeRCP: null, samplePosMult: null, sigma: null, bloomStrength: null } },
 			bloom: { handle: null, uniforms: { offset: null, radius: null, texture: null, textureAdd: null } }
 		}
 	};
@@ -41,12 +42,28 @@ export async function setupSimple() {
 			ms: WebGLBox.querySelector('#ms'),
 			width: WebGLBox.querySelector('#width'),
 			height: WebGLBox.querySelector('#height'),
+			tapsCount: WebGLBox.querySelector('#taps'),
+		},
+		blur: {
+			kernelSize: WebGLBox.querySelector('#sizeRange'),
+			sigma: WebGLBox.querySelector('#sigmaRange'),
+			samplePos: WebGLBox.querySelector('#samplePosRange'),
+			samplePosReset: WebGLBox.querySelector('#samplePosRangeReset'),
 		},
 		rendering: {
 			animate: WebGLBox.querySelector('#animateCheck'),
 			modes: WebGLBox.querySelectorAll('input[type="radio"]'),
 			lightBrightness: WebGLBox.querySelector('#lightBrightness'),
 			lightBrightnessReset: WebGLBox.querySelector('#lightBrightnessReset'),
+		},
+		benchmark: {
+			button: WebGLBox.querySelector('#benchmark'),
+			label: WebGLBox.querySelector('#benchmarkLabel'),
+			iterOut: WebGLBox.querySelector('#iterOut'),
+			renderer: WebGLBoxDetail.querySelector('#renderer'),
+			iterTime: WebGLBoxDetail.querySelector('#iterTime'),
+			tapsCount: WebGLBoxDetail.querySelector('#tapsCountBench'),
+			iterations: WebGLBox.querySelector('#iterations')
 		}
 	};
 
@@ -56,9 +73,12 @@ export async function setupSimple() {
 	const bloomVert = await util.fetchShader("shader/bloom.vs");
 	const bloomFrag = await util.fetchShader("shader/bloom.fs");
 	const simpleQuad = await util.fetchShader("shader/simpleQuad.vs");
-	const noBlurYetFrag = await util.fetchShader("shader/noBlurYet.fs");
+	const gaussianBlurFrag = await util.fetchShader("shader/gaussianBlur.fs");
 
 	/* Elements that cause a redraw in the non-animation mode */
+	ui.blur.kernelSize.addEventListener('input', () => { if (!ui.rendering.animate.checked) redraw() });
+	ui.blur.sigma.addEventListener('input', () => { if (!ui.rendering.animate.checked) redraw() });
+	ui.blur.samplePos.addEventListener('input', () => { if (!ui.rendering.animate.checked) redraw() });
 	ui.rendering.lightBrightness.addEventListener('input', () => { if (!ui.rendering.animate.checked) redraw() });
 
 	/* Events */
@@ -77,6 +97,12 @@ export async function setupSimple() {
 		ui.display.contextLoss.style.display = "block";
 	});
 
+	ui.blur.kernelSize.addEventListener('input', () => {
+		reCompileBlurShader(ui.blur.kernelSize.value);
+		ui.blur.samplePos.disabled = ui.blur.kernelSize.value == 0;
+		ui.blur.samplePosReset.disabled = ui.blur.kernelSize.value == 0;
+	});
+
 	/* Render Mode */
 	ui.rendering.modes.forEach(radio => {
 		/* Force set to scene to fix a reload bug in Firefox Android */
@@ -90,19 +116,62 @@ export async function setupSimple() {
 		});
 	});
 
+	ui.benchmark.button.addEventListener("click", () => {
+		ctx.flags.benchMode = true;
+		stopRendering();
+		ui.display.spinner.style.display = "block";
+		ui.benchmark.button.disabled = true;
+
+		/* spin up the Worker (ES-module) */
+		const worker = new Worker("./js/benchmark/gaussianBlurBenchmark.js", { type: "module" });
+
+		/* pass all data the worker needs */
+		worker.postMessage({
+			iterations: ui.benchmark.iterOut.value,
+			blurShaderSrc: gaussianBlurFrag,
+			kernelSize: ui.blur.kernelSize.value,
+			samplePos: ui.blur.samplePos.value,
+			sigma: ui.blur.sigma.value
+		});
+
+		/* Benchmark */
+		worker.addEventListener("message", (event) => {
+			if (event.data.type !== "done") return;
+
+			ui.benchmark.label.textContent = event.data.benchText;
+			ui.benchmark.tapsCount.textContent = event.data.tapsCount;
+			ui.benchmark.iterTime.textContent = event.data.iterationText;
+			ui.benchmark.renderer.textContent = event.data.renderer;
+
+			worker.terminate();
+			ui.benchmark.button.disabled = false;
+			ctx.flags.benchMode = false;
+			if (ui.rendering.animate.checked)
+				startRendering();
+			else
+				redraw();
+		});
+	});
+
+	ui.benchmark.iterations.addEventListener("change", (event) => {
+		ui.benchmark.iterOut.value = event.target.value;
+		ui.benchmark.label.textContent = "Benchmark";
+	});
+
 	/* Draw Texture Shader */
 	ctx.shd.scene = util.compileAndLinkShader(gl, circleAnimation, simpleTexture, ["offset", "radius"]);
 
 	/* Draw bloom Shader */
 	ctx.shd.bloom = util.compileAndLinkShader(gl, bloomVert, bloomFrag, ["texture", "textureAdd", "offset", "radius"]);
 
+
 	/* Helper for recompilation */
-	function reCompileBlurShader() {
-		ctx.shd.blur = util.compileAndLinkShader(gl, simpleQuad, noBlurYetFrag, ["lightBrightness"]);
+	function reCompileBlurShader(blurSize) {
+		ctx.shd.blur = util.compileAndLinkShader(gl, simpleQuad, gaussianBlurFrag, ["frameSizeRCP", "samplePosMult", "bloomStrength", "sigma"], "#define KERNEL_SIZE " + blurSize + '\n');
 	}
 
 	/* Blur Shader */
-	reCompileBlurShader()
+	reCompileBlurShader(ui.blur.kernelSize.value)
 
 	/* Send Unit code verts to the GPU */
 	util.bindUnitQuad(gl);
@@ -116,6 +185,7 @@ export async function setupSimple() {
 		gl.deleteFramebuffer(ctx.fb.final);
 		[ctx.fb.scene, ctx.tex.frame] = util.setupFramebuffer(gl, canvas.width, canvas.height);
 		[ctx.fb.final, ctx.tex.frameFinal] = util.setupFramebuffer(gl, canvas.width, canvas.height);
+
 
 		let [base, selfIllum] = await Promise.all([
 			fetch("/dual-kawase/img/SDR_No_Sprite.png"),
@@ -149,6 +219,9 @@ export async function setupSimple() {
 			return;
 
 		/* UI Stats */
+		const KernelSizeSide = ui.blur.kernelSize.value * 2 + 1;
+		const tapsNewText = (canvas.width * canvas.height * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1) + " Million";
+		ui.display.tapsCount.value = tapsNewText;
 		ui.display.width.value = canvas.width;
 		ui.display.height.value = canvas.height;
 
@@ -170,14 +243,17 @@ export async function setupSimple() {
 		/* Draw Call */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
-		/* Box blur at native resolution */
+		/* Gaussian blur at native resolution */
 		gl.useProgram(ctx.shd.blur.handle);
 		const finalFB = ctx.mode == "bloom" ? ctx.fb.final : null;
 		gl.bindFramebuffer(gl.FRAMEBUFFER, finalFB);
 		gl.viewport(0, 0, canvas.width, canvas.height);
-		gl.uniform1f(ctx.shd.blur.uniforms.lightBrightness, ctx.mode == "scene" ? 1.0 : ui.rendering.lightBrightness.value);
+		gl.uniform1f(ctx.shd.blur.uniforms.bloomStrength, ctx.mode == "scene" ? 1.0 : ui.rendering.lightBrightness.value);
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, ctx.tex.frame);
+		gl.uniform2f(ctx.shd.blur.uniforms.frameSizeRCP, 1.0 / canvas.width, 1.0 / canvas.height);
+		gl.uniform1f(ctx.shd.blur.uniforms.samplePosMult, ui.blur.samplePos.value);
+		gl.uniform1f(ctx.shd.blur.uniforms.sigma, Math.max(ui.blur.kernelSize.value / ui.blur.sigma.value, 0.001));
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 
 		if (ctx.mode == "bloom") {

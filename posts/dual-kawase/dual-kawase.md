@@ -43,9 +43,11 @@ Conceptually, *"Make thing go blurry"* is easy, boiling down to some form of *"a
 
 <blockquote class="reaction"><div class="reaction_text">A graphics programming time travel, if you will.</div><img class="kiwi" src="/assets/kiwis/cyber.svg"></blockquote>
 
-Using the [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) in the device you are reading this article on, and the [WebGL](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API) capability of your browser, we'll implement realtime blurring techniques and retrace the trade-offs graphics programmers had to make in order to marry two, sometimes opposing, worlds: **Mathematical theory** and **Technological reality**. Let's dig in!
+Using the [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) in the device you are reading this article on, and the [WebGL](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API) capability of your browser, we'll implement realtime blurring techniques and retrace the trade-offs graphics programmers had to make in order to marry two, sometimes opposing, worlds: **Mathematical theory** and **Technological reality**.
 
 <blockquote class="reaction"><div class="reaction_text">This is my submission to this year's <a target="_blank" href="https://some.3b1b.co/">Summer of Math Exposition</a></div><img class="kiwi" src="img/SOMELogo.svg"></blockquote>
+
+With many interactive visualizations to guide us, we'll journey through a bunch of blurs, make a detour through frequency space manipulations, torture your graphics processor to measure performance, before finally arriving at a product of years worth of cumulative graphics programmer sweat - The ✨ Dual Kawase Blur 🌟
 
 ## Setup - No blur yet
 In the context of video game post processing, a 3D scene is drawn, also called [rendering](https://en.wikipedia.org/wiki/Rendering_(computer_graphics)), and saved to an intermediary image - a [framebuffer](https://learnopengl.com/Advanced-OpenGL/Framebuffers). In turn, this framebuffer is processed to achieve [various effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering). Since this *processing* happens *after* a 3D scene is rendered, it's called *post-processing*. All that, _many_ times a second.
@@ -93,7 +95,7 @@ UV coordinates specify the position we read in the image, with bottom left being
 
 The framebuffer is passed into the fragment shader in line `uniform sampler2D texture` as a texture. Using the blur shader, we draw a "Full Screen Quad", a rectangle covering the entire canvas, with matching `0,0` in the bottom-left and `1,1` in the top-right `varying vec2 uv` UV coordinates to read from the texture.
 
-The texture's aspect-ratio and resolution are the same as the output canvas's aspect-ratio and resolution, thus there is a 1:1 pixel mapping between the texture we will process and our output canvas. The [graphics pipeline steps](js/simple.js) and [vertex shader](shader/simpleQuad.vs) responsible for this are not important for this article.
+The texture's aspect-ratio and resolution are the same as the output canvas's aspect-ratio and resolution, thus there is a 1:1 pixel mapping between the texture we will process and our output canvas. The [graphics pipeline steps](js/blur/simple.js) and [vertex shader](shader/simpleQuad.vs) responsible for this are not important for this article.
 
 The blur fragment shader accesses the color of the texture with `texture2D(texture, uv)`, at the matching output pixel's position. In following examples, we'll read from neighboring pixels, for which we'll need to calculate a UV coordinate offset, a decimal fraction corresponding to one pixel step with "one, divided by canvas resolution"
 
@@ -211,23 +213,50 @@ Eitherway, the infinite gaussian curve ***will*** have a cut-off _somewhere_. `s
 
 <blockquote class="reaction"><div class="reaction_text">An optimal kernel would be one, where the outer weights are almost zero. Thus if we increased <code>kernelSize</code> in Absolute Sigma mode by one, it would make close to no more <strong>visual</strong> difference.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
-There are other ways of creating kernels, with other properties. One way is to deviate from the gaussian blur and follow Pascal's triangle to get a set of predefined kernel sizes and values. These are called [Binomial Filters](https://bartwronski.com/2021/10/31/practical-gaussian-filter-binomial-filter-and-small-sigma-gaussians/) and lock us into specific "kernel presets", but have properties which are useful for image resampling.
+There are other ways of creating blur kernels, with other properties. One way is to follow [Pascal's triangle](https://en.wikipedia.org/wiki/Pascal%27s_triangle) to get a set of predefined kernel sizes and values. These are called [Binomial Filters](https://bartwronski.com/2021/10/31/practical-gaussian-filter-binomial-filter-and-small-sigma-gaussians/) and lock us into specific "kernel presets", but solve the infinity vs cut-off dilemma, by moving weights to zero within the sampling window.
 
 Binomial Kernels are also Gaussian-like in their frequency response. We won't expand on these further, just know that we ***can*** choose kernels by different mathematical criteria, chasing different signal response properties. But speaking of which, what even *is* Gaussian Like? Why do we care?
 
 ### What is Gaussian-like?
-In Post-Processing Blur algorithms you generally find two categories. Bokeh Blurs and Gaussian Like Blurs.
+In Post-Processing Blur algorithms you generally find two categories. [Bokeh](https://en.wikipedia.org/wiki/Bokeh) Blurs and Gaussian-Like Blurs. The gaussian is chosen for its natural appearance, its ability to smooth colors without "standout features". Gaussian Blurs are generally used as an ingredient in an overarching visual effect, be it frosted glass Interfaces or Bloom.
 
-So for the sake of video game effects, Sleek UIs and frosted glass interfaces we don't particularly care if the underlying algorithm has signal response characteristics of a gaussian curve or not. We care about it looking smooth - Gaussian like.
+<figure>
+	<img src="img/gaussianLike.png" alt="Bokeh blur, gaussian blur comparison" />
+	<figcaption>Bokeh Blur and Gaussian Blur compared.</figcaption>
+</figure>
 
-It's an artistic endeavour after all.
+In contrast to that, when emulating lenses and especially in the context of [Depth of Field](https://dev.epicgames.com/documentation/en-us/unreal-engine/depth-of-field-in-unreal-engine), is "[Bokeh Blur](https://dev.epicgames.com/documentation/en-us/unreal-engine/cinematic-depth-of-field-method?application_version=4.27)", also known as "Lens Blur" or "Cinematic Blur". This type of blur ***is*** the target visual effect. The challenges and approaches are very much related, but algorithms used differ.
 
-https://www.youtube.com/watch?v=vNG3ZAd8wCc
+Algorithms get really creative in this space, all with different trade-offs and visuals. Some sample using texture, some sample using a [poission disk distribution](https://mynameismjp.wordpress.com/2011/02/28/bokeh/) and some have cool out of the box thinking: Computerphile covered a comlex numbers based approach to creating Bokeh Blur, a fascinating number theory cross-over.
 
-## The chase for performance
+<figure>
+	<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/vNG3ZAd8wCc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+	<figcaption>Video Game & Complex Bokeh Blurs<br><a target="_blank" href="https://www.youtube.com/watch?v=vNG3ZAd8wCc">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@Computerphile">Computerphile</a></figcaption>
+</figure>
 
-Now we have established our stakes. This is what we chase going forward.
+This article though doesn't care about stylistics approaches. We are here to chase a basic building block of graphics programming and realtime visual effects, a "Gaussian-Like" with good performance. Speaking of which!
 
+## Performance
+The main motivator of our journey here, is the chase of realtime performance. Everything we do must happen within milliseconds. The expected performance of an algorithm and the practical cost once placed in the graphics pipeline, are sometimes surprisingly different numbers.
+
+With performance being such a driving motivator going forward, it would be a shame if we couldn't measure it. Each WebGL Box has a benchmark function, which blurs random noise at a fixed resolution of `1600x1200` with the respective blur settings you chose and a fixed iteration count.
+
+Benchmarking can be done by fixing time and performing 
+
+Measuring performance on the Performance measurements via [`EXT_disjoint_timer_query_webgl2`](https://registry.khronos.org/webgl/extensions/EXT_disjoint_timer_query_webgl2/) are pretty reliable, but only supported on Desktop Chrome. So for the sake of comparability, we do it the only way that is guaranteed to sync, [`gl.readPixels()`](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/readPixels)
+
+Normally, a benchmark would 
+This feature is currently hidden and can be unhidden with the following button, for all WebGLBoxes with blurs.
+
+On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `samplePosMultiplier` will negatively impact performance (up to a point), even though the required texture reads stay the same. This is due hardware texture caches accelerating texture reads which are spatially close together and not being able to do so effectively, if the texture reads are all too far apart.
+
+<blockquote>⚠️ Especially on mobile, <strong>please</strong> increase iterations slowly and stay below a few seconds of execution time, or the browser will lock GPU access from this page and disable all blur examples, until a browser restart is performed.</blockquote>
+
+With great power comes great responsibility.
+
+<blockquote class="reaction"><div class="reaction_text">iOS and iPad OS are especially strict, will keep GPU access disabled, even on Tab Reload. You will have go to the App Switcher (Double Tap Home Button), Swipe Safari Up to close it and relaunch it from scratch.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
+
+{% include "./demos/benchmarkUnlock.htm" %}
 
 From here on out, everything you see will be done by your device's GPU. You will see how many variables can be tuned and we will need to build quite a bunch of intuition.
 
@@ -238,13 +267,7 @@ These are convolutions, but we aren't actually bound by rules of the classical c
 
 Old info: In benchmark mode we run at 1600x1200. We _could_ use many [older](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/finish) and [newer](https://developer.mozilla.org/en-US/docs/Web/API/WebGLSync) GPU pipeline synchronization features of WebGL and measure just the time of the blur pass. Whilst you can double check if you get reliable numbers with platform specific debuggers like NV?? on one type of device, unfortunately, it's not possible in the general case and it's too easy to get not a number that measures now how long it took us to blur, but some other part of the GPU pipeline. Same goes for trying to find out how many iterations of blur we can run within X amount of time. Especially once on mobile Apple devices, getting reliable numbers goes out the window.
 
-Performance measurements via [`EXT_disjoint_timer_query_webgl2`](https://registry.khronos.org/webgl/extensions/EXT_disjoint_timer_query_webgl2/) are pretty reliable, but only supported on Desktop Chrome. So for the sake of comparability, we do it the only way that is guaranteed to sync, [`gl.readPixels()`](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/readPixels)
-
 Especially dedicated Laptop GPUs are rather slow with getting out of their power saving state, so on some platforms, hitting the benchmark button twice in succession may produce faster results.
-
-If you set the benchmark with parameters resulting in 10s+ run times, then you'll see just how brittle browsers on even the most premium Apple devices become, once we load the GPU mercilessly. Even though the main thread does nothing during a benchmark run, we'll trigger interesting error states.
-
-On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `samplePosMultiplier` will negatively impact performance (up to a point), even though the required texture reads stay the same. This is due hardware texture caches accelerating texture reads which are spatially close together and not being able to do so effectively, if the texture reads are all too far apart.
 
 <blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/dead.svg"></blockquote>
 
@@ -254,6 +277,10 @@ There is actually an alternative way to perform blurring, by performing an [imag
 If we ignore the frequency domain transformation steps, then this makes the blurring step itself constant in time, regardless of blur radius! Small Radius Blur, Large Radius blur, all the same speed. But of course, we ***can't*** ignore the Frequency domain transformations.
 Unfortunately, this cannot be used in practice, as the FFT and inverse FFT steps don't translate well into a graphics pipeline context at all. 
 
+<figure>
+	<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/spUNpyF58BY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+	<figcaption>But what is the Fourier Transform? A visual introduction.<br><a target="_blank" href="https://www.youtube.com/watch?v=spUNpyF58BY">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@3blue1brown">3Blue1Brown</a></figcaption>
+</figure>
 3Blue1Brown covered what a Fourier Transform is, on its fundamental level was covered in [great detail in a video series already](https://www.youtube.com/watch?v=spUNpyF58BY).
 
 Fourier code written by https://github.com/turbomaze/JS-Fourier-Image-Analysis
@@ -288,6 +315,11 @@ So Low Pass Filter ≠ Low Pass Filter
 <blockquote class="reaction"><div class="reaction_text">Blurs and Bloom based on FFT Low Pass filtering would extinguish small lights like candles present in the 3D scene, by extinguishing the high frequency energy that is used to describe that light.<output></output></div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
 ## Gaussian Blur Separable
+
+<figure>
+	<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/SiJpkucGa1o" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+	<figcaption>Separable Filters and a Bauble<br><a target="_blank" href="https://www.youtube.com/watch?v=SiJpkucGa1o">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@Computerphile">Computerphile</a></figcaption>
+</figure>
 
 {% include "./demos/gaussianSeparable.htm" %}
 
@@ -351,10 +383,6 @@ iPhone SE 34d gen, iOS 18.4.1, 1334 x 750 px --> 6x6 px
 </figure>
 
 <blockquote class="reaction"><div class="reaction_text">Apple misconfigured the blur switch on iPadOS, for the top right settings pull down. The switch happens too soon, regressing blur strength and resulting in a pulse like artifact.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
-
-YouTube Channel [Computerphile](https://www.youtube.com/@Computerphile) did a lot on blurs and covered the mathematics behind them. I won't jump deep into the basic building blocks of kernels, convolutions and separability, as they have covered it already really well.
-
-https://www.youtube.com/watch?v=SiJpkucGa1o
 
 Playdead used it to get HDR Bloom
 [Low Complexity, High Fidelity - INSIDE Rendering](https://gdcvault.com/play/1023304/Low-Complexity-High-Fidelity-INSIDE)

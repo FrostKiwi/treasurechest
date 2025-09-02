@@ -1,4 +1,4 @@
-import * as util from './utility.js'
+import * as util from '../utility.js'
 
 export async function setupGaussianDownsampleBlur() {
 	/* Init */
@@ -59,6 +59,16 @@ export async function setupGaussianDownsampleBlur() {
 			lightBrightness: WebGLBox.querySelector('#lightBrightness'),
 			lightBrightnessReset: WebGLBox.querySelector('#lightBrightnessReset'),
 		},
+		benchmark: {
+			button: WebGLBox.querySelector('#benchmark'),
+			label: WebGLBox.querySelector('#benchmarkLabel'),
+			iterOut: WebGLBox.querySelector('#iterOut'),
+			renderer: document.getElementById('WebGLBox-GaussianDownsampleBlurDetail').querySelector('#renderer'),
+			skipMode: document.getElementById('WebGLBox-GaussianDownsampleBlurDetail').querySelector('#skipMode'),
+			iterTime: document.getElementById('WebGLBox-GaussianDownsampleBlurDetail').querySelector('#iterTime'),
+			tapsCount: document.getElementById('WebGLBox-GaussianDownsampleBlurDetail').querySelector('#tapsCountBench'),
+			iterations: WebGLBox.querySelector('#iterations')
+		}
 	};
 
 	/* Shaders */
@@ -145,6 +155,51 @@ export async function setupGaussianDownsampleBlur() {
 
 	/* Initialize skip mode controls */
 	updateSkipModeControls();
+
+	ui.benchmark.button.addEventListener("click", () => {
+		ctx.flags.benchMode = true;
+		stopRendering();
+		ui.display.spinner.style.display = "block";
+		ui.benchmark.button.disabled = true;
+
+		/* spin up the Worker (ES-module) */
+		const worker = new Worker("./js/benchmark/downsampleBenchmark.js", { type: "module" });
+
+		/* pass all data the worker needs */
+		worker.postMessage({
+			iterations: ui.benchmark.iterOut.value,
+			blurShaderSrc: gaussianBlurFrag,
+			kernelSize: ui.blur.kernelSize.value,
+			samplePos: ui.blur.samplePos.value,
+			sigma: ui.blur.sigma.value,
+			downSample: ui.blur.downSample.value,
+			skipMode: ctx.skipMode
+		});
+
+		/* Benchmark */
+		worker.addEventListener("message", (event) => {
+			if (event.data.type !== "done") return;
+
+			ui.benchmark.label.textContent = event.data.benchText;
+			ui.benchmark.tapsCount.textContent = event.data.tapsCount;
+			ui.benchmark.iterTime.textContent = event.data.iterationText;
+			ui.benchmark.renderer.textContent = event.data.renderer;
+			ui.benchmark.skipMode.textContent = event.data.skipMode;
+
+			worker.terminate();
+			ui.benchmark.button.disabled = false;
+			ctx.flags.benchMode = false;
+			if (ui.rendering.animate.checked)
+				startRendering();
+			else
+				redraw();
+		});
+	});
+
+	ui.benchmark.iterations.addEventListener("change", (event) => {
+		ui.benchmark.iterOut.value = event.target.value;
+		ui.benchmark.label.textContent = "Benchmark";
+	});
 
 	/* Draw Texture Shader */
 	ctx.shd.scene = util.compileAndLinkShader(gl, circleAnimation, simpleTexture, ["offset", "radius"]);
@@ -266,7 +321,7 @@ export async function setupGaussianDownsampleBlur() {
 		/* UI Stats */
 		const KernelSizeSide = ui.blur.kernelSize.value * 2 + 1;
 		const effectiveRes = [Math.max(1, canvas.width >> +ui.blur.downSample.value), Math.max(1, canvas.height >> +ui.blur.downSample.value)];
-		const tapsNewText = (effectiveRes[0] * effectiveRes[1] * KernelSizeSide * KernelSizeSide / 1000000).toFixed(1) + " Million";
+		const tapsNewText = (effectiveRes[0] * effectiveRes[1] * KernelSizeSide * 2 / 1000000).toFixed(1) + " Million";
 		ui.display.tapsCount.value = tapsNewText;
 		ui.display.width.value = effectiveRes[0];
 		ui.display.height.value = effectiveRes[1];
