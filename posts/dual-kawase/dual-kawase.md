@@ -260,7 +260,7 @@ This is due hardware texture caches accelerating texture reads which are spatial
 
 These are key numbers graphics programmers chase when writing fragment shaders: <strong>Texture Taps</strong> and <strong>Cache Utilization</strong>. There is another one, we will get into in a moment. Clearly, our Blurs are ***slow***. Time for a speed up!
 
-## Gaussian Blur Separable
+## Separable Gaussian Blur
 We have not yet left the *classics* of blur algorithms. One fundamental thing on the table is the "Convolution Separability". Certain Convolutions like our [Box Blur](#box-blur), [our Gaussian Blur](#gaussian-blur) and the [Binominal filtering](https://bartwronski.com/2021/10/31/practical-gaussian-filter-binomial-filter-and-small-sigma-gaussians/) mentioned in passing previously can all be performed in two separate passes, by two ***separate*** 1D Kernels.
 
 <figure>
@@ -375,62 +375,61 @@ Nearest Neightbor looks pixelated, if the size is not at 100% size, which is equ
 With 2 x 2 samples, we start skipping over color information, if the underlying pixels are smaller than half a pixel in size. At 25% size, our bilinear interpolation starting to be like the nearest neighbor interpolation. So as a result, we can downsamle image in steps of 50%, without "skipping over information" and creating aliasing. Let's use that!
 
 ## Downsampling
-One fundamental thing to do in post-processing is to downsize first, perform the convolution at a lower resolution and upsize again, with the idea being, that for things like bloom, you wouldn't notice the lowered resolution. Let's try that.
+One fundamental thing thing you can do in post-processing is to downsample first, perform the processing at a lower resolution and upsize again, with the idea being, that for things like bloom, you wouldn't notice the lowered resolution. Below is the the [Separable Gaussian Blur](#separable-gaussian-blur) again, but a variable downsample / upsample chain.
+
+Each increase of `downSample` adds a 50% scale step. With an example of a square 1024 px² image and a `downSample` of `2`, this would mean processing chain of `1024 px² → 512 px² → 256 px² → <Blur> → 512 px² → 1024 px²`
+
+ Furthermore, there are modes to skip the intermediary steps of the downsample, if there are any. Explore all the possible dials and sliders!
 
 {% include "./demos/downsample.htm" %}
 
-Skip Upsample has an effect, no way!
+As you see, with each downsample step, our kernel covers more and more area, thus increasing the blur radius. But you will also spot the background "shimmering", especially in bloom mode, with it's small and bright highlights, which are very prone to aliasing.
+
+<!-- Skip Upsample has an effect, no way!
 Illogical, but discovery by Masaki Kawase.
 
 First time I read this, didn't understand it.
 
-Smoother because, we interpolate multiple times.
+Smoother because, we interpolate multiple times. -->
 
-Think, in a way, the jump directly up is more accurate! But also uglier.
-
-Mention https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
+<!-- Mention https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/ -->
 
 ## Kawase Blur
+Discovered by [Silicon Studio](https://www.siliconstudio.co.jp/en/) senior graphics engineer Masaki Kawase 川瀬 正樹 and [presented](https://gdcvault.com/play/1022664/Frame-Buffer-Postprocessing-Effects-in) during a 2003 Game Developers Conference, the Kawase blurs utilizes the bilinear filtering capability to place sample in a diamond shape. There are only 5 samples, which are repeated in increasing radius each pass.
+
+<figure>
+	<img src="img/kawase1.png" alt="kawase blur filter pattern" />
+	<img src="img/kawase2.png" alt="kawase blur filter pattern" />
+	<figcaption>Excerpt from  "<a href="https://gdcvault.com/play/1022664/Frame-Buffer-Postprocessing-Effects-in" target="_blank">Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L (Wreckless)"</a><br>(GDC Presentation 2003)</figcaption>
+</figure>
 
 {% include "./demos/kawase.htm" %}
 
-The diagonal sampling avoids harsh edges that pure box filters would create, leading to smoother gradients. Because of its diagonal nature, it is not separable.
-
-https://gdcvault.com/play/1022664/Frame-Buffer-Postprocessing-Effects-in
+It provides smooth, gaussian like results. It is not a separable convolution, due to its diagonal sampling nature.
 
 ## Dual Kawase Blur
+ARM Engineer Marius Bjørge picked up on this idea and during a talk [in 2015](https://dl.acm.org/doi/10.1145/2776880.2787664), combined all these approaches into one and unveiled the "Dual Kawase Blur". Utilizing downsampling, at the same time as sampling in the diagonal shape presented by Masaki Kawase, a non shimmering, best of all worlds Algorithms was introduced.
 
 {% include "./demos/dual-kawase.htm" %}
 
-Invented by ARM's 
+It even made its way as an efficient way to blur windows background for a frosted glass effect in the Linux Desktop Environment KDE [in 2018](https://web.archive.org/web/20220427124712/https://phabricator.kde.org/D9848), where it remains the [algorithm of choice to this day](https://invent.kde.org/plasma/kwin/-/tree/master/src/plugins/blur).
 
-Added to KDE in 2018
-https://web.archive.org/web/20220427124712/https://phabricator.kde.org/D9848
 
-Still in KDE
-https://invent.kde.org/plasma/kwin/-/tree/master/src/plugins/blur
+<!-- ## State of the art -->
 
-Marius Bjørge picked it up and [did a talk in 2015](https://dl.acm.org/doi/10.1145/2776880.2787664) direct [video link](https://dl.acm.org/doi/suppl/10.1145/2776880.2787664/suppl_file/a184.mp4)
-
-## State of the art
-
-Playdead used it to get HDR Bloom
+<!-- Playdead used it to get HDR Bloom
 [Low Complexity, High Fidelity - INSIDE Rendering](https://gdcvault.com/play/1023304/Low-Complexity-High-Fidelity-INSIDE)
-Check against Jimenez 14 5:45 onwards
+Check against Jimenez 14 5:45 onwards -->
 
-Marius Bjørge picked it up and [did a talk in 2015](https://dl.acm.org/doi/10.1145/2776880.2787664) direct [video link](https://dl.acm.org/doi/suppl/10.1145/2776880.2787664/suppl_file/a184.mp4)
-Indepth article by Intel [link](https://www.intel.com/content/www/us/en/developer/articles/technical/an-investigation-of-fast-real-time-gpu-based-image-blur-algorithms.html) with Link to original ppt by Masaki Kawase.
+<!-- Indepth article by Intel [link](https://www.intel.com/content/www/us/en/developer/articles/technical/an-investigation-of-fast-real-time-gpu-based-image-blur-algorithms.html) with Link to original ppt by Masaki Kawase. -->
 
-Masaki Kawase 川瀬正樹 history goes back some time, including modding and a personal page with [high and low graphics settings](https://web.archive.org/web/20040201224946/http://www.daionet.gr.jp/~masa/index.html)
 
-To be able to innovate in blurs today you need to be very deep in mathematics and signal theory **_and_** computer graphics. Just looking at the level of genius needed to get fast bokeh blur is kinda insane. Functions cancelling each-other out, complex number theory
+<!-- https://www.youtube.com/watch?v=vNG3ZAd8wCc -->
 
-https://www.youtube.com/watch?v=vNG3ZAd8wCc
+<!-- CS2 has not handled highlights like Call of Duty's graphics team has, see ancient lights -->
 
-CS2 has not handled highlights like Call of Duty's graphics team has, see ancient lights
+<!-- To conclude this part, my recommendation is to *always consider the integral if you want to use any sigmas below 0.7*. -->
 
-To conclude this part, my recommendation is to *always consider the integral if you want to use any sigmas below 0.7*.
+<!-- And for a further exercise for the reader, you can think of how this would change under some different reconstruction function (hint: it becomes a weighted integral, or an integral of convolution; for the box / nearest neighbor, the convolution is with a rectangular function). -->
 
-And for a further exercise for the reader, you can think of how this would change under some different reconstruction function (hint: it becomes a weighted integral, or an integral of convolution; for the box / nearest neighbor, the convolution is with a rectangular function).
-
-[https://gangles.ca/2008/07/18/bloom-disasters/](https://gangles.ca/2008/07/18/bloom-disasters/)
+<!-- [https://gangles.ca/2008/07/18/bloom-disasters/](https://gangles.ca/2008/07/18/bloom-disasters/) -->
