@@ -1,5 +1,5 @@
-export async function setupFFT() {
-	const FFTBox = document.getElementById('FFTBox');
+export async function setupFFT(id) {
+	const FFTBox = document.getElementById(id);
 	const SIZE = 256;
 
 	/* State and Objects */

@@ -2,7 +2,7 @@
 wip: true
 title: Video Game Blurs (and how the best one works)
 permalink: "/{{ page.fileSlug }}/"
-date: 2025-09-01
+date: 2025-09-03
 last_modified:
 description: How to build realtime blurs with good performance and how one of the best algorithms out there works - "Dual Kawase"
 publicTags:
@@ -11,24 +11,7 @@ publicTags:
   - GameDev
 image: img/thumbnail.png
 ---
-
-<!-- 
-- Setup
-- Box Blur
-- Ok, what is a convolution?
-- Gaussian Blur
-	- Binomial
-- We have still a performance problem
-  - How do we measure it?
-- Slow down, what is even the difference between bokeh and gaussian like algorithms
-- The magic of frequency space
-- Separability
-- What is Bilinear? What is Performance "Free"?
-- Down sampling
-- Kawase Blur
-- Dual Kawase
-- Talks, state of the art, CoD flickering fix vs CS2 still having that problem
- -->
+<blockquote>ℹ️ <strong>Scheduled public release on Sep 3 11AM, before Peer voting starts 9 PM</strong></blockquote>
 
 {% include "./demos/init.htm" %}
 
@@ -237,106 +220,163 @@ Algorithms get really creative in this space, all with different trade-offs and 
 This article though doesn't care about stylistics approaches. We are here to chase a basic building block of graphics programming and realtime visual effects, a "Gaussian-Like" with good performance. Speaking of which!
 
 ## Performance
-The main motivator of our journey here, is the chase of realtime performance. Everything we do must happen within milliseconds. The expected performance of an algorithm and the practical cost once placed in the graphics pipeline, are sometimes surprisingly different numbers.
+The main motivator of our journey here, is the chase of realtime performance. Everything we do must happen within milliseconds. The expected performance of an algorithm and the practical cost once placed in the graphics pipeline, are sometimes surprisingly different numbers though. Gotta measure!
 
-With performance being such a driving motivator going forward, it would be a shame if we couldn't measure it. Each WebGL Box has a benchmark function, which blurs random noise at a fixed resolution of `1600x1200` with the respective blur settings you chose and a fixed iteration count.
+<blockquote class="reaction"><div class="reaction_text">This is chapter is about a very <strong>technical</strong> motivation. If you don't care about how fast a GPU does what it does, feel free to skip this section.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
-Benchmarking can be done by fixing time and performing 
+With performance being such a driving motivator going forward, it would be a shame if we couldn't measure it. Each WebGL Box has a benchmark function, which blurs random noise at a fixed resolution of `1600x1200` with the respective blur settings you chose and a fixed iteration count, a feature hidden so far.
 
-Measuring performance on the Performance measurements via [`EXT_disjoint_timer_query_webgl2`](https://registry.khronos.org/webgl/extensions/EXT_disjoint_timer_query_webgl2/) are pretty reliable, but only supported on Desktop Chrome. So for the sake of comparability, we do it the only way that is guaranteed to sync, [`gl.readPixels()`](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/readPixels)
+<blockquote class="reaction"><div class="reaction_text">Realtime graphics programming is sometimes less about what you have done, as much as it's measuring about <strong>what</strong> you have done.</div><img class="kiwi" src="/assets/kiwis/laugh.svg"></blockquote>
 
-Normally, a benchmark would 
-This feature is currently hidden and can be unhidden with the following button, for all WebGLBoxes with blurs.
+Benchmarking is best done by measuring shader execution time. This [can be done](https://registry.khronos.org/webgl/extensions/EXT_disjoint_timer_query_webgl2/) in the browser reliably, but only on some platforms. No way exists to do so across all platforms. Luckily, there is the classic method of "stalling the graphics pipeline", forcing a wait until all commands finish, a moment in time we can measure.
 
-On Desktop GPUs and Laptop GPUs, you will additionally see, that increasing `samplePosMultiplier` will negatively impact performance (up to a point), even though the required texture reads stay the same. This is due hardware texture caches accelerating texture reads which are spatially close together and not being able to do so effectively, if the texture reads are all too far apart.
+<blockquote class="reaction"><div class="reaction_text">Across all platforms a stall is guaranteed to occur on command <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/readPixels"><code>gl.readPixels()</code></a>. Interestingly, the standards conform command for this: <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/finish"><code>gl.finish()</code></a> is simply ignored by apple devices.</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
 
-<blockquote>⚠️ Especially on mobile, <strong>please</strong> increase iterations slowly and stay below a few seconds of execution time, or the browser will lock GPU access from this page and disable all blur examples, until a browser restart is performed.</blockquote>
+Below is a button, that unlocks this benchmarking feature, unhiding a benchmark button and `Detailed Benchmark Results` section under each blur. This allows you to start a benchmark with a preset workload, on a separate [Browser Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers). There is only one issue: Browsers get ***very*** angry if you full-load the GPU this way.
 
-With great power comes great responsibility.
+If the graphics pipeline is doing work without reporting back (called "yielding") to the browser for too long, browsers will simply kill all GPU access for the whole page, until tab reload. If we yield back, then the measured results are useless and from inside WebGL, we can't stop the GPU once its commands are issued.
 
-<blockquote class="reaction"><div class="reaction_text">iOS and iPad OS are especially strict, will keep GPU access disabled, even on Tab Reload. You will have go to the App Switcher (Double Tap Home Button), Swipe Safari Up to close it and relaunch it from scratch.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
+<blockquote>⚠️ Especially on mobile: <strong>please</strong> increase <code>kernelSize</code> and iterations slowly. The previous algorithms have bad <code>kernelSize</code> performance scaling on purpose, be especially careful with them.<br><br>Stay below <strong>2</strong> seconds of execution time, or the browser will lock GPU access for the page, disabling all blur examples, until a browser restart is performed. On iOS Safari this requires a trip to the App Switcher, a page reload won't be enough.</blockquote>
 
 {% include "./demos/benchmarkUnlock.htm" %}
 
-From here on out, everything you see will be done by your device's GPU. You will see how many variables can be tuned and we will need to build quite a bunch of intuition.
+<blockquote class="reaction"><div class="reaction_text">iOS and iPad OS are <strong>especially</strong> strict, will keep GPU access disabled, even on Tab Reload. You will have go to the App Switcher (Double Tap Home Button), Swipe Safari Up to close it and relaunch it from scratch.</div><img class="kiwi" src="/assets/kiwis/miffed.svg"></blockquote>
 
-We are in the realm of realtime graphics. Photoshop may only need to do one such iteration, but in real time graphics, we need this to work every frame.
+### What are we optimizing for?
+With the [above Box Blur](#box-blur) and [above Gaussian Blur](#gaussian-blur), you will measure performance scaling very badly with `kernelSize`. Expressed in the [Big O notation](https://en.wikipedia.org/wiki/Big_O_notation), it has a performance scaling of `O(pixelCount * kernelSize²)`. Quadratic scaling of required texture taps in terms of `kernelSize`. We need to tackle this going forward.
 
-When writing shaders, we don't care about execution order or.
-These are convolutions, but we aren't actually bound by rules of the classical convolution implies.
+<blockquote class="reaction"><div class="reaction_text">Many GPUs are slow to get out of their lower power states. Pressing the benchmark button multiple times in a row may result in the performance numbers getting better.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-Old info: In benchmark mode we run at 1600x1200. We _could_ use many [older](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/finish) and [newer](https://developer.mozilla.org/en-US/docs/Web/API/WebGLSync) GPU pipeline synchronization features of WebGL and measure just the time of the blur pass. Whilst you can double check if you get reliable numbers with platform specific debuggers like NV?? on one type of device, unfortunately, it's not possible in the general case and it's too easy to get not a number that measures now how long it took us to blur, but some other part of the GPU pipeline. Same goes for trying to find out how many iterations of blur we can run within X amount of time. Especially once on mobile Apple devices, getting reliable numbers goes out the window.
+Despite the gaussian blur calculating the kernel [completely from scratch on every single pixel in our implementation](https://github.com/FrostKiwi/treasurechest/blob/main/posts/dual-kawase/shader/gaussianBlur.fs#L18), the performance of the box blur and gaussian blur are very close to each other at higher iteration counts. In fact, by precalculating the those kernels we could performance match.
 
-Especially dedicated Laptop GPUs are rather slow with getting out of their power saving state, so on some platforms, hitting the benchmark button twice in succession may produce faster results.
+<blockquote class="reaction"><div class="reaction_text">But isn't gaussian blur is more complicated algorithm?</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
-<blockquote class="reaction"><div class="reaction_text">The most basic of blur algorithms and <strong>already</strong> we have kernel size, sample placement, sigma, resolution - influencing visual style and performance. Changing one influences the others. It's too much. </div><img class="kiwi" src="/assets/kiwis/dead.svg"></blockquote>
+As opposed to chips from decade ago, modern graphics cards have very fast chips, but comparatively slow memory access times. With workloads like these, the slowest thing becomes the memory access, in our case the texture taps. The more taps, the slower the algorithm.
 
-## The magic of frequency space
-There is actually an alternative way to perform blurring, by performing an [image Fast Fourier Transform](https://usage.imagemagick.org/fourier/#introduction), [masking high frequency areas to perform the blur](https://usage.imagemagick.org/fourier/#blurring) and finally performing the inverse transformation.
+<blockquote class="reaction"><div class="reaction_text">Our blurs perform a <strong>dependant texture read</strong>, a graphics programming sin. This is when texture coordinates are determined <strong>during</strong> shader execution, which opts out of a many automated shader optimizations.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
-If we ignore the frequency domain transformation steps, then this makes the blurring step itself constant in time, regardless of blur radius! Small Radius Blur, Large Radius blur, all the same speed. But of course, we ***can't*** ignore the Frequency domain transformations.
-Unfortunately, this cannot be used in practice, as the FFT and inverse FFT steps don't translate well into a graphics pipeline context at all. 
+Especially on personal computers, you may also have noticed that increasing `samplePosMultiplier` will negatively impact performance (up to a point), even though the required texture reads stay the same.
 
-<figure>
-	<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/spUNpyF58BY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
-	<figcaption>But what is the Fourier Transform? A visual introduction.<br><a target="_blank" href="https://www.youtube.com/watch?v=spUNpyF58BY">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@3blue1brown">3Blue1Brown</a></figcaption>
-</figure>
-3Blue1Brown covered what a Fourier Transform is, on its fundamental level was covered in [great detail in a video series already](https://www.youtube.com/watch?v=spUNpyF58BY).
+This is due hardware texture caches accelerating texture reads which are spatially close together and not being able to do so effectively, if the texture reads are all too far apart. Platform dependant tools like [Nvidia NSight](https://developer.nvidia.com/blog/identifying-shader-limiters-with-the-shader-profiler-in-nvidia-nsight-graphics/) can measure GPU cache utilization. The browser cannot.
 
-Fourier code written by https://github.com/turbomaze/JS-Fourier-Image-Analysis
-
-{% include "./demos/fftViz.htm" %}
-
-As you see, the Magnitude representation holds mirrored information. This is because the Magnitude representation holds is in the complex plain, with X and Y.
-
-<blockquote class="reaction"><div class="reaction_text">There is no standard on how you are supposed to plot the magnitude information, so you will see other software produce different meanings of X and Y. I changed the implementation by @turbomaze to follow the convention used by ImageMagick.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
-
-If you upload of grid paper, you will see strong points along the 
-
-There *are* GPU implementations: https://github.com/rreusser/glsl-fft.
-
-<blockquote class="reaction"><div class="reaction_text">Manipulations in frequency space are magic <strong>and</strong> cheap performance wise!</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
-
-<blockquote class="reaction"><div class="reaction_text">But taking the train to and from frequency space costs simply too much.</div><img class="kiwi" src="/assets/kiwis/sad.svg"></blockquote>
-
-Make comparison to discrete cosine transform.
-
-Besides the full fledged FFT, there is another frequency domain representation of image data you may know. DCT.
-
-So in a way, our journey through frequency land was kinda useless in pursuit of good video game performance. But these techniques are established, highly useful techniques, which are irreplaceable pillars for many image processing techniques.
-
-So there *is* a fundamental difference between cutting high frequencies in frequency space and the gaussian blur "taking high frequency energy and combining it to become low frequency energy". The two techniques are fundamentally different.
-
-So Low Pass Filter ≠ Low Pass Filter
-
-<blockquote class="reaction"><div class="reaction_text">This is a <strong>deep misunderstanding</strong> I held for years.<output></output></div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
-
-
-<blockquote class="reaction"><div class="reaction_text">Blurs and Bloom based on FFT Low Pass filtering would extinguish small lights like candles present in the 3D scene, by extinguishing the high frequency energy that is used to describe that light.<output></output></div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
+These are key numbers graphics programmers chase when writing fragment shaders: <strong>Texture Taps</strong> and <strong>Cache Utilization</strong>. There is another one, we will get into in a moment. Clearly, our Blurs are ***slow***. Time for a speed up!
 
 ## Gaussian Blur Separable
+We have not yet left the *classics* of blur algorithms. One fundamental thing on the table is the "Convolution Separability". Certain Convolutions like our [Box Blur](#box-blur), [our Gaussian Blur](#gaussian-blur) and the [Binominal filtering](https://bartwronski.com/2021/10/31/practical-gaussian-filter-binomial-filter-and-small-sigma-gaussians/) mentioned in passing previously can all be performed in two separate passes, by two ***separate*** 1D Kernels.
+
+<figure>
+	{% include "./img/gaussianFactorX.svg" %} {% include "./img/gaussianFactorY.svg" %}
+	<figcaption>Gaussian blur weights formula for point <code>(x,y)</code>, <a target="_blank" href="https://en.wikipedia.org/wiki/Gaussian_blur#Mathematics">Source</a></figcaption>
+</figure>
+
+Not all convolutions are separable. In the context of graphics programming: If you can express the kernel weights as a formula with axes `X, Y` and factor `X` and why `Y` out into two separate formulas, then you have gained separability with a 2D kernel and can perform the convolution in two passes, massively saving on texture taps.
+
+<blockquote class="reaction"><div class="reaction_text">Some big budget video games have used effects with kernels that are <strong>not</strong> separable, but did it anyway in two passes + 1D Kernel for the performance gain, with the resulting artifacts being deemed not too bad.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+Computerphile covered the concept of separability in the context of 2D image processing really well, if you are interested in a more formal explanation.
 
 <figure>
 	<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/SiJpkucGa1o" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
 	<figcaption>Separable Filters and a Bauble<br><a target="_blank" href="https://www.youtube.com/watch?v=SiJpkucGa1o">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@Computerphile">Computerphile</a></figcaption>
 </figure>
 
+Here is our Gaussian Blur, but expressed as a separable Version. You can see just Pass 1 and Pass 2 in isolation or see the final result. Same visual quality as our Gaussian Blur, same dials, but massively faster, no more quadratic scaling of required texture taps.
+
 {% include "./demos/gaussianSeparable.htm" %}
 
-Technically, there is a tradeoff with small kernels. Extra drawcall (Fullscreen drawcall, so actually really expensive), vs extra filtering.
+If you benchmark the performance, you will see a massive performance uplift, as compared to our Gaussian Blur! But there *is* a trade-off made, that's not quite obvious. In order to have two passes, we are writing out a new framebuffer.
 
-Going forward, no reason to not be separable.
+With a modern High-res 4k screen video game, that implies writing out 8.2 Million Pixels, just to read them back in. With smaller kernels on high-res displays, a separable kernel may not always be faster. But with bigger kernels, it almost always is. With a massive speed-up gained, how much faster can we go?...
 
-## Free Bilinear
+## The magic of frequency space
+...how about blurs that happen so fast, that they are considered free? We are doing a bit of a detour into ***Frequency Space*** image manipulation.
 
-{% include "./demos/bilinear.htm" %}
+Any 2D image can be converted and edited in frequency space, which unlocks a whole new sort of image manipulation. To blur an image in this paradigm, we perform an [image Fast Fourier Transform](https://usage.imagemagick.org/fourier/#introduction), then [mask high frequency areas to perform the blur](https://usage.imagemagick.org/fourier/#blurring) and finally performing the inverse transformation.
+
+A Fourier Transform decomposes a signal into its underlying Sine Frequencies. The output of an _image Fast Fourier Transform_ are "Magnitude" and "Phase" component images.  These images can be combined back together with the inverse image FFT to produce the original image again...
+
+<figure>
+	<img src="img/256ScreenOverlay.png" alt="FFT Viz Input image" />
+	<figcaption>FFT Visualization input image<br>The green stripes are not an error, they are baked into the image on purpose.</figcaption>
+</figure>
+
+...but before doing so, we can manipulate the frequency representation of the image in various ways. [Less reading, more interaction!](https://www.youtube.com/watch?v=qHvdLwSZmF8) In the following interactive visualization you have the magnitude image, brightness boosted into a human visible representation on the left and the reconstructed image on the right.
+
+For now, play around with removing energy. You can plaint on the magnitude image with your fingers or with the mouse. The output image will be reconstructed accordingly. Also, play around with the circular mask and the feathering sliders. Try to build intuition for what's happening.
+
+{% include "./demos/fftViz.htm" %}
+
+The magnitude image represents the frequency make-up of the image, with the lowest frequencies in the middle and higher at the edges. Horizontal frequencies (vertical features in the image) follow the X Axis and vertical frequencies (Horizontal features in the image) follow the Y Axis, with in-betweens being the diagonals.
+
+Repeating patterns in the image, lighten up as high-points in the image are lighting up very. E.g., the green Grid I added. Removing it in photoshop would be a nightmare, but in frequency space it's easy! Just paint over the blueish 3 diagonal streaks.
+
+<blockquote class="reaction"><div class="reaction_text">Removing repeating features by finger-painting black over frequencies still blows me away.</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
+
+As you may have noticed, the Magnitude representation holds mirrored information. This is due to the FFT being a complex number analysis and our image having only "real" component pixels, leaving redundant information. The underlying number theory was covered in great detail by 3Blue1Brown:
+
+<figure>
+	<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/spUNpyF58BY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+	<figcaption>But what is the Fourier Transform? A visual introduction.<br><a target="_blank" href="https://www.youtube.com/watch?v=spUNpyF58BY">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@3blue1brown">3Blue1Brown</a></figcaption>
+</figure>
+
+The underlying code this time is not written by me, but is from [@turbomaze](https://github.com/turbomaze/)'s repo [JS-Fourier-Image-Analysis](https://github.com/turbomaze/JS-Fourier-Image-Analysis). There is no standard on how you are supposed to plot the magnitude information and how the quadrants are layed out. I changed the implementation by [@turbomaze](https://github.com/turbomaze/) to follow the [convention used by ImageMagick](https://usage.imagemagick.org/fourier/#introduction).
+
+We can blur the image by painting the frequency energy black in a radius around the center, thus eliminating higher frequencies and blurring the image. If we do so with a pixel perfect circle, then we get ringing artifacts, specifically, the [Gibbs phenomenon](https://en.wikipedia.org/wiki/Gibbs_phenomenon). By feathering the circle, we lessen this ringing and the blur cleans up.
+
+<blockquote class="reaction"><div class="reaction_text">Drawing a circle like this? That's essentially free on the GPU! We can get super big kernels for free!</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
+
+But not everything is gold that glitters. First of all, performance. Yes, the "blur" in frequency space is essentially free, but the trip to frequency space, is everything but. The main issue comes down to [FFT transformations](https://en.wikipedia.org/wiki/Butterfly_diagram) performing writes to exponentially many pixels per input pixel, a performance killer.
+
+<blockquote class="reaction"><div class="reaction_text"><strong>And</strong> then there's still the inverse conversion!</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
+
+But our shaders work the other way around, expressing the "instructions to construct an output pixel". There *are* [fragment shader based GPU implementations](https://github.com/rreusser/glsl-fft), but they rely on many passes performed. Further more, non-power of two images [require a slower algorithm](https://rocm.docs.amd.com/projects/rocFFT/en/latest/design/bluestein.html).
+
+This article is in the realm of the fragment shaders and the graphics pipeline a GPU is part of. There are also [GPGPU](https://en.wikipedia.org/wiki/General-purpose_computing_on_graphics_processing_units) and [compute shader implementations](https://github.com/bane9/OpenGLFFT) with no limitations imposed by fragment shaders. But the situation remains: Conversion of high-res images to frequency space is too costly in the context of realtime 3D.
+
+<blockquote class="reaction"><div class="reaction_text">Deleting the frequencies of that grid is magical, but leaves artifacts. In reality it's worse, as my example is idealized. Click <strong>Upload Image</strong>, take a photo of a repeating pattern and see how cleanly you can get rid of it.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+Then there are the artifacts I have glossed over. The FFT transformation considers the image as an infinite 2D signal. By blurring, we are bleeding through color from the neighbor copies. And that's not to mention various ringing artifacts that happen. ***None*** of this is unsolvable! But there a more underlying issue...
+
+### What is a Low-Pass filter?
+
+<blockquote class="reaction"><div class="reaction_text">It's a filter that removes high frequencies and leaves the low ones, easy!</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
+
+Try the FFT Example again decrease the filter radius to blur. At some point the grid disappears. Right? It's a low pass filter, alright, but the high frequencies are literally annihilated with this procedure. Small bright lights in the distance? Also annihilated. Now think of what the gaussian blur does...
+
+{% include "./demos/fftVizCopy.htm" %}
+
+If we were to use this to build an effect like bloom, it would remove small lights that are meant to bloom as well! Our gaussian blur on the other hand, [also a low-pass filter](https://en.wikipedia.org/wiki/Gaussian_blur#Low-pass_filter), samples and weights ***every*** pixel. In a way it "_takes the high frequency energy and spreads it into low frequency energy_".
+
+So Low Pass Filter ≠ Low Pass Filter, it depends on context as to what is meant by that word and the reason this word wasn't mentioned until now. Frequency Space energy attenuations are simply not the correct tool for our goal of a "basic graphics programming building block" for visual effects.
+
+<blockquote class="reaction"><div class="reaction_text">This is a <strong>deep misunderstanding</strong> I held for years.<output></output></div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
+
+There are other frequency space image representations, not just FFT Magnitude + Phase. Another famous one is [Discrete cosine transform](https://en.wikipedia.org/wiki/Discrete_cosine_transform). Again, computerphile covered it deeply in a video. As for realtime hires images, that's a no. DCT conversion is multiple magnitudes slower. Feel free to dive deeper into frequency space...
+
+<figure>
+	<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/Q2aEzeMDHMA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+	<figcaption>JPEG DCT, Discrete Cosine Transform (JPEG Pt2)<br><a target="_blank" href="https://www.youtube.com/watch?v=Q2aEzeMDHMA">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@Computerphile">Computerphile</a></figcaption>
+</figure>
+
+...as for this article is the end of our frequency space detour. We so much about what's slow on the GPU. Let's talk about something that's not just fast, but free:
+
+## Bilinear Interpolation
+Reading from texture comes with a freebie. [Unless you switch to Nearest Neightbor mode](https://learnopengl.com/Getting-started/Textures#:~:text=Texture%20Filtering), when reading between pixels, the closet four pixel are interpolated [bilinearly](https://en.wikipedia.org/wiki/Bilinear_interpolation) to create the final read. Below you can drag the color sample with finger touch or the mouse. Take note of how and when the color changes in the respective modes.
 
 {% include "./demos/bilinearViz.htm" %}
 
-Relate to https://www.youtube.com/watch?v=uRjf8ZP6rs8
-Talk about gaussian linear.
+This allows us to resize an image by reading from it. In a way, it's a free bilinear resize built into every graphics chip, with no performance impact. But there *is* a limit - the bilinear interpolation is limited to a 2 x 2 sample square. Take a look at the following visualization. Try to resize the kiwi in different modes, to different sizes.
+
+{% include "./demos/bilinear.htm" %}
+
+Nearest Neightbor looks pixelated, if the size is not at 100% size, which is equivalent to 1:1 pixel mapping. At 100% it moves "jittery", as it "snaps" to the nearest neighbor. Bilinear keeps things smooth, but going to 50%, to 25% and below, we get exactly the same kind of aliasing, as we would get from nearest neighbor!
+
+<blockquote class="reaction"><div class="reaction_text">You may have noticed similar aliasing when playing YouTube Videos at a very high manually selected video resolution, but in a small window. Same thing!</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+With 2 x 2 samples, we start skipping over color information, if the underlying pixels are smaller than half a pixel in size. At 25% size, our bilinear interpolation starting to be like the nearest neighbor interpolation. So as a result, we can downsamle image in steps of 50%, without "skipping over information" and creating aliasing. Let's use that!
 
 ## Downsampling
+One fundamental thing to do in post-processing is to downsize first, perform the convolution at a lower resolution and upsize again, with the idea being, that for things like bloom, you wouldn't notice the lowered resolution. Let's try that.
 
 {% include "./demos/downsample.htm" %}
 
@@ -348,6 +388,8 @@ First time I read this, didn't understand it.
 Smoother because, we interpolate multiple times.
 
 Think, in a way, the jump directly up is more accurate! But also uglier.
+
+Mention https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
 
 ## Kawase Blur
 
@@ -371,26 +413,11 @@ https://invent.kde.org/plasma/kwin/-/tree/master/src/plugins/blur
 
 Marius Bjørge picked it up and [did a talk in 2015](https://dl.acm.org/doi/10.1145/2776880.2787664) direct [video link](https://dl.acm.org/doi/suppl/10.1145/2776880.2787664/suppl_file/a184.mp4)
 
-## Apple switches algorithms
-
-Either reduced resolution, a switch to box blur with settings corresponding to the reduced resolution or guassian blur with a [small kernel but high sigma](https://usage.imagemagick.org/blur/#blur_args).
-iPad 9th gen, iPadOS 18.4.1 10.2", 2160 x 1620 px --> 11x11 px
-iPhone SE 34d gen, iOS 18.4.1, 1334 x 750 px --> 6x6 px
-
-<figure>
-	<video poster="vid/iPadSidebar_thumb.jpg" width="960" height="720" loop controls><source src="vid/iPadSidebar.mp4" type="video/mp4"></video>
-	<figcaption>iPad sidebar blur</figcaption>
-</figure>
-
-<blockquote class="reaction"><div class="reaction_text">Apple misconfigured the blur switch on iPadOS, for the top right settings pull down. The switch happens too soon, regressing blur strength and resulting in a pulse like artifact.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+## State of the art
 
 Playdead used it to get HDR Bloom
 [Low Complexity, High Fidelity - INSIDE Rendering](https://gdcvault.com/play/1023304/Low-Complexity-High-Fidelity-INSIDE)
 Check against Jimenez 14 5:45 onwards
-
-Main theory: https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
-
-This article kicked it off: [Link](https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/)
 
 Marius Bjørge picked it up and [did a talk in 2015](https://dl.acm.org/doi/10.1145/2776880.2787664) direct [video link](https://dl.acm.org/doi/suppl/10.1145/2776880.2787664/suppl_file/a184.mp4)
 Indepth article by Intel [link](https://www.intel.com/content/www/us/en/developer/articles/technical/an-investigation-of-fast-real-time-gpu-based-image-blur-algorithms.html) with Link to original ppt by Masaki Kawase.
@@ -408,6 +435,3 @@ To conclude this part, my recommendation is to *always consider the integral if 
 And for a further exercise for the reader, you can think of how this would change under some different reconstruction function (hint: it becomes a weighted integral, or an integral of convolution; for the box / nearest neighbor, the convolution is with a rectangular function).
 
 [https://gangles.ca/2008/07/18/bloom-disasters/](https://gangles.ca/2008/07/18/bloom-disasters/)
-
-## Bin
-
