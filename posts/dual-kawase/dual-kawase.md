@@ -4,18 +4,18 @@ title: Video Game Blurs (and how the best one works)
 permalink: "/{{ page.fileSlug }}/"
 date: 2025-09-03
 last_modified:
-description: How to build realtime blurs with good performance and how one of the best algorithms out there works - "Dual Kawase"
+description: How to build realtime blurs on the GPU and how the best blur algorithm works - "Dual Kawase"
 publicTags:
   - Graphics
   - WebGL
   - GameDev
 image: img/thumbnail.png
 ---
-<blockquote>ℹ️ <strong>Scheduled public release on Sep 3 11AM, before Peer voting starts 9 PM</strong></blockquote>
+<blockquote>ℹ️ <strong>Scheduled public release on Sep 3, before Peer voting starts 9 PM</strong></blockquote>
 
 {% include "./demos/init.htm" %}
 
-Blurs are the basic building block for many [video game post processing effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering) and essential for sleek and modern [GUIs](https://en.wikipedia.org/wiki/Graphical_user_interface). Video game [Depth of Field](https://dev.epicgames.com/documentation/en-us/unreal-engine/depth-of-field-in-unreal-engine) and [Bloom](https://en.wikipedia.org/wiki/Bloom_(shader_effect)) or [frosted panels](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#microsoft-windows-acrylic) in modern user interfaces - used subtly or obviously - they're everywhere. <span style="transition: filter 0.2s; filter: none" onmouseover="this.style.filter='blur(4px)'" onmouseout="this.style.filter='none'">Even your browser can do it, just tap this sentence!</span>
+Blurs are the basic building block for many [video game post-processing effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering) and essential for sleek and modern [GUIs](https://en.wikipedia.org/wiki/Graphical_user_interface). Video game [Depth of Field](https://dev.epicgames.com/documentation/en-us/unreal-engine/depth-of-field-in-unreal-engine) and [Bloom](https://en.wikipedia.org/wiki/Bloom_(shader_effect)) or [frosted panels](https://blog.frost.kiwi/GLSL-noise-and-radial-gradient/#microsoft-windows-acrylic) in modern user interfaces - used subtly or obviously - they're everywhere. <span style="transition: filter 0.2s; filter: none" onmouseover="this.style.filter='blur(4px)'" onmouseout="this.style.filter='none'">Even your browser can do it, just tap this sentence!</span>
 
 <figure>
 	<img src="img/intro.png" alt="Texture coordinates, also called UV Coordinates or UVs for short" />
@@ -30,16 +30,16 @@ Using the [GPU](https://en.wikipedia.org/wiki/Graphics_processing_unit) in the d
 
 <blockquote class="reaction"><div class="reaction_text">This is my submission to this year's <a target="_blank" href="https://some.3b1b.co/">Summer of Math Exposition</a></div><img class="kiwi" src="img/SOMELogo.svg"></blockquote>
 
-With many interactive visualizations to guide us, we'll journey through a bunch of blurs, make a detour through frequency space manipulations, torture your graphics processor to measure performance, before finally arriving at a product of years worth of cumulative graphics programmer sweat - The ✨ Dual Kawase Blur 🌟
+With many interactive visualizations to guide us, we'll journey through a bunch of blurs, make a detour through frequency space manipulations, torture your graphics processor to measure performance, before finally arriving at an algorithm with years worth of cumulative graphics programmer sweat - The ✨ Dual Kawase Blur 🌟
 
 ## Setup - No blur yet
-In the context of video game post processing, a 3D scene is drawn, also called [rendering](https://en.wikipedia.org/wiki/Rendering_(computer_graphics)), and saved to an intermediary image - a [framebuffer](https://learnopengl.com/Advanced-OpenGL/Framebuffers). In turn, this framebuffer is processed to achieve [various effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering). Since this *processing* happens *after* a 3D scene is rendered, it's called *post-processing*. All that, _many_ times a second.
+In the context of video game post-processing, a 3D scene is drawn, also called [rendering](https://en.wikipedia.org/wiki/Rendering_(computer_graphics)), and saved to an intermediary image - a [framebuffer](https://learnopengl.com/Advanced-OpenGL/Framebuffers). In turn, this framebuffer is processed to achieve [various effects](https://en.wikipedia.org/wiki/Video_post-processing#Uses_in_3D_rendering). Since this *processing* happens *after* a 3D scene is rendered, it's called *post-processing*. All that, _many_ times a second.
 
 <blockquote class="reaction"><div class="reaction_text"><strong>Depending on technique</strong>, framebuffers <a target="_blank" href="https://learnopengl.com/Advanced-Lighting/Deferred-Shading">can hold non-image data</a> and post-processing effects like <a target="_blank" href="https://en.wikipedia.org/wiki/Color_correction">Color-correction</a> or <a target="_blank" href="https://en.wikipedia.org/wiki/Tone_mapping">Tone-mapping</a> don't even require intermediate framebuffers: There's <a target="_blank" href="https://takahirox.github.io/three.js/examples/webgl_tonemapping.html">more</a> than <a target="_blank" href="https://gdcvault.com/play/1020631/The-Revolution-in-Mobile-Game">one way (@35:20)</a></div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 This is where we jump in: with a framebuffer in hand, after the 3D scene was drawn. We'll use a scene from a [mod](https://en.wikipedia.org/wiki/Video_game_modding) called [NEOTOKYO°](https://store.steampowered.com/app/244630/NEOTOKYO/). Each time we'll implement a blur, there will be a box, a [canvas](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/canvas) instructed with [WebGL 1.0](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API), rendering at [**native** resolution](https://en.wikipedia.org/wiki/1:1_pixel_mapping) of your device. Each box has controls and relevant parts of its code below.
 
-<blockquote class="reaction"><div class="reaction_text">No coding or graphics programming knowledge required to follow along. But also no curtains! You can always see <a target="_blank" href="https://www.youtube.com/watch?v=ONH-pxBMJu4">how we talk</a> with your GPU. Terms and meanings will be explained, once it's relevant.</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">No coding or graphics programming knowledge required to follow along. <a target="_blank" href="https://github.com/FrostKiwi/treasurechest/tree/main/posts/dual-kawase">But also no curtains!</a> You can always see <a target="_blank" href="https://www.youtube.com/watch?v=ONH-pxBMJu4">how we talk</a> with your GPU. Terms and meanings will be explained, once it's relevant.</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 
 {% include "./demos/simple.htm" %}
 
@@ -48,19 +48,19 @@ We don't have a blur implemented yet, not much happening. Above the box you have
 <blockquote class="reaction"><div class="reaction_text">Different blur algorithms behave differently based on use-case. Some are very performance efficient, but break under movement. Some reveal their flaws with small, high contrast regions like far-away lights</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 - In `Scene` mode the blur will be applied across the whole image
-- In `Lights` mode we see and blur just the [Emission](https://docs.blender.org/manual/en/latest/render/shader_nodes/shader/principled.html#emission) parts of the scene, referred to by its older name "[Self-Illumination](https://developer.valvesoftware.com/wiki/Glowing_textures_(Source)#$selfillum)" in the [3D game engine](Game_engine) used by the mod, the [Source Engine](https://developer.valvesoftware.com/wiki/Source)
+- In `Lights` mode we see and blur just the [Emission](https://docs.blender.org/manual/en/latest/render/shader_nodes/shader/principled.html#emission) parts of the scene, sometimes called "[Self-Illumination](https://developer.valvesoftware.com/wiki/Glowing_textures_(Source)#$selfillum)"
   - This also unlocks the `lightBrightness` slider, where you can boost the energy output of the lights
 - In `Bloom` mode, we use the original scene and add the blurred lights from the previous mode on top to create a moody scene. This implements the effect of [Bloom](https://en.wikipedia.org/wiki/Bloom_(shader_effect)), an important use-case for blurs in real-time 3D graphics
 
 <blockquote class="reaction"><div class="reaction_text">Adding the blurred emission <a target="_blank" href="https://chrismillervfx.wordpress.com/2013/04/15/understanding-render-passes/">pass</a> as we do in this article, or <a target="_blank" href="https://en.wikipedia.org/wiki/Thresholding_(image_processing)">thresholding</a> the scene and blurring that, is <strong>not</strong> actually how modern video games do bloom. We'll get into that a bit later.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-Finally, you see [Resolution](https://en.wikipedia.org/wiki/Image_resolution) of the canvas and [Frames per Second / time taken per frame, aka "frametime"](https://en.wikipedia.org/wiki/Frame_rate). A very important piece of the puzzle is ***performance***, which will become more and more important as the article continues and the [mother of invention](https://en.wikipedia.org/wiki/Necessity_is_the_mother_of_invention) behind our time travel story.
+Finally, you see [Resolution](https://en.wikipedia.org/wiki/Image_resolution) of the canvas and [Frames per Second / time taken per frame, aka "frametime"](https://en.wikipedia.org/wiki/Frame_rate). A very important piece of the puzzle is ***performance***, which will become more and more important as the article continues and the [mother of invention](https://en.wikipedia.org/wiki/Necessity_is_the_mother_of_invention) behind our story.
 
 <blockquote class="reaction"><div class="reaction_text">Frame-rate will be capped at your screen's <a target="_blank" href="https://www.intel.com/content/www/us/en/gaming/resources/highest-refresh-rate-gaming.html">refresh rate</a>, most likely 60 fps / 16.6 ms. We'll get into proper <a target="_blank" href="https://en.wikipedia.org/wiki/Benchmark_(computing)">benchmarking</a> as our hero descents this article into blurry madness</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
 
 ### Technical breakdown
 
-<blockquote class="reaction"><div class="reaction_text">Understanding the GPU code is not necessary to follow this article, but if you do choose to peek behind the curtain, here is what you need to know</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Understanding the GPU code is not necessary to follow this article, but if you do choose to <a target="_blank" href="https://github.com/FrostKiwi/treasurechest/tree/main/posts/dual-kawase">peek behind the curtain</a>, here is what you need to know</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 We'll implement our blurs as a [fragment shader](https://learnopengl.com/Getting-started/Hello-Triangle) written in [GLSL](https://en.wikipedia.org/wiki/OpenGL_Shading_Language). In a nut-shell, a fragment shader is code that runs on the GPU for every output-pixel, in-parallel. Image inputs in shaders are called [Textures](https://learnopengl.com/Getting-started/Textures). These textures have coordinates, often called [UV coordinates](https://en.wikipedia.org/wiki/UV_mapping) - _these_ are the numbers we care about.
 
@@ -73,14 +73,13 @@ We'll implement our blurs as a [fragment shader](https://learnopengl.com/Getting
 
 UV coordinates specify the position we read in the image, with bottom left being `0,0` and the top right being `1,1`. Neither UV coordinates, nor shaders themselves have any concept of image resolution, screen resolution or aspect ratio. If we want to address individual pixels, it's on us to express that in terms of UV coordinates.
 
-<blockquote class="reaction"><div class="reaction_text">Although <a target="_blank" href="https://michaldrobot.com/2014/04/01/gcn-execution-patterns-in-full-screen-passes/">there are ways to find out</a>, we don't know which order output
- pixels are processed in and although the <a target="_blank" href="https://docs.gl/sl4/gl_FragCoord">graphics pipeline can tell us</a>, the shader doesn't even know which output pixel it currently processes</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Although <a target="_blank" href="https://michaldrobot.com/2014/04/01/gcn-execution-patterns-in-full-screen-passes/">there are ways to find out</a>, we don't know which order output-pixels are processed in, and although the <a target="_blank" href="https://docs.gl/sl4/gl_FragCoord">graphics pipeline can tell us</a>, the shader doesn't even know which output-pixel it currently processes</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
 
 The framebuffer is passed into the fragment shader in line `uniform sampler2D texture` as a texture. Using the blur shader, we draw a "Full Screen Quad", a rectangle covering the entire canvas, with matching `0,0` in the bottom-left and `1,1` in the top-right `varying vec2 uv` UV coordinates to read from the texture.
 
-The texture's aspect-ratio and resolution are the same as the output canvas's aspect-ratio and resolution, thus there is a 1:1 pixel mapping between the texture we will process and our output canvas. The [graphics pipeline steps](js/blur/simple.js) and [vertex shader](shader/simpleQuad.vs) responsible for this are not important for this article.
+The texture's aspect-ratio and resolution are the same as the output canvas's aspect-ratio and resolution, thus there is a 1:1 pixel mapping between the texture we will process and our output canvas. The [graphics pipeline steps](https://github.com/FrostKiwi/treasurechest/blob/main/posts/dual-kawase/js/blur/simple.js) and [vertex shader](https://github.com/FrostKiwi/treasurechest/blob/main/posts/dual-kawase/shader/simpleQuad.vs) responsible for this are not important for this article.
 
-The blur fragment shader accesses the color of the texture with `texture2D(texture, uv)`, at the matching output pixel's position. In following examples, we'll read from neighboring pixels, for which we'll need to calculate a UV coordinate offset, a decimal fraction corresponding to one pixel step with "one, divided by canvas resolution"
+The blur fragment shader accesses the color of the texture with `texture2D(texture, uv)`, at the matching output pixel's position. In following examples, we'll read from neighboring pixels, for which we'll need to calculate a UV coordinate offset, a decimal fraction corresponding to one pixel step, calculated with with `1 / canvasResolution`
 
 <blockquote class="reaction"><div class="reaction_text">One way to think of fragment shader code is "What are the instructions to construct this output pixel?"</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
@@ -110,7 +109,7 @@ Visually, the result doesn't look very pleasant. The stronger the blur, the more
 
 Performance is also really bad. With bigger `kernelSizes`, our `Texture Taps` count skyrockets and performance drops. Mobile devices will come to a slog. Even the worlds fastest PC graphics cards will fall below screen refresh-rate by cranking `kernelSize` and zooming the article on PC, thus raising canvas resolution.
 
-<blockquote class="reaction"><div class="reaction_text">We kinda failed on all fronts. It looks bad <strong>and</strong> runs bad.</div><img class="kiwi" src="/assets/kiwis/tired.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">We kinda failed on all fronts. It looks bad <strong>and</strong> runs bad.</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
 Then, there's this `samplePosMultiplier`. It seems to *also* seemingly increase blur strength, *without* increasing textureTaps or lowering performance (or lowering performance just a little on certain devices). But if we crank *that* too much, we get artifacts in the form of repeating patterns. Let's play with a schematic example:
 
@@ -122,14 +121,14 @@ Then, there's this `samplePosMultiplier`. It seems to *also* seemingly increase 
 
 {% include "./demos/boxKernelViz.htm" %}
 
-On can say, that an image is a "continous 2D signal". When we texture tap at a specific coordinate, we are _sampling the "image signal" at that coordinate_. As previously mentioned, we use UV coordinates and are not bound by concepts like "pixels". ***Where*** we place our samples is completely up to us.
+On can say, that an image is a "continous 2D signal". When we texture tap at a specific coordinate, we are _sampling the "image signal" at that coordinate_. As previously mentioned, we use UV coordinates and are not bound by concepts like "pixels position". ***Where*** we place our samples is completely up to us.
 
 A fundamental blur algorithm option is increasing the sample distance away from the center, thus increasing the amount of image we cover with our samples - more bang for your sample buck. This works by multiplying the offset distance. That is what `samplePosMult` does and is something you will have access to going forward.
 
 Doing it too much, brings ugly repeating patterns. This of course leaves some fundamental questions, like where these artifacts come from and what it even means to read between two pixels. ***And*** on top of that we have to address performance and the boxyness of our blur! But first...
 
 ## What even _is_ a kernel?
-What we have created with our for-loop, is a [convolution](https://www.youtube.com/watch?v=KuXjwB4LzSA0). Expressed simplified in the context of image processing, it's usually a square of numbers constructing an output pixel, by gathering and weighting pixels the square covers. The square is called a kernel and was the thing we visualized previously.
+What we have created with our for-loop, is a [convolution](https://www.youtube.com/watch?v=KuXjwB4LzSA0). Expressed simplified, in the context of image processing, it's usually a square of numbers constructing an output pixel, by gathering and weighting pixels the square covers. The square is called a kernel and was the thing we visualized previously.
 
 For blurs, the kernel weights must sum up to 1. If that were not the case, we would either brighten or darken the image. Ensuring that is the normalization step. In the box blur above, this happens by dividing the summed pixel color by `totalSamples`, the total amount of samples taken. A basic "calculate the average" expression.
 
@@ -141,10 +140,10 @@ Kernels applied at the edges of our image will read from areas "outside" the ima
 
 <figure>
 	<img src="img/WrappingModes.png" alt="Texture Wrapping Modes and results on blurring" />
-	<figcaption>Texture Wrapping Modes and results on blurring<br>Top: Framebuffer, zoomed out. Bottom: Framebuffer normal, with strong blur applied</figcaption>
+	<figcaption>Texture Wrapping Modes and results on blurring (Note the color black bleeding-in)<br><strong>Top</strong>: Framebuffer, zoomed out. <strong>Bottom</strong>: Framebuffer normal, with strong blur applied</figcaption>
 </figure>
 
-Among others, we can define a solid color to be used or to "clamp" to the nearest edge's color. If we choose a solid color, then we will get color bleeding at the edges. Thus for almost all post-processing use-cases, edge color clamping is used, as it prevents weird things happening at the edges. [This article does too](https://github.com/FrostKiwi/treasurechest/blob/main/posts/dual-kawase/js/utility.js#L49).
+Among others, we can define a solid color to be used, or to "clamp" to the nearest edge's color. If we choose a solid color, then we will get color bleeding at the edges. Thus for almost all post-processing use-cases, edge color clamping is used, as it prevents weird things happening at the edges. [This article does too](https://github.com/FrostKiwi/treasurechest/blob/main/posts/dual-kawase/js/utility.js#L49).
 
 <blockquote class="reaction"><div class="reaction_text">You may have noticed a black "blob" streaking with stronger blur levels along the bottom. Specifically here, it happens because the lines between the floor tiles align with the bottom edge, extending black color to infinity</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
@@ -154,17 +153,17 @@ Convolution as a mathematical concept is surprisingly deep and [3blue1brown](htt
 	<figcaption>But what is a convolution?<br><a target="_blank" href="https://www.youtube.com/watch?v=KuXjwB4LzSA">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@3blue1brown">3Blue1Brown</a></figcaption>
 </figure>
 
-On a practical level though, understanding where the convolution is, how many there are and what kernels are at play will become more and more difficult, except for the Gaussian blur in the next chapter. Speaking of which...
+On a practical level though, understanding where the convolution is, how many there are and what kernels are at play will become more and more difficult, once we leave the realm of classical blurs and consider the wider implications of reading between pixel bounds. But for now, another we stay with the classics:
 
 ## Gaussian Blur
 The most famous of blur algorithms is the Gaussian Blur. It uses the [normal distribution](https://en.wikipedia.org/wiki/Normal_distribution), also known as the [bell Curve](https://en.wikipedia.org/wiki/Normal_distribution) to weight the samples inside the kernel, with a new variable `sigma σ` to control the flatness of the curve. Other than generating the kernel weights, the algorithm is identical to the box blur algorithm.
 
 <figure>
 	{% include "./img/gaussianForumla.svg" %}
-	<figcaption>Gaussian blur weights formula for point <code>(x,y)</code>, <a target="_blank" href="https://en.wikipedia.org/wiki/Gaussian_blur#Mathematics">Source</a></figcaption>
+	<figcaption>Gaussian blur weights formula for point <code>(x,y)</code> <a target="_blank" href="https://en.wikipedia.org/wiki/Gaussian_blur#Mathematics">(Source)</a></figcaption>
 </figure>
 
-To calculate the weights for point `(x,y)`, the [above formula is used](https://en.wikipedia.org/wiki/Gaussian_blur#Mathematics). The gaussian formula and has a weighting multiplier `1/√(2πσ²)`. In the code, there is no such thing though. The formula expresses the gaussian curve as a _continuous_ function going to _infinity_. But our code and its for-loop are different - ***discrete*** and ***finite***.
+To calculate the weights for point `(x,y)`, the [above formula is used](https://en.wikipedia.org/wiki/Gaussian_blur#Mathematics). The gaussian formula has a weighting multiplier `1/√(2πσ²)`. In the code, there is no such thing though. The formula expresses the gaussian curve as a _continuous_ function going to _infinity_. But our code and its for-loop are different - ***discrete*** and ***finite***.
 
 ```glsl
 float gaussianWeight(float x, float y, float sigma)
@@ -174,27 +173,27 @@ float gaussianWeight(float x, float y, float sigma)
 }
 ```
 
-<blockquote class="reaction"><div class="reaction_text">For clarity, the kernel is generated in the fragment shader. Normally, that should be avoided. Code in the fragment shader runs on every pixel, but the kernel doesn't actually change, making this inefficient.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">For clarity, the kernel is generated in the fragment shader. Normally, that should be avoided. Fragment shaders run per-output-pixel, but the kernel weights stay the same, making this inefficient.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
-Just like with the box blur, weights are summed up and divided at the end, instead of the precalculated weighting term `1/√(2πσ²)`. `sigma` controls the sharpness of the curve and thus the blur strength, but wasn't that the job of `kernelSize`? Play around with all the values below and get a feel for how the various values behave.
+Just like with the box blur, weights are summed up and divided at the end, instead of the term `1/√(2πσ²)` precalculating weights. `sigma` controls the sharpness of the curve and thus the blur strength, but wasn't that the job of `kernelSize`? Play around with all the values below and get a feel for how the various values behave.
 
 {% include "./demos/gaussianBlur.htm" %}
 
 The blur looks way smoother than our previous box blur, with things generally taking on a "rounder" appearance, due to the bell curve's smooth signal response. That is, unless you move the `sigma` slider down. If you move `sigma` too low, you will get our previous box blur like artifacts again. 
 
-Let's clear up what the values actually represent and how they interact. The following visualization shows the kernel with their weights expressed as height in an [~~Isometric~~](https://en.wikipedia.org/wiki/Isometric_projection) [Dimetric](https://en.wikipedia.org/wiki/Axonometric_projection#Three_types) projection. There are two different `sigma` - `kernelSize` interaction modes and two ways to describe `sigma`.
+Let's clear up what the values actually represent and how they interact. The following visualization shows the kernel with its weights expressed as height in an [~~Isometric~~](https://en.wikipedia.org/wiki/Isometric_projection) [Dimetric](https://en.wikipedia.org/wiki/Axonometric_projection#Three_types) perspective projection. There are two different `sigma` - `kernelSize` interaction modes and two ways to describe `sigma`.
 
 {% include "./demos/gaussianKernelViz.htm" %}
 
-`sigma` describes the flatness of our mathematical curve, a curve going to infinity. But our algorithm has a limited `kernelSize`. Where the kernel stops, no more contributions pixel contributions occur, leading box-like artifacts. In the context of image processing, there are two to setup a gaussian blur...
+`sigma` describes the flatness of our mathematical curve, a curve going to infinity. But our algorithm has a limited `kernelSize`. Where the kernel stops, no more pixel contributions occur, leading to box-like artifacts due to the cut-off. In the context of image processing, there are two ways to setup a gaussian blur...
 
 <blockquote class="reaction"><div class="reaction_text">A small sigma, thus a flat bell curve, paired with a small kernel size effectively <strong>is</strong> a box blur, with the weights making the kernel box-shaped.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
-...with an [Absolute Sigma](https://www.youtube.com/watch?v=ueNY30Cs8Lk), an absolute value in pixels independent of `kernelSize`, with `kernelSize` acting as a "window into the curve" or as a value ***relative*** to the current `kernelSize`. For practical reasons of having to fiddle around in absolute sigma mode, the relative to `kernelSize` mode is used everywhere.
+... way 1: [Absolute Sigma](https://www.youtube.com/watch?v=ueNY30Cs8Lk). `sigma` is an absolute value in pixels independent of `kernelSize`, with `kernelSize` acting as a "window into the curve" or way 2: `sigma` is expressed ***relative*** to the current `kernelSize`. For practical reasons (finicky sliders) the relative to `kernelSize` mode is used everywhere.
 
 Eitherway, the infinite gaussian curve ***will*** have a cut-off _somewhere_. `sigma` too small? - We get box blur like artifacts. `sigma` too big? - We waste blur efficiency, as the same perceived blur strength requires bigger kernels, thus bigger for-loops with lower performance. An artistic trade-off every piece of software has to make.
 
-<blockquote class="reaction"><div class="reaction_text">An optimal kernel would be one, where the outer weights are almost zero. Thus if we increased <code>kernelSize</code> in Absolute Sigma mode by one, it would make close to no more <strong>visual</strong> difference.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">An optimal kernel would be one, where the outer weights are almost zero. Thus, if we increased <code>kernelSize</code> in Absolute Sigma mode by one, it would make close to no more <strong>visual</strong> difference.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 There are other ways of creating blur kernels, with other properties. One way is to follow [Pascal's triangle](https://en.wikipedia.org/wiki/Pascal%27s_triangle) to get a set of predefined kernel sizes and values. These are called [Binomial Filters](https://bartwronski.com/2021/10/31/practical-gaussian-filter-binomial-filter-and-small-sigma-gaussians/) and lock us into specific "kernel presets", but solve the infinity vs cut-off dilemma, by moving weights to zero within the sampling window.
 
@@ -210,31 +209,31 @@ In Post-Processing Blur algorithms you generally find two categories. [Bokeh](ht
 
 In contrast to that, when emulating lenses and especially in the context of [Depth of Field](https://dev.epicgames.com/documentation/en-us/unreal-engine/depth-of-field-in-unreal-engine), is "[Bokeh Blur](https://dev.epicgames.com/documentation/en-us/unreal-engine/cinematic-depth-of-field-method?application_version=4.27)", also known as "Lens Blur" or "Cinematic Blur". This type of blur ***is*** the target visual effect. The challenges and approaches are very much related, but algorithms used differ.
 
-Algorithms get really creative in this space, all with different trade-offs and visuals. Some sample using texture, some sample using a [poission disk distribution](https://mynameismjp.wordpress.com/2011/02/28/bokeh/) and some have cool out of the box thinking: Computerphile covered a comlex numbers based approach to creating Bokeh Blur, a fascinating number theory cross-over.
+Algorithms get really creative in this space, all with different trade-offs and visuals. Some sample using a [poission disk distribution](https://mynameismjp.wordpress.com/2011/02/28/bokeh/) and some have cool out of the box thinking: Computerphile covered a comlex numbers based approach to creating Bokeh Blurs, a fascinating number theory cross-over.
 
 <figure>
 	<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/vNG3ZAd8wCc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
 	<figcaption>Video Game & Complex Bokeh Blurs<br><a target="_blank" href="https://www.youtube.com/watch?v=vNG3ZAd8wCc">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@Computerphile">Computerphile</a></figcaption>
 </figure>
 
-This article though doesn't care about stylistics approaches. We are here to chase a basic building block of graphics programming and realtime visual effects, a "Gaussian-Like" with good performance. Speaking of which!
+This article though doesn't care about these stylistics approaches. We are here to chase a basic building block of graphics programming and realtime visual effects, a "Gaussian-Like" with good performance. Speaking of which!
 
 ## Performance
 The main motivator of our journey here, is the chase of realtime performance. Everything we do must happen within milliseconds. The expected performance of an algorithm and the practical cost once placed in the graphics pipeline, are sometimes surprisingly different numbers though. Gotta measure!
 
 <blockquote class="reaction"><div class="reaction_text">This is chapter is about a very <strong>technical</strong> motivation. If you don't care about how fast a GPU does what it does, feel free to skip this section.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
-With performance being such a driving motivator going forward, it would be a shame if we couldn't measure it. Each WebGL Box has a benchmark function, which blurs random noise at a fixed resolution of `1600x1200` with the respective blur settings you chose and a fixed iteration count, a feature hidden so far.
+With performance being such a driving motivator, it would be a shame if we couldn't measure it in this article. Each WebGL Box has a benchmark function, which blurs random noise at a fixed resolution of `1600x1200` with the respective blur settings you chose and a fixed iteration count workload, a feature hidden so far.
 
-<blockquote class="reaction"><div class="reaction_text">Realtime graphics programming is sometimes less about what you have done, as much as it's measuring about <strong>what</strong> you have done.</div><img class="kiwi" src="/assets/kiwis/laugh.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Realtime graphics programming is sometimes more about measuring than programming.</div><img class="kiwi" src="/assets/kiwis/laugh.svg"></blockquote>
 
 Benchmarking is best done by measuring shader execution time. This [can be done](https://registry.khronos.org/webgl/extensions/EXT_disjoint_timer_query_webgl2/) in the browser reliably, but only on some platforms. No way exists to do so across all platforms. Luckily, there is the classic method of "stalling the graphics pipeline", forcing a wait until all commands finish, a moment in time we can measure.
 
-<blockquote class="reaction"><div class="reaction_text">Across all platforms a stall is guaranteed to occur on command <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/readPixels"><code>gl.readPixels()</code></a>. Interestingly, the standards conform command for this: <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/finish"><code>gl.finish()</code></a> is simply ignored by apple devices.</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Across all platforms a stall is guaranteed to occur on command <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/readPixels"><code>gl.readPixels()</code></a>. Interestingly, the standards conform command for this: <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/finish"><code>gl.finish()</code></a> is simply ignored by mobile apple devices.</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
 
 Below is a button, that unlocks this benchmarking feature, unhiding a benchmark button and `Detailed Benchmark Results` section under each blur. This allows you to start a benchmark with a preset workload, on a separate [Browser Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers). There is only one issue: Browsers get ***very*** angry if you full-load the GPU this way.
 
-If the graphics pipeline is doing work without reporting back (called "yielding") to the browser for too long, browsers will simply kill all GPU access for the whole page, until tab reload. If we yield back, then the measured results are useless and from inside WebGL, we can't stop the GPU once its commands are issued.
+If the graphics pipeline is doing work without reporting back (called "yielding") to the browser for too long, browsers will simply kill all GPU access for the whole page, until tab reload. If we yield back, then the measured results are useless and from inside WebGL, we can't stop the GPU, once its commands are issued.
 
 <blockquote>⚠️ Especially on mobile: <strong>please</strong> increase <code>kernelSize</code> and iterations slowly. The previous algorithms have bad <code>kernelSize</code> performance scaling on purpose, be especially careful with them.<br><br>Stay below <strong>2</strong> seconds of execution time, or the browser will lock GPU access for the page, disabling all blur examples, until a browser restart is performed. On iOS Safari this requires a trip to the App Switcher, a page reload won't be enough.</blockquote>
 
@@ -245,9 +244,9 @@ If the graphics pipeline is doing work without reporting back (called "yielding"
 ### What are we optimizing for?
 With the [above Box Blur](#box-blur) and [above Gaussian Blur](#gaussian-blur), you will measure performance scaling very badly with `kernelSize`. Expressed in the [Big O notation](https://en.wikipedia.org/wiki/Big_O_notation), it has a performance scaling of `O(pixelCount * kernelSize²)`. Quadratic scaling of required texture taps in terms of `kernelSize`. We need to tackle this going forward.
 
-<blockquote class="reaction"><div class="reaction_text">Many GPUs are slow to get out of their lower power states. Pressing the benchmark button multiple times in a row may result in the performance numbers getting better.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Especially dedicated Laptop GPUs are slow to get out of their lower power states. Pressing the benchmark button multiple times in a row may result in the performance numbers getting better.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-Despite the gaussian blur calculating the kernel [completely from scratch on every single pixel in our implementation](https://github.com/FrostKiwi/treasurechest/blob/main/posts/dual-kawase/shader/gaussianBlur.fs#L18), the performance of the box blur and gaussian blur are very close to each other at higher iteration counts. In fact, by precalculating the those kernels we could performance match.
+Despite the gaussian blur calculating the kernel [completely from scratch on every single pixel in our implementation](https://github.com/FrostKiwi/treasurechest/blob/main/posts/dual-kawase/shader/gaussianBlur.fs#L18), the performance of the box blur and gaussian blur are very close to each other at higher iteration counts. In fact, by precalculating the those kernels we could performance match both.
 
 <blockquote class="reaction"><div class="reaction_text">But isn't gaussian blur is more complicated algorithm?</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
@@ -255,7 +254,7 @@ As opposed to chips from decade ago, modern graphics cards have very fast chips,
 
 <blockquote class="reaction"><div class="reaction_text">Our blurs perform a <strong>dependant texture read</strong>, a graphics programming sin. This is when texture coordinates are determined <strong>during</strong> shader execution, which opts out of a many automated shader optimizations.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
-Especially on personal computers, you may also have noticed that increasing `samplePosMultiplier` will negatively impact performance (up to a point), even though the required texture reads stay the same.
+Especially on personal computers, you may also have noticed that increasing `samplePosMultiplier` will negatively impact performance (up to a point), even though the required texture taps stay the same.
 
 This is due hardware texture caches accelerating texture reads which are spatially close together and not being able to do so effectively, if the texture reads are all too far apart. Platform dependant tools like [Nvidia NSight](https://developer.nvidia.com/blog/identifying-shader-limiters-with-the-shader-profiler-in-nvidia-nsight-graphics/) can measure GPU cache utilization. The browser cannot.
 
