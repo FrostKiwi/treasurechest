@@ -1,5 +1,4 @@
 ---
-wip: true
 title: Video Game Blurs (and how the best one works)
 permalink: "/{{ page.fileSlug }}/"
 date: 2025-09-03

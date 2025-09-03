@@ -109,6 +109,7 @@ export async function setupBilinear() {
 
 	async function setupTextureBuffers() {
 		ui.display.spinner.style.display = "block";
+		buffersInitialized = true;
 		ctx.flags.initComplete = false;
 
 		/* Create framebuffer for quarter resolution rendering */
@@ -143,13 +144,14 @@ export async function setupBilinear() {
 	}
 
 	async function redraw() {
-		if (!ctx.flags.initComplete)
+		if (!buffersInitialized)
 			await setupTextureBuffers();
 		if (!ctx.flags.initComplete)
 			return;
 
 		/* Pass 1: Render to framebuffer at reduced resolution */
 		gl.viewport(0, 0, canvas.width / resDiv, canvas.height / resDiv);
+		if (!renderFramebuffer) return;
 		gl.bindFramebuffer(gl.FRAMEBUFFER, renderFramebuffer);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		
@@ -179,6 +181,7 @@ export async function setupBilinear() {
 		gl.useProgram(ctx.shd.blit.handle);
 		
 		/* Bind framebuffer texture with nearest neighbor for pixelated upscaling */
+		if (!renderTexture) return;
 		gl.bindTexture(gl.TEXTURE_2D, renderTexture);
 		
 		/* Draw full-screen quad to upscale */
@@ -239,8 +242,8 @@ export async function setupBilinear() {
 
 		/* Delete the buffers to free up memory */
 		gl.deleteTexture(ctx.tex.sdr); ctx.tex.sdr = null;
-		gl.deleteTexture(renderTexture);
-		gl.deleteFramebuffer(renderFramebuffer);
+		gl.deleteTexture(renderTexture); renderTexture = null;
+		gl.deleteFramebuffer(renderFramebuffer); renderFramebuffer = null;
 		buffersInitialized = false;
 		ctx.flags.initComplete = false;
 	}
