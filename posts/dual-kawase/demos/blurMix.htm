@@ -1,0 +1,35 @@
+<div>
+	<div style="position: relative; display: inline-block;">
+		<img src="img/blurSliderDemo1.png" />
+		<img id="overlayImage" src="img/blurSliderDemo2.png" style="position: absolute; top: 0; left: 0; opacity: 0.8;" />
+	</div>
+	<table class="settingsTable" style="width: 100%; max-width: 100%;">
+		<tr class="variable-name-row noborder">
+			<td colspan=4>
+				<code>blurMix</code>
+			</td>
+		</tr>
+		<tr class="noborder">
+			<td class="variable-name-cell">
+				<code>blurMix</code>
+			</td>
+			<td style="width:100%">
+				<input class="slider" type="range" step="any" min="0" max="1" value="0.8" id="mix" oninput="
+				this.closest('tr').querySelector('output').value = parseInt(this.value * 100);
+				document.getElementById('overlayImage').style.opacity = this.value;">
+			</td>
+			<td style="text-align: center;">
+				<output>80</output>%
+			</td>
+			<td style="text-align: center;">
+				<button id="samplePosMultReset" class="roundButton" onclick="
+				var slider = document.getElementById('mix');
+				slider.value = '0.8';
+				this.closest('tr').querySelector('output').value = '80';
+				document.getElementById('overlayImage').style.opacity = '0.8';
+				">{% include
+					"style/icons/rotate-right.svg" %}</button>
+			</td>
+		</tr>
+	</table>
+</div>

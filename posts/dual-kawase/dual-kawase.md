@@ -422,6 +422,13 @@ With upsampling, even when going from low res to high res in one jump, we aren't
 
 How to keeps things smooth when upsampling is the field of "Reconstruction filters". By skipping intermediate upsampling steps we are performing a 2 × 2 sample bilinear reconstruction of very small pixels. As a result we get the bilinear filtering characteristic pyramid shaped hot spots. ***How*** we upscale matters.
 
+### Smooth Blur Animation
+One fundamental challenge with advanced blur algorithms is that it becomes challenging to get smooth blur sliders and smooth blur strength animations. Eg. with our separable gaussian blur, you could set `kernelSize` to the maximum required and adjust `samplePosMultiplier` smoothly between 0% and 100%.
+
+With downsampling in the picture, this becomes more difficult and solutions to this are very context dependant, so we won't dive into it. One approach you see from time to time is to simply give up on animating blur strength and blend between a blurred and unblurred version of the scene, as shown below. Visually, not very pleasing.
+
+{% include "./demos/blurMix.htm" %}
+
 ## Kawase Blur
 Now we get away from the classical blur approaches. It's the early 2000s and graphics programmer Masaki Kawase, today senior graphics programmer at Tokyo based company [Silicon Studio](https://www.siliconstudio.co.jp/), is programming the Xbox video game [DOUBLE-S.T.E.A.L](https://www.youtube.com/watch?v=JjR9VugWoHY), a game with vibrant post-processing effects.
 
@@ -476,11 +483,6 @@ It's also a gaussian-like blur. Remember our first gaussian Blur? Its performanc
 This was of special interest to Marius Bjørge, as his goal was to reduce memory access, which is especially slow on mobile devices, and still produce a motion-stable non shimmering blur. Speaking of which, go into bloom mode, crank `lightBrightness` and compare it to our [downsample](#downsampling) example.
 
 Even though the resolution is reduced to the same `downSample` level, no shimmering! That's the Dual Kawase Blur for you - A gaussian-like post-processing blur, with good performance, no heavy repeated memory writes and motion stable output. This makes it ideal as a basic building block for visual effects like bloom.
-
-<!-- ## Smooth Animation
-One fundamental challenge with advanced blur algorithms, is that it's challenging to get smooth blur sliders and blur strength animations. Eg. with our separable gaussian blur, you could set `kernelSize` to maximum required and adjust `samplePosMultiplier` smoothly between 0% and 100%.
-
-With downsampling in the picture, this becomes even more difficult and solutions to this are very context dependant. One thing you often see is  -->
 
 ## What are the big boys doing?
 The Dual Kawase Blur has found its way into game engines and user interfaces alike. For instance the Linux Desktop Environment [KDE](https://kde.org/) uses it as the frosted backdrop effect [since in 2018](https://web.archive.org/web/20220427124712/https://phabricator.kde.org/D9848), where it remains the [algorithm of choice to this day](https://invent.kde.org/plasma/kwin/-/tree/master/src/plugins/blur). I used KDE's implementation as a guide when creating my demo above.
