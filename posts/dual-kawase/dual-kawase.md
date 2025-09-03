@@ -371,6 +371,8 @@ Since reading between pixels gets a linear mix of pixel neighbors, we can [linea
 
 Bilinear interpolation allows us to resize an image by reading from it at lower resolution. In a way, it's a free bilinear resize built into every graphics chip, zero performance impact. But there *is* a limit - the bilinear interpolation is limited to a 2 × 2 sample square. Try to resize the kiwi below in different modes.
 
+<blockquote class="reaction"><div class="reaction_text">To make this more obvious, the following canvas renders at 25% of <a href="https://en.wikipedia.org/wiki/1:1_pixel_mapping" target="_blank">native resolution</a>.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
 {% include "./demos/bilinear.htm" %}
 
 Nearest Neightbor looks pixelated, if the size is not at 100% size, which is equivalent to 1:1 pixel mapping. At 100% it moves "jittery", as it "snaps" to the nearest neighbor. Bilinear keeps things smooth, but going below 50%, especially below 25%, we get exactly the same kind of aliasing, as we would get from nearest neighbor!
@@ -380,26 +382,26 @@ Nearest Neightbor looks pixelated, if the size is not at 100% size, which is equ
 With 2 × 2 samples, we start skipping over color information, if the underlying pixels are smaller than half a pixel in size. Below 50% size, our bilinear interpolation starts to act like nearest neighbor interpolation. So as a result, we can shrink image in steps of 50%, without "skipping over information" and creating aliasing. Let's use that!
 
 ## Downsampling
-One fundamental thing thing you can do in post-processing is to shrink "downsample" first, perform the processing at a lower resolution and upsample again. With the idea being, that you wouldn't notice the lowered resolution. Below is the the [Separable Gaussian Blur](#separable-gaussian-blur) again, with a variable downsample / upsample chain.
+One fundamental thing thing you can do in post-processing is to shrink "downsample" first, perform the processing at a lower resolution and upsample again. With the idea being, that you wouldn't notice the lowered resolution. Below is the [Separable Gaussian Blur](#separable-gaussian-blur) again, with a variable downsample / upsample chain.
 
-Each increase of `downSample` adds a 50% scale step. Let's visualize the framebuffers in play, as it gets quite complex. With an example of a square 1024 px² image and a `downSample` of `2` and our two pass separable Gaussian blur in play.
+Each increase of `downSample` adds a 50% scale step. Let's visualize the framebuffers in play, as it gets quite complex. Here is an example of a square 1024 px² image, a `downSample` of `2` and our two pass separable Gaussian blur.
 
 <figure>
 	<img src="img/framebuffer.svg" alt="Downsample and Blur Framebuffers" />
-	<figcaption>Framebuffers and their sizes used during the downsample and blur chain</figcaption>
+	<figcaption>Framebuffers and their sizes, as used during the downsample + blur chain</figcaption>
 </figure>
 
 <blockquote class="reaction"><div class="reaction_text">One unused optimization is that the blur can read straight from the 512 px² framebuffer and output the 256 px² directly, skipping one downsample step.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-Below you have the option to skip part of downsample or part of the upsample chain, if you have `downSample` set to higher than 1. What may not be quite obvious is why we also upsample in steps. Play around with all the dials and modes, to get a feel for what's happening.
+Below you have the option to skip part of the downsample or part of the upsample chain, if you have `downSample` set to higher than 1. What may not be quite obvious is why we also upsample in steps. Play around with all the dials and modes, to get a feel for what's happening.
 
 {% include "./demos/downsample.htm" %}
 
 With each downsample step, our kernel covers more and more area, thus increasing the blur radius. Performance is again, a massive lift up, as we quadratically get less and less pixels to blur with each step. We get bigger blurs with the same `kernelSize` and with stronger blurs in `Scene` mode, the resolution drop is not visible.
 
-With smaller blurs you will get "shimmering", as aliasing artifacts begin, even with our bilinear filtering in place. The lower resolution is starting to show. This is ***especially*** painful in bloom mode with strong `lightBrightness`, as lights will start to "turn on and off" as they are not resolved correctly at lower resolutions.
+With smaller blurs you will get "shimmering", as aliasing artifacts begin, even with our bilinear filtering in place. Small blurs and lower resolution don't mix. This is ***especially*** painful in bloom mode with strong `lightBrightness`, as lights will start to "turn on and off" as they are not resolved correctly at lower resolutions.
 
-<blockquote class="reaction"><div class="reaction_text">There must be some kind of sweet spot of dropped resolution and blur strong enough to hide the drop in resolution.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">There must be some kind of sweet spot of low resolution and blur strong enough to hide the the low resolution.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
 Skipping Downsample steps will bring obviously horrible aliasing. As for upsampling, there is a deep misunderstanding I held for years, until I read the SIGGRAPH 2014 presentation [Next Generation Post Processing in Call of Duty: Advanced Warfare](https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/) by graphics magician [Jorge Jimenez](https://www.iryoku.com/). One page stuck out to me:
 
@@ -408,7 +410,7 @@ Skipping Downsample steps will bring obviously horrible aliasing. As for upsampl
 	<figcaption>Page 159 from presentation <a href="https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/" target="_blank">Next Generation Post Processing in Call of Duty: Advanced Warfare</a> by <a href="https://www.iryoku.com/" target="_blank">Jorge Jimenez</a></figcaption>
 </figure>
 
-With upsampling, we aren't "skipping" any information by "skipping upsample steps", right? Nothing is missed. But if you look closely at the above demo with larger `downSample` chains in `Skip Upsample Steps` of it, then you will see a vague grid like artifact appearing, especially with strong blurs.
+With upsampling, even when going from low res to high res in one jump, we aren't "skipping" any information, right? Nothing is missed. But if you look closely at the above demo with larger `downSample` chains with `Skip Upsample Steps` mode, then you will see a vague grid like artifact appearing, especially with strong blurs.
 
 <figure>
 <div style="display: flex; flex-wrap: wrap;">
@@ -418,7 +420,7 @@ With upsampling, we aren't "skipping" any information by "skipping upsample step
 	<figcaption>Visualization of the bilinear interpolation (<a href="https://en.wikipedia.org/wiki/Bicubic_interpolation" target="_blank">Source</a>)</figcaption>
 </figure>
 
-How to keeps things smooth when upsampling is the field of "Reconstruction filters". By skipping intermediate upsampling steps we are performing a 2 × 2 sample bilinear reconstruction of very small pixels. As a result we get the bilinear filtering characteristic pyramid shaped hot spots. So upscaling matters!
+How to keeps things smooth when upsampling is the field of "Reconstruction filters". By skipping intermediate upsampling steps we are performing a 2 × 2 sample bilinear reconstruction of very small pixels. As a result we get the bilinear filtering characteristic pyramid shaped hot spots. ***How*** we upscale matters.
 
 ## Kawase Blur
 Now we get away from the classical blur approaches. It's the early 2000s and graphics programmer Masaki Kawase, today senior graphics programmer at Tokyo based company [Silicon Studio](https://www.siliconstudio.co.jp/), is programming the Xbox video game [DOUBLE-S.T.E.A.L](https://www.youtube.com/watch?v=JjR9VugWoHY), a game with vibrant post-processing effects.
@@ -433,21 +435,21 @@ During the creation of those visual effects, Masaki Kawase used a new blurring t
 	<figcaption>Sample placement in what later become known as the "Kawase Blur"<br>Excerpt from GDC presentation <a href="https://web.archive.org/web/20060909063116/http://www.daionet.gr.jp/~masa/archives/GDC2003_DSTEAL.ppt" target="_blank">Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L</a> (2003)</figcaption>
 </figure>
 
-This technique does not have a `kernelSize` parameter anymore. It works in passes of 4 equally weighted sampled, placed diagonally from the center output pixel, in the middle where the corners of 4 pixels touch. These samples get color contributions equally from their neighbors, due to bilinear filtering.
+This technique does not have a `kernelSize` parameter anymore. It works in passes of 4 equally weighted samples, placed diagonally from the center output pixel, in the middle where the corners of 4 pixels touch. These samples get color contributions equally from their neighbors, due to bilinear filtering.
 
-<blockquote class="reaction"><div class="reaction_text">This is new, there is no center pixel sample and no explicit weights! (Except the normalization) The weighting happens as a result of bilinear filtering.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">This is new, there is no center pixel sample and, except for the required normalization, no explicit weights! The weighting happens as a result of bilinear filtering.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
-After a pass is complete, that pass is used as the input to the next pass, where the outer 4 diagonal samples increase in distance by one pixel length. With each pass, this distance grows. Two framebuffers are for this, which switch between being input and output between passes. The term for this setup is often called "ping-ponging".
+After a pass is complete, that pass is used as the input to the next pass, where the outer 4 diagonal samples increase in distance by one pixel length. With each pass, this distance grows. Two framebuffers are required for this, which switch between being input and output between passes. This setup is often called "ping-ponging".
 
 {% include "./demos/kawase.htm" %}
 
-It provides a smooth gaussian like results, due to the iterative convolution at play. Really, there are two convolutions happening at the same time, one from the bilinear filtering, one from our sample placement with increasing distance. Akin to the [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem), where stacking box-blurs would eventually lead to a gaussian blur.
+Akin to the [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem) making repeated passes of a box-blur approach a gaussian blur, our Kawase blur provides a smooth gaussian-like results, due to the iterative convolution at play. Technically, there are two convolutions happening at the same time - bilinear filtering and the diagonal samples with increasing distance.
 
-<blockquote class="reaction"><div class="reaction_text">Two different philosophies: The Gaussian blur came from a mathematical concept entering graphics programming. The Kawase blur was born to get the most out of what hardware provides for free.</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Two different origins: The Gaussian blur came from a mathematical concept entering graphics programming. The Kawase blur was born to get the most out of what hardware provides for free.</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
 
 It is not a separable convolution, due to its diagonal sampling nature. As no downsampling is used, this means that we write all pixels out to memory, each pass. Even if we could separate, the cost of writing out twice as many passes to memory would outweigh the benefit of going from 4 samples per-pass to 2.
 
-<blockquote class="reaction"><div class="reaction_text">With so few samples, you cannot increase <code>samplePosMultiplier</code> without instantly getting artifacts by messing up the sample pattern.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">With so few samples, you cannot increase <code>samplePosMultiplier</code> without instantly getting artifacts. We mess up the sample pattern.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
 Take note of textures taps: They grow linearly, with increasing blur radius. In DOUBLE-S.T.E.A.L, Masaki Kawase used it to create the bloom effect, calculated at a lower resolution. But there is one more evolution coming up - We have blur, we have downsampling. Two separate concepts. What if we "fused" them?
 
@@ -459,19 +461,19 @@ Take note of textures taps: They grow linearly, with increasing blur radius. In 
 	<figcaption>Dual Kawase sampling patterns<br>Excerpt from <a href="https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/" target="_blank">Bandwidth-Efficient Rendering</a>, talk by <a href="https://theorg.com/org/arm/org-chart/marius-bjorge" target="_blank">Marius Bjørge</a></figcaption>
 </figure>
 
-This blur works with the idea of Masaki Kawase's "placing diagonal samples at increasing distance", but does so in conjunction with downsampling, which effectively performs this "increase in distance". There is also a dedicated upsample filter. I'll let Marius Bjørge explain this one, an excerpt [from his talk](https://dl.acm.org/doi/suppl/10.1145/2776880.2787664/suppl_file/a184.mp4)
+This blur works with the idea of Masaki Kawase's "placing diagonal samples at increasing distance", but does so in conjunction with downsampling, which effectively performs this "increase in distance". There is also a dedicated upsample filter. I'll let Marius Bjørge explain this one, an excerpt [from his talk mentioned above](https://dl.acm.org/doi/suppl/10.1145/2776880.2787664/suppl_file/a184.mp4)
 
 <audio controls><source src="audio/dualKawaseTalk.mp3" type="audio/mpeg"></audio>
 
-<blockquote><strong>Marius Bjørge</strong>: For lack for a better name, dual filter is something I come up with when playing with different downsampling and upsampling patterns. It's sort of a derivative of the Kavasa filter, but instead of ping-ponging between two equally sized textures, this filter works by having the same filter for down sampling and having another filter for upsampling.<br><br>The downsample filter works by sampling four pixels covering the target pixel, and you also have four pixels on the corner of this pixel to smudge in some information from all the neighboring pixels. So the end upsample filter works by reconstructing information from the downsample pass. So this pattern was chosen to get a nice smooth circular shape.</blockquote>
+<blockquote><strong>Marius Bjørge</strong>: For lack for a better name, dual filter is something I come up with when playing with different downsampling and upsampling patterns. It's sort of a derivative of the Kawase filter, but instead of ping-ponging between two equally sized textures, this filter works by having the same filter for down sampling and having another filter for upsampling.<br><br>The downsample filter works by sampling four pixels covering the target pixel, and you also have four pixels on the corner of this pixel to smudge in some information from all the neighboring pixels. So the end upsample filter works by reconstructing information from the downsample pass. So this pattern was chosen to get a nice smooth circular shape.</blockquote>
 
-Let's try it. This time, there are fragment shaders, as there is an upsample and downsample stage. Again, there is no `kernelSize`. Instead there are `downsampleLevels`, which performs the blur in conjunction with the down sampling. Play around with all the slider and get a feel for it.
+Let's try it. This time, there are two blur shaders, as there is an upsample and downsample stage. Again, there is no `kernelSize`. Instead there are `downsampleLevels`, which performs the blur in conjunction with the down sampling. Play around with all the slider and get a feel for it.
 
 {% include "./demos/dual-kawase.htm" %}
 
-It's also a gaussian-like blur. Remember our first gaussian Blur? It's performance dropped exponentially, as we increased kernel radius. But now, with each downsample step, the required texture taps grow slower and slower. The stronger our blur, the less additional samples we require!
+It's also a gaussian-like blur. Remember our first gaussian Blur? Its performance tanked exponentially, as we increased kernel radius. But now, with each downsample step, the required texture taps grow slower and slower. The stronger our blur, the less _additional_ samples we require!
 
-This was of special interest to Marius Bjørge, as his goal was to reduce memory access, which are especially slow on mobile devices, and still produce a motion-stable non shimmering blur. Speaking of which, go into bloom mode, crank `lightBrightness` and compare it to our [downsample](#downsampling) example.
+This was of special interest to Marius Bjørge, as his goal was to reduce memory access, which is especially slow on mobile devices, and still produce a motion-stable non shimmering blur. Speaking of which, go into bloom mode, crank `lightBrightness` and compare it to our [downsample](#downsampling) example.
 
 Even though the resolution is reduced to the same `downSample` level, no shimmering! That's the Dual Kawase Blur for you - A gaussian-like post-processing blur, with good performance, no heavy repeated memory writes and motion stable output. This makes it ideal as a basic building block for visual effects like bloom.
 
@@ -488,35 +490,37 @@ The Dual Kawase Blur has found its way into game engines and user interfaces ali
 	<figcaption>KDE Plasma's Blur with noise at max strength (<a target="_blank" href="https://web.archive.org/web/20220427124712/https://phabricator.kde.org/D9848">Source</a>)</figcaption>
 </figure>
 
-Of course, graphics programming didn't stop in 2015 and there have been new developments. The previously mentioned talk [Next Generation Post Processing in Call of Duty: Advanced Warfare](https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/) by [Jorge Jimenez](https://www.iryoku.com/) showcased an evolution on the "downsample while blurring" idea to address very bright lights, which are far away.
+Of course, graphics programming didn't stop in 2015 and there have been new developments. The previously mentioned talk [Next Generation Post Processing in Call of Duty: Advanced Warfare](https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/) by [Jorge Jimenez](https://www.iryoku.com/) showcased an evolution on the "downsample while blurring" idea to handle far-away and very bright lights at high blur strengths better.
 
 <figure>
 	<video poster="img/jimenezBlurThumb.jpg" playsinline muted controls><source src="img/jimenezBlur.mp4" type="video/mp4"></video>
 	<figcaption>Uneven interpolation of bright, small light sources (Left), Page 156 from presentation<br><a href="https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/" target="_blank">Next Generation Post Processing in Call of Duty: Advanced Warfare</a> by <a href="https://www.iryoku.com/" target="_blank">Jorge Jimenez</a></figcaption>
 </figure>
 
-In turn, this technique got picked up two years later by graphics programmer [Mikkel Gjoel](https://x.com/pixelmager), when working on the video game [INSIDE](https://en.wikipedia.org/wiki/Inside_(video_game)) by Studio [Playdead](https://playdead.com/). In the GDC 2016 talk [Low Complexity, High Fidelity - INSIDE Rendering](https://gdcvault.com/play/1023304/Low-Complexity-High-Fidelity-INSIDE) he showcased a further optimization, reducing the number of texture required.
+In turn, this technique got picked up two years later by graphics programmer [Mikkel Gjoel](https://x.com/pixelmager), when working on the video game [INSIDE](https://en.wikipedia.org/wiki/Inside_(video_game)) by Studio [Playdead](https://playdead.com/). In the GDC 2016 talk [Low Complexity, High Fidelity - INSIDE Rendering](https://gdcvault.com/play/1023304/Low-Complexity-High-Fidelity-INSIDE) he showcased a further optimization, reducing the number of texture reads required.
 
 <figure>
 	<video poster="img/gdcInsideThumb.jpg" playsinline controls><source src="img/gdcInside.mp4" type="video/mp4"></video>
 	<figcaption>Blur algorithm used for Bloom in video game Inside<br>Excerpt from talk <a href="https://gdcvault.com/play/1023304/Low-Complexity-High-Fidelity-INSIDE" target="_blank">Low Complexity, High Fidelity - INSIDE Rendering</a> by Mikkel Gjoel & Mikkel Svendsen</figcaption>
 </figure>
 
-The bloom use-case was shown a lot. The technique used in my demos is rather primitive, to the time of video game [bloom disasters](https://gangles.ca/2008/07/18/bloom-disasters/), where some many games had radioactive level overdone blooming to show off a then novel technique. In this older style a separate lights pass or the scene [thresholded](https://en.wikipedia.org/wiki/Thresholding_(image_processing)) was blurred and added on top.
+I showcased the bloom use-case a lot. The technique used in my demos is rather primitive, akin to the time of video game [bloom disasters](https://gangles.ca/2008/07/18/bloom-disasters/), where some many games had radioactive levels of bloom, showing off a then novel technique. In this older style an extra lights pass or the scene after [thresholding](https://en.wikipedia.org/wiki/Thresholding_(image_processing)), was blurred and added on top.
 
 <figure>
 	<img src="img/bloom-oblivion.jpg" alt="Bloom in Video game " />
 	<figcaption>Bloom in Video game <a href="https://en.wikipedia.org/wiki/The_Elder_Scrolls_IV:_Oblivion" target="_blank">The Elder Scrolls IV: Oblivion</a>, from article by <a href="https://gangles.ca/2008/07/18/bloom-disasters/" target="_blank">Bloom Disasters</a></figcaption>
 </figure>
 
-There days 3D engines follow a [Physically based shading](https://learnopengl.com/PBR/Theory) model, with HDR framebuffers capturing pixels in an [energy conserving](https://learnopengl.com/Getting-started/Textures#:~:text=Energy%20conservation) manner. Light reflections preserve their super bright values. Instead of defining what to blur, everything blurred and the bright parts naturally start glowing, without predefined "parts to blur".
+These days 3D engines follow a [Physically based shading](https://learnopengl.com/PBR/Theory) model, with HDR framebuffers capturing pixels in an [energy conserving](https://learnopengl.com/Getting-started/Textures#:~:text=Energy%20conservation) manner. Specular light reflections preserve the super bright pixels from the lamp they originated from.
+
+With such a wide range of energy values, light that should bloom doesn't need special selection anymore. Instead of defining what to blur, everything is blurred and the bright parts naturally start glowing, without predefined "parts to blur".
 
 <figure>
 	<img src="img/bloom.png" alt="Physically Based Blur" />
 	<figcaption>Multiple blurs stacked to create a natural light fall-off<br> Page 144 in <a href="https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/" target="_blank">Next Generation Post Processing in Call of Duty: Advanced Warfare</a> by <a href="https://www.iryoku.com/" target="_blank">Jorge Jimenez</a></figcaption>
 </figure>
 
-The result isn't just blurred once, but rather multiple blur strengths are stacked on top of each other to a more natural light falloff, as shown in the previously mentioned talk by Jorge Jimenez. But this ***isn't*** an article about bloom, but the underlying building block. The Blur.
+The result isn't just blurred once, but rather multiple blur strengths are stacked on top of each other, for a more natural light fall-off, as shown in the previously mentioned talk by Jorge Jimenez. This isn't an article about bloom, but the underlying building block. The Blur.
 
 This was a journey through blurs and I hope you enjoyed the ride! If you are a new visitor from the <a target="_blank" href="https://some.3b1b.co/">Summer of Math Exposition</a> and enjoyed this article, you'll enjoy my other graphics programming deep-dives on this blog. Also during SoME 3, my submission was a WebApp + Video Adventure into Mirrorballs:
 

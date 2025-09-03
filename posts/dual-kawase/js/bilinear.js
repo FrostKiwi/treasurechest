@@ -7,6 +7,11 @@ export async function setupBilinear() {
 
 	/* Circle Rotation size */
 	const radius = 0.12;
+	
+	/* Resolution divider for framebuffer rendering */
+	const resDiv = 4; // Hardcoded quarter resolution
+	let renderFramebuffer, renderTexture;
+	let buffersInitialized = false;
 
 	/* Main WebGL 1.0 Context */
 	const gl = canvas.getContext('webgl', {
@@ -23,7 +28,8 @@ export async function setupBilinear() {
 		tex: { sdr: null },
 		/* Shaders and their respective Resource Locations */
 		shd: {
-			kiwi: { handle: null, uniforms: { offset: null, kiwiSize: null } }
+			kiwi: { handle: null, uniforms: { offset: null, kiwiSize: null } },
+			blit: { handle: null, uniforms: { texture: null } }
 		}
 	};
 
@@ -51,9 +57,11 @@ export async function setupBilinear() {
 		});
 	});
 
+
 	/* Shaders */
 	const circleAnimationSize = await util.fetchShader("shader/circleAnimationSize.vs");
 	const simpleTexture = await util.fetchShader("shader/simpleTexture.fs");
+	const simpleQuad = await util.fetchShader("shader/simpleQuad.vs");
 
 	/* Elements that cause a redraw in the non-animation mode */
 	ui.rendering.kiwiSize.addEventListener('input', () => { if (!ui.rendering.animate.checked) redraw() });
@@ -74,6 +82,11 @@ export async function setupBilinear() {
 
 	/* Draw Texture Shader */
 	ctx.shd.kiwi = util.compileAndLinkShader(gl, circleAnimationSize, simpleTexture, ["offset", "kiwiSize"]);
+	
+	/* Blit Shader for upscaling */
+	ctx.shd.blit = util.compileAndLinkShader(gl, simpleQuad, simpleTexture, ["texture"]);
+	
+	/* Set initial shader state */
 	gl.useProgram(ctx.shd.kiwi.handle);
 
 	/* Send Unit code verts to the GPU */
@@ -98,10 +111,28 @@ export async function setupBilinear() {
 		ui.display.spinner.style.display = "block";
 		ctx.flags.initComplete = false;
 
+		/* Create framebuffer for quarter resolution rendering */
+		gl.deleteFramebuffer(renderFramebuffer);
+		renderFramebuffer = gl.createFramebuffer();
+		gl.bindFramebuffer(gl.FRAMEBUFFER, renderFramebuffer);
+
+		/* Create RGBA framebuffer texture manually to preserve alpha */
+		gl.deleteTexture(renderTexture);
+		renderTexture = gl.createTexture();
+		gl.bindTexture(gl.TEXTURE_2D, renderTexture);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, canvas.width / resDiv, canvas.height / resDiv, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, renderTexture, 0);
+		buffersInitialized = true;
+
+		/* Load kiwi texture */
 		let base = await fetch("img/kiwi4by3.svg");
 		let baseBlob = await base.blob();
 		let baseImage = await loadSVGAsImage(baseBlob);
-		let baseBitmap = await createImageBitmap(baseImage, { resizeWidth: canvas.width, resizeHeight: canvas.height, colorSpaceConversion: 'none', resizeQuality: "high" });
+		let baseBitmap = await createImageBitmap(baseImage, { resizeWidth: canvas.width / resDiv, resizeHeight: canvas.height / resDiv, colorSpaceConversion: 'none', resizeQuality: "high" });
 
 		ctx.tex.sdr = util.setupTexture(gl, null, null, ctx.tex.sdr, gl.NEAREST, baseBitmap, 4);
 
@@ -117,7 +148,16 @@ export async function setupBilinear() {
 		if (!ctx.flags.initComplete)
 			return;
 
-		/* Texture Filtering mode */
+		/* Pass 1: Render to framebuffer at reduced resolution */
+		gl.viewport(0, 0, canvas.width / resDiv, canvas.height / resDiv);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, renderFramebuffer);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+		
+		/* Use kiwi shader */
+		gl.useProgram(ctx.shd.kiwi.handle);
+		
+		/* Bind kiwi texture and set filtering mode */
+		gl.bindTexture(gl.TEXTURE_2D, ctx.tex.sdr);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, ctx.mode == "nearest" ? gl.NEAREST : gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, ctx.mode == "nearest" ? gl.NEAREST : gl.LINEAR);
 
@@ -129,7 +169,19 @@ export async function setupBilinear() {
 		gl.uniform2fv(ctx.shd.kiwi.uniforms.offset, offset);
 		gl.uniform1f(ctx.shd.kiwi.uniforms.kiwiSize, ui.rendering.kiwiSize.value);
 
-		/* Draw Call */
+		/* Draw kiwi to framebuffer */
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+		gl.viewport(0, 0, canvas.width, canvas.height);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		
+		/* Use blit shader */
+		gl.useProgram(ctx.shd.blit.handle);
+		
+		/* Bind framebuffer texture with nearest neighbor for pixelated upscaling */
+		gl.bindTexture(gl.TEXTURE_2D, renderTexture);
+		
+		/* Draw full-screen quad to upscale */
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 	}
 
@@ -187,6 +239,9 @@ export async function setupBilinear() {
 
 		/* Delete the buffers to free up memory */
 		gl.deleteTexture(ctx.tex.sdr); ctx.tex.sdr = null;
+		gl.deleteTexture(renderTexture);
+		gl.deleteFramebuffer(renderFramebuffer);
+		buffersInitialized = false;
 		ctx.flags.initComplete = false;
 	}
 
