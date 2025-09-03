@@ -1,5 +1,14 @@
 import * as util from '../utility.js'
 
+/* Quick note about the implementation. In here I use one framebuffer for each size step.
+   In actually, this is *not* how it should be done. Graphics pipelines have "Mip Maps"
+   for textures and we actually can use one texture and render each downsample step into
+   each mip-map size. Then we also get a nice blending slider between the size provided
+   by the hardware as well!
+   
+   That is unfortunately not possible in WebGL 1.0 ( ; __ ;   )
+   I went with WebGL 1.0 for maximum compatibility across devices. */
+
 export async function setupGaussianDownsampleBlur() {
 	/* Init */
 	const WebGLBox = document.getElementById('WebGLBox-GaussianDownsampleBlur');
@@ -324,8 +333,8 @@ export async function setupGaussianDownsampleBlur() {
 		const effectiveRes = [Math.max(1, canvas.width >> +ui.blur.downSample.value), Math.max(1, canvas.height >> +ui.blur.downSample.value)];
 		const tapsNewText = (effectiveRes[0] * effectiveRes[1] * KernelSizeSide * 2 / 1000000).toFixed(1) + " Million";
 		ui.display.tapsCount.value = tapsNewText;
-		ui.display.width.value = effectiveRes[0];
-		ui.display.height.value = effectiveRes[1];
+		ui.display.width.value = canvas.width;
+		ui.display.height.value = canvas.height;
 
 		/* Circle Motion */
 		let radiusSwitch = ui.rendering.animate.checked ? radius : 0.0;

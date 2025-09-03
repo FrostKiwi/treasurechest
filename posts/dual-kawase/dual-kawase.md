@@ -11,7 +11,6 @@ publicTags:
   - GameDev
 image: img/thumbnail.png
 ---
-<blockquote>ℹ️ <strong>Scheduled public release on Sep 3, before Peer voting starts 9 PM</strong></blockquote>
 
 {% include "./demos/init.htm" %}
 
@@ -77,6 +76,8 @@ UV coordinates specify the position we read in the image, with bottom left being
 
 The framebuffer is passed into the fragment shader in line `uniform sampler2D texture` as a texture. Using the blur shader, we draw a "Full Screen Quad", a rectangle covering the entire canvas, with matching `0,0` in the bottom-left and `1,1` in the top-right `varying vec2 uv` UV coordinates to read from the texture.
 
+Due to automatic interpolation 
+
 The texture's aspect-ratio and resolution are the same as the output canvas's aspect-ratio and resolution, thus there is a 1:1 pixel mapping between the texture we will process and our output canvas. The [graphics pipeline steps](https://github.com/FrostKiwi/treasurechest/blob/main/posts/dual-kawase/js/blur/simple.js) and [vertex shader](https://github.com/FrostKiwi/treasurechest/blob/main/posts/dual-kawase/shader/simpleQuad.vs) responsible for this are not important for this article.
 
 The blur fragment shader accesses the color of the texture with `texture2D(texture, uv)`, at the matching output pixel's position. In following examples, we'll read from neighboring pixels, for which we'll need to calculate a UV coordinate offset, a decimal fraction corresponding to one pixel step, calculated with with `1 / canvasResolution`
@@ -86,7 +87,7 @@ The blur fragment shader accesses the color of the texture with `texture2D(textu
 Graphics programming is [uniquely challenging](https://www.youtube.com/watch?v=xJQ0qXh1-m0) in the beginning, because of how many rules and limitations the hardware, [graphics APIs](https://en.wikipedia.org/wiki/Graphics_library) and the [rendering pipeline](https://fgiesen.wordpress.com/2011/07/09/a-trip-through-the-graphics-pipeline-2011-index/) impose. But it also unlocks incredible potential, as other limitations dissolve. Let's find out how graphics programmers have leveraged that potential.
 
 ## Box Blur
-From a programmer's perspective, the most straight forward way is to average the neighbors of a pixel using a [for-loop](https://en.wikipedia.org/wiki/For_loop). What the fragment shader is expressing is: "_look X pixels up, down, left, right and average the colors_". The more we want to blur, the more we have to increase `kernelSize`, the bounds of our for-loop.
+From a programmer's perspective, the most straight forward way is to average the neighbors of a pixel using a [for-loop](https://en.wikipedia.org/wiki/For_loop). What the fragment shader is expressing is: "_look Y pixels up & down, X pixels left & right and average the colors_". The more we want to blur, the more we have to increase `kernelSize`, the bounds of our for-loop.
 
 ```glsl
 /* Read from the texture y amount of pixels above and below */
@@ -105,7 +106,7 @@ The bigger the for-loop, the more texture reads we perform, **per output-pixel**
 
 {% include "./demos/boxBlur.htm" %}
 
-Visually, the result doesn't look very pleasant. The stronger the blur, the more "boxy" image features become. This is due to us reading and averaging the texture in a square shape. Especially in bloom mode, with strong `lightBrightness` and big `kernelSize`, lights become literally squares.
+Visually, the result doesn't look very pleasing. The stronger the blur, the more "boxy" features of the image become. This is due to us reading and averaging the texture in a square shape. Especially in bloom mode, with strong `lightBrightness` and big `kernelSize`, lights become literally squares.
 
 Performance is also really bad. With bigger `kernelSizes`, our `Texture Taps` count skyrockets and performance drops. Mobile devices will come to a slog. Even the worlds fastest PC graphics cards will fall below screen refresh-rate by cranking `kernelSize` and zooming the article on PC, thus raising canvas resolution.
 
@@ -128,7 +129,7 @@ A fundamental blur algorithm option is increasing the sample distance away from 
 Doing it too much, brings ugly repeating patterns. This of course leaves some fundamental questions, like where these artifacts come from and what it even means to read between two pixels. ***And*** on top of that we have to address performance and the boxyness of our blur! But first...
 
 ## What even _is_ a kernel?
-What we have created with our for-loop, is a [convolution](https://www.youtube.com/watch?v=KuXjwB4LzSA0). Expressed simplified, in the context of image processing, it's usually a square of numbers constructing an output pixel, by gathering and weighting pixels the square covers. The square is called a kernel and was the thing we visualized previously.
+What we have created with our for-loop, is a [convolution](https://www.youtube.com/watch?v=KuXjwB4LzSA0). Very simplified, in the context of image processing, it's usually a square of numbers constructing an output pixel, by gathering and weighting pixels, that the square covers. The square is called a kernel and was the thing we visualized previously.
 
 For blurs, the kernel weights must sum up to 1. If that were not the case, we would either brighten or darken the image. Ensuring that is the normalization step. In the box blur above, this happens by dividing the summed pixel color by `totalSamples`, the total amount of samples taken. A basic "calculate the average" expression.
 
@@ -147,13 +148,13 @@ Among others, we can define a solid color to be used, or to "clamp" to the neare
 
 <blockquote class="reaction"><div class="reaction_text">You may have noticed a black "blob" streaking with stronger blur levels along the bottom. Specifically here, it happens because the lines between the floor tiles align with the bottom edge, extending black color to infinity</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-Convolution as a mathematical concept is surprisingly deep and [3blue1brown](https://www.youtube.com/@3blue1brown) has an excellent video on it, that even covers the image processing perspective. Theoretically, we won't depart from convolutions. We ***can*** dissect our code and express it as weights and kernels. With the for-loop box blur, that ***was*** quite easy!
+Convolution as a mathematical concept is surprisingly deep and [3blue1brown](https://www.youtube.com/@3blue1brown) has an excellent video on it, that even covers the image processing topic. Theoretically, we won't depart from convolutions. We ***can*** dissect our code and express it as weights and kernels. With the for-loop box blur, that ***was*** quite easy!
 <figure>
 	<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/KuXjwB4LzSA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
 	<figcaption>But what is a convolution?<br><a target="_blank" href="https://www.youtube.com/watch?v=KuXjwB4LzSA">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@3blue1brown">3Blue1Brown</a></figcaption>
 </figure>
 
-On a practical level though, understanding where the convolution is, how many there are and what kernels are at play will become more and more difficult, once we leave the realm of classical blurs and consider the wider implications of reading between pixel bounds. But for now, another we stay with the classics:
+On a practical level though, understanding where the convolution is, how many there are and what kernels are at play will become more and more difficult, once we leave the realm of classical blurs and consider the wider implications of reading between pixel bounds. But for now, we stay with the classics:
 
 ## Gaussian Blur
 The most famous of blur algorithms is the Gaussian Blur. It uses the [normal distribution](https://en.wikipedia.org/wiki/Normal_distribution), also known as the [bell Curve](https://en.wikipedia.org/wiki/Normal_distribution) to weight the samples inside the kernel, with a new variable `sigma σ` to control the flatness of the curve. Other than generating the kernel weights, the algorithm is identical to the box blur algorithm.
@@ -181,11 +182,11 @@ Just like with the box blur, weights are summed up and divided at the end, inste
 
 The blur looks way smoother than our previous box blur, with things generally taking on a "rounder" appearance, due to the bell curve's smooth signal response. That is, unless you move the `sigma` slider down. If you move `sigma` too low, you will get our previous box blur like artifacts again. 
 
-Let's clear up what the values actually represent and how they interact. The following visualization shows the kernel with its weights expressed as height in an [~~Isometric~~](https://en.wikipedia.org/wiki/Isometric_projection) [Dimetric](https://en.wikipedia.org/wiki/Axonometric_projection#Three_types) perspective projection. There are two different `sigma` - `kernelSize` interaction modes and two ways to describe `sigma`.
+Let's clear up what the values actually represent and how they interact. The following visualization shows the kernel with its weights expressed as height in an [~~Isometric~~](https://en.wikipedia.org/wiki/Isometric_projection) [Dimetric](https://en.wikipedia.org/wiki/Axonometric_projection#Three_types) perspective projection. There are two different interaction modes with `sigma` when changing `kernelSize` and two ways to express `sigma`.
 
 {% include "./demos/gaussianKernelViz.htm" %}
 
-`sigma` describes the flatness of our mathematical curve, a curve going to infinity. But our algorithm has a limited `kernelSize`. Where the kernel stops, no more pixel contributions occur, leading to box-like artifacts due to the cut-off. In the context of image processing, there are two ways to setup a gaussian blur...
+`sigma` describes the flatness of our mathematical curve, a curve going to infinity. But our algorithm has a limited `kernelSize`. Where the kernel stops, no more pixel contributions occur, leading to box-blur-like artifacts due to the cut-off. In the context of image processing, there are two ways to setup a gaussian blur...
 
 <blockquote class="reaction"><div class="reaction_text">A small sigma, thus a flat bell curve, paired with a small kernel size effectively <strong>is</strong> a box blur, with the weights making the kernel box-shaped.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
@@ -195,9 +196,9 @@ Eitherway, the infinite gaussian curve ***will*** have a cut-off _somewhere_. `s
 
 <blockquote class="reaction"><div class="reaction_text">An optimal kernel would be one, where the outer weights are almost zero. Thus, if we increased <code>kernelSize</code> in Absolute Sigma mode by one, it would make close to no more <strong>visual</strong> difference.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
-There are other ways of creating blur kernels, with other properties. One way is to follow [Pascal's triangle](https://en.wikipedia.org/wiki/Pascal%27s_triangle) to get a set of predefined kernel sizes and values. These are called [Binomial Filters](https://bartwronski.com/2021/10/31/practical-gaussian-filter-binomial-filter-and-small-sigma-gaussians/) and lock us into specific "kernel presets", but solve the infinity vs cut-off dilemma, by moving weights to zero within the sampling window.
+There are other ways of creating blur kernels, with other properties. One way is to follow [Pascal's triangle](https://en.wikipedia.org/wiki/Pascal%27s_triangle) to get a set of predefined kernel sizes and weights. These are called [Binomial Filters](https://bartwronski.com/2021/10/31/practical-gaussian-filter-binomial-filter-and-small-sigma-gaussians/) and lock us into specific "kernel presets", but solve the infinity vs cut-off dilemma, by moving weights to zero within the sampling window.
 
-Binomial Kernels are also Gaussian-like in their frequency response. We won't expand on these further, just know that we ***can*** choose kernels by different mathematical criteria, chasing different signal response properties. But speaking of which, what even *is* Gaussian Like? Why do we care?
+Binomial Kernels are also Gaussian-like in their frequency response. We won't expand on these further, just know that we ***can*** choose kernels by different mathematical criteria, chasing different signal response characteristics. But speaking of which, what even *is* Gaussian Like? Why do we care?
 
 ### What is Gaussian-like?
 In Post-Processing Blur algorithms you generally find two categories. [Bokeh](https://en.wikipedia.org/wiki/Bokeh) Blurs and Gaussian-Like Blurs. The gaussian is chosen for its natural appearance, its ability to smooth colors without "standout features". Gaussian Blurs are generally used as an ingredient in an overarching visual effect, be it frosted glass Interfaces or Bloom.
@@ -207,7 +208,7 @@ In Post-Processing Blur algorithms you generally find two categories. [Bokeh](ht
 	<figcaption>Bokeh Blur and Gaussian Blur compared.</figcaption>
 </figure>
 
-In contrast to that, when emulating lenses and especially in the context of [Depth of Field](https://dev.epicgames.com/documentation/en-us/unreal-engine/depth-of-field-in-unreal-engine), is "[Bokeh Blur](https://dev.epicgames.com/documentation/en-us/unreal-engine/cinematic-depth-of-field-method?application_version=4.27)", also known as "Lens Blur" or "Cinematic Blur". This type of blur ***is*** the target visual effect. The challenges and approaches are very much related, but algorithms used differ.
+In contrast to that, when emulating lenses and or creating [Depth of Field](https://dev.epicgames.com/documentation/en-us/unreal-engine/depth-of-field-in-unreal-engine), is "[Bokeh Blur](https://dev.epicgames.com/documentation/en-us/unreal-engine/cinematic-depth-of-field-method?application_version=4.27)" - also known as "Lens Blur" or "Cinematic Blur". This type of blur ***is*** the target visual effect. The challenges and approaches are very much related, but algorithms used differ.
 
 Algorithms get really creative in this space, all with different trade-offs and visuals. Some sample using a [poission disk distribution](https://mynameismjp.wordpress.com/2011/02/28/bokeh/) and some have cool out of the box thinking: Computerphile covered a comlex numbers based approach to creating Bokeh Blurs, a fascinating number theory cross-over.
 
@@ -219,9 +220,9 @@ Algorithms get really creative in this space, all with different trade-offs and 
 This article though doesn't care about these stylistics approaches. We are here to chase a basic building block of graphics programming and realtime visual effects, a "Gaussian-Like" with good performance. Speaking of which!
 
 ## Performance
-The main motivator of our journey here, is the chase of realtime performance. Everything we do must happen within milliseconds. The expected performance of an algorithm and the practical cost once placed in the graphics pipeline, are sometimes surprisingly different numbers though. Gotta measure!
+The main motivator of our journey here, is the chase of realtime performance. Everything we do must happen within few milliseconds. The expected performance of an algorithm and the practical cost once placed in the graphics pipeline, are sometimes surprisingly different numbers though. Gotta measure!
 
-<blockquote class="reaction"><div class="reaction_text">This is chapter is about a very <strong>technical</strong> motivation. If you don't care about how fast a GPU does what it does, feel free to skip this section.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">This chapter is about a very <strong>technical</strong> motivation. If you don't care about how fast a GPU does what it does, feel free to skip this section.</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
 With performance being such a driving motivator, it would be a shame if we couldn't measure it in this article. Each WebGL Box has a benchmark function, which blurs random noise at a fixed resolution of `1600x1200` with the respective blur settings you chose and a fixed iteration count workload, a feature hidden so far.
 
@@ -250,7 +251,7 @@ Despite the gaussian blur calculating the kernel [completely from scratch on eve
 
 <blockquote class="reaction"><div class="reaction_text">But isn't gaussian blur is more complicated algorithm?</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
-As opposed to chips from decade ago, modern graphics cards have very fast chips, but comparatively slow memory access times. With workloads like these, the slowest thing becomes the memory access, in our case the texture taps. The more taps, the slower the algorithm.
+As opposed to chips from decades ago, modern graphics cards have very fast arithmetic, but comparatively slow memory access times. With workloads like these, the slowest thing becomes the memory access, in our case the texture taps. The more taps, the slower the algorithm.
 
 <blockquote class="reaction"><div class="reaction_text">Our blurs perform a <strong>dependant texture read</strong>, a graphics programming sin. This is when texture coordinates are determined <strong>during</strong> shader execution, which opts out of a many automated shader optimizations.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
@@ -261,11 +262,11 @@ This is due hardware texture caches accelerating texture reads which are spatial
 These are key numbers graphics programmers chase when writing fragment shaders: <strong>Texture Taps</strong> and <strong>Cache Utilization</strong>. There is another one, we will get into in a moment. Clearly, our Blurs are ***slow***. Time for a speed up!
 
 ## Separable Gaussian Blur
-We have not yet left the *classics* of blur algorithms. One fundamental thing on the table is the "Convolution Separability". Certain Convolutions like our [Box Blur](#box-blur), [our Gaussian Blur](#gaussian-blur) and the [Binominal filtering](https://bartwronski.com/2021/10/31/practical-gaussian-filter-binomial-filter-and-small-sigma-gaussians/) mentioned in passing previously can all be performed in two separate passes, by two ***separate*** 1D Kernels.
+We have not yet left the *classics* of blur algorithms. One fundamental concept left on the table is "convolution separability". Certain Convolutions like our [Box Blur](#box-blur), [our Gaussian Blur](#gaussian-blur) and the [Binominal filtering](https://bartwronski.com/2021/10/31/practical-gaussian-filter-binomial-filter-and-small-sigma-gaussians/) mentioned in passing previously can all be performed in two separate passes, by two ***separate*** 1D Kernels.
 
 <figure>
 	{% include "./img/gaussianFactorX.svg" %} {% include "./img/gaussianFactorY.svg" %}
-	<figcaption>Gaussian blur weights formula for point <code>(x,y)</code> <a target="_blank" href="https://en.wikipedia.org/wiki/Gaussian_blur#Mathematics">(Source)</a></figcaption>
+	<figcaption>Gaussian blur weights formula for, separated</a></figcaption>
 </figure>
 
 Not all convolutions are separable. In the context of graphics programming: If you can express the kernel weights as a formula with axes `X, Y` and factor-out both `X` and `Y` into two separate formulas, then you have gained separability of a 2D kernel and can perform the convolution in two passes, massively saving on texture taps.
@@ -290,13 +291,13 @@ With a modern High-res 4k screen video game, multi-pass anything implies writing
 ## The magic of frequency space
 ...how about blurs that happen so fast, that they are considered free! We are doing a bit of a detour into ***Frequency Space*** image manipulation.
 
-Any 2D image can be converted and edited in frequency space, which unlocks a whole new sort of image manipulation. To blur an image in this paradigm, we perform an [image Fast Fourier Transform](https://usage.imagemagick.org/fourier/#introduction), then [mask high frequency areas to perform the blur](https://usage.imagemagick.org/fourier/#blurring) and finally performing the inverse transformation.
+Any 2D image can be converted and edited in frequency space, which unlocks a whole new sort of image manipulation. To blur an image in this paradigm, we perform an [image Fast Fourier Transform](https://usage.imagemagick.org/fourier/#introduction), then [mask high frequency areas to perform the blur](https://usage.imagemagick.org/fourier/#blurring) and finally do the inverse transformation.
 
 A Fourier Transform decomposes a signal into its underlying Sine Frequencies. The output of an _image Fast Fourier Transform_ are "Magnitude" and "Phase" component images.  These images can be combined back together with the inverse image FFT to produce the original image again...
 
 <figure>
 	<img src="img/256ScreenOverlay.png" alt="FFT Viz Input image" />
-	<figcaption>FFT Visualization input image<br>The green stripes are not an error, they are baked into the image on purpose.</figcaption>
+	<figcaption>Input image for the following interactive FFT example<br>The green stripes are not an error, they are baked into the image on purpose.</figcaption>
 </figure>
 
 ...but before doing so, we can manipulate the frequency representation of the image in various ways. [Less reading, more interaction!](https://www.youtube.com/watch?v=qHvdLwSZmF8) In the following interactive visualization you have the magnitude image, brightness boosted into a human visible representation on the left and the reconstructed image on the right.
@@ -330,7 +331,7 @@ But not everything is gold that glitters. First of all, performance. Yes, the "b
 
 But our shaders work the other way around, expressing the "instructions to construct an output pixel". There *are* [fragment shader based GPU implementations](https://github.com/rreusser/glsl-fft), but they rely on many passes for calculation, a lot of memory access back and forth. Furthermore, non-power of two images [require a slower algorithm](https://rocm.docs.amd.com/projects/rocFFT/en/latest/design/bluestein.html).
 
-This article is in the realm of fragment shaders and the graphics pipeline a GPU is part of, but there are also [GPGPU](https://en.wikipedia.org/wiki/General-purpose_computing_on_graphics_processing_units) and [compute shader implementations](https://github.com/bane9/OpenGLFFT) with no fragment shader specific limitations. Unfortunately the situation remains: Conversion of high-res images to frequency space is too costly in the context of realtime 3D.
+This article is in the realm of fragment shaders and the graphics pipeline a GPU is part of, but there are also [GPGPU](https://en.wikipedia.org/wiki/General-purpose_computing_on_graphics_processing_units) and [compute shader implementations](https://github.com/bane9/OpenGLFFT) with no fragment shader specific limitations. Unfortunately the situation remains: Conversion of high-res images to frequency space is too costly in the context of realtime graphics.
 
 <blockquote class="reaction"><div class="reaction_text">Deleting the frequencies of that grid is magical, but leaves artifacts. In reality it's worse, as my example is idealized. Click <strong>Upload Image</strong>, take a photo of a repeating pattern and see how cleanly you can get rid of it.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
@@ -364,7 +365,7 @@ Reading from textures comes with a freebie. When reading between pixels, the clo
 
 {% include "./demos/bilinearViz.htm" %}
 
-Since reading between pixels gets a linear mix of pixel neighbors, we can [linearly interpolate part of our gaussian kernel](https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/), sometimes called a [Linear Gaussian](https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/). By tweaking gaussian weights and reducing the amount of samples we could do a 7 × 7 gaussian kernel with worth of 4 × 4 samples, as shown in the [linked article](https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/).
+Since reading between pixels gets a linear mix of pixel neighbors, we can [linearly interpolate part of our gaussian kernel](https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/), sometimes called a [Linear Gaussian](https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/). By tweaking gaussian weights and reducing the amount of samples we could do a 7 × 7 gaussian kernel worth of information with only a 4 × 4 kernel, as shown in the [linked article](https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/).
 
 <blockquote class="reaction"><div class="reaction_text">Though mathematically not the same, visually the result is very close. There are a lot of hand-crafted variations on this, different mixes of kernel sizes and interpolation amounts.</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 
@@ -474,27 +475,52 @@ This was of special interest to Marius Bjørge, as his goal was to reduce memory
 
 Even though the resolution is reduced to the same `downSample` level, no shimmering! That's the Dual Kawase Blur for you - A gaussian-like post-processing blur, with good performance, no heavy repeated memory writes and motion stable output. This makes it ideal as a basic building block for visual effects like bloom.
 
-In fact, it found it's way into game engines and user interfaces alike. For instance the Linux Desktop Environment [KDE](https://kde.org/) uses it as the frosted backdrop effect in its window manager KWIN [since in 2018](https://web.archive.org/web/20220427124712/https://phabricator.kde.org/D9848), where it remains the [algorithm of choice to this day](https://invent.kde.org/plasma/kwin/-/tree/master/src/plugins/blur).
+<!-- ## Smooth Animation
+One fundamental challenge with advanced blur algorithms, is that it's challenging to get smooth blur sliders and blur strength animations. Eg. with our separable gaussian blur, you could set `kernelSize` to maximum required and adjust `samplePosMultiplier` smoothly between 0% and 100%.
 
-<!-- ## What are the big boys doing? -->
+With downsampling in the picture, this becomes even more difficult and solutions to this are very context dependant. One thing you often see is  -->
 
-<!-- Now we have went through a lot of demos and theoretical discussion, time to see -->
+## What are the big boys doing?
+The Dual Kawase Blur has found its way into game engines and user interfaces alike. For instance the Linux Desktop Environment [KDE](https://kde.org/) uses it as the frosted backdrop effect [since in 2018](https://web.archive.org/web/20220427124712/https://phabricator.kde.org/D9848), where it remains the [algorithm of choice to this day](https://invent.kde.org/plasma/kwin/-/tree/master/src/plugins/blur). I used KDE's implementation as a guide when creating my demo above.
 
-<!-- ## State of the art -->
+<figure>
+	<img src="img/kdeBlur.png" alt="KDE Plasma's Blur with noise at max strength" />
+	<figcaption>KDE Plasma's Blur with noise at max strength (<a target="_blank" href="https://web.archive.org/web/20220427124712/https://phabricator.kde.org/D9848">Source</a>)</figcaption>
+</figure>
 
-<!-- Playdead used it to get HDR Bloom
-[Low Complexity, High Fidelity - INSIDE Rendering](https://gdcvault.com/play/1023304/Low-Complexity-High-Fidelity-INSIDE)
-Check against Jimenez 14 5:45 onwards -->
+Of course, graphics programming didn't stop in 2015 and there have been new developments. The previously mentioned talk [Next Generation Post Processing in Call of Duty: Advanced Warfare](https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/) by [Jorge Jimenez](https://www.iryoku.com/) showcased an evolution on the "downsample while blurring" idea to address very bright lights, which are far away.
 
-<!-- Indepth article by Intel [link](https://www.intel.com/content/www/us/en/developer/articles/technical/an-investigation-of-fast-real-time-gpu-based-image-blur-algorithms.html) with Link to original ppt by Masaki Kawase. -->
+<figure>
+	<video poster="img/jimenezBlurThumb.jpg" playsinline muted controls><source src="img/jimenezBlur.mp4" type="video/mp4"></video>
+	<figcaption>Uneven interpolation of bright, small light sources (Left), Page 156 from presentation<br><a href="https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/" target="_blank">Next Generation Post Processing in Call of Duty: Advanced Warfare</a> by <a href="https://www.iryoku.com/" target="_blank">Jorge Jimenez</a></figcaption>
+</figure>
 
+In turn, this technique got picked up two years later by graphics programmer [Mikkel Gjoel](https://x.com/pixelmager), when working on the video game [INSIDE](https://en.wikipedia.org/wiki/Inside_(video_game)) by Studio [Playdead](https://playdead.com/). In the GDC 2016 talk [Low Complexity, High Fidelity - INSIDE Rendering](https://gdcvault.com/play/1023304/Low-Complexity-High-Fidelity-INSIDE) he showcased a further optimization, reducing the number of texture required.
 
-<!-- https://www.youtube.com/watch?v=vNG3ZAd8wCc -->
+<figure>
+	<video poster="img/gdcInsideThumb.jpg" playsinline controls><source src="img/gdcInside.mp4" type="video/mp4"></video>
+	<figcaption>Blur algorithm used for Bloom in video game Inside<br>Excerpt from talk <a href="https://gdcvault.com/play/1023304/Low-Complexity-High-Fidelity-INSIDE" target="_blank">Low Complexity, High Fidelity - INSIDE Rendering</a> by Mikkel Gjoel & Mikkel Svendsen</figcaption>
+</figure>
 
-<!-- CS2 has not handled highlights like Call of Duty's graphics team has, see ancient lights -->
+The bloom use-case was shown a lot. The technique used in my demos is rather primitive, to the time of video game [bloom disasters](https://gangles.ca/2008/07/18/bloom-disasters/), where some many games had radioactive level overdone blooming to show off a then novel technique. In this older style a separate lights pass or the scene [thresholded](https://en.wikipedia.org/wiki/Thresholding_(image_processing)) was blurred and added on top.
 
-<!-- To conclude this part, my recommendation is to *always consider the integral if you want to use any sigmas below 0.7*. -->
+<figure>
+	<img src="img/bloom-oblivion.jpg" alt="Bloom in Video game " />
+	<figcaption>Bloom in Video game <a href="https://en.wikipedia.org/wiki/The_Elder_Scrolls_IV:_Oblivion" target="_blank">The Elder Scrolls IV: Oblivion</a>, from article by <a href="https://gangles.ca/2008/07/18/bloom-disasters/" target="_blank">Bloom Disasters</a></figcaption>
+</figure>
 
-<!-- And for a further exercise for the reader, you can think of how this would change under some different reconstruction function (hint: it becomes a weighted integral, or an integral of convolution; for the box / nearest neighbor, the convolution is with a rectangular function). -->
+There days 3D engines follow a [Physically based shading](https://learnopengl.com/PBR/Theory) model, with HDR framebuffers capturing pixels in an [energy conserving](https://learnopengl.com/Getting-started/Textures#:~:text=Energy%20conservation) manner. Light reflections preserve their super bright values. Instead of defining what to blur, everything blurred and the bright parts naturally start glowing, without predefined "parts to blur".
 
-<!-- [https://gangles.ca/2008/07/18/bloom-disasters/](https://gangles.ca/2008/07/18/bloom-disasters/) -->
+<figure>
+	<img src="img/bloom.png" alt="Physically Based Blur" />
+	<figcaption>Multiple blurs stacked to create a natural light fall-off<br> Page 144 in <a href="https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/" target="_blank">Next Generation Post Processing in Call of Duty: Advanced Warfare</a> by <a href="https://www.iryoku.com/" target="_blank">Jorge Jimenez</a></figcaption>
+</figure>
+
+The result isn't just blurred once, but rather multiple blur strengths are stacked on top of each other to a more natural light falloff, as shown in the previously mentioned talk by Jorge Jimenez. But this ***isn't*** an article about bloom, but the underlying building block. The Blur.
+
+This was a journey through blurs and I hope you enjoyed the ride! If you are a new visitor from the <a target="_blank" href="https://some.3b1b.co/">Summer of Math Exposition</a> and enjoyed this article, you'll enjoy my other graphics programming deep-dives on this blog. Also during SoME 3, my submission was a WebApp + Video Adventure into Mirrorballs:
+
+<figure>
+	<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/rJPKTCdk-WI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
+	<figcaption>Mathematical Magic Mirrorball #SoME3<br><a target="_blank" href="https://www.youtube.com/watch?v=rJPKTCdk-WI">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@FrostKiwi">FrostKiwi</a></figcaption>
+</figure>
