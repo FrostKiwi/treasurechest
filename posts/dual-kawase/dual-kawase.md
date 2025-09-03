@@ -265,10 +265,10 @@ We have not yet left the *classics* of blur algorithms. One fundamental thing on
 
 <figure>
 	{% include "./img/gaussianFactorX.svg" %} {% include "./img/gaussianFactorY.svg" %}
-	<figcaption>Gaussian blur weights formula for point <code>(x,y)</code>, <a target="_blank" href="https://en.wikipedia.org/wiki/Gaussian_blur#Mathematics">Source</a></figcaption>
+	<figcaption>Gaussian blur weights formula for point <code>(x,y)</code> <a target="_blank" href="https://en.wikipedia.org/wiki/Gaussian_blur#Mathematics">(Source)</a></figcaption>
 </figure>
 
-Not all convolutions are separable. In the context of graphics programming: If you can express the kernel weights as a formula with axes `X, Y` and factor `X` and why `Y` out into two separate formulas, then you have gained separability with a 2D kernel and can perform the convolution in two passes, massively saving on texture taps.
+Not all convolutions are separable. In the context of graphics programming: If you can express the kernel weights as a formula with axes `X, Y` and factor-out both `X` and `Y` into two separate formulas, then you have gained separability of a 2D kernel and can perform the convolution in two passes, massively saving on texture taps.
 
 <blockquote class="reaction"><div class="reaction_text">Some big budget video games have used effects with kernels that are <strong>not</strong> separable, but did it anyway in two passes + 1D Kernel for the performance gain, with the resulting artifacts being deemed not too bad.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
@@ -279,16 +279,16 @@ Computerphile covered the concept of separability in the context of 2D image pro
 	<figcaption>Separable Filters and a Bauble<br><a target="_blank" href="https://www.youtube.com/watch?v=SiJpkucGa1o">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@Computerphile">Computerphile</a></figcaption>
 </figure>
 
-Here is our Gaussian Blur, but expressed as a separable Version. You can see just Pass 1 and Pass 2 in isolation or see the final result. Same visual quality as our Gaussian Blur, same dials, but massively faster, no more quadratic scaling of required texture taps.
+Here is our Gaussian Blur, but expressed as a separable Version. You can see just Pass 1 and Pass 2 in isolation or see the final result. Same visual quality as our Gaussian Blur, same dials, but massively faster, with no more quadratic scaling of required texture taps.
 
 {% include "./demos/gaussianSeparable.htm" %}
 
-If you benchmark the performance, you will see a massive performance uplift, as compared to our Gaussian Blur! But there *is* a trade-off made, that's not quite obvious. In order to have two passes, we are writing out a new framebuffer.
+If you benchmark the performance, you will see a massive performance uplift, as compared to our Gaussian Blur! But there *is* a trade-off made, that's not quite obvious. In order to have two passes, we are writing out a new framebuffer. Remember the "modern chips are fast but memory access in relation is not" thing?
 
-With a modern High-res 4k screen video game, that implies writing out 8.2 Million Pixels, just to read them back in. With smaller kernels on high-res displays, a separable kernel may not always be faster. But with bigger kernels, it almost always is. With a massive speed-up gained, how much faster can we go?...
+With a modern High-res 4k screen video game, multi-pass anything implies writing out 8.2 Million Pixels to memory, just to read them back in. With smaller kernels on high-res displays, a separable kernel may not always be faster. But with bigger kernels, it almost always is. With a massive speed-up gained, how much faster can we go?
 
 ## The magic of frequency space
-...how about blurs that happen so fast, that they are considered free? We are doing a bit of a detour into ***Frequency Space*** image manipulation.
+...how about blurs that happen so fast, that they are considered free! We are doing a bit of a detour into ***Frequency Space*** image manipulation.
 
 Any 2D image can be converted and edited in frequency space, which unlocks a whole new sort of image manipulation. To blur an image in this paradigm, we perform an [image Fast Fourier Transform](https://usage.imagemagick.org/fourier/#introduction), then [mask high frequency areas to perform the blur](https://usage.imagemagick.org/fourier/#blurring) and finally performing the inverse transformation.
 
@@ -301,13 +301,13 @@ A Fourier Transform decomposes a signal into its underlying Sine Frequencies. Th
 
 ...but before doing so, we can manipulate the frequency representation of the image in various ways. [Less reading, more interaction!](https://www.youtube.com/watch?v=qHvdLwSZmF8) In the following interactive visualization you have the magnitude image, brightness boosted into a human visible representation on the left and the reconstructed image on the right.
 
-For now, play around with removing energy. You can plaint on the magnitude image with your fingers or with the mouse. The output image will be reconstructed accordingly. Also, play around with the circular mask and the feathering sliders. Try to build intuition for what's happening.
+For now, play around with removing energy. You can paint on the magnitude image with your fingers or with the mouse. The output image will be reconstructed accordingly. Also, play around with the circular mask and the feathering sliders. Try to build intuition for what's happening.
 
 {% include "./demos/fftViz.htm" %}
 
 The magnitude image represents the frequency make-up of the image, with the lowest frequencies in the middle and higher at the edges. Horizontal frequencies (vertical features in the image) follow the X Axis and vertical frequencies (Horizontal features in the image) follow the Y Axis, with in-betweens being the diagonals.
 
-Repeating patterns in the image, lighten up as high-points in the image are lighting up very. E.g., the green Grid I added. Removing it in photoshop would be a nightmare, but in frequency space it's easy! Just paint over the blueish 3 diagonal streaks.
+Repeating patterns in the image lighten up as bright-points in the magnitude representation. Or rather, their frequencies have high energy: E.g. the green grid I added. Removing it in photoshop wouldn't be easy! But in frequency space it ***is*** easy! Just paint over the blueish 3 diagonal streaks.
 
 <blockquote class="reaction"><div class="reaction_text">Removing repeating features by finger-painting black over frequencies still blows me away.</div><img class="kiwi" src="/assets/kiwis/surprised.svg"></blockquote>
 
@@ -320,17 +320,17 @@ As you may have noticed, the Magnitude representation holds mirrored information
 
 The underlying code this time is not written by me, but is from [@turbomaze](https://github.com/turbomaze/)'s repo [JS-Fourier-Image-Analysis](https://github.com/turbomaze/JS-Fourier-Image-Analysis). There is no standard on how you are supposed to plot the magnitude information and how the quadrants are layed out. I changed the implementation by [@turbomaze](https://github.com/turbomaze/) to follow the [convention used by ImageMagick](https://usage.imagemagick.org/fourier/#introduction).
 
-We can blur the image by painting the frequency energy black in a radius around the center, thus eliminating higher frequencies and blurring the image. If we do so with a pixel perfect circle, then we get ringing artifacts, specifically, the [Gibbs phenomenon](https://en.wikipedia.org/wiki/Gibbs_phenomenon). By feathering the circle, we lessen this ringing and the blur cleans up.
+We can blur the image by painting the frequency energy black in a radius around the center, thus eliminating higher frequencies and blurring the image. If we do so with a pixel perfect circle, then we get ringing artifacts - The [Gibbs phenomenon](https://en.wikipedia.org/wiki/Gibbs_phenomenon). By feathering the circle, we lessen this ringing and the blur cleans up.
 
-<blockquote class="reaction"><div class="reaction_text">Drawing a circle like this? That's essentially free on the GPU! We can get super big kernels for free!</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Drawing a circle like this? That's essentially free on the GPU! We get the equivalent of get super big kernels for free!</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
 
 But not everything is gold that glitters. First of all, performance. Yes, the "blur" in frequency space is essentially free, but the trip to frequency space, is everything but. The main issue comes down to [FFT transformations](https://en.wikipedia.org/wiki/Butterfly_diagram) performing writes to exponentially many pixels per input pixel, a performance killer.
 
 <blockquote class="reaction"><div class="reaction_text"><strong>And</strong> then there's still the inverse conversion!</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
-But our shaders work the other way around, expressing the "instructions to construct an output pixel". There *are* [fragment shader based GPU implementations](https://github.com/rreusser/glsl-fft), but they rely on many passes performed. Further more, non-power of two images [require a slower algorithm](https://rocm.docs.amd.com/projects/rocFFT/en/latest/design/bluestein.html).
+But our shaders work the other way around, expressing the "instructions to construct an output pixel". There *are* [fragment shader based GPU implementations](https://github.com/rreusser/glsl-fft), but they rely on many passes for calculation, a lot of memory access back and forth. Furthermore, non-power of two images [require a slower algorithm](https://rocm.docs.amd.com/projects/rocFFT/en/latest/design/bluestein.html).
 
-This article is in the realm of the fragment shaders and the graphics pipeline a GPU is part of. There are also [GPGPU](https://en.wikipedia.org/wiki/General-purpose_computing_on_graphics_processing_units) and [compute shader implementations](https://github.com/bane9/OpenGLFFT) with no limitations imposed by fragment shaders. But the situation remains: Conversion of high-res images to frequency space is too costly in the context of realtime 3D.
+This article is in the realm of fragment shaders and the graphics pipeline a GPU is part of, but there are also [GPGPU](https://en.wikipedia.org/wiki/General-purpose_computing_on_graphics_processing_units) and [compute shader implementations](https://github.com/bane9/OpenGLFFT) with no fragment shader specific limitations. Unfortunately the situation remains: Conversion of high-res images to frequency space is too costly in the context of realtime 3D.
 
 <blockquote class="reaction"><div class="reaction_text">Deleting the frequencies of that grid is magical, but leaves artifacts. In reality it's worse, as my example is idealized. Click <strong>Upload Image</strong>, take a photo of a repeating pattern and see how cleanly you can get rid of it.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
@@ -340,80 +340,145 @@ Then there are the artifacts I have glossed over. The FFT transformation conside
 
 <blockquote class="reaction"><div class="reaction_text">It's a filter that removes high frequencies and leaves the low ones, easy!</div><img class="kiwi" src="/assets/kiwis/happy.svg"></blockquote>
 
-Try the FFT Example again decrease the filter radius to blur. At some point the grid disappears. Right? It's a low pass filter, alright, but the high frequencies are literally annihilated with this procedure. Small bright lights in the distance? Also annihilated. Now think of what the gaussian blur does...
+Try the FFT Example again and decrease the `frequencyCutRadius` to blur. At some point the green lines disappear, right? It ***is*** a low pass filter, one where high frequencies are literally annihilated. Small bright lights in the distance? Also annihilated...
 
 {% include "./demos/fftVizCopy.htm" %}
 
 If we were to use this to build an effect like bloom, it would remove small lights that are meant to bloom as well! Our gaussian blur on the other hand, [also a low-pass filter](https://en.wikipedia.org/wiki/Gaussian_blur#Low-pass_filter), samples and weights ***every*** pixel. In a way it "_takes the high frequency energy and spreads it into low frequency energy_".
 
-So Low Pass Filter ≠ Low Pass Filter, it depends on context as to what is meant by that word and the reason this word wasn't mentioned until now. Frequency Space energy attenuations are simply not the correct tool for our goal of a "basic graphics programming building block" for visual effects.
+So Low Pass Filter ≠ Low Pass Filter, it depends on context as to what is meant by that word and the reason the article didn't use it until now. Frequency Space energy attenuations are simply not the correct tool for our goal of a "basic graphics programming building block" for visual effects.
 
-<blockquote class="reaction"><div class="reaction_text">This is a <strong>deep misunderstanding</strong> I held for years.<output></output></div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">This is a <strong>deep misunderstanding</strong> I held for year, as in why <strong>didn't</strong> video games such a powerful tool?<output></output></div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
 
-There are other frequency space image representations, not just FFT Magnitude + Phase. Another famous one is [Discrete cosine transform](https://en.wikipedia.org/wiki/Discrete_cosine_transform). Again, computerphile covered it deeply in a video. As for realtime hires images, that's a no. DCT conversion is multiple magnitudes slower. Feel free to dive deeper into frequency space...
+There are other frequency space image representations, not just FFT Magnitude + Phase. Another famous one is [Discrete cosine transform](https://en.wikipedia.org/wiki/Discrete_cosine_transform). Again, computerphile covered it in great detail in a video. As for realtime hires images, no. DCT conversion is multiple magnitudes slower. Feel free to dive deeper into frequency space...
 
 <figure>
 	<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/Q2aEzeMDHMA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
 	<figcaption>JPEG DCT, Discrete Cosine Transform (JPEG Pt2)<br><a target="_blank" href="https://www.youtube.com/watch?v=Q2aEzeMDHMA">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@Computerphile">Computerphile</a></figcaption>
 </figure>
 
-...as for this article is the end of our frequency space detour. We so much about what's slow on the GPU. Let's talk about something that's not just fast, but free:
+...as for this article, it's the end of our frequency space detour. We talked so much about what's slow on the GPU. Let's talk about something that's not just fast, but free:
 
 ## Bilinear Interpolation
-Reading from texture comes with a freebie. [Unless you switch to Nearest Neightbor mode](https://learnopengl.com/Getting-started/Textures#:~:text=Texture%20Filtering), when reading between pixels, the closet four pixel are interpolated [bilinearly](https://en.wikipedia.org/wiki/Bilinear_interpolation) to create the final read. Below you can drag the color sample with finger touch or the mouse. Take note of how and when the color changes in the respective modes.
+Reading from textures comes with a freebie. When reading between pixels, the closet four pixel are interpolated [bilinearly](https://en.wikipedia.org/wiki/Bilinear_interpolation) to create the final read, unless you switch to [Nearest Neightbor mode](https://learnopengl.com/Getting-started/Textures#:~:text=Texture%20Filtering). Below you can drag the color sample with finger touch or the mouse. Take note of how and when the color changes in the respective modes.
 
 {% include "./demos/bilinearViz.htm" %}
 
-This allows us to resize an image by reading from it. In a way, it's a free bilinear resize built into every graphics chip, with no performance impact. But there *is* a limit - the bilinear interpolation is limited to a 2 x 2 sample square. Take a look at the following visualization. Try to resize the kiwi in different modes, to different sizes.
+Since reading between pixels gets a linear mix of pixel neighbors, we can [linearly interpolate part of our gaussian kernel](https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/), sometimes called a [Linear Gaussian](https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/). By tweaking gaussian weights and reducing the amount of samples we could do a 7 × 7 gaussian kernel with worth of 4 × 4 samples, as shown in the [linked article](https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/).
+
+<blockquote class="reaction"><div class="reaction_text">Though mathematically not the same, visually the result is very close. There are a lot of hand-crafted variations on this, different mixes of kernel sizes and interpolation amounts.</div><img class="kiwi" src="/assets/kiwis/speak.svg"></blockquote>
+
+Bilinear interpolation allows us to resize an image by reading from it at lower resolution. In a way, it's a free bilinear resize built into every graphics chip, zero performance impact. But there *is* a limit - the bilinear interpolation is limited to a 2 × 2 sample square. Try to resize the kiwi below in different modes.
 
 {% include "./demos/bilinear.htm" %}
 
-Nearest Neightbor looks pixelated, if the size is not at 100% size, which is equivalent to 1:1 pixel mapping. At 100% it moves "jittery", as it "snaps" to the nearest neighbor. Bilinear keeps things smooth, but going to 50%, to 25% and below, we get exactly the same kind of aliasing, as we would get from nearest neighbor!
+Nearest Neightbor looks pixelated, if the size is not at 100% size, which is equivalent to 1:1 pixel mapping. At 100% it moves "jittery", as it "snaps" to the nearest neighbor. Bilinear keeps things smooth, but going below 50%, especially below 25%, we get exactly the same kind of aliasing, as we would get from nearest neighbor!
 
 <blockquote class="reaction"><div class="reaction_text">You may have noticed similar aliasing when playing YouTube Videos at a very high manually selected video resolution, but in a small window. Same thing!</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-With 2 x 2 samples, we start skipping over color information, if the underlying pixels are smaller than half a pixel in size. At 25% size, our bilinear interpolation starting to be like the nearest neighbor interpolation. So as a result, we can downsamle image in steps of 50%, without "skipping over information" and creating aliasing. Let's use that!
+With 2 × 2 samples, we start skipping over color information, if the underlying pixels are smaller than half a pixel in size. Below 50% size, our bilinear interpolation starts to act like nearest neighbor interpolation. So as a result, we can shrink image in steps of 50%, without "skipping over information" and creating aliasing. Let's use that!
 
 ## Downsampling
-One fundamental thing thing you can do in post-processing is to downsample first, perform the processing at a lower resolution and upsize again, with the idea being, that for things like bloom, you wouldn't notice the lowered resolution. Below is the the [Separable Gaussian Blur](#separable-gaussian-blur) again, but a variable downsample / upsample chain.
+One fundamental thing thing you can do in post-processing is to shrink "downsample" first, perform the processing at a lower resolution and upsample again. With the idea being, that you wouldn't notice the lowered resolution. Below is the the [Separable Gaussian Blur](#separable-gaussian-blur) again, with a variable downsample / upsample chain.
 
-Each increase of `downSample` adds a 50% scale step. With an example of a square 1024 px² image and a `downSample` of `2`, this would mean processing chain of `1024 px² → 512 px² → 256 px² → <Blur> → 512 px² → 1024 px²`
+Each increase of `downSample` adds a 50% scale step. Let's visualize the framebuffers in play, as it gets quite complex. With an example of a square 1024 px² image and a `downSample` of `2` and our two pass separable Gaussian blur in play.
 
- Furthermore, there are modes to skip the intermediary steps of the downsample, if there are any. Explore all the possible dials and sliders!
+<figure>
+	<img src="img/framebuffer.svg" alt="Downsample and Blur Framebuffers" />
+	<figcaption>Framebuffers and their sizes used during the downsample and blur chain</figcaption>
+</figure>
+
+<blockquote class="reaction"><div class="reaction_text">One unused optimization is that the blur can read straight from the 512 px² framebuffer and output the 256 px² directly, skipping one downsample step.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+Below you have the option to skip part of downsample or part of the upsample chain, if you have `downSample` set to higher than 1. What may not be quite obvious is why we also upsample in steps. Play around with all the dials and modes, to get a feel for what's happening.
 
 {% include "./demos/downsample.htm" %}
 
-As you see, with each downsample step, our kernel covers more and more area, thus increasing the blur radius. But you will also spot the background "shimmering", especially in bloom mode, with it's small and bright highlights, which are very prone to aliasing.
+With each downsample step, our kernel covers more and more area, thus increasing the blur radius. Performance is again, a massive lift up, as we quadratically get less and less pixels to blur with each step. We get bigger blurs with the same `kernelSize` and with stronger blurs in `Scene` mode, the resolution drop is not visible.
 
-<!-- Skip Upsample has an effect, no way!
-Illogical, but discovery by Masaki Kawase.
+With smaller blurs you will get "shimmering", as aliasing artifacts begin, even with our bilinear filtering in place. The lower resolution is starting to show. This is ***especially*** painful in bloom mode with strong `lightBrightness`, as lights will start to "turn on and off" as they are not resolved correctly at lower resolutions.
 
-First time I read this, didn't understand it.
+<blockquote class="reaction"><div class="reaction_text">There must be some kind of sweet spot of dropped resolution and blur strong enough to hide the drop in resolution.</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
-Smoother because, we interpolate multiple times. -->
-
-<!-- Mention https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/ -->
-
-## Kawase Blur
-Discovered by [Silicon Studio](https://www.siliconstudio.co.jp/en/) senior graphics engineer Masaki Kawase 川瀬 正樹 and [presented](https://gdcvault.com/play/1022664/Frame-Buffer-Postprocessing-Effects-in) during a 2003 Game Developers Conference, the Kawase blurs utilizes the bilinear filtering capability to place sample in a diamond shape. There are only 5 samples, which are repeated in increasing radius each pass.
+Skipping Downsample steps will bring obviously horrible aliasing. As for upsampling, there is a deep misunderstanding I held for years, until I read the SIGGRAPH 2014 presentation [Next Generation Post Processing in Call of Duty: Advanced Warfare](https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/) by graphics magician [Jorge Jimenez](https://www.iryoku.com/). One page stuck out to me:
 
 <figure>
-	<img src="img/kawase1.png" alt="kawase blur filter pattern" />
-	<img src="img/kawase2.png" alt="kawase blur filter pattern" />
-	<figcaption>Excerpt from  "<a href="https://gdcvault.com/play/1022664/Frame-Buffer-Postprocessing-Effects-in" target="_blank">Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L (Wreckless)"</a><br>(GDC Presentation 2003)</figcaption>
+	<img src="img/jimenez2014.png" alt="Page 159 from presentation Next Generation Post Processing in Call of Duty: Advanced Warfare by Jorge Jimenez" />
+	<figcaption>Page 159 from presentation <a href="https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/" target="_blank">Next Generation Post Processing in Call of Duty: Advanced Warfare</a> by <a href="https://www.iryoku.com/" target="_blank">Jorge Jimenez</a></figcaption>
 </figure>
+
+With upsampling, we aren't "skipping" any information by "skipping upsample steps", right? Nothing is missed. But if you look closely at the above demo with larger `downSample` chains in `Skip Upsample Steps` of it, then you will see a vague grid like artifact appearing, especially with strong blurs.
+
+<figure>
+<div style="display: flex; flex-wrap: wrap;">
+	<img style="width: 300px" src="img/Interpolation-nearest.svg" alt="Nearest Neightbor Interpolation" />
+	<img style="width: 300px" src="img/Interpolation-bilinear.svg" alt="Bilinear Neightbor Interpolation" />
+</div>
+	<figcaption>Visualization of the bilinear interpolation (<a href="https://en.wikipedia.org/wiki/Bicubic_interpolation" target="_blank">Source</a>)</figcaption>
+</figure>
+
+How to keeps things smooth when upsampling is the field of "Reconstruction filters". By skipping intermediate upsampling steps we are performing a 2 × 2 sample bilinear reconstruction of very small pixels. As a result we get the bilinear filtering characteristic pyramid shaped hot spots. So upscaling matters!
+
+## Kawase Blur
+Now we get away from the classical blur approaches. It's the early 2000s and graphics programmer Masaki Kawase, today senior graphics programmer at Tokyo based company [Silicon Studio](https://www.siliconstudio.co.jp/), is programming the Xbox video game [DOUBLE-S.T.E.A.L](https://www.youtube.com/watch?v=JjR9VugWoHY), a game with vibrant post-processing effects.
+
+During the creation of those visual effects, Masaki Kawase used a new blurring technique that he presented in the 2003 Game Developers Conference talk [Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L (Wreckless)](https://gdcvault.com/browse?keyword=Frame+Buffer+Postprocessing+Effects). This technique became later referred to as the "Kawase Blur". Let's take a look at it:
+
+<figure>
+	<div style="width: 100%; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px">
+		<img style="flex: 1; min-width: 315px" src="img/kawase1.png" alt="kawase blur filter pattern" />
+		<img style="flex: 1; min-width: 315px" src="img/kawase2.png" alt="kawase blur filter pattern" />
+	</div>
+	<figcaption>Sample placement in what later become known as the "Kawase Blur"<br>Excerpt from GDC presentation <a href="https://web.archive.org/web/20060909063116/http://www.daionet.gr.jp/~masa/archives/GDC2003_DSTEAL.ppt" target="_blank">Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L</a> (2003)</figcaption>
+</figure>
+
+This technique does not have a `kernelSize` parameter anymore. It works in passes of 4 equally weighted sampled, placed diagonally from the center output pixel, in the middle where the corners of 4 pixels touch. These samples get color contributions equally from their neighbors, due to bilinear filtering.
+
+<blockquote class="reaction"><div class="reaction_text">This is new, there is no center pixel sample and no explicit weights! (Except the normalization) The weighting happens as a result of bilinear filtering.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+
+After a pass is complete, that pass is used as the input to the next pass, where the outer 4 diagonal samples increase in distance by one pixel length. With each pass, this distance grows. Two framebuffers are for this, which switch between being input and output between passes. The term for this setup is often called "ping-ponging".
 
 {% include "./demos/kawase.htm" %}
 
-It provides smooth, gaussian like results. It is not a separable convolution, due to its diagonal sampling nature.
+It provides a smooth gaussian like results, due to the iterative convolution at play. Really, there are two convolutions happening at the same time, one from the bilinear filtering, one from our sample placement with increasing distance. Akin to the [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem), where stacking box-blurs would eventually lead to a gaussian blur.
+
+<blockquote class="reaction"><div class="reaction_text">Two different philosophies: The Gaussian blur came from a mathematical concept entering graphics programming. The Kawase blur was born to get the most out of what hardware provides for free.</div><img class="kiwi" src="/assets/kiwis/book.svg"></blockquote>
+
+It is not a separable convolution, due to its diagonal sampling nature. As no downsampling is used, this means that we write all pixels out to memory, each pass. Even if we could separate, the cost of writing out twice as many passes to memory would outweigh the benefit of going from 4 samples per-pass to 2.
+
+<blockquote class="reaction"><div class="reaction_text">With so few samples, you cannot increase <code>samplePosMultiplier</code> without instantly getting artifacts by messing up the sample pattern.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
+
+Take note of textures taps: They grow linearly, with increasing blur radius. In DOUBLE-S.T.E.A.L, Masaki Kawase used it to create the bloom effect, calculated at a lower resolution. But there is one more evolution coming up - We have blur, we have downsampling. Two separate concepts. What if we "fused" them?
 
 ## Dual Kawase Blur
-ARM Engineer Marius Bjørge picked up on this idea and during a talk [in 2015](https://dl.acm.org/doi/10.1145/2776880.2787664), combined all these approaches into one and unveiled the "Dual Kawase Blur". Utilizing downsampling, at the same time as sampling in the diagonal shape presented by Masaki Kawase, a non shimmering, best of all worlds Algorithms was introduced.
+[Marius Bjørge](https://theorg.com/org/arm/org-chart/marius-bjorge), principal graphics architect at [ARM](https://www.arm.com/) took this thought to its logical conclusion, when he was optimizing mobile graphics rendering with ARM graphics chips. In a SIGGRAPH 2015 [talk](https://dl.acm.org/doi/10.1145/2776880.2787664) he presented an algorithm, that would later become knows as the ✨ Dual Kawase Blur 🌟, this article's final destination.
+
+<figure>
+	<img src="img/dualKawasePattern.jpg" alt="Dual Kawase sampling patterns" />
+	<figcaption>Dual Kawase sampling patterns<br>Excerpt from <a href="https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/" target="_blank">Bandwidth-Efficient Rendering</a>, talk by <a href="https://theorg.com/org/arm/org-chart/marius-bjorge" target="_blank">Marius Bjørge</a></figcaption>
+</figure>
+
+This blur works with the idea of Masaki Kawase's "placing diagonal samples at increasing distance", but does so in conjunction with downsampling, which effectively performs this "increase in distance". There is also a dedicated upsample filter. I'll let Marius Bjørge explain this one, an excerpt [from his talk](https://dl.acm.org/doi/suppl/10.1145/2776880.2787664/suppl_file/a184.mp4)
+
+<audio controls><source src="audio/dualKawaseTalk.mp3" type="audio/mpeg"></audio>
+
+<blockquote><strong>Marius Bjørge</strong>: For lack for a better name, dual filter is something I come up with when playing with different downsampling and upsampling patterns. It's sort of a derivative of the Kavasa filter, but instead of ping-ponging between two equally sized textures, this filter works by having the same filter for down sampling and having another filter for upsampling.<br><br>The downsample filter works by sampling four pixels covering the target pixel, and you also have four pixels on the corner of this pixel to smudge in some information from all the neighboring pixels. So the end upsample filter works by reconstructing information from the downsample pass. So this pattern was chosen to get a nice smooth circular shape.</blockquote>
+
+Let's try it. This time, there are fragment shaders, as there is an upsample and downsample stage. Again, there is no `kernelSize`. Instead there are `downsampleLevels`, which performs the blur in conjunction with the down sampling. Play around with all the slider and get a feel for it.
 
 {% include "./demos/dual-kawase.htm" %}
 
-It even made its way as an efficient way to blur windows background for a frosted glass effect in the Linux Desktop Environment KDE [in 2018](https://web.archive.org/web/20220427124712/https://phabricator.kde.org/D9848), where it remains the [algorithm of choice to this day](https://invent.kde.org/plasma/kwin/-/tree/master/src/plugins/blur).
+It's also a gaussian-like blur. Remember our first gaussian Blur? It's performance dropped exponentially, as we increased kernel radius. But now, with each downsample step, the required texture taps grow slower and slower. The stronger our blur, the less additional samples we require!
 
+This was of special interest to Marius Bjørge, as his goal was to reduce memory access, which are especially slow on mobile devices, and still produce a motion-stable non shimmering blur. Speaking of which, go into bloom mode, crank `lightBrightness` and compare it to our [downsample](#downsampling) example.
+
+Even though the resolution is reduced to the same `downSample` level, no shimmering! That's the Dual Kawase Blur for you - A gaussian-like post-processing blur, with good performance, no heavy repeated memory writes and motion stable output. This makes it ideal as a basic building block for visual effects like bloom.
+
+In fact, it found it's way into game engines and user interfaces alike. For instance the Linux Desktop Environment [KDE](https://kde.org/) uses it as the frosted backdrop effect in its window manager KWIN [since in 2018](https://web.archive.org/web/20220427124712/https://phabricator.kde.org/D9848), where it remains the [algorithm of choice to this day](https://invent.kde.org/plasma/kwin/-/tree/master/src/plugins/blur).
+
+<!-- ## What are the big boys doing? -->
+
+<!-- Now we have went through a lot of demos and theoretical discussion, time to see -->
 
 <!-- ## State of the art -->
 

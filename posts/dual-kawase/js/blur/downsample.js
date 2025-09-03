@@ -147,10 +147,11 @@ export async function setupGaussianDownsampleBlur() {
 		/* Reset to normal if disabled */
 		if (!hasIntermediarySteps && ctx.skipMode !== "normal") {
 			ctx.skipMode = "normal";
-			ui.rendering.skipModes.forEach(radio => {
-				if (radio.value === "normal") radio.checked = true;
-			});
 		}
+		/* Always sync UI radio buttons with current ctx.skipMode */
+		ui.rendering.skipModes.forEach(radio => {
+			radio.checked = (radio.value === ctx.skipMode);
+		});
 	}
 
 	/* Initialize skip mode controls */
