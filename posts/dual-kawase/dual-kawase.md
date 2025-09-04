@@ -248,7 +248,7 @@ With the [above Box Blur](#box-blur) and [above Gaussian Blur](#gaussian-blur), 
 
 Despite the gaussian blur calculating the kernel [completely from scratch on every single pixel in our implementation](https://github.com/FrostKiwi/treasurechest/blob/main/posts/dual-kawase/shader/gaussianBlur.fs#L18), the performance of the box blur and gaussian blur are very close to each other at higher iteration counts. In fact, by precalculating the those kernels we could performance match both.
 
-<blockquote class="reaction"><div class="reaction_text">But isn't gaussian blur is more complicated algorithm?</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">But isn't gaussian blur a more complicated algorithm?</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
 As opposed to chips from decades ago, modern graphics cards have very fast arithmetic, but comparatively slow memory access times. With workloads like these, the slowest thing becomes the memory access, in our case the texture taps. The more taps, the slower the algorithm.
 
