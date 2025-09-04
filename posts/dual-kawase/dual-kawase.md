@@ -75,8 +75,6 @@ UV coordinates specify the position we read in the image, with bottom left being
 
 The framebuffer is passed into the fragment shader in line `uniform sampler2D texture` as a texture. Using the blur shader, we draw a "Full Screen Quad", a rectangle covering the entire canvas, with matching `0,0` in the bottom-left and `1,1` in the top-right `varying vec2 uv` UV coordinates to read from the texture.
 
-Due to automatic interpolation 
-
 The texture's aspect-ratio and resolution are the same as the output canvas's aspect-ratio and resolution, thus there is a 1:1 pixel mapping between the texture we will process and our output canvas. The [graphics pipeline steps](https://github.com/FrostKiwi/treasurechest/blob/main/posts/dual-kawase/js/blur/simple.js) and [vertex shader](https://github.com/FrostKiwi/treasurechest/blob/main/posts/dual-kawase/shader/simpleQuad.vs) responsible for this are not important for this article.
 
 The blur fragment shader accesses the color of the texture with `texture2D(texture, uv)`, at the matching output pixel's position. In following examples, we'll read from neighboring pixels, for which we'll need to calculate a UV coordinate offset, a decimal fraction corresponding to one pixel step, calculated with with `1 / canvasResolution`
