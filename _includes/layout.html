@@ -44,6 +44,10 @@
 <!-- beautify ignore:end -->
 
 <body>
+	<script>
+		if (new URLSearchParams(location.search).has('noJustify'))
+			document.head.insertAdjacentHTML('beforeend', '<style>p{text-align:unset}</style>');
+	</script>
 	<header>
 		<div class="top-bar">
 			<div class="left_group">
@@ -142,7 +146,7 @@
 			});
 		</script>
 		{% endif %}
-	</footer>	
+	</footer>
 	{% endif %}
 </body>
 
