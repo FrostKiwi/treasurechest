@@ -2,7 +2,7 @@
 title: Video Game Blurs (and how the best one works)
 permalink: "/{{ page.fileSlug }}/"
 date: 2025-09-03
-last_modified:
+last_modified: 2025-09-06
 description: How to build realtime blurs on the GPU and how the best blur algorithm works - "Dual Kawase"
 publicTags:
   - Graphics
@@ -407,7 +407,7 @@ Skipping Downsample steps will bring obviously horrible aliasing. As for upsampl
 	<figcaption>Page 159 from presentation <a href="https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/" target="_blank">Next Generation Post Processing in Call of Duty: Advanced Warfare</a> by <a href="https://www.iryoku.com/" target="_blank">Jorge Jimenez</a></figcaption>
 </figure>
 
-With upsampling, even when going from low res to high res in one jump, we aren't "skipping" any information, right? Nothing is missed. But if you look closely at the above demo with larger `downSample` chains with `Skip Upsample Steps` mode, then you will see a vague grid like artifact appearing, especially with strong blurs.
+With upsampling, even when going from low res to high res in one jump, we aren't "skipping" any information, right? Nothing is missed. But if you look closely at the above demo with larger `downSample` chains with `Skip Upsample Steps` mode, then you will see a vague grid like artifact appearing, especially with strong blurs. [This point was expanded in the addendum](#addendum).
 
 <figure>
 <div style="display: flex; flex-wrap: wrap;">
@@ -427,9 +427,9 @@ With downsampling in the picture, this becomes more difficult and solutions to t
 {% include "./demos/blurMix.htm" %}
 
 ## Kawase Blur
-Now we get away from the classical blur approaches. It's the early 2000s and graphics programmer Masaki Kawase, today senior graphics programmer at Tokyo based company [Silicon Studio](https://www.siliconstudio.co.jp/), is programming the Xbox video game [DOUBLE-S.T.E.A.L](https://www.youtube.com/watch?v=JjR9VugWoHY), a game with vibrant post-processing effects.
+Now we get away from the classical blur approaches. It's the early 2000s and graphics programmer [Masaki Kawase](https://www.siliconstudio.co.jp/middleware/yebis/en/), today senior graphics programmer at Tokyo based company [Silicon Studio](https://www.siliconstudio.co.jp/), is programming the Xbox video game [DOUBLE-S.T.E.A.L](https://www.youtube.com/watch?v=JjR9VugWoHY), a game with vibrant post-processing effects.
 
-During the creation of those visual effects, Masaki Kawase used a new blurring technique that he presented in the 2003 Game Developers Conference talk [Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L (Wreckless)](https://gdcvault.com/browse?keyword=Frame+Buffer+Postprocessing+Effects). This technique became later referred to as the "Kawase Blur". Let's take a look at it:
+During the creation of those visual effects, [Masaki Kawase](https://www.siliconstudio.co.jp/middleware/yebis/en/) used a new blurring technique that he presented in the 2003 Game Developers Conference talk [Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L (Wreckless)](https://gdcvault.com/browse?keyword=Frame+Buffer+Postprocessing+Effects). This technique became later referred to as the "Kawase Blur". Let's take a look at it:
 
 <figure>
 	<div style="width: 100%; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px">
@@ -492,7 +492,7 @@ The Dual Kawase Blur has found its way into game engines and user interfaces ali
 Of course, graphics programming didn't stop in 2015 and there have been new developments. The previously mentioned talk [Next Generation Post Processing in Call of Duty: Advanced Warfare](https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/) by [Jorge Jimenez](https://www.iryoku.com/) showcased an evolution on the "downsample while blurring" idea to handle far-away and very bright lights at high blur strengths better.
 
 <figure>
-	<video poster="img/jimenezBlurThumb.jpg" playsinline muted controls><source src="img/jimenezBlur.mp4" type="video/mp4"></video>
+	<video poster="img/jimenezBlurThumb.jpg" playsinline controls><source src="img/jimenezBlur.mp4" type="video/mp4"></video>
 	<figcaption>Uneven interpolation of bright, small light sources (Left), Page 156 from presentation<br><a href="https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare/" target="_blank">Next Generation Post Processing in Call of Duty: Advanced Warfare</a> by <a href="https://www.iryoku.com/" target="_blank">Jorge Jimenez</a></figcaption>
 </figure>
 
@@ -526,4 +526,41 @@ This was a journey through blurs and I hope you enjoyed the ride! If you are a n
 <figure>
 	<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/rJPKTCdk-WI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
 	<figcaption>Mathematical Magic Mirrorball #SoME3<br><a target="_blank" href="https://www.youtube.com/watch?v=rJPKTCdk-WI">YouTube Video</a> by <a target="_blank" href="https://www.youtube.com/@FrostKiwi">FrostKiwi</a></figcaption>
+</figure>
+
+## Addendum
+Additional things that came to light as a result of discussions around this article.
+
+### Upsample skip steps technique
+In the [downsampling](#downsampling) chapter I mentioned, that skipping upsample steps will result in "_a vague grid like artifact appearing_". In an E-Mail, Masaki Kawase expanded on this with a reference to his [2009 CEDEC](https://www.siliconstudio.co.jp/rd/presentations/#CEDEC2009) talk [Anti-Downsized Buffer Artifacts](https://www.siliconstudio.co.jp/rd/presentations/files/CEDEC2009/CEDEC2009_Anti-DownsizedBufferArtifacts.ppt), that there is an in-between path, when the Downscale - Upsample chain is a bit longer.
+
+<figure>
+	<div style="width: 100%; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px">
+		<img style="flex: 1; min-width: 315px" src="img/2Times2009_2.jpg"/>
+		<img style="flex: 1; min-width: 315px" src="img/2Times2009_1.jpg"/>
+	</div>
+	<figcaption>Skipping Upsample steps and the resulting artifacts (Left) vs performing one intermediary upsample step with 4-Tap Blur, before going on to skipping the remaining intermediary up-sample steps with reduced artifacts (Right)<br>Page 99 - 100 from the 2009 CEDEC talk<br><a href="https://www.siliconstudio.co.jp/rd/presentations/files/CEDEC2009/CEDEC2009_Anti-DownsizedBufferArtifacts.ppt" target="_blank">Anti-Downsized Buffer Artifacts</a> by <a href="https://www.siliconstudio.co.jp/middleware/yebis/en/" target="_blank">Masaki Kawase</a></figcaption>
+</figure>
+
+This involves performing a slight 4 Texture-Tap blur on the very first upsample from the smallest to 2nd smallest framebuffer size and then skipping all the remaining upscample steps, a technique explained in the above linked talk from page 72 onwards. A balance of a longer upsample chain vs the appearance of artifacts.
+
+### Multiple blurs stacked
+I was surprised to learn that the "Multiple blurs stacked to create a natural light fall-off" thing was *also* presented by Masaki Kawase in the 2004 GDC talk [Practical Implementation of High Dynamic Range Rendering](https://gdcvault.com/play/1015174/Practical-Implementation-of-High-Dynamic). Those couple of years in particular were quite eventful for graphics programming!
+
+<figure>
+	<video poster="vid/2004-Gdc-Kawase-Practical-Hdr_thjumb.jpg" playsinline controls><source src="vid/2004-Gdc-Kawase-Practical-Hdr.mp4" type="video/mp4"></video>
+	<figcaption>Use of Multiple Gaussian Filters, Excerpt from the 2004 GDC Talk<br><a href="https://gdcvault.com/play/1015174/Practical-Implementation-of-High-Dynamic" target="_blank">Practical Implementation of High Dynamic Range Rendering</a> (<a href="https://media.gdcvault.com/gdc04/video/2004-GDC-kawase-practical-hdr.flv" target="_blank">Video Direct Link</a>) by <a href="https://www.siliconstudio.co.jp/middleware/yebis/en/" target="_blank">Masaki Kawase</a></figcaption>
+</figure>
+
+<blockquote class="reaction"><div class="reaction_text">Didn't even know about this connection, truly a graphics programmer idol of mine</div><img class="kiwi" src="/assets/kiwis/love.svg"></blockquote>
+
+Here are the 3 slides mentioned in the excerpt from the talk:
+
+<figure>
+	<div style="width: 100%; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px">
+		<img style="flex: 1; min-width: 315px" src="img/kawase2004_1.jpg"/>
+		<img style="flex: 1; min-width: 315px" src="img/kawase2004_2.jpg"/>
+		<img style="flex: 1; min-width: 315px" src="img/kawase2004_3.jpg"/>
+	</div>
+	<figcaption>Page 31 - 33 from the 2004 GDC Talk<br><a href="https://gdcvault.com/play/1015174/Practical-Implementation-of-High-Dynamic" target="_blank">Practical Implementation of High Dynamic Range Rendering</a> by <a href="https://www.siliconstudio.co.jp/middleware/yebis/en/" target="_blank">Masaki Kawase</a></figcaption>
 </figure>
