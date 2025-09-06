@@ -166,7 +166,7 @@ To calculate the weights for point `(x,y)`, the [above formula is used](https://
 ```glsl
 float gaussianWeight(float x, float y, float sigma)
 {
-	/* (x² + y²) / 2 σ² */
+	/* e ^ ( - (x² + y²) / 2 σ² ) */
 	return exp(-(x * x + y * y) / (2.0 * sigma * sigma));
 }
 ```
