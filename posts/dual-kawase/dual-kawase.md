@@ -161,7 +161,7 @@ The most famous of blur algorithms is the Gaussian Blur. It uses the [normal dis
 	<figcaption>Gaussian blur weights formula for point <code>(x,y)</code> <a target="_blank" href="https://en.wikipedia.org/wiki/Gaussian_blur#Mathematics">(Source)</a></figcaption>
 </figure>
 
-To calculate the weights for point `(x,y)`, the [above formula is used](https://en.wikipedia.org/wiki/Gaussian_blur#Mathematics). The gaussian formula has a weighting multiplier `1/√(2πσ²)`. In the code, there is no such thing though. The formula expresses the gaussian curve as a _continuous_ function going to _infinity_. But our code and its for-loop are different - ***discrete*** and ***finite***.
+To calculate the weights for point `(x,y)`, the [above formula is used](https://en.wikipedia.org/wiki/Gaussian_blur#Mathematics). The gaussian formula has a weighting multiplier `1/(2πσ²)`. In the code, there is no such thing though. The formula expresses the gaussian curve as a _continuous_ function going to _infinity_. But our code and its for-loop are different - ***discrete*** and ***finite***.
 
 ```glsl
 float gaussianWeight(float x, float y, float sigma)
@@ -207,7 +207,7 @@ In Post-Processing Blur algorithms you generally find two categories. [Bokeh](ht
 
 In contrast to that, when emulating lenses and or creating [Depth of Field](https://dev.epicgames.com/documentation/en-us/unreal-engine/depth-of-field-in-unreal-engine), is "[Bokeh Blur](https://dev.epicgames.com/documentation/en-us/unreal-engine/cinematic-depth-of-field-method?application_version=4.27)" - also known as "Lens Blur" or "Cinematic Blur". This type of blur ***is*** the target visual effect. The challenges and approaches are very much related, but algorithms used differ.
 
-Algorithms get really creative in this space, all with different trade-offs and visuals. Some sample using a [poission disk distribution](https://mynameismjp.wordpress.com/2011/02/28/bokeh/) and some have cool out of the box thinking: Computerphile covered a comlex numbers based approach to creating Bokeh Blurs, a fascinating number theory cross-over.
+Algorithms get really creative in this space, all with different trade-offs and visuals. Some sample using a [poission disk distribution](https://mynameismjp.wordpress.com/2011/02/28/bokeh/) and some have cool out of the box thinking: Computerphile covered a complex numbers based approach to creating Bokeh Blurs, a fascinating number theory cross-over.
 
 <figure>
 	<iframe width="100%" style="aspect-ratio: 1.78;" src="https://www.youtube-nocookie.com/embed/vNG3ZAd8wCc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
@@ -244,13 +244,13 @@ With the [above Box Blur](#box-blur) and [above Gaussian Blur](#gaussian-blur), 
 
 <blockquote class="reaction"><div class="reaction_text">Especially dedicated Laptop GPUs are slow to get out of their lower power states. Pressing the benchmark button multiple times in a row may result in the performance numbers getting better.</div><img class="kiwi" src="/assets/kiwis/detective.svg"></blockquote>
 
-Despite the gaussian blur calculating the kernel [completely from scratch on every single pixel in our implementation](https://github.com/FrostKiwi/treasurechest/blob/main/posts/dual-kawase/shader/gaussianBlur.fs#L18), the performance of the box blur and gaussian blur are very close to each other at higher iteration counts. In fact, by precalculating the those kernels we could performance match both.
+Despite the gaussian blur calculating the kernel [completely from scratch on every single pixel in our implementation](https://github.com/FrostKiwi/treasurechest/blob/main/posts/dual-kawase/shader/gaussianBlur.fs#L18), the performance of the box blur and gaussian blur are very close to each other at higher iteration counts. In fact, by precalculating those kernels we could performance match both.
 
 <blockquote class="reaction"><div class="reaction_text">But isn't gaussian blur a more complicated algorithm?</div><img class="kiwi" src="/assets/kiwis/think.svg"></blockquote>
 
 As opposed to chips from decades ago, modern graphics cards have very fast arithmetic, but comparatively slow memory access times. With workloads like these, the slowest thing becomes the memory access, in our case the texture taps. The more taps, the slower the algorithm.
 
-<blockquote class="reaction"><div class="reaction_text">Our blurs perform a <strong>dependant texture read</strong>, a graphics programming sin. This is when texture coordinates are determined <strong>during</strong> shader execution, which opts out of a many automated shader optimizations.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
+<blockquote class="reaction"><div class="reaction_text">Our blurs perform a <strong>dependant texture read</strong>, a graphics programming sin. This is when texture coordinates are determined <strong>during</strong> shader execution, which opts out of many automated shader optimizations.</div><img class="kiwi" src="/assets/kiwis/teach.svg"></blockquote>
 
 Especially on personal computers, you may also have noticed that increasing `samplePosMultiplier` will negatively impact performance (up to a point), even though the required texture taps stay the same.
 

@@ -18,7 +18,7 @@ const int kernel_size = KERNEL_SIZE;
 
 float gaussianWeight(float x, float sigma)
 {
-	/* x² / 2 σ² */
+	/* e ^ ( - x² / 2 σ² ) */
 	return exp(-(x * x) / (2.0 * sigma * sigma));
 }
 
