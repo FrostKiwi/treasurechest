@@ -1,20 +1,11 @@
 @use 'sass:color';
 
 @use 'normalize.css/normalize.css';
-@use 'prism-themes/themes/prism-gruvbox-dark.css';
-
 @use 'sakura.css/scss/sakura-vader' as sakura;
-@use 'sizes' as size;
 
-@use 'multiSwitch';
-@use 'multiButton';
-@use 'roundButton';
-@use 'sliders';
 @use 'header';
-@use 'about';
 @use 'cards';
 @use 'kiwis';
-@use 'rss';
 
 $blurConst: blur(calc(1vw + 1vh));
 $bgColor: #00000070;

@@ -136,18 +136,30 @@ export default function (eleventyConfig) {
 
 		for (const post of posts) {
 			if (post.data.image) {
-				const image = await Image('posts/' + post.url + '/' + post.data.image, {
-					widths: [256, "auto"],
-					formats: ['jpeg', "avif", "webp"],
+				/* Thumbnail */
+				const thumbnail = await Image('posts/' + post.url + '/' + post.data.image, {
+					widths: [128],
+					formats: ['jpeg', 'avif', 'webp'],
+					outputDir: eleventyConfig.dir.output + '/' + post.url,
+					transform: (sharp) => {
+						return sharp.resize(128, 128);
+					}
+				});
+
+				/* Opengraph social media image */
+				const openGraphIMG = await Image('posts/' + post.url + '/' + post.data.image, {
+					widths: ['auto'],
+					formats: ['jpeg', 'avif', 'webp'],
 					outputDir: eleventyConfig.dir.output + '/' + post.url
 				});
+
 				/* Thumbnail */
-				post.data.image = post.url + image.jpeg[0].filename;
+				post.data.image = post.url + thumbnail.jpeg[0].filename;
 				/* Opengraph social media image */
-				post.data.social = post.url + image.jpeg[1].filename;
+				post.data.social = post.url + openGraphIMG.jpeg[0].filename;
 				/* Optimized Images */
-				post.data.imageAvif = post.url + image.avif[0].filename;
-				post.data.imageWebp = post.url + image.webp[0].filename;
+				post.data.imageAvif = post.url + thumbnail.avif[0].filename;
+				post.data.imageWebp = post.url + thumbnail.webp[0].filename;
 			}
 		}
 

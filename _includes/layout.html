@@ -29,7 +29,11 @@
 	<meta name="keywords" content="{{ keywords }}">
 
 	<style>
-		{% inlineSass 'style/base.scss' %}
+		{% if homePage %}
+			{% inlineSass 'style/base.scss' %}
+		{% else %}
+			{% inlineSass 'style/post.scss' %}
+		{% endif %}
 	</style>
 	
 	<!-- Twitter Tags -->

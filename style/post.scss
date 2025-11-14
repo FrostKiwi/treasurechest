@@ -1,0 +1,13 @@
+@use 'base';
+
+/* All the extra scss not needed in the index.html */
+@use 'prism-themes/themes/prism-gruvbox-dark.css';
+@use 'sizes' as size;
+
+@use 'multiSwitch';
+@use 'multiButton';
+@use 'roundButton';
+@use 'sliders';
+
+@use 'about';
+@use 'rss';
