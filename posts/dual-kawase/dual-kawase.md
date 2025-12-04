@@ -326,7 +326,7 @@ But not everything is gold that glitters. First of all, performance. Yes, the "b
 
 <blockquote class="reaction"><div class="reaction_text"><strong>And</strong> then there's still the inverse conversion!</div><img class="kiwi" src="/assets/kiwis/facepalm.svg"></blockquote>
 
-But our shaders work the other way around, expressing the "instructions to construct an output pixel". There *are* [fragment shader based GPU implementations](https://github.com/rreusser/glsl-fft), but they rely on many passes for calculation, a lot of memory access back and forth. Furthermore, non-power of two images [require a slower algorithm](https://rocm.docs.amd.com/projects/rocFFT/en/latest/design/bluestein.html).
+But our shaders work the other way around, expressing the "instructions to construct an output pixel". There *are* [fragment shader based GPU implementations](https://github.com/rreusser/glsl-fft), but they rely on many passes for calculation, a lot of memory access back and forth. Furthermore, non-power of two images [require a slower algorithm](https://web.archive.org/web/20250905144607/https://rocm.docs.amd.com/projects/rocFFT/en/latest/design/bluestein.html).
 
 This article is in the realm of fragment shaders and the graphics pipeline a GPU is part of, but there are also [GPGPU](https://en.wikipedia.org/wiki/General-purpose_computing_on_graphics_processing_units) and [compute shader implementations](https://github.com/bane9/OpenGLFFT) with no fragment shader specific limitations. Unfortunately the situation remains: Conversion of high-res images to frequency space is too costly in the context of realtime graphics.
 
@@ -358,7 +358,7 @@ There are other frequency space image representations, not just FFT Magnitude + 
 ...as for this article, it's the end of our frequency space detour. We talked so much about what's slow on the GPU. Let's talk about something that's not just fast, but free:
 
 ## Bilinear Interpolation
-Reading from textures comes with a freebie. When reading between pixels, the closet four pixel are interpolated [bilinearly](https://en.wikipedia.org/wiki/Bilinear_interpolation) to create the final read, unless you switch to [Nearest Neightbor mode](https://learnopengl.com/Getting-started/Textures#:~:text=Texture%20Filtering). Below you can drag the color sample with finger touch or the mouse. Take note of how and when the color changes in the respective modes.
+Reading from textures comes with a freebie. When reading between pixels, the closest four pixels are interpolated [bilinearly](https://en.wikipedia.org/wiki/Bilinear_interpolation) to create the final read, unless you switch to [Nearest Neightbor mode](https://learnopengl.com/Getting-started/Textures#:~:text=Texture%20Filtering). Below you can drag the color sample with finger touch or the mouse. Take note of *how* and *when* the color changes in the respective modes.
 
 {% include "./demos/bilinearViz.htm" %}
 
