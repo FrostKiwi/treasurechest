@@ -764,7 +764,7 @@ The neat thing is, we can utilize the very same HTTP server our WebApp is most l
 
 <blockquote class="reaction"><div class="reaction_text">No new software server-side. No port-forwarding, besides pre-existing HTTP ones. No need to touch the <code>SSHD</code> config either.</div><img class="kiwi" src="/assets/kiwis/party.svg"></blockquote>
 
-Due to how `HTTP CONNECT` works, we can setup the connection on the granularity of a domain or subdomain. So we can do `ssh.example.com` only, but we don't have to and can keep it on the same level as the main WebApp `example.com`. The presence of `HTTP CONNECT` does not impact standard HTTP routing in any way.
+Due to how `HTTP CONNECT` works, we can setup the connection on the granularity of a domain or subdomain. So we could do a separate `ssh.example.com`, but we don't have to and can keep it on the same level as the main WebApp `example.com`. The presence of `HTTP CONNECT` does not impact standard HTTP routing in any way.
 
 You can slap on [`basic auth`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Authentication#basic_authentication_scheme) and/or IP whitelisting, basic HTTP config stuff I won't describe for brevity. It's totally fine to leave this wide open though, as that corresponds to a port-forwarded OpenSSH. Totally normal, given the security mechanisms of OpenSSH and optional hardening mentioned [at the beginning](#simple%2C-direct-connection).
 
