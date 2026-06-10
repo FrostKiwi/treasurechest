@@ -14,6 +14,8 @@
 	<link rel="icon" href="/assets/favicon.ico" sizes="32x32" type="image/x-icon">
 	<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 	<link rel="manifest" href="/assets/manifest.webmanifest">
+	<link rel="alternate" type="application/atom+xml" title="FrostKiwi's Secrets" href="/feed.xml">
+	<link rel="canonical" href="{{ site.url }}{{ page.url }}">
 		
 	<meta name="author" content="Wladislav Artsimovich">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,6 +41,13 @@
 	<!-- Twitter Tags -->
 	<meta name="twitter:card" content="summary" />
 	<meta name="twitter:creator" content="@FrostKiwiOne" />
+	<meta property="og:type" content="{% if isPost %}article{% else %}website{% endif %}" />
+	{% if isPost %}
+		<meta property="article:published_time" content="{{ page.date | dateToRfc3339 }}" />
+		{% if last_modified %}
+			<meta property="article:modified_time" content="{{ last_modified | dateToRfc3339 }}" />
+		{% endif %}
+	{% endif %}
 	<meta property="og:url" content="{{ site.url }}{{ page.url }}" />
 	<meta property="og:title" content="{{ title | default('FrostKiwi\'s Secrets') }}" />
 	<meta property="og:description" content="{{ description | default('TechBlog and secret sauce recipes of Wladislav Artsimovich') }}" />
@@ -126,7 +135,7 @@
 				<span class="h5like">More Articles</span>
 			</a>
 			<a class="invisUnderline" href="#">
-				<span class="h5like">Top</h3>
+				<span class="h5like">Top</span>
 			</a>
 		</div>
 		<hr>
